@@ -14,17 +14,131 @@ This module also handles:
 
 from __future__ import annotations
 
+import asyncio
 import base64
 import json
 import logging
+import os
+import random
 import re
 import time
+import threading
 from typing import Any, Callable, MutableMapping
 from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
 import httpx
 
 logger = logging.getLogger(__name__)
+
+# --- Rate limiting / retry knobs (env) ---
+# These affect ONLY outgoing Anthropic / Claude Code requests handled by this client.
+# They do NOT touch OAuth token storage or auth flows.
+#
+# Defaults are intentionally conservative to reduce 429s when multiple agents run in parallel.
+_ANTHROPIC_MAX_CONCURRENCY_DEFAULT = int(os.getenv('CODE_PUPPY_ANTHROPIC_MAX_CONCURRENCY', '2'))
+_ANTHROPIC_OPUS_MAX_CONCURRENCY_DEFAULT = int(os.getenv('CODE_PUPPY_ANTHROPIC_OPUS_MAX_CONCURRENCY', '1'))
+_ANTHROPIC_MAX_RETRIES_DEFAULT = int(os.getenv('CODE_PUPPY_ANTHROPIC_MAX_RETRIES', '6'))
+_ANTHROPIC_MAX_RETRY_WAIT_SECONDS_DEFAULT = float(os.getenv('CODE_PUPPY_ANTHROPIC_MAX_RETRY_WAIT_SECONDS', '60'))
+_ANTHROPIC_BASE_RETRY_WAIT_SECONDS_DEFAULT = float(os.getenv('CODE_PUPPY_ANTHROPIC_BASE_RETRY_WAIT_SECONDS', '1'))
+
+_RETRYABLE_STATUS_CODES = (429, 500, 502, 503, 504)
+
+# Shared semaphores for throttling /v1/messages calls (per-process)
+_SEMAPHORE_LOCK = threading.Lock()
+_SEMAPHORES: dict[str, asyncio.Semaphore] = {}
+
+
+def _safe_int(value: str | None, default: int) -> int:
+    try:
+        return int(value) if value is not None else default
+    except Exception:
+        return default
+
+
+def _safe_float(value: str | None, default: float) -> float:
+    try:
+        return float(value) if value is not None else default
+    except Exception:
+        return default
+
+
+def _anthropic_max_retries() -> int:
+    return max(0, _safe_int(os.getenv('CODE_PUPPY_ANTHROPIC_MAX_RETRIES'), _ANTHROPIC_MAX_RETRIES_DEFAULT))
+
+
+def _anthropic_max_retry_wait_seconds() -> float:
+    return max(0.0, _safe_float(os.getenv('CODE_PUPPY_ANTHROPIC_MAX_RETRY_WAIT_SECONDS'), _ANTHROPIC_MAX_RETRY_WAIT_SECONDS_DEFAULT))
+
+
+def _anthropic_base_retry_wait_seconds() -> float:
+    return max(0.1, _safe_float(os.getenv('CODE_PUPPY_ANTHROPIC_BASE_RETRY_WAIT_SECONDS'), _ANTHROPIC_BASE_RETRY_WAIT_SECONDS_DEFAULT))
+
+
+def _extract_model_from_body(body: bytes | None) -> str | None:
+    if not body:
+        return None
+    try:
+        data = json.loads(body.decode('utf-8'))
+        if isinstance(data, dict):
+            model = data.get('model')
+            return str(model) if model else None
+    except Exception:
+        return None
+    return None
+
+
+def _semaphore_key_for_model(model: str | None) -> str:
+    if not model:
+        return 'default'
+    model_lower = model.lower()
+    # Treat any opus model as more expensive: limit concurrency harder.
+    if 'opus' in model_lower:
+        return 'opus'
+    return 'default'
+
+
+def _get_messages_semaphore(model: str | None) -> asyncio.Semaphore:
+    key = _semaphore_key_for_model(model)
+    if key == 'opus':
+        max_conc = max(1, _safe_int(os.getenv('CODE_PUPPY_ANTHROPIC_OPUS_MAX_CONCURRENCY'), _ANTHROPIC_OPUS_MAX_CONCURRENCY_DEFAULT))
+    else:
+        max_conc = max(1, _safe_int(os.getenv('CODE_PUPPY_ANTHROPIC_MAX_CONCURRENCY'), _ANTHROPIC_MAX_CONCURRENCY_DEFAULT))
+
+    with _SEMAPHORE_LOCK:
+        sem = _SEMAPHORES.get(key)
+        if sem is None or getattr(sem, '_value', None) is None:
+            sem = asyncio.Semaphore(max_conc)
+            _SEMAPHORES[key] = sem
+        # If env var changes at runtime, we won't resize the semaphore; keep behavior stable.
+        return sem
+
+
+def _compute_retry_wait_seconds(response: httpx.Response, attempt: int) -> float:
+    # Default exponential backoff
+    wait = _anthropic_base_retry_wait_seconds() * (2 ** attempt)
+
+    # Honor Retry-After if present
+    retry_after = response.headers.get('retry-after') or response.headers.get('Retry-After')
+    if retry_after:
+        try:
+            wait = max(wait, float(retry_after))
+        except ValueError:
+            # Try parsing http-date
+            try:
+                from email.utils import parsedate_to_datetime
+
+                dt = parsedate_to_datetime(retry_after)
+                wait = max(wait, dt.timestamp() - time.time())
+            except Exception:
+                pass
+
+    wait = max(0.5, wait)
+
+    # Add jitter (up to +25%) to avoid thundering herd
+    wait = wait * (1.0 + random.uniform(0.0, 0.25))
+
+    # Cap
+    return min(wait, _anthropic_max_retry_wait_seconds())
 
 # Refresh token if it's older than the configured max age (seconds)
 TOKEN_MAX_AGE_SECONDS = 3600
@@ -264,6 +378,12 @@ class ClaudeCacheAsyncClient(httpx.AsyncClient):
 
         return url
 
+    async def _send_raw(
+        self, request: httpx.Request, *args: Any, **kwargs: Any
+    ) -> httpx.Response:
+        """Internal send wrapper so nested functions don't call super() directly."""
+        return await super().send(request, *args, **kwargs)
+
     async def send(
         self, request: httpx.Request, *args: Any, **kwargs: Any
     ) -> httpx.Response:  # type: ignore[override]
@@ -354,54 +474,166 @@ class ClaudeCacheAsyncClient(httpx.AsyncClient):
             except Exception as exc:
                 logger.debug("Error in Claude Code transformations: %s", exc)
 
-        # Send the request
-        response = await super().send(request, *args, **kwargs)
+        # Capture the final request parameters after any transformations so retries can rebuild it.
+        final_method = request.method
+        final_url = request.url
+        final_headers = dict(request.headers)
+        final_body = self._extract_body_bytes(request)
+        final_extensions = dict(getattr(request, "extensions", {}) or {})
 
-        # Transform streaming response to unprefix tool names
-        if is_messages_endpoint and response.status_code == 200:
+        # Throttle and retry only for the Anthropic messages endpoint, where 429s are common.
+        model_name = _extract_model_from_body(final_body) if is_messages_endpoint else None
+        semaphore = _get_messages_semaphore(model_name) if is_messages_endpoint else None
+
+        async def _send_with_retries(method: str, url: httpx.URL, headers: dict, body: bytes | None, extensions: dict) -> tuple[httpx.Response, httpx.Request]:
+            max_retries = _anthropic_max_retries() if is_messages_endpoint else 0
+
+            last_request: httpx.Request | None = None
+            for attempt in range(max_retries + 1):
+                req = self.build_request(
+                    method=method,
+                    url=url,
+                    headers=headers,
+                    content=body,
+                )
+                # Preserve extension flags (e.g., claude_oauth_refresh_attempted)
+                try:
+                    req.extensions.update(extensions)
+                except Exception:
+                    req.extensions = dict(extensions)
+
+                last_request = req
+                response = await self._send_raw(req, *args, **kwargs)
+
+                if response.status_code not in _RETRYABLE_STATUS_CODES:
+                    return response, req
+
+                # If we are out of retries, return the last error response and let the SDK raise.
+                if attempt >= max_retries:
+                    return response, req
+
+                wait_time = _compute_retry_wait_seconds(response, attempt)
+                logger.warning(
+                    "Anthropic HTTP %s (%s/%s). Backing off %.1fs before retry.",
+                    response.status_code,
+                    attempt + 1,
+                    max_retries,
+                    wait_time,
+                )
+                await response.aclose()
+                await asyncio.sleep(wait_time)
+
+            # Unreachable, but keep mypy happy
+            assert last_request is not None
+            return response, last_request
+
+        if semaphore is not None:
+            await semaphore.acquire()
             try:
-                response = self._wrap_response_with_tool_unprefixing(response, request)
-            except Exception as exc:
-                logger.debug("Error wrapping response for tool unprefixing: %s", exc)
+                response, sent_request = await _send_with_retries(
+                    final_method,
+                    final_url,
+                    final_headers,
+                    final_body,
+                    final_extensions,
+                )
 
-        # Handle auth errors with token refresh
-        try:
-            if response.status_code in (400, 401, 403) and not request.extensions.get(
-                "claude_oauth_refresh_attempted"
-            ):
-                is_auth_error = response.status_code in (401, 403)
+                # Transform streaming response to unprefix tool names
+                if is_messages_endpoint and response.status_code == 200:
+                    try:
+                        response = self._wrap_response_with_tool_unprefixing(
+                            response, sent_request
+                        )
+                    except Exception as exc:
+                        logger.debug("Error wrapping response for tool unprefixing: %s", exc)
 
-                if response.status_code == 400:
-                    is_auth_error = self._is_cloudflare_html_error(response)
+                # Handle auth errors with token refresh
+                try:
+                    if response.status_code in (400, 401, 403) and not sent_request.extensions.get(
+                        "claude_oauth_refresh_attempted"
+                    ):
+                        is_auth_error = response.status_code in (401, 403)
+
+                        if response.status_code == 400:
+                            is_auth_error = self._is_cloudflare_html_error(response)
+                            if is_auth_error:
+                                logger.info(
+                                    "Detected Cloudflare 400 error (likely auth-related), attempting token refresh"
+                                )
+
+                        if is_auth_error:
+                            refreshed_token = self._refresh_claude_oauth_token()
+                            if refreshed_token:
+                                logger.info("Token refreshed successfully, retrying request")
+                                await response.aclose()
+                                headers = dict(sent_request.headers)
+                                self._update_auth_headers(headers, refreshed_token)
+                                retry_extensions = dict(sent_request.extensions)
+                                retry_extensions["claude_oauth_refresh_attempted"] = True
+
+                                response, _ = await _send_with_retries(
+                                    sent_request.method,
+                                    sent_request.url,
+                                    headers,
+                                    self._extract_body_bytes(sent_request),
+                                    retry_extensions,
+                                )
+                            else:
+                                logger.warning("Token refresh failed, returning original error")
+                except Exception as exc:
+                    logger.debug("Error during token refresh attempt: %s", exc)
+
+                return response
+            finally:
+                semaphore.release()
+        else:
+            # Non-messages endpoints: keep existing behavior (no throttling/retry here)
+            response = await super().send(request, *args, **kwargs)
+
+            if is_messages_endpoint and response.status_code == 200:
+                try:
+                    response = self._wrap_response_with_tool_unprefixing(response, request)
+                except Exception as exc:
+                    logger.debug("Error wrapping response for tool unprefixing: %s", exc)
+
+            # Handle auth errors with token refresh
+            try:
+                if response.status_code in (400, 401, 403) and not request.extensions.get(
+                    "claude_oauth_refresh_attempted"
+                ):
+                    is_auth_error = response.status_code in (401, 403)
+
+                    if response.status_code == 400:
+                        is_auth_error = self._is_cloudflare_html_error(response)
+                        if is_auth_error:
+                            logger.info(
+                                "Detected Cloudflare 400 error (likely auth-related), attempting token refresh"
+                            )
+
                     if is_auth_error:
-                        logger.info(
-                            "Detected Cloudflare 400 error (likely auth-related), attempting token refresh"
-                        )
+                        refreshed_token = self._refresh_claude_oauth_token()
+                        if refreshed_token:
+                            logger.info("Token refreshed successfully, retrying request")
+                            await response.aclose()
+                            body_bytes = self._extract_body_bytes(request)
+                            headers = dict(request.headers)
+                            self._update_auth_headers(headers, refreshed_token)
+                            retry_request = self.build_request(
+                                method=request.method,
+                                url=request.url,
+                                headers=headers,
+                                content=body_bytes,
+                            )
+                            retry_request.extensions["claude_oauth_refresh_attempted"] = (
+                                True
+                            )
+                            return await super().send(retry_request, *args, **kwargs)
+                        else:
+                            logger.warning("Token refresh failed, returning original error")
+            except Exception as exc:
+                logger.debug("Error during token refresh attempt: %s", exc)
 
-                if is_auth_error:
-                    refreshed_token = self._refresh_claude_oauth_token()
-                    if refreshed_token:
-                        logger.info("Token refreshed successfully, retrying request")
-                        await response.aclose()
-                        body_bytes = self._extract_body_bytes(request)
-                        headers = dict(request.headers)
-                        self._update_auth_headers(headers, refreshed_token)
-                        retry_request = self.build_request(
-                            method=request.method,
-                            url=request.url,
-                            headers=headers,
-                            content=body_bytes,
-                        )
-                        retry_request.extensions["claude_oauth_refresh_attempted"] = (
-                            True
-                        )
-                        return await super().send(retry_request, *args, **kwargs)
-                    else:
-                        logger.warning("Token refresh failed, returning original error")
-        except Exception as exc:
-            logger.debug("Error during token refresh attempt: %s", exc)
-
-        return response
+            return response
 
     def _wrap_response_with_tool_unprefixing(
         self, response: httpx.Response, request: httpx.Request

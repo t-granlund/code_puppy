@@ -1,5 +1,6 @@
 """Tests for Claude cache client with token refresh on Cloudflare errors."""
 
+import asyncio
 import base64
 import json
 import time
@@ -696,3 +697,51 @@ class TestUrlBetaParam:
 
         # Should be unchanged
         assert str(new_url).count("beta") == 1
+
+
+    @pytest.mark.asyncio
+    async def test_retries_on_429(self, monkeypatch):
+        """Test that 429 responses trigger backoff+retry in the HTTP client layer."""
+        # Keep retries tight for the test
+        monkeypatch.setenv("CODE_PUPPY_ANTHROPIC_MAX_RETRIES", "2")
+        monkeypatch.setenv("CODE_PUPPY_ANTHROPIC_BASE_RETRY_WAIT_SECONDS", "0.01")
+        monkeypatch.setenv("CODE_PUPPY_ANTHROPIC_MAX_RETRY_WAIT_SECONDS", "0.05")
+
+        # Mock 429 then success
+        rate_limited = Mock(spec=httpx.Response)
+        rate_limited.status_code = 429
+        rate_limited.headers = {"Retry-After": "0"}
+        rate_limited._content = b"{}"
+        rate_limited.aclose = AsyncMock()
+
+        rate_limited2 = Mock(spec=httpx.Response)
+        rate_limited2.status_code = 429
+        rate_limited2.headers = {"Retry-After": "0"}
+        rate_limited2._content = b"{}"
+        rate_limited2.aclose = AsyncMock()
+
+        success = Mock(spec=httpx.Response)
+        success.status_code = 200
+        success.headers = {"content-type": "application/json"}
+        success._content = b"{}"
+
+        sleep_mock = AsyncMock()
+        monkeypatch.setattr(asyncio, "sleep", sleep_mock)
+
+        with patch.object(httpx.AsyncClient, "send", new_callable=AsyncMock) as mock_send:
+            mock_send.side_effect = [rate_limited, rate_limited2, success]
+            with patch.object(
+                ClaudeCacheAsyncClient, "_check_stored_token_expiry", return_value=False
+            ):
+                client = ClaudeCacheAsyncClient()
+                request = httpx.Request(
+                    "POST",
+                    "https://api.anthropic.com/v1/messages",
+                    content='{"model":"claude-opus-4-5-20251101","messages":[{"role":"user","content":"hi"}]}'.encode("utf-8"),
+                )
+                resp = await client.send(request)
+
+        assert resp.status_code == 200
+        assert mock_send.call_count == 3
+        assert sleep_mock.call_count == 2
+

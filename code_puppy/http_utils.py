@@ -6,6 +6,7 @@ This module provides functions for creating properly configured HTTP clients.
 
 import asyncio
 import os
+import random
 import socket
 import time
 from dataclasses import dataclass
@@ -137,7 +138,6 @@ class RetryingAsyncClient(httpx.AsyncClient):
 
                 # Close response if we're going to retry
                 await response.aclose()
-
                 # Determine wait time - Cerebras gets special treatment
                 if self._ignore_retry_headers:
                     # Cerebras: 3s base with exponential backoff (3s, 6s, 12s...)
@@ -161,7 +161,10 @@ class RetryingAsyncClient(httpx.AsyncClient):
                             except Exception:
                                 pass
 
-                # Cap wait time
+                # Add jitter (up to +25%) to avoid thundering herd
+                wait_time = wait_time * (1.0 + random.uniform(0.0, 0.25))
+
+                # Cap wait time                # Cap wait time
                 wait_time = max(0.5, min(wait_time, 60.0))
 
                 if attempt < self.max_retries:
@@ -177,6 +180,7 @@ class RetryingAsyncClient(httpx.AsyncClient):
             except (httpx.ConnectError, httpx.ReadTimeout, httpx.PoolTimeout) as e:
                 last_exception = e
                 wait_time = 1.0 * (2**attempt)
+                wait_time = wait_time * (1.0 + random.uniform(0.0, 0.25))
                 if attempt < self.max_retries:
                     emit_warning(
                         f"HTTP connection error: {e}. Retrying in {wait_time}s..."
