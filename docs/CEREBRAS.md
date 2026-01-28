@@ -80,7 +80,7 @@ Use only:
 
 1. **Start fresh**: Run `/truncate 6` or `/session rotate`
 2. **Use efficient agent**: `/agent pack-leader-cerebras-efficient`
-3. **Set model**: `/model Cerebras-GLM-4.6` or your preferred Cerebras model
+3. **Set model**: `/model Cerebras-GLM-4.7` or your preferred Cerebras model
 
 ### During Work
 
@@ -127,7 +127,7 @@ For complex projects, consider this division of labor:
 
 ```text
 # Use Cerebras for main coding
-/model Cerebras-GLM-4.6
+/model Cerebras-GLM-4.7
 
 # Pin Claude for complex reviews
 /pin_model code-reviewer claude-code-claude-opus-4-1-20250805
@@ -158,7 +158,7 @@ Copy and paste these commands one by one to set up your keys, authentication, an
 *(Follow the browser instructions to authenticate Claude)*
 
 ```text
-/model Cerebras-GLM-4.6
+/model Cerebras-GLM-4.7
 /pin_model planning-agent claude-code-claude-opus-4-1-20250805
 /pin_model code-reviewer claude-code-claude-haiku-4-5-20251001
 /pin_model python-reviewer claude-code-claude-haiku-4-5-20251001
