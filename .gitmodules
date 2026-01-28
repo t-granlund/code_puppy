@@ -1,0 +1,3 @@
+[submodule "code_puppy/epistemic"]
+	path = code_puppy/epistemic
+	url = https://github.com/duz10/epistemic-project-template.git

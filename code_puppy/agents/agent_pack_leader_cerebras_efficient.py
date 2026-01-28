@@ -24,12 +24,14 @@ DEFAULT_OUTPUT_LINE_LIMIT = 200  # Max lines of shell output to keep
 
 def get_token_budget() -> int:
     """Get the configured token budget for Cerebras efficient mode."""
-    return int(get_value("cerebras_token_budget", DEFAULT_TOKEN_BUDGET))
+    val = get_value("cerebras_token_budget")
+    return int(val) if val else DEFAULT_TOKEN_BUDGET
 
 
 def get_output_line_limit() -> int:
     """Get the configured output line limit for shell commands."""
-    return int(get_value("cerebras_output_limit", DEFAULT_OUTPUT_LINE_LIMIT))
+    val = get_value("cerebras_output_limit")
+    return int(val) if val else DEFAULT_OUTPUT_LINE_LIMIT
 
 
 class PackLeaderCerebrasEfficientAgent(BaseAgent):
@@ -75,7 +77,6 @@ class PackLeaderCerebrasEfficientAgent(BaseAgent):
             # Shell with output limiting enforced
             "agent_run_shell_command",
             # Code editing (diff-focused)
-            "multi_edit_file",
             "edit_file",
             # Transparency
             "agent_share_your_reasoning",

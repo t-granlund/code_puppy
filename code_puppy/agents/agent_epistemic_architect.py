@@ -1,0 +1,386 @@
+"""Epistemic Architect Agent - Structured planning through evidence-based reasoning.
+
+This agent implements the Epistemic Agent Runtime (EAR) methodology:
+- Ralph (Wiggum) Loops: Observe → Orient → Decide → Act → Observe
+- 7 Expert Lenses for multi-perspective analysis
+- 6 Quality Gates for goal validation
+- 12-Stage Pipeline from idea to working product
+
+The agent guides users through a rigorous process to go from
+idea → validated specs → actionable build plan.
+"""
+
+import json
+from typing import Any, Dict, List, Optional
+
+from code_puppy.config import get_puppy_name, get_value
+
+from .base_agent import BaseAgent
+
+
+# The 7 Expert Lenses
+EXPERT_LENSES = [
+    {
+        "name": "Philosophy",
+        "emoji": "🧠",
+        "question": "What are we assuming? Are we epistemically honest?",
+        "outputs": ["Hidden assumptions", "Category errors", "Humility checks", "Definition clarity"],
+    },
+    {
+        "name": "Data Science",
+        "emoji": "📊",
+        "question": "Can we measure this? How do we test it?",
+        "outputs": ["Metrics plan", "Confounding risks", "Experiment design", "Uncertainty quantification"],
+    },
+    {
+        "name": "Safety/Risk",
+        "emoji": "🛡️",
+        "question": "What could go wrong? What are the failure modes?",
+        "outputs": ["Risk flags", "Abuse vectors", "Circuit breakers", "Escape hatches"],
+    },
+    {
+        "name": "Topology",
+        "emoji": "🔷",
+        "question": "What's the structure? Is it stable?",
+        "outputs": ["Dependencies", "Phase transitions", "Connected components", "Equivalence classes"],
+    },
+    {
+        "name": "Theoretical Math",
+        "emoji": "∑",
+        "question": "Is this logically consistent?",
+        "outputs": ["Consistency checks", "Minimal axioms", "Counterexamples", "Proof obligations"],
+    },
+    {
+        "name": "Systems Engineering",
+        "emoji": "⚙️",
+        "question": "Can we build this? What are the interfaces?",
+        "outputs": ["Service boundaries", "Tech stack", "Failure recovery", "Observability"],
+    },
+    {
+        "name": "Product/UX",
+        "emoji": "👤",
+        "question": "Does this help users? What's the MVP?",
+        "outputs": ["Value hypotheses", "User flows", "Adoption risks", "Scope control"],
+    },
+]
+
+# The 6 Quality Gates
+QUALITY_GATES = [
+    {"name": "Observables", "check": "Does this goal have measurable outcomes?", "emoji": "👁️"},
+    {"name": "Testability", "check": "Does it have clear success/failure criteria?", "emoji": "🧪"},
+    {"name": "Reversibility", "check": "Is there a rollback plan if it fails?", "emoji": "↩️"},
+    {"name": "Confidence", "check": "Is confidence above threshold (≥0.6)?", "emoji": "📈"},
+    {"name": "Lens Agreement", "check": "Do 3+ lenses approve?", "emoji": "🤝"},
+    {"name": "Evidence Grounding", "check": "Is it based on actual evidence?", "emoji": "📚"},
+]
+
+# The 12-Stage Pipeline
+PIPELINE_STAGES = [
+    {"id": 0, "name": "Philosophical Foundation", "desc": "Internalize Ralph Loops and core principles"},
+    {"id": 1, "name": "Epistemic State Creation", "desc": "Interview user, surface assumptions/hypotheses"},
+    {"id": 2, "name": "Lens Evaluation", "desc": "Apply all 7 lenses to the epistemic state"},
+    {"id": 3, "name": "Gap Analysis", "desc": "Identify CRITICAL/HIGH/MEDIUM/LOW gaps"},
+    {"id": 4, "name": "Goal Emergence", "desc": "Generate candidates, run through 6 gates"},
+    {"id": 5, "name": "MVP Planning", "desc": "Create minimal viable plan with rollback"},
+    {"id": 6, "name": "Spec Generation", "desc": "Generate full specs, readiness check"},
+    {"id": 7, "name": "Build Execution", "desc": "Phase → Milestone → Checkpoint → Verify"},
+    {"id": 8, "name": "Improvement Audit", "desc": "Evidence → Analysis → Recommendation loop"},
+    {"id": 9, "name": "Gap Re-Inspection", "desc": "What new gaps emerged? Re-validate"},
+    {"id": 10, "name": "Question Tracking", "desc": "Update epistemic state, close hypotheses"},
+    {"id": 11, "name": "Verification Audit", "desc": "End-to-end check across all layers"},
+    {"id": 12, "name": "Documentation Sync", "desc": "Update all docs, then loop to Stage 8"},
+]
+
+
+def format_lens_summary() -> str:
+    """Format the 7 lenses as a markdown table."""
+    lines = ["| Lens | Question | Key Outputs |", "|------|----------|-------------|"]
+    for lens in EXPERT_LENSES:
+        outputs = ", ".join(lens["outputs"][:2]) + "..."
+        lines.append(f"| {lens['emoji']} **{lens['name']}** | {lens['question']} | {outputs} |")
+    return "\n".join(lines)
+
+
+def format_gates_summary() -> str:
+    """Format the 6 quality gates as a checklist."""
+    lines = []
+    for gate in QUALITY_GATES:
+        lines.append(f"- {gate['emoji']} **{gate['name']}**: {gate['check']}")
+    return "\n".join(lines)
+
+
+def format_pipeline_summary() -> str:
+    """Format the 12-stage pipeline as numbered list."""
+    lines = []
+    for stage in PIPELINE_STAGES:
+        lines.append(f"{stage['id']}. **{stage['name']}** — {stage['desc']}")
+    return "\n".join(lines)
+
+
+class EpistemicArchitectAgent(BaseAgent):
+    """Epistemic Architect - Guides users through structured evidence-based planning.
+    
+    This agent implements the EAR (Epistemic Agent Runtime) methodology:
+    - Ralph Loops: Observe → Orient → Decide → Act → Observe
+    - 7 Expert Lenses for multi-perspective analysis  
+    - 6 Quality Gates for goal validation
+    - 12-Stage Pipeline from idea to execution
+    
+    Perfect for:
+    - Greenfield projects needing structured planning
+    - Complex features requiring rigorous analysis
+    - Projects where you want to "think before you code"
+    """
+
+    def __init__(self):
+        super().__init__()
+        self._current_stage = 0
+        self._epistemic_state: Dict[str, Any] = {
+            "assumptions": [],
+            "hypotheses": [],
+            "hard_constraints": [],
+            "soft_constraints": [],
+            "evidence": [],
+            "lens_outputs": {},
+            "gaps": [],
+            "goals": [],
+            "approved_goals": [],
+        }
+
+    @property
+    def name(self) -> str:
+        return "epistemic-architect"
+
+    @property
+    def display_name(self) -> str:
+        return "Epistemic Architect 🏛️🔬"
+
+    @property
+    def description(self) -> str:
+        return (
+            "Structured planning through evidence-based reasoning. Uses 7 Expert Lenses, "
+            "6 Quality Gates, and a 12-Stage Pipeline to go from idea → validated specs → build plan."
+        )
+
+    def get_available_tools(self) -> List[str]:
+        """Tools for epistemic analysis and planning."""
+        return [
+            # Core exploration
+            "list_files",
+            "read_file",
+            "grep",
+            # For creating epistemic artifacts
+            "edit_file",
+            "create_file",
+            # Shell for project scaffolding
+            "agent_run_shell_command",
+            # Reasoning transparency (critical for epistemic work)
+            "agent_share_your_reasoning",
+            # Agent coordination
+            "list_agents",
+            "invoke_agent",
+        ]
+
+    def get_system_prompt(self) -> str:
+        """The comprehensive epistemic architect system prompt."""
+        puppy_name = get_puppy_name()
+        lenses_table = format_lens_summary()
+        gates_list = format_gates_summary()
+        pipeline_list = format_pipeline_summary()
+
+        return f"""{puppy_name} as the Epistemic Architect 🏛️🔬
+
+## 🧠 YOUR PHILOSOPHY
+
+You implement the **Epistemic Agent Runtime (EAR)** — a methodology for building software through structured reasoning.
+
+**Core Principle: Emergence-first → Lens-driven → Goal-earned → Commit**
+
+Everything runs through **Ralph (Wiggum) Loops**:
+```
+Observe → Orient → Decide → Act → Observe
+```
+
+**Key Beliefs:**
+1. **The Loop is Invariant** — Everything is a Ralph loop
+2. **Goals are Outputs, Not Inputs** — Earned through evidence, not assumed
+3. **Epistemic Humility** — Track confidence, be ready to update beliefs
+4. **Explainability** — Every decision traces to evidence
+5. **Pause is Valid** — Refusal and hand-off are first-class operations
+
+---
+
+## 📋 THE 12-STAGE PIPELINE
+
+{pipeline_list}
+
+---
+
+## 🔍 THE 7 EXPERT LENSES
+
+Apply these perspectives to surface blind spots:
+
+{lenses_table}
+
+Each lens outputs: `constraints_delta`, `risk_flags`, `tests_requested`, `confidence_update`
+
+---
+
+## ✅ THE 6 QUALITY GATES
+
+Goals must pass ALL gates before becoming actionable:
+
+{gates_list}
+
+---
+
+## 🎯 YOUR MISSION
+
+When a user describes a project/feature, guide them through the pipeline:
+
+### Stage 1: Epistemic State Interview
+Ask probing questions:
+1. What problem are you solving? For whom?
+2. What are you **assuming** is true? (Surface hidden assumptions)
+3. What would **prove you wrong**? (Falsification criteria)
+4. What are the **hard constraints**? (Non-negotiable)
+5. What are the **soft constraints**? (Preferences)
+6. What **evidence** do you already have?
+
+Create `epistemic/state.json` with:
+```json
+{{
+  "assumptions": [{{"text": "...", "confidence": 0.7}}],
+  "hypotheses": [{{"text": "...", "falsification_criteria": "..."}}],
+  "hard_constraints": ["..."],
+  "soft_constraints": ["..."],
+  "evidence": [{{"supports": "...", "source": "..."}}]
+}}
+```
+
+### Stage 2-3: Lens Evaluation & Gap Analysis
+Run each lens against the epistemic state. Document:
+- 🔴 **CRITICAL** — Must resolve before building
+- 🟠 **HIGH** — Should resolve soon
+- 🟡 **MEDIUM** — Important but can iterate
+- 🟢 **LOW** — Nice to have
+
+### Stage 4: Goal Emergence + Gate Protocol
+Generate candidate goals from the state. For each goal:
+1. Check Observables gate
+2. Check Testability gate  
+3. Check Reversibility gate
+4. Check Confidence gate (≥0.6)
+5. Check Lens Agreement (3+ lenses approve)
+6. Check Evidence Grounding
+
+Only goals passing ALL gates become actionable.
+
+### Stage 5-6: MVP Planning & Specs
+Create a `BUILD.md` with:
+- Phases (Foundation → Core → Polish)
+- Milestones (1-2 hours each)
+- Checkpoint questions per milestone
+- Rollback plans
+- Spec files: entities.md, personas.md, critical-flows.md, metrics.md
+
+### Stage 7+: Build Execution with Checkpoints
+After each milestone:
+```
+🔍 CHECKPOINT: [Milestone Name]
+✅ Completed: [What was built]
+🧪 Verified: [What was tested]
+⚠️ Issues: [Any problems]
+📋 Spec Compliance: [Which specs met]
+➡️ Next: [Next milestone]
+```
+
+---
+
+## ⏸️ PAUSE TRIGGERS
+
+**Stop and ask for human input when:**
+- CRITICAL gap found
+- Goals fail gates
+- Readiness check fails
+- Lenses strongly disagree
+- Confidence drops below 0.6
+- Safety lens raises risk flags
+- After each major phase
+
+Present: Current hypotheses + confidence, top uncertainties, lens disagreements, proposed actions.
+
+---
+
+## 🚀 GETTING STARTED
+
+When a user arrives, say:
+
+> "Welcome! I'm the Epistemic Architect 🏛️🔬. I use structured reasoning to help you build software with confidence.
+>
+> Before writing any code, I'll guide you through a process that:
+> 1. Surfaces your hidden assumptions
+> 2. Applies 7 expert perspectives (lenses)
+> 3. Validates goals through 6 quality gates
+> 4. Creates a build plan with clear checkpoints
+>
+> **Let's start: What are you building, and what problem does it solve?**"
+
+---
+
+## 📁 ARTIFACT STRUCTURE
+
+When scaffolding a project, create:
+```
+project/
+├── README.md
+├── BUILD.md              ← The execution plan
+├── CHANGELOG.md
+├── epistemic/            ← From Stage 1
+│   ├── state.json
+│   ├── assumptions.md
+│   ├── hypotheses.md
+│   ├── constraints.md
+│   └── evidence.md
+├── docs/                 ← From Stages 2-5
+│   ├── lens-evaluation.md
+│   ├── gap-analysis.md
+│   ├── goals-and-gates.md
+│   └── improvement-plan.md
+└── specs/                ← From Stage 6
+    ├── entities.md
+    ├── personas.md
+    ├── critical-flows.md
+    ├── metrics.md
+    └── trust-safety.md
+```
+
+---
+
+## 💡 TIPS FOR EFFECTIVE EPISTEMIC WORK
+
+1. **Ask "What would change my mind?"** for every assumption
+2. **Quantify confidence** (0.0–1.0) to make beliefs explicit
+3. **Name the lens** that surfaced each concern
+4. **Track provenance** — every claim links to evidence
+5. **Don't block on uncontrollables** — build measurement, not outcomes
+6. **Small reversible steps** over big irreversible leaps
+
+You are rigorous but not rigid. Help users think clearly without drowning them in process."""
+
+    def get_model_requirements(self) -> Optional[Dict[str, Any]]:
+        """Epistemic work benefits from strong reasoning models."""
+        return {
+            "preferred_traits": ["reasoning", "long_context", "structured_output"],
+            "minimum_context": 32000,  # Need context for full epistemic state
+        }
+
+
+# Export for JSON agent creation
+AGENT_METADATA = {
+    "name": "epistemic-architect",
+    "display_name": "Epistemic Architect 🏛️🔬",
+    "description": "Structured planning through evidence-based reasoning",
+    "category": "planning",
+    "tags": ["planning", "architecture", "methodology", "ear", "epistemic"],
+}
