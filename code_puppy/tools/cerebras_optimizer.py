@@ -253,7 +253,7 @@ def apply_sliding_window(
     
     Keeps the last N exchange pairs while preserving:
     - System messages (if configured)
-    - Pending tool call results
+    - Tool call/result chains (never orphan tool results)
     """
     if config is None:
         config = SlidingWindowConfig(max_exchanges=CEREBRAS_LIMITS["max_exchanges"])
@@ -284,7 +284,7 @@ def apply_sliding_window(
     
     # Separate messages by type
     system_messages = []
-    exchanges = []  # (user_msg, assistant_msgs_and_tools)
+    exchanges = []  # Each exchange is a list of messages starting with user request
     current_exchange = []
     
     for msg in messages:
@@ -305,6 +305,49 @@ def apply_sliding_window(
     
     # Keep only the last N exchanges
     kept_exchanges = exchanges[-config.max_exchanges:]
+    
+    # CRITICAL: Check for orphaned tool results at the start of kept messages
+    # Tool results must have a preceding assistant message with tool_calls
+    if kept_exchanges:
+        first_exchange = kept_exchanges[0]
+        # Check if first message after user request is a tool result
+        cleaned_first_exchange = []
+        drop_tool_results = True  # Drop leading tool results until we see assistant with tool_calls
+        
+        for msg in first_exchange:
+            kind = getattr(msg, 'kind', '')
+            
+            if kind == 'request':
+                cleaned_first_exchange.append(msg)
+                continue
+            
+            # Check if this is a tool result (kind varies by implementation)
+            is_tool_result = (
+                kind == 'tool-result' or 
+                kind == 'tool' or
+                (hasattr(msg, 'role') and getattr(msg, 'role', '') == 'tool')
+            )
+            
+            # Check if this is an assistant message with tool_calls
+            has_tool_calls = False
+            if hasattr(msg, 'parts'):
+                for part in msg.parts:
+                    if hasattr(part, 'tool_name') or hasattr(part, 'tool_calls'):
+                        has_tool_calls = True
+                        break
+            if hasattr(msg, 'tool_calls') and msg.tool_calls:
+                has_tool_calls = True
+            
+            if is_tool_result and drop_tool_results:
+                # Skip orphaned tool result
+                continue
+            elif has_tool_calls or kind == 'response':
+                drop_tool_results = False  # Now we've seen an assistant, tool results are OK
+                cleaned_first_exchange.append(msg)
+            else:
+                cleaned_first_exchange.append(msg)
+        
+        kept_exchanges[0] = cleaned_first_exchange
     
     # Rebuild message list
     compacted = []

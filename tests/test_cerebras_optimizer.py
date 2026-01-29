@@ -247,6 +247,34 @@ class TestSlidingWindow:
         # Should have system + 2 exchanges
         assert compacted[0].kind == "system-prompt"
         assert result.savings_percent > 0
+    
+    def test_drops_orphaned_tool_results(self):
+        """Should drop tool results without preceding tool_calls."""
+        # Simulate a message history where we'd drop an exchange with tool_calls
+        # but the tool result appears in the kept exchange
+        messages = [
+            # Exchange 1 (will be dropped) - has tool_calls
+            MockMessage(parts=[MockPart("user request 1")], kind="request"),
+            MockMessage(parts=[MockPart("assistant with tool")], kind="response"),
+            # Exchange 2 (kept) - starts with orphaned tool result
+            MockMessage(parts=[MockPart("user request 2")], kind="request"),
+            MockMessage(parts=[MockPart("tool result from exchange 1")], kind="tool-result"),
+            MockMessage(parts=[MockPart("assistant response")], kind="response"),
+            # Exchange 3 (kept)
+            MockMessage(parts=[MockPart("user request 3")], kind="request"),
+            MockMessage(parts=[MockPart("final response")], kind="response"),
+        ]
+        
+        config = SlidingWindowConfig(max_exchanges=2)
+        
+        def estimate(msg):
+            return sum(len(p.content) // 4 for p in msg.parts)
+        
+        compacted, result = apply_sliding_window(messages, config, estimate)
+        
+        # Should have dropped the orphaned tool-result
+        tool_results = [m for m in compacted if getattr(m, 'kind', '') == 'tool-result']
+        assert len(tool_results) == 0, "Orphaned tool results should be dropped"
 
 
 class TestShouldAutoCompact:
