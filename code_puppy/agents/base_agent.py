@@ -968,13 +968,14 @@ class BaseAgent(ABC):
                     check_cerebras_budget,
                     apply_sliding_window,
                     SlidingWindowConfig,
+                    CEREBRAS_LIMITS,
                 )
                 
                 budget_check = check_cerebras_budget(message_tokens, messages)
                 
                 if budget_check.should_compact:
-                    # Apply sliding window (more aggressive than default compaction)
-                    config = SlidingWindowConfig(max_exchanges=6)
+                    # Apply sliding window with AGGRESSIVE settings from CEREBRAS_LIMITS
+                    config = SlidingWindowConfig(max_exchanges=CEREBRAS_LIMITS["max_exchanges"])
                     compacted, result = apply_sliding_window(
                         messages,
                         config=config,

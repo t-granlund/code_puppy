@@ -110,15 +110,15 @@ def make_model_settings(
             # Fallback if config loading fails (e.g., in CI environments)
             context_length = 128000
         
-        # CEREBRAS OPTIMIZATION: Use conservative max_tokens for Cerebras models
-        # This prevents over-allocation which counts against TPM limits
+        # CEREBRAS OPTIMIZATION: Use aggressive token limits for Cerebras models
+        # Based on usage analysis: avg 28K tokens/req, need to reduce to <15K
         model_lower = model_name.lower()
         is_cerebras = "cerebras" in model_lower or "glm-4" in model_lower or "qwen" in model_lower
         
         if is_cerebras:
-            # Cerebras: Default to 2000 tokens (tool calls are short)
-            # Can be overridden dynamically based on task type
-            max_tokens = 2000
+            # Cerebras: Default to 1500 tokens (reduced from 2000)
+            # Most responses are tool calls which need <500 tokens
+            max_tokens = 1500
         else:
             # min 2048, 15% of context, max 65536
             max_tokens = max(2048, min(int(0.15 * context_length), 65536))

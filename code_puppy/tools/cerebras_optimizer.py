@@ -27,23 +27,24 @@ class TaskType(Enum):
     UNKNOWN = "unknown"
 
 
-# Cerebras-specific limits (more aggressive than default)
+# Cerebras-specific limits (AGGRESSIVE - based on usage analysis showing 28K avg/req)
+# Goal: Reduce from 28K to <15K tokens/request
 CEREBRAS_LIMITS = {
-    "compaction_threshold": 0.50,  # Trigger compaction at 50% (vs 85% default)
-    "hard_limit_threshold": 0.70,  # Hard block at 70% (vs 95% default)
+    "compaction_threshold": 0.30,  # Trigger compaction at 30% (was 50%)
+    "hard_limit_threshold": 0.50,  # Hard block at 50% (was 70%)
     "max_input_tokens": 50_000,  # Cerebras Pro limit
-    "target_input_tokens": 25_000,  # Target to stay under
-    "max_exchanges": 6,  # Keep only last 6 user-assistant pairs
+    "target_input_tokens": 15_000,  # Target to stay under (was 25K)
+    "max_exchanges": 4,  # Keep only last 4 user-assistant pairs (was 6)
     "max_output_by_task": {
-        TaskType.TOOL_CALL: 500,
-        TaskType.CODE_GENERATION: 4000,
-        TaskType.EXPLANATION: 2000,
-        TaskType.FILE_READ: 200,
-        TaskType.PLANNING: 3000,
-        TaskType.REVIEW: 2000,
-        TaskType.UNKNOWN: 2000,
+        TaskType.TOOL_CALL: 300,  # Reduced from 500
+        TaskType.CODE_GENERATION: 3000,  # Reduced from 4000
+        TaskType.EXPLANATION: 1500,  # Reduced from 2000
+        TaskType.FILE_READ: 150,  # Reduced from 200
+        TaskType.PLANNING: 2000,  # Reduced from 3000
+        TaskType.REVIEW: 1500,  # Reduced from 2000
+        TaskType.UNKNOWN: 1500,  # Reduced from 2000
     },
-    "default_max_output": 2000,
+    "default_max_output": 1500,  # Reduced from 2000
 }
 
 
