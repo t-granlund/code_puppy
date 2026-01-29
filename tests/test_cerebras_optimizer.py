@@ -36,12 +36,15 @@ from code_puppy.tools.cerebras_optimizer import (
 @dataclass
 class MockPart:
     content: str
+    tool_call_id: str = None
+    tool_name: str = None
 
 
 @dataclass
 class MockMessage:
     parts: List[MockPart]
     kind: str = "request"
+    tool_call_id: str = None  # For tool result messages
 
 
 def create_mock_messages(exchanges: int, tokens_per_msg: int = 1000) -> List[MockMessage]:
@@ -249,17 +252,19 @@ class TestSlidingWindow:
         assert result.savings_percent > 0
     
     def test_drops_orphaned_tool_results(self):
-        """Should drop tool results without preceding tool_calls."""
+        """Should drop tool results whose tool_call was dropped."""
         # Simulate a message history where we'd drop an exchange with tool_calls
-        # but the tool result appears in the kept exchange
+        # but the tool result references the dropped tool_call_id
         messages = [
-            # Exchange 1 (will be dropped) - has tool_calls
+            # Exchange 1 (will be dropped) - has tool_call with id "tc_dropped"
             MockMessage(parts=[MockPart("user request 1")], kind="request"),
-            MockMessage(parts=[MockPart("assistant with tool")], kind="response"),
-            # Exchange 2 (kept) - starts with orphaned tool result
+            MockMessage(parts=[MockPart("calling tool", tool_call_id="tc_dropped", tool_name="read_file")], kind="response"),
+            # Tool result for the dropped tool call
+            MockMessage(parts=[MockPart("file contents", tool_call_id="tc_dropped")], kind="tool-result", tool_call_id="tc_dropped"),
+            MockMessage(parts=[MockPart("here's the file")], kind="response"),
+            # Exchange 2 (kept)
             MockMessage(parts=[MockPart("user request 2")], kind="request"),
-            MockMessage(parts=[MockPart("tool result from exchange 1")], kind="tool-result"),
-            MockMessage(parts=[MockPart("assistant response")], kind="response"),
+            MockMessage(parts=[MockPart("response 2")], kind="response"),
             # Exchange 3 (kept)
             MockMessage(parts=[MockPart("user request 3")], kind="request"),
             MockMessage(parts=[MockPart("final response")], kind="response"),
@@ -272,9 +277,15 @@ class TestSlidingWindow:
         
         compacted, result = apply_sliding_window(messages, config, estimate)
         
-        # Should have dropped the orphaned tool-result
-        tool_results = [m for m in compacted if getattr(m, 'kind', '') == 'tool-result']
-        assert len(tool_results) == 0, "Orphaned tool results should be dropped"
+        # Should have dropped the orphaned tool-result (the one referencing tc_dropped)
+        orphaned_results = [
+            m for m in compacted 
+            if getattr(m, 'tool_call_id', None) == "tc_dropped"
+        ]
+        assert len(orphaned_results) == 0, "Orphaned tool results should be dropped"
+        
+        # Should have kept the 2 exchanges (4 messages)
+        assert count_exchanges(compacted) == 2
 
 
 class TestShouldAutoCompact:
