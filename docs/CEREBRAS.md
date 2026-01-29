@@ -112,6 +112,63 @@ Use only:
 
 ---
 
+## AUDIT-1.1 Safeguard Modules
+
+Code Puppy includes comprehensive safeguards for token-efficient, safe operations with Cerebras:
+
+### IO Budget Enforcer
+
+`code_puppy/tools/io_budget_enforcer.py` — Provider-aware token limits:
+
+| Provider | Max Input | Max Output | Daily Limit |
+|----------|-----------|------------|-------------|
+| Cerebras | 50,000 | 8,000 | 24M |
+| Anthropic | 180,000 | 8,000 | — |
+| OpenAI | 120,000 | 8,000 | — |
+
+**Budget Thresholds:**
+- 70% usage → Trigger compaction (summarize, truncate)
+- 95% usage → Hard block, refuse request
+
+### Shell Governor
+
+`code_puppy/tools/shell_governor.py` — Prevents output explosion:
+
+- **Max output:** 160 lines (truncates head/tail)
+- **Timeout:** 120 seconds
+- **Secret redaction:** AWS keys, Bearer tokens, API keys, private keys
+
+### Token Telemetry
+
+`code_puppy/tools/token_telemetry.py` — Usage tracking:
+
+- **Ledger:** JSONL persistence at `.codepuppy/usage.jsonl`
+- **Burn rate alerts:** 70% warning, 90% critical, 95% fallback
+- **Daily budgets:** Enforces 24M/day for Cerebras
+
+### Safe Patch
+
+`code_puppy/tools/safe_patch.py` — Prevents file corruption:
+
+- **Unsafe pattern detection:** heredoc, `sed -i`, `rm -rf`, `curl | bash`
+- **Syntax validation:** Python, JSON, YAML, JavaScript
+- **Automatic backups:** Before any file write
+
+### Router Hooks
+
+`code_puppy/tools/router_hooks.py` — Task-based model routing:
+
+```python
+# Model priority for different tasks
+TaskClass.CODE_GENERATION → cerebras (priority 80)
+TaskClass.COMPLEX_REASONING → claude (priority 70)
+TaskClass.SIMPLE_QA → gpt-4o (priority 60)
+```
+
+See [AUDIT-1.1-SAFEGUARDS.md](AUDIT-1.1-SAFEGUARDS.md) for full documentation.
+
+---
+
 ## Multi-Provider Strategy
 
 For complex projects, consider this division of labor:

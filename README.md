@@ -694,6 +694,74 @@ Consider contributing agent templates for:
 
 ---
 
+## 🧠 Epistemic Agent Runtime (EAR)
+
+Code Puppy includes the **Epistemic Agent Runtime** — a structured methodology for building software through evidence-based reasoning.
+
+### Core Concept
+
+> **Write down what you believe, how confident you are, and how you'd prove yourself wrong.**
+
+Everything else — lenses, gates, the Ralph loop — is machinery to make that practice systematic.
+
+### Quick Start
+
+```text
+/agent epistemic-architect    # Switch to epistemic planning agent
+/epistemic start my-project   # Begin a planning session
+```
+
+### The 12-Stage Pipeline
+
+| Stage | What Happens |
+|-------|--------------|
+| 0-1 | Philosophical foundation, epistemic state creation |
+| 2-4 | Lens evaluation, gap analysis, goal emergence |
+| 5-6 | MVP planning, spec generation |
+| 7 | Build execution with checkpoints |
+| 8-12 | Improvement audit loop (repeats) |
+
+### Commands
+
+| Command | Description |
+|---------|-------------|
+| `/epistemic start <name>` | Start planning session |
+| `/epistemic status` | Show current stage |
+| `/epistemic gaps` | Show identified gaps |
+| `/lens <name>` | Apply expert lens (philosophy, data, safety, etc.) |
+| `/ralph` | Execute Ralph Loop (Observe → Orient → Decide → Act) |
+
+📖 Full documentation: [docs/EPISTEMIC.md](docs/EPISTEMIC.md)
+
+---
+
+## 🛡️ Token Management & Safeguards
+
+Code Puppy includes comprehensive safeguards for token-efficient operations:
+
+### Cerebras Token Efficiency
+
+```text
+/agent pack-leader-cerebras-efficient   # Token-conscious agent
+/truncate 6                              # Keep history lean
+```
+
+See [docs/CEREBRAS.md](docs/CEREBRAS.md) for usage guide.
+
+### AUDIT-1.1 Safeguard Modules
+
+| Module | Purpose |
+|--------|---------|
+| `io_budget_enforcer` | Provider-aware token limits (50K input for Cerebras) |
+| `shell_governor` | Output truncation (160 lines), secret redaction |
+| `token_telemetry` | Usage ledger, burn rate alerts, daily budgets |
+| `safe_patch` | Unsafe pattern detection, syntax validation |
+| `router_hooks` | Task-based model routing hints |
+
+📖 Full documentation: [docs/AUDIT-1.1-SAFEGUARDS.md](docs/AUDIT-1.1-SAFEGUARDS.md)
+
+---
+
 # Code Puppy Privacy Commitment
 
 **Zero-compromise privacy policy. Always.**
