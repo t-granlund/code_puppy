@@ -46,7 +46,7 @@ ANTIGRAVITY_DEFAULT_PROJECT_ID = "rising-fact-p41fc"
 
 # Request headers for Antigravity API
 ANTIGRAVITY_HEADERS: Dict[str, str] = {
-    "User-Agent": "antigravity/1.11.5 windows/amd64",
+    "User-Agent": "antigravity/1.15.8 windows/amd64",
     "X-Goog-Api-Client": "google-cloud-sdk vscode_cloudshelleditor/0.1",
     "Client-Metadata": '{"ideType":"IDE_UNSPECIFIED","platform":"PLATFORM_UNSPECIFIED","pluginType":"GEMINI"}',
     "x-goog-api-key": "",  # Must be present but empty for Antigravity
