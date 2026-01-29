@@ -112,6 +112,76 @@ Use only:
 
 ---
 
+## AUDIT-1.2: Cerebras Token Optimizer
+
+Code Puppy now includes **automatic token optimization** specifically designed for Cerebras Code Pro based on usage analysis showing 98:1 input:output ratio with avg 28.5K tokens/request.
+
+### The Problem
+
+From actual usage data:
+- **14.2M tokens burned** in a single session
+- **489 requests** with avg 28,511 input tokens each
+- **98:1 ratio** — input tokens dominate completely
+- Only **290 output tokens** on average per request
+
+The solution: Aggressive auto-compaction before context bloat kills your quota.
+
+### How It Works
+
+`code_puppy/tools/cerebras_optimizer.py` implements:
+
+| Strategy | Trigger | Action |
+|----------|---------|--------|
+| **Auto-compaction** | 50% context usage | Sliding window to 6 exchanges |
+| **Hard block** | 70% context usage | Refuses request, forces compaction |
+| **Task-aware output** | Every request | Limits max_tokens by task type |
+
+### Auto-Compaction (50% Threshold)
+
+Instead of waiting until 85% (default), Cerebras triggers compaction at **50% context usage**:
+
+```
+Before compaction: 12 exchanges, 35K tokens
+After compaction: 6 exchanges, 18K tokens
+Savings: 48% (17K tokens)
+```
+
+### Sliding Window Strategy
+
+Keeps only the **last 6 user-assistant exchanges**:
+- Always preserves system prompt
+- Always preserves pending tool results
+- Drops old conversation history (not summarized)
+
+This is more aggressive than summarization but guarantees low token counts.
+
+### Task-Aware Output Limits
+
+| Task Type | max_tokens | Examples |
+|-----------|------------|----------|
+| Tool call | 500 | Read file, grep, list dir |
+| Code generation | 4,000 | Write function, fix bug |
+| Explanation | 2,000 | Explain code, describe |
+| Planning | 3,000 | Architecture, design |
+| Review | 2,000 | Code review, audit |
+| Unknown | 2,000 | Default fallback |
+
+### Integration Points
+
+The optimizer is wired into:
+
+1. **base_agent.py** — `message_history_processor()` checks budget and applies sliding window
+2. **model_factory.py** — Sets conservative `max_tokens=2000` for Cerebras models
+
+### Expected Savings
+
+Based on the 14.2M token session:
+- **Conservative estimate**: 40% savings = 5.7M tokens saved
+- **Aggressive estimate**: 60% savings = 8.5M tokens saved
+- **Result**: Extend your daily quota from 8 hours to 12+ hours
+
+---
+
 ## AUDIT-1.1 Safeguard Modules
 
 Code Puppy includes comprehensive safeguards for token-efficient, safe operations with Cerebras:

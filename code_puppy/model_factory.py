@@ -109,8 +109,19 @@ def make_model_settings(
         except Exception:
             # Fallback if config loading fails (e.g., in CI environments)
             context_length = 128000
-        # min 2048, 15% of context, max 65536
-        max_tokens = max(2048, min(int(0.15 * context_length), 65536))
+        
+        # CEREBRAS OPTIMIZATION: Use conservative max_tokens for Cerebras models
+        # This prevents over-allocation which counts against TPM limits
+        model_lower = model_name.lower()
+        is_cerebras = "cerebras" in model_lower or "glm-4" in model_lower or "qwen" in model_lower
+        
+        if is_cerebras:
+            # Cerebras: Default to 2000 tokens (tool calls are short)
+            # Can be overridden dynamically based on task type
+            max_tokens = 2000
+        else:
+            # min 2048, 15% of context, max 65536
+            max_tokens = max(2048, min(int(0.15 * context_length), 65536))
 
     model_settings_dict["max_tokens"] = max_tokens
     effective_settings = get_effective_model_settings(model_name)

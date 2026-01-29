@@ -939,6 +939,12 @@ class BaseAgent(ABC):
             pruned.append(msg)
         return pruned
 
+    def _is_cerebras_model(self) -> bool:
+        """Check if current model is a Cerebras model."""
+        model_name = self.get_model_name() or ""
+        model_lower = model_name.lower()
+        return "cerebras" in model_lower or "glm-4" in model_lower or "qwen" in model_lower
+
     def message_history_processor(
         self, ctx: RunContext, messages: List[ModelMessage]
     ) -> List[ModelMessage]:
@@ -954,6 +960,51 @@ class BaseAgent(ABC):
             total_current_tokens, model_max, proportion_used
         )
         update_spinner_context(context_summary)
+
+        # CEREBRAS OPTIMIZATION: Use aggressive compaction for Cerebras models
+        if self._is_cerebras_model():
+            try:
+                from code_puppy.tools.cerebras_optimizer import (
+                    check_cerebras_budget,
+                    apply_sliding_window,
+                    SlidingWindowConfig,
+                )
+                
+                budget_check = check_cerebras_budget(message_tokens, messages)
+                
+                if budget_check.should_compact:
+                    # Apply sliding window (more aggressive than default compaction)
+                    config = SlidingWindowConfig(max_exchanges=6)
+                    compacted, result = apply_sliding_window(
+                        messages,
+                        config=config,
+                        estimate_tokens_fn=self.estimate_tokens_for_message,
+                    )
+                    
+                    if result.savings_percent > 0:
+                        emit_info(
+                            f"🧹 Cerebras auto-compact: {result.original_tokens:,} → "
+                            f"{result.compacted_tokens:,} tokens ({result.savings_percent:.0f}% saved)",
+                            message_group="token_context_status",
+                        )
+                        
+                        final_summary = SpinnerBase.format_context_info(
+                            result.compacted_tokens, model_max, 
+                            result.compacted_tokens / model_max
+                        )
+                        update_spinner_context(final_summary)
+                        
+                        self.set_message_history(compacted)
+                        return compacted
+                    
+                elif budget_check.should_block:
+                    emit_warning(
+                        f"🚫 Cerebras context at {budget_check.usage_percent:.0%}. "
+                        f"Run `/truncate 4` to continue.",
+                        message_group="token_context_status",
+                    )
+            except ImportError:
+                pass  # Fall back to default handling
 
         # Get the configured compaction threshold
         compaction_threshold = get_compaction_threshold()
