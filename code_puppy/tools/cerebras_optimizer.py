@@ -245,52 +245,60 @@ def count_exchanges(messages: List[Any]) -> int:
 
 
 def _extract_tool_call_ids(msg: Any) -> set:
-    """Extract tool_call IDs from an assistant message."""
+    """Extract tool_call IDs from ToolCallPart in response messages.
+    
+    In pydantic-ai:
+    - ModelResponse contains ToolCallPart (part_kind='tool-call')
+    - These are the source of tool_call_ids that tool results reference
+    """
     ids = set()
-    # Check parts for ToolCallPart
+    # Only look in response messages (where ToolCallPart lives)
+    kind = getattr(msg, 'kind', '')
+    if kind != 'response':
+        return ids
+    
     if hasattr(msg, 'parts'):
         for part in msg.parts:
-            if hasattr(part, 'tool_call_id'):
-                ids.add(part.tool_call_id)
-            # Also check for tool_name which indicates a tool call
-            if hasattr(part, 'tool_name') and hasattr(part, 'tool_call_id'):
-                ids.add(part.tool_call_id)
-    # Check tool_calls attribute directly
-    if hasattr(msg, 'tool_calls') and msg.tool_calls:
-        for tc in msg.tool_calls:
-            if hasattr(tc, 'id'):
-                ids.add(tc.id)
-            elif isinstance(tc, dict) and 'id' in tc:
-                ids.add(tc['id'])
+            part_kind = getattr(part, 'part_kind', '')
+            # ToolCallPart has part_kind='tool-call'
+            if part_kind == 'tool-call' and hasattr(part, 'tool_call_id'):
+                tc_id = part.tool_call_id
+                if tc_id:
+                    ids.add(tc_id)
     return ids
 
 
 def _get_tool_result_id(msg: Any) -> Optional[str]:
-    """Get the tool_call_id that this tool result responds to."""
-    # Check parts
+    """Get the tool_call_id that this ToolReturnPart responds to.
+    
+    In pydantic-ai:
+    - ModelRequest can contain ToolReturnPart (part_kind='tool-return')
+    - Each ToolReturnPart has tool_call_id referencing a ToolCallPart
+    """
     if hasattr(msg, 'parts'):
         for part in msg.parts:
-            if hasattr(part, 'tool_call_id'):
+            part_kind = getattr(part, 'part_kind', '')
+            # ToolReturnPart has part_kind='tool-return'
+            if part_kind == 'tool-return' and hasattr(part, 'tool_call_id'):
                 return part.tool_call_id
-    # Check direct attribute
-    if hasattr(msg, 'tool_call_id'):
-        return msg.tool_call_id
     return None
 
 
-def _is_tool_result(msg: Any) -> bool:
-    """Check if a message is a tool result."""
-    kind = getattr(msg, 'kind', '')
-    role = getattr(msg, 'role', '')
-    return (
-        kind == 'tool-result' or 
-        kind == 'tool' or
-        role == 'tool' or
-        (hasattr(msg, 'parts') and any(
-            hasattr(p, 'tool_call_id') and not hasattr(p, 'tool_name')
-            for p in msg.parts
-        ))
-    )
+def _is_tool_result_message(msg: Any) -> bool:
+    """Check if a message contains ToolReturnPart(s).
+    
+    In pydantic-ai:
+    - ModelRequest (kind='request') can contain ToolReturnPart
+    - ToolReturnPart has part_kind='tool-return'
+    """
+    if not hasattr(msg, 'parts'):
+        return False
+    
+    for part in msg.parts:
+        part_kind = getattr(part, 'part_kind', '')
+        if part_kind == 'tool-return':
+            return True
+    return False
 
 
 def apply_sliding_window(
@@ -370,7 +378,7 @@ def apply_sliding_window(
     for exchange in kept_exchanges:
         cleaned = []
         for msg in exchange:
-            if _is_tool_result(msg):
+            if _is_tool_result_message(msg):
                 result_id = _get_tool_result_id(msg)
                 if result_id and result_id not in valid_tool_call_ids:
                     # Orphaned tool result - skip it

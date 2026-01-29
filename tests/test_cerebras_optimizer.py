@@ -38,13 +38,13 @@ class MockPart:
     content: str
     tool_call_id: str = None
     tool_name: str = None
+    part_kind: str = "text"  # 'text', 'tool-call', or 'tool-return'
 
 
 @dataclass
 class MockMessage:
     parts: List[MockPart]
-    kind: str = "request"
-    tool_call_id: str = None  # For tool result messages
+    kind: str = "request"  # 'request', 'response', or 'system-prompt'
 
 
 def create_mock_messages(exchanges: int, tokens_per_msg: int = 1000) -> List[MockMessage]:
@@ -253,16 +253,19 @@ class TestSlidingWindow:
     
     def test_drops_orphaned_tool_results(self):
         """Should drop tool results whose tool_call was dropped."""
-        # Simulate a message history where we'd drop an exchange with tool_calls
-        # but the tool result references the dropped tool_call_id
+        # Simulate pydantic-ai message structure:
+        # - ModelResponse (kind='response') contains ToolCallPart (part_kind='tool-call')
+        # - ModelRequest (kind='request') contains ToolReturnPart (part_kind='tool-return')
         messages = [
-            # Exchange 1 (will be dropped) - has tool_call with id "tc_dropped"
+            # Exchange 1 (will be dropped) - user request
             MockMessage(parts=[MockPart("user request 1")], kind="request"),
-            MockMessage(parts=[MockPart("calling tool", tool_call_id="tc_dropped", tool_name="read_file")], kind="response"),
-            # Tool result for the dropped tool call
-            MockMessage(parts=[MockPart("file contents", tool_call_id="tc_dropped")], kind="tool-result", tool_call_id="tc_dropped"),
-            MockMessage(parts=[MockPart("here's the file")], kind="response"),
-            # Exchange 2 (kept)
+            # Assistant response with tool call
+            MockMessage(parts=[MockPart("calling read_file", tool_call_id="tc_dropped", tool_name="read_file", part_kind="tool-call")], kind="response"),
+            # Tool result in a request message (this is how pydantic-ai works)
+            MockMessage(parts=[MockPart("file contents", tool_call_id="tc_dropped", tool_name="read_file", part_kind="tool-return")], kind="request"),
+            # Assistant response after tool
+            MockMessage(parts=[MockPart("here is the file")], kind="response"),
+            # Exchange 2 (kept) - user request  
             MockMessage(parts=[MockPart("user request 2")], kind="request"),
             MockMessage(parts=[MockPart("response 2")], kind="response"),
             # Exchange 3 (kept)
@@ -277,10 +280,14 @@ class TestSlidingWindow:
         
         compacted, result = apply_sliding_window(messages, config, estimate)
         
-        # Should have dropped the orphaned tool-result (the one referencing tc_dropped)
+        # Should have dropped the orphaned tool-return (the one referencing tc_dropped)
         orphaned_results = [
             m for m in compacted 
-            if getattr(m, 'tool_call_id', None) == "tc_dropped"
+            if hasattr(m, 'parts') and any(
+                getattr(p, 'part_kind', '') == 'tool-return' and
+                getattr(p, 'tool_call_id', '') == 'tc_dropped'
+                for p in m.parts
+            )
         ]
         assert len(orphaned_results) == 0, "Orphaned tool results should be dropped"
         
