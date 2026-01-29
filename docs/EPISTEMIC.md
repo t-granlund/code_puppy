@@ -2,6 +2,8 @@
 
 Code Puppy now includes the **Epistemic Agent Runtime** — a structured methodology for building software through evidence-based reasoning.
 
+> **The Core Insight:** Write down what you believe, how confident you are, and how you'd prove yourself wrong. That's it. Everything else — lenses, gates, the Ralph loop — is machinery to make that practice systematic and scalable.
+
 ## 🧠 What is EAR?
 
 EAR provides a rigorous, 12-stage pipeline for going from idea → validated specs → working product:
@@ -13,7 +15,35 @@ Idea → Epistemic State → Lens Evaluation → Gap Analysis → Goal Emergence
 
 **Core Philosophy: Emergence-first → Lens-driven → Goal-earned → Commit**
 
-## 🚀 Quick Start
+## � The Sibling Folder Pattern
+
+EAR uses a **read-only template + spawned project** architecture:
+
+```
+parent-folder/
+├── epistemic-project-template/    ← READ-ONLY reference (methodology)
+│   ├── CLAUDE.md                  ← Agent instructions
+│   ├── philosophy/                ← EAR philosophy
+│   ├── ear-runtime/               ← Python EAR library
+│   ├── process/                   ← Methodology docs
+│   └── templates/                 ← Blank scaffolds
+│
+└── your-new-project/              ← WHERE WORK HAPPENS (spawned)
+    ├── README.md
+    ├── BUILD.md
+    ├── epistemic/                 ← Your project's epistemic state
+    ├── docs/                      ← Your analysis documents
+    ├── specs/                     ← Your validated specifications
+    └── src/                       ← Your actual code
+```
+
+**Why this matters:**
+- **Template stays pristine** — You never corrupt methodology with project-specific stuff
+- **Agent can reference both** — Works in your project but can look back at template for philosophy
+- **Reusable** — Next project? Same template, new sibling folder
+- **State versioning** — Track how understanding evolves over time ("git for beliefs")
+
+## �🚀 Quick Start
 
 ### 1. Switch to the Epistemic Architect Agent
 
@@ -202,6 +232,72 @@ generator = GoalGenerator(state)
 candidates = generator.generate_candidates()
 gatekeeper = GateKeeper()
 approved = gatekeeper.filter_passing(candidates, state)
+```
+
+## 📊 4-Tier Adoption Model
+
+EAR scales from solo projects to enterprise:
+
+| Tier | Context | How EAR Helps |
+|------|---------|---------------|
+| **Tier 1** | Solo projects / prototypes | `ear init` scaffolds epistemic state. Run gap analysis to find what you haven't thought about. "What don't I know?" |
+| **Tier 2** | Team projects / MVPs | Lenses in sprint planning. Track assumptions as first-class citizens with confidence scores. Test gates before shipping. |
+| **Tier 3** | Production systems | Custom domain lenses (e.g., ComplianceLens). Automate epistemic state updates from A/B tests. Version your epistemic state. 600-line file cap. |
+| **Tier 4** | Enterprise / multi-service | Per-service epistemic states. Cross-service dependency tracking via topology lens. Monthly "Epistemic Review" meetings. Governance gates before major decisions. |
+
+## 🏭 Production Integration
+
+For existing production systems, EAR works as an **overlay methodology** — not a rewrite:
+
+### 1. Wrap Existing Decisions
+
+Document what you currently assume is true about your product:
+
+```python
+state = EpistemicState()
+state.add_assumption(
+    content="Users prefer speed over accuracy",
+    source="2024 user research",
+    confidence=0.7
+)
+```
+
+### 2. Run Lenses Against Current State
+
+Let the 7 lenses find gaps you haven't considered:
+- Safety risks not yet mitigated
+- Metrics you aren't measuring
+- Assumptions you haven't validated
+
+### 3. Use Gates Before Major Changes
+
+Before a feature launch, require the 6-gate protocol:
+- Does it have measurable outcomes?
+- Clear success criteria?
+- Rollback plan?
+- Sufficient confidence?
+- Lens agreement?
+- Evidence grounding?
+
+### 4. Automate with CI
+
+Run epistemic health checks in your pipeline:
+
+```bash
+# In CI pipeline
+ear status --format json > epistemic-report.json
+```
+
+Publish epistemic health dashboards alongside your normal metrics.
+
+### 5. Version Your Epistemic State
+
+Track how your team's understanding evolves:
+
+```bash
+# State commits (like git for beliefs)
+ear commit -m "Updated user retention hypothesis after A/B test"
+ear diff HEAD~1  # See what changed
 ```
 
 ## 🤝 Integration with Other Agents
