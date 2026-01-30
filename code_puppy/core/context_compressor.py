@@ -440,3 +440,134 @@ class ContextCompressor:
     def clear_cache(self) -> None:
         """Clear compression cache."""
         self._cache.clear()
+
+    # =========================================================================
+    # AST Slicing (Extract specific symbols)
+    # =========================================================================
+
+    def slice_context(
+        self,
+        source: str,
+        target_symbol: str,
+        include_dependencies: bool = True,
+    ) -> Optional[str]:
+        """Extract ONLY the relevant function/class for a specific symbol.
+
+        This is more efficient than returning the full file when
+        only one function/class needs modification.
+
+        Args:
+            source: Python source code
+            target_symbol: Name of function, class, or method to extract
+                         For methods, use "ClassName.method_name"
+            include_dependencies: If True, include imports and referenced symbols
+
+        Returns:
+            Sliced source containing only the target symbol,
+            or None if symbol not found
+        """
+        try:
+            tree = ast.parse(source)
+        except SyntaxError:
+            return None
+
+        lines = source.splitlines()
+        result_parts: List[str] = []
+        found = False
+
+        # Track imports (always include if dependencies requested)
+        import_lines: List[str] = []
+        for node in ast.walk(tree):
+            if isinstance(node, (ast.Import, ast.ImportFrom)):
+                if hasattr(node, 'lineno') and hasattr(node, 'end_lineno'):
+                    import_lines.extend(lines[node.lineno - 1:node.end_lineno])
+
+        # Parse target symbol
+        if "." in target_symbol:
+            class_name, method_name = target_symbol.split(".", 1)
+        else:
+            class_name = None
+            method_name = target_symbol
+
+        # Find the target
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ClassDef):
+                if class_name and node.name == class_name:
+                    # Looking for a method within this class
+                    for item in node.body:
+                        if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                            if item.name == method_name:
+                                # Extract class header + method
+                                class_header = lines[node.lineno - 1]
+                                method_lines = lines[item.lineno - 1:item.end_lineno]
+                                result_parts.append(class_header)
+                                result_parts.append("    # ... (class body trimmed)")
+                                result_parts.extend(method_lines)
+                                found = True
+                                break
+                    if found:
+                        break
+                elif node.name == target_symbol:
+                    # Extract entire class
+                    class_lines = lines[node.lineno - 1:node.end_lineno]
+                    result_parts.extend(class_lines)
+                    found = True
+                    break
+
+            elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                if node.name == target_symbol and not class_name:
+                    # Extract standalone function
+                    func_lines = lines[node.lineno - 1:node.end_lineno]
+                    result_parts.extend(func_lines)
+                    found = True
+                    break
+
+        if not found:
+            return None
+
+        # Combine imports + target
+        if include_dependencies and import_lines:
+            return "\n".join(import_lines) + "\n\n" + "\n".join(result_parts)
+        else:
+            return "\n".join(result_parts)
+
+    def find_symbol_location(
+        self,
+        source: str,
+        symbol_name: str,
+    ) -> Optional[Tuple[int, int]]:
+        """Find the line range for a symbol in source code.
+
+        Args:
+            source: Python source code
+            symbol_name: Name of function or class
+
+        Returns:
+            (start_line, end_line) 1-indexed, or None if not found
+        """
+        try:
+            tree = ast.parse(source)
+        except SyntaxError:
+            return None
+
+        if "." in symbol_name:
+            class_name, method_name = symbol_name.split(".", 1)
+        else:
+            class_name = None
+            method_name = symbol_name
+
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ClassDef):
+                if class_name and node.name == class_name:
+                    for item in node.body:
+                        if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                            if item.name == method_name:
+                                return (item.lineno, item.end_lineno)
+                elif node.name == symbol_name and not class_name:
+                    return (node.lineno, node.end_lineno)
+
+            elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                if node.name == symbol_name and not class_name:
+                    return (node.lineno, node.end_lineno)
+
+        return None

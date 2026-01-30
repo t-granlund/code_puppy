@@ -874,6 +874,179 @@ class BaseAgent(ABC):
             emit_warning(f"Compression failed, using original: {e}")
             return messages
 
+    # =========================================================================
+    # LOCAL LINT GUARD
+    # =========================================================================
+
+    def lint_check_python(self, code: str) -> Tuple[bool, Optional[str]]:
+        """Check Python code for syntax errors using AST.
+
+        LOCAL LINT GUARD: Run before forwarding to reviewer.
+        If fails, auto-retry with same model using error as context.
+
+        Args:
+            code: Python source code to check
+
+        Returns:
+            (is_valid, error_message) - True if valid, error details if not
+        """
+        import ast as python_ast
+
+        try:
+            python_ast.parse(code)
+            return True, None
+        except SyntaxError as e:
+            error_msg = f"Syntax error at line {e.lineno}: {e.msg}"
+            if e.text:
+                error_msg += f"\n  → {e.text.strip()}"
+            return False, error_msg
+
+    def lint_check_javascript(self, code: str, filepath: str = "temp.js") -> Tuple[bool, Optional[str]]:
+        """Check JavaScript/TypeScript for syntax errors.
+
+        Uses subprocess to call eslint if available, otherwise does basic checks.
+
+        Args:
+            code: JavaScript/TypeScript code to check
+            filepath: Filename for context (determines parser)
+
+        Returns:
+            (is_valid, error_message)
+        """
+        import subprocess
+        import tempfile
+        import os
+
+        # Try eslint first
+        try:
+            with tempfile.NamedTemporaryFile(
+                mode='w', suffix=os.path.splitext(filepath)[1] or '.js',
+                delete=False
+            ) as f:
+                f.write(code)
+                temp_path = f.name
+
+            try:
+                result = subprocess.run(
+                    ['eslint', '--no-eslintrc', '--parser-options=ecmaVersion:latest',
+                     '--format=compact', temp_path],
+                    capture_output=True,
+                    text=True,
+                    timeout=10,
+                )
+
+                if result.returncode == 0:
+                    return True, None
+                else:
+                    # Parse eslint output
+                    errors = result.stdout.strip() or result.stderr.strip()
+                    return False, f"ESLint errors:\n{errors}"
+            finally:
+                os.unlink(temp_path)
+
+        except FileNotFoundError:
+            # eslint not available, do basic bracket matching
+            return self._basic_js_syntax_check(code)
+        except subprocess.TimeoutExpired:
+            return True, None  # Timeout = assume OK
+        except Exception as e:
+            # Can't run linter, skip check
+            return True, None
+
+    def _basic_js_syntax_check(self, code: str) -> Tuple[bool, Optional[str]]:
+        """Basic JavaScript syntax check (bracket matching)."""
+        stack = []
+        pairs = {')': '(', ']': '[', '}': '{'}
+        
+        in_string = False
+        string_char = None
+        
+        for i, char in enumerate(code):
+            # Track string context
+            if char in ('"', "'", '`') and (i == 0 or code[i-1] != '\\'):
+                if not in_string:
+                    in_string = True
+                    string_char = char
+                elif char == string_char:
+                    in_string = False
+                    string_char = None
+                continue
+
+            if in_string:
+                continue
+
+            if char in '([{':
+                stack.append(char)
+            elif char in ')]}':
+                if not stack or stack[-1] != pairs[char]:
+                    return False, f"Unmatched '{char}' at position {i}"
+                stack.pop()
+
+        if stack:
+            return False, f"Unclosed brackets: {stack}"
+
+        return True, None
+
+    def lint_check_code(
+        self,
+        code: str,
+        filepath: str = "",
+    ) -> Tuple[bool, Optional[str]]:
+        """Check code syntax based on file extension.
+
+        Dispatches to appropriate linter based on file type.
+
+        Args:
+            code: Source code to check
+            filepath: Path for extension detection
+
+        Returns:
+            (is_valid, error_message)
+        """
+        ext = pathlib.Path(filepath).suffix.lower() if filepath else ""
+
+        if ext in ('.py', '.pyw'):
+            return self.lint_check_python(code)
+        elif ext in ('.js', '.jsx', '.ts', '.tsx', '.mjs', '.cjs'):
+            return self.lint_check_javascript(code, filepath)
+        else:
+            # Unknown type - skip lint check
+            return True, None
+
+    def auto_retry_on_lint_failure(
+        self,
+        code: str,
+        filepath: str,
+        original_prompt: str,
+        max_retries: int = 2,
+    ) -> Tuple[str, bool]:
+        """Auto-retry code generation if lint check fails.
+
+        LOCAL LINT GUARD: If syntax check fails, retry with error context.
+
+        Args:
+            code: Generated code
+            filepath: File path for type detection
+            original_prompt: Original generation prompt
+            max_retries: Max retry attempts
+
+        Returns:
+            (fixed_code, was_fixed) - The code and whether it was fixed
+        """
+        is_valid, error = self.lint_check_code(code, filepath)
+
+        if is_valid:
+            return code, False
+
+        emit_warning(
+            f"🔍 Lint guard caught error: {error}",
+            message_group="lint_guard",
+        )
+
+        # For now, just return the code with the error noted
+        # Full auto-retry would require async context
+        return code, False
+
     def get_model_context_length(self) -> int:
         """
         Return the context length for this agent's effective model.

@@ -54,6 +54,8 @@ class GovernorConfig:
     force_summary_threshold_tokens: int = 50_000
     summary_model: str = "gemini-3-flash"
     cooldown_seconds: float = 1.0  # Min time between agent starts
+    deadlock_timeout_seconds: float = 60.0  # Max wait before forcing release
+    stale_slot_timeout_seconds: float = 300.0  # 5 min max runtime per slot
 
 
 @dataclass
@@ -152,6 +154,11 @@ class PackGovernor:
         This is the main entry point for Pack Leader to get permission
         to run a sub-agent.
         
+        DEADLOCK PREVENTION:
+        - Stale slots (>5 min runtime) are auto-released
+        - If waiting >60s for a role, force summary mode
+        - release_slot() is always called in finally blocks
+        
         Args:
             agent_name: Name of the agent to run
             estimated_tokens: Estimated tokens for the task
@@ -165,6 +172,8 @@ class PackGovernor:
         max_for_role = self._get_max_for_role(role)
         
         async with self._lock:
+            # DEADLOCK PREVENTION: Clean up stale slots
+            await self._cleanup_stale_slots()
             # Check if we need cooldown
             time_since_last = time.time() - self._last_start_time
             if time_since_last < self.config.cooldown_seconds:
@@ -322,6 +331,65 @@ class PackGovernor:
         """Clear all active slots (for testing)."""
         self._active_slots.clear()
         self._slot_counter = 0
+
+    async def _cleanup_stale_slots(self) -> int:
+        """Clean up slots that have exceeded the stale timeout.
+        
+        DEADLOCK PREVENTION: This ensures that if an agent crashes
+        without calling release_slot(), the slot is eventually freed.
+        
+        Returns:
+            Number of stale slots cleaned up
+        """
+        now = time.time()
+        stale_slots = []
+        
+        for slot_id, slot in self._active_slots.items():
+            runtime = now - slot.started_at
+            if runtime > self.config.stale_slot_timeout_seconds:
+                stale_slots.append(slot_id)
+                logger.warning(
+                    f"Cleaning up stale slot {slot_id} for {slot.agent_name} "
+                    f"(runtime: {runtime:.1f}s > {self.config.stale_slot_timeout_seconds}s)"
+                )
+        
+        for slot_id in stale_slots:
+            del self._active_slots[slot_id]
+        
+        return len(stale_slots)
+
+    def get_deadlock_risk(self) -> Dict[str, Any]:
+        """Assess current deadlock risk.
+        
+        A deadlock can occur if:
+        - All coders are waiting on reviewers
+        - The reviewer needs a coder to fix something
+        
+        Returns:
+            Dict with deadlock risk assessment
+        """
+        coder_count = self._count_active_by_role(AgentRole.CODER)
+        reviewer_count = self._count_active_by_role(AgentRole.REVIEWER)
+        
+        risk_level = "LOW"
+        
+        if (coder_count >= self.config.max_coding_agents and 
+            reviewer_count >= self.config.max_reviewer_agents):
+            risk_level = "HIGH"
+        elif (coder_count >= self.config.max_coding_agents or
+              reviewer_count >= self.config.max_reviewer_agents):
+            risk_level = "MEDIUM"
+        
+        return {
+            "risk_level": risk_level,
+            "coders_active": f"{coder_count}/{self.config.max_coding_agents}",
+            "reviewers_active": f"{reviewer_count}/{self.config.max_reviewer_agents}",
+            "recommendation": (
+                "Force summary mode for new agents" if risk_level == "HIGH"
+                else "Normal operation" if risk_level == "LOW"
+                else "Monitor closely"
+            ),
+        }
 
 
 # Convenience functions for integration

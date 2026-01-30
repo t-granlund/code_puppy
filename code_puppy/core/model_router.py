@@ -520,3 +520,86 @@ class ModelRouter:
         """Get the primary model for a specific tier."""
         tier_models = self._get_tier_models(tier)
         return tier_models[0] if tier_models else None
+
+    # =========================================================================
+    # PROMPT ADAPTATION
+    # =========================================================================
+
+    # Personality text patterns to strip for Sprinter models
+    PERSONALITY_PATTERNS = [
+        r"You are [a-zA-Z\s]+\. ",  # "You are a helpful assistant."
+        r"\bfriendly\b",
+        r"\bhelpful\b",
+        r"\bpolite\b",
+        r"\bpersonality\b",
+        r"Please feel free to[^.]+\.",
+        r"Don't hesitate to[^.]+\.",
+        r"You're here to help[^.]+\.",
+    ]
+
+    # Suffixes for different tiers
+    TIER_SUFFIXES = {
+        ModelTier.SPRINTER: "\n\n[STRICT OUTPUT MODE: CODE ONLY. NO EXPLANATIONS. NO COMMENTARY.]",
+        ModelTier.ARCHITECT: "",  # Keep full instructions for Architect
+        ModelTier.LIBRARIAN: "\n\n[CONCISE MODE: Summarize efficiently.]",
+    }
+
+    def adapt_prompt(self, prompt: str, tier: ModelTier) -> str:
+        """Adapt system prompt based on target model tier.
+
+        For Sprinter (Cerebras):
+        - Strip personality text to reduce tokens
+        - Append strict output mode directive
+
+        For Architect (Claude Opus):
+        - Keep full architectural reasoning
+
+        For Librarian (Gemini):
+        - Add concise mode directive
+
+        Args:
+            prompt: Original system prompt
+            tier: Target model tier
+
+        Returns:
+            Adapted prompt for the target tier
+        """
+        if tier == ModelTier.SPRINTER:
+            # Strip personality text for maximum token efficiency
+            adapted = prompt
+            for pattern in self.PERSONALITY_PATTERNS:
+                adapted = re.sub(pattern, "", adapted, flags=re.IGNORECASE)
+            
+            # Remove excessive whitespace
+            adapted = re.sub(r"\n{3,}", "\n\n", adapted)
+            adapted = re.sub(r" {2,}", " ", adapted)
+            
+            # Add strict output suffix
+            adapted = adapted.strip() + self.TIER_SUFFIXES[tier]
+            return adapted
+
+        elif tier == ModelTier.ARCHITECT:
+            # Architect gets full context - no modifications
+            return prompt
+
+        elif tier == ModelTier.LIBRARIAN:
+            # Librarian gets concise mode
+            return prompt.strip() + self.TIER_SUFFIXES.get(tier, "")
+
+        # Default: return as-is
+        return prompt
+
+    def estimate_prompt_savings(self, original: str, tier: ModelTier) -> int:
+        """Estimate token savings from prompt adaptation.
+
+        Args:
+            original: Original prompt
+            tier: Target tier
+
+        Returns:
+            Estimated tokens saved
+        """
+        adapted = self.adapt_prompt(original, tier)
+        original_tokens = len(original) // 4
+        adapted_tokens = len(adapted) // 4
+        return max(0, original_tokens - adapted_tokens)
