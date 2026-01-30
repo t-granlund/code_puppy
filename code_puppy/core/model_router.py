@@ -1,0 +1,522 @@
+"""Model Router - The Brain.
+
+Routes tasks to the optimal model based on:
+- Task type and complexity
+- Provider availability and budget
+- Model capabilities and cost
+
+Tier Hierarchy:
+- Tier 5 (Sprinter): Cerebras GLM 4.7 - High-volume, fast generation
+- Tier 4 (Librarian): Gemini 3 Flash/Pro - Context, search, summarization
+- Tier 3/2 (Builders): Codex 5.2 / Sonnet 4.5 - Complex logic
+- Tier 1 (Architect): Claude Opus 4.5 - Planning, security, QA
+"""
+
+import json
+import logging
+import re
+from dataclasses import dataclass
+from enum import Enum
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+
+from .token_budget import TokenBudgetManager
+
+logger = logging.getLogger(__name__)
+
+
+class ModelTier(Enum):
+    """Model tiers from most expensive/capable to cheapest/fastest."""
+    
+    ARCHITECT = 1  # Claude Opus 4.5 - Planning, security, QA
+    BUILDER_HIGH = 2  # Codex 5.2 - Complex logic
+    BUILDER_MID = 3  # Sonnet 4.5 - Refactoring, design
+    LIBRARIAN = 4  # Gemini 3 - Context, search
+    SPRINTER = 5  # Cerebras GLM - High-volume code
+
+
+class TaskType(Enum):
+    """Types of tasks for routing decisions."""
+    
+    # Tier 1 tasks (Architect)
+    PLANNING = "planning"
+    SECURITY_AUDIT = "security_audit"
+    CONFLICT_RESOLUTION = "conflict_resolution"
+    FINAL_QA = "final_qa"
+    
+    # Tier 2/3 tasks (Builders)
+    COMPLEX_REFACTORING = "complex_refactoring"
+    CLASS_DESIGN = "class_design"
+    ALGORITHM_IMPLEMENTATION = "algorithm_implementation"
+    API_DESIGN = "api_design"
+    
+    # Tier 4 tasks (Librarian)
+    CONTEXT_SEARCH = "context_search"
+    SUMMARIZATION = "summarization"
+    LOG_ANALYSIS = "log_analysis"
+    DOCUMENTATION = "documentation"
+    
+    # Tier 5 tasks (Sprinter)
+    CODE_GENERATION = "code_generation"
+    SYNTAX_FIXING = "syntax_fixing"
+    LINTING = "linting"
+    UNIT_TESTS = "unit_tests"
+    BOILERPLATE = "boilerplate"
+    
+    UNKNOWN = "unknown"
+
+
+class TaskComplexity(Enum):
+    """Complexity levels for fine-grained routing."""
+    
+    LOW = "low"  # Simple, repetitive tasks
+    MEDIUM = "medium"  # Standard development tasks
+    HIGH = "high"  # Complex logic, careful consideration
+    CRITICAL = "critical"  # Security-sensitive, architectural
+
+
+@dataclass
+class ModelConfig:
+    """Configuration for a specific model."""
+    
+    name: str  # e.g., "cerebras-glm-4.7"
+    provider: str  # e.g., "cerebras"
+    tier: ModelTier
+    max_context: int  # Max input tokens
+    max_output: int  # Max output tokens
+    cost_per_1k_input: float  # Cost in USD
+    cost_per_1k_output: float
+    supports_context_caching: bool = False
+    context_cache_threshold: int = 30_000  # Min tokens for caching
+
+
+@dataclass
+class RoutingDecision:
+    """Result of routing decision."""
+    
+    model: str
+    provider: str
+    tier: ModelTier
+    task_type: TaskType
+    complexity: TaskComplexity
+    estimated_tokens: int
+    reason: str
+    fallback_model: Optional[str] = None
+
+
+class ModelRouter:
+    """Routes tasks to the optimal model based on task characteristics.
+    
+    Uses a tiered approach:
+    1. Detect task type from prompt/context
+    2. Assess complexity
+    3. Check budget availability
+    4. Route to appropriate tier with fallback
+    """
+    
+    # Default model configurations
+    DEFAULT_MODELS: Dict[str, ModelConfig] = {
+        # Tier 5: Sprinter
+        "cerebras-glm-4.7": ModelConfig(
+            name="cerebras-glm-4.7",
+            provider="cerebras",
+            tier=ModelTier.SPRINTER,
+            max_context=50_000,
+            max_output=4_000,
+            cost_per_1k_input=0.0,  # Free tier
+            cost_per_1k_output=0.0,
+        ),
+        # Tier 4: Librarian
+        "gemini-3-flash": ModelConfig(
+            name="gemini-3-flash",
+            provider="gemini_flash",
+            tier=ModelTier.LIBRARIAN,
+            max_context=1_000_000,
+            max_output=8_000,
+            cost_per_1k_input=0.0001,
+            cost_per_1k_output=0.0004,
+            supports_context_caching=True,
+            context_cache_threshold=30_000,
+        ),
+        "gemini-3-pro": ModelConfig(
+            name="gemini-3-pro",
+            provider="gemini",
+            tier=ModelTier.LIBRARIAN,
+            max_context=2_000_000,
+            max_output=8_000,
+            cost_per_1k_input=0.00025,
+            cost_per_1k_output=0.001,
+            supports_context_caching=True,
+            context_cache_threshold=30_000,
+        ),
+        # Tier 2/3: Builders
+        "chatgpt-codex-5.2": ModelConfig(
+            name="chatgpt-codex-5.2",
+            provider="codex",
+            tier=ModelTier.BUILDER_HIGH,
+            max_context=128_000,
+            max_output=16_000,
+            cost_per_1k_input=0.003,
+            cost_per_1k_output=0.015,
+        ),
+        "claude-sonnet-4.5": ModelConfig(
+            name="claude-sonnet-4.5",
+            provider="claude_sonnet",
+            tier=ModelTier.BUILDER_MID,
+            max_context=200_000,
+            max_output=16_000,
+            cost_per_1k_input=0.003,
+            cost_per_1k_output=0.015,
+        ),
+        # Tier 1: Architect
+        "claude-opus-4.5": ModelConfig(
+            name="claude-opus-4.5",
+            provider="claude_opus",
+            tier=ModelTier.ARCHITECT,
+            max_context=200_000,
+            max_output=16_000,
+            cost_per_1k_input=0.015,
+            cost_per_1k_output=0.075,
+        ),
+    }
+    
+    # Task type to tier mapping
+    TASK_TIER_MAP: Dict[TaskType, ModelTier] = {
+        # Tier 1: Architect
+        TaskType.PLANNING: ModelTier.ARCHITECT,
+        TaskType.SECURITY_AUDIT: ModelTier.ARCHITECT,
+        TaskType.CONFLICT_RESOLUTION: ModelTier.ARCHITECT,
+        TaskType.FINAL_QA: ModelTier.ARCHITECT,
+        
+        # Tier 2: Builder High
+        TaskType.COMPLEX_REFACTORING: ModelTier.BUILDER_HIGH,
+        TaskType.ALGORITHM_IMPLEMENTATION: ModelTier.BUILDER_HIGH,
+        
+        # Tier 3: Builder Mid
+        TaskType.CLASS_DESIGN: ModelTier.BUILDER_MID,
+        TaskType.API_DESIGN: ModelTier.BUILDER_MID,
+        
+        # Tier 4: Librarian
+        TaskType.CONTEXT_SEARCH: ModelTier.LIBRARIAN,
+        TaskType.SUMMARIZATION: ModelTier.LIBRARIAN,
+        TaskType.LOG_ANALYSIS: ModelTier.LIBRARIAN,
+        TaskType.DOCUMENTATION: ModelTier.LIBRARIAN,
+        
+        # Tier 5: Sprinter
+        TaskType.CODE_GENERATION: ModelTier.SPRINTER,
+        TaskType.SYNTAX_FIXING: ModelTier.SPRINTER,
+        TaskType.LINTING: ModelTier.SPRINTER,
+        TaskType.UNIT_TESTS: ModelTier.SPRINTER,
+        TaskType.BOILERPLATE: ModelTier.SPRINTER,
+        
+        TaskType.UNKNOWN: ModelTier.BUILDER_MID,  # Safe default
+    }
+    
+    # Patterns for task detection
+    TASK_PATTERNS: Dict[TaskType, List[str]] = {
+        # Tier 1
+        TaskType.PLANNING: [
+            r"\bplan\b", r"\barchitecture\b", r"\bdesign\s+system\b",
+            r"\bhigh[\s-]?level\b", r"\bstrategy\b", r"\broadmap\b",
+        ],
+        TaskType.SECURITY_AUDIT: [
+            r"\bsecurity\b", r"\baudit\b", r"\bvulnerab", r"\bcve\b",
+            r"\binjection\b", r"\bxss\b", r"\bauth\w*\s+flaw",
+        ],
+        TaskType.CONFLICT_RESOLUTION: [
+            r"\bconflict\b", r"\bmerge\b", r"\bresolve\b", r"\bdispute\b",
+        ],
+        TaskType.FINAL_QA: [
+            r"\bfinal\s+review\b", r"\bqa\b", r"\bquality\s+assurance\b",
+            r"\brelease\s+check\b", r"\bpre[\s-]?merge\b",
+        ],
+        
+        # Tier 2/3
+        TaskType.COMPLEX_REFACTORING: [
+            r"\brefactor\b.*\b(complex|major|significant)\b",
+            r"\b(complex|major)\b.*\brefactor\b",
+            r"\brewrite\b", r"\bredesign\b",
+        ],
+        TaskType.CLASS_DESIGN: [
+            r"\bclass\b.*\bdesign\b", r"\binterface\b", r"\babstract\b",
+            r"\binheritance\b", r"\bpolymorphism\b",
+        ],
+        TaskType.ALGORITHM_IMPLEMENTATION: [
+            r"\balgorithm\b", r"\boptimize\b", r"\btime\s+complexity\b",
+            r"\bspace\s+complexity\b", r"\bdata\s+structure\b",
+        ],
+        TaskType.API_DESIGN: [
+            r"\bapi\b.*\bdesign\b", r"\bendpoint\b", r"\brest\b",
+            r"\bgraphql\b", r"\bschema\b",
+        ],
+        
+        # Tier 4
+        TaskType.CONTEXT_SEARCH: [
+            r"\bsearch\b", r"\bfind\b", r"\bgrep\b", r"\blocate\b",
+            r"\bwhere\s+is\b", r"\blook\s+for\b",
+        ],
+        TaskType.SUMMARIZATION: [
+            r"\bsummar", r"\bdigest\b", r"\boverview\b", r"\btl;?dr\b",
+            r"\bbrief\b", r"\bcondense\b",
+        ],
+        TaskType.LOG_ANALYSIS: [
+            r"\blog\b", r"\btrace\b", r"\bdebug\b", r"\berror\s+message\b",
+            r"\bstack\s*trace\b",
+        ],
+        TaskType.DOCUMENTATION: [
+            r"\bdoc\b", r"\bcomment\b", r"\breadme\b", r"\bexplain\b",
+            r"\bdocstring\b",
+        ],
+        
+        # Tier 5
+        TaskType.CODE_GENERATION: [
+            r"\bwrite\b", r"\bcreate\b", r"\bimplement\b", r"\bbuild\b",
+            r"\bgenerate\b", r"\badd\b.*\bfunction\b",
+        ],
+        TaskType.SYNTAX_FIXING: [
+            r"\bfix\b.*\bsyntax\b", r"\bsyntax\s+error\b", r"\bparse\s+error\b",
+            r"\btypo\b", r"\bmissing\b.*\b(bracket|paren|semicolon)\b",
+        ],
+        TaskType.LINTING: [
+            r"\blint\b", r"\bformat\b", r"\bstyle\b", r"\bprettier\b",
+            r"\bblack\b", r"\bflake8\b", r"\beslint\b",
+        ],
+        TaskType.UNIT_TESTS: [
+            r"\btest\b", r"\bunittest\b", r"\bpytest\b", r"\bspec\b",
+            r"\bassertion\b", r"\bmock\b",
+        ],
+        TaskType.BOILERPLATE: [
+            r"\bboilerplate\b", r"\bscaffold\b", r"\btemplate\b",
+            r"\bstarter\b", r"\bskeleton\b",
+        ],
+    }
+    
+    def __init__(self, extra_models_path: Optional[Path] = None):
+        """Initialize router with optional extra models config.
+        
+        Args:
+            extra_models_path: Path to extra_models.json for custom configs
+        """
+        self._models = dict(self.DEFAULT_MODELS)
+        self._budget_mgr = TokenBudgetManager()
+        
+        if extra_models_path:
+            self._load_extra_models(extra_models_path)
+    
+    def _load_extra_models(self, path: Path) -> None:
+        """Load additional model configurations from JSON file."""
+        try:
+            with open(path) as f:
+                extra = json.load(f)
+            
+            for name, config in extra.get("models", {}).items():
+                self._models[name] = ModelConfig(
+                    name=name,
+                    provider=config.get("provider", name),
+                    tier=ModelTier[config.get("tier", "BUILDER_MID").upper()],
+                    max_context=config.get("max_context", 100_000),
+                    max_output=config.get("max_output", 4_000),
+                    cost_per_1k_input=config.get("cost_per_1k_input", 0.001),
+                    cost_per_1k_output=config.get("cost_per_1k_output", 0.003),
+                    supports_context_caching=config.get("supports_context_caching", False),
+                    context_cache_threshold=config.get("context_cache_threshold", 30_000),
+                )
+            
+            logger.info(f"Loaded {len(extra.get('models', {}))} extra models from {path}")
+        except Exception as e:
+            logger.warning(f"Failed to load extra models from {path}: {e}")
+    
+    def detect_task_type(self, prompt: str, context: Optional[str] = None) -> TaskType:
+        """Detect task type from prompt and optional context.
+        
+        Args:
+            prompt: The user's prompt/request
+            context: Optional additional context
+            
+        Returns:
+            Detected TaskType
+        """
+        text = (prompt + " " + (context or "")).lower()
+        
+        for task_type, patterns in self.TASK_PATTERNS.items():
+            for pattern in patterns:
+                if re.search(pattern, text, re.IGNORECASE):
+                    return task_type
+        
+        return TaskType.UNKNOWN
+    
+    def assess_complexity(
+        self,
+        prompt: str,
+        context: Optional[str] = None,
+        file_count: int = 0,
+    ) -> TaskComplexity:
+        """Assess task complexity based on various signals.
+        
+        Args:
+            prompt: The user's prompt/request
+            context: Optional additional context
+            file_count: Number of files involved
+            
+        Returns:
+            Assessed TaskComplexity
+        """
+        text = (prompt + " " + (context or "")).lower()
+        score = 0
+        
+        # Length signals
+        if len(prompt) > 500:
+            score += 1
+        if len(prompt) > 1000:
+            score += 1
+        
+        # Multi-file operations
+        if file_count > 3:
+            score += 1
+        if file_count > 10:
+            score += 2
+        
+        # Complexity keywords
+        complex_keywords = [
+            r"\bcomplex\b", r"\btricky\b", r"\bcareful\b", r"\bsensitive\b",
+            r"\bcritical\b", r"\bsecurity\b", r"\bperformance\b", r"\bscalable\b",
+        ]
+        for kw in complex_keywords:
+            if re.search(kw, text):
+                score += 1
+        
+        # Simple keywords (negative score)
+        simple_keywords = [
+            r"\bsimple\b", r"\bquick\b", r"\beasy\b", r"\bbasic\b",
+            r"\bjust\b", r"\bonly\b",
+        ]
+        for kw in simple_keywords:
+            if re.search(kw, text):
+                score -= 1
+        
+        # Map score to complexity
+        if score <= 0:
+            return TaskComplexity.LOW
+        elif score <= 2:
+            return TaskComplexity.MEDIUM
+        elif score <= 4:
+            return TaskComplexity.HIGH
+        else:
+            return TaskComplexity.CRITICAL
+    
+    def _get_tier_models(self, tier: ModelTier) -> List[ModelConfig]:
+        """Get all models at a specific tier."""
+        return [m for m in self._models.values() if m.tier == tier]
+    
+    def _get_fallback_tier(self, tier: ModelTier) -> Optional[ModelTier]:
+        """Get fallback tier when primary is unavailable."""
+        fallbacks = {
+            ModelTier.SPRINTER: ModelTier.LIBRARIAN,  # Cerebras → Gemini Flash
+            ModelTier.LIBRARIAN: ModelTier.BUILDER_MID,  # Gemini → Sonnet
+            ModelTier.BUILDER_MID: ModelTier.BUILDER_HIGH,  # Sonnet → Codex
+            ModelTier.BUILDER_HIGH: ModelTier.ARCHITECT,  # Codex → Opus
+            ModelTier.ARCHITECT: None,  # No fallback for top tier
+        }
+        return fallbacks.get(tier)
+    
+    def route(
+        self,
+        prompt: str,
+        context: Optional[str] = None,
+        file_count: int = 0,
+        estimated_tokens: int = 10_000,
+        force_tier: Optional[ModelTier] = None,
+    ) -> RoutingDecision:
+        """Route a task to the optimal model.
+        
+        Args:
+            prompt: The user's prompt/request
+            context: Optional additional context
+            file_count: Number of files involved
+            estimated_tokens: Estimated total tokens
+            force_tier: Force routing to specific tier (override auto-detection)
+            
+        Returns:
+            RoutingDecision with model selection and reasoning
+        """
+        # Detect task and complexity
+        task_type = self.detect_task_type(prompt, context)
+        complexity = self.assess_complexity(prompt, context, file_count)
+        
+        # Determine target tier
+        if force_tier:
+            target_tier = force_tier
+        else:
+            target_tier = self.TASK_TIER_MAP.get(task_type, ModelTier.BUILDER_MID)
+            
+            # Upgrade tier for high complexity
+            if complexity == TaskComplexity.CRITICAL:
+                target_tier = ModelTier.ARCHITECT
+            elif complexity == TaskComplexity.HIGH and target_tier.value > ModelTier.BUILDER_HIGH.value:
+                target_tier = ModelTier.BUILDER_HIGH
+        
+        # Find available model at target tier
+        tier_models = self._get_tier_models(target_tier)
+        selected_model: Optional[ModelConfig] = None
+        fallback_model: Optional[str] = None
+        
+        for model in tier_models:
+            budget_check = self._budget_mgr.check_budget(model.provider, estimated_tokens)
+            if budget_check.can_proceed:
+                selected_model = model
+                break
+            elif budget_check.failover_to:
+                # Note failover for later
+                fallback_model = budget_check.failover_to
+        
+        # Try fallback tier if no model available
+        if not selected_model:
+            fallback_tier = self._get_fallback_tier(target_tier)
+            while fallback_tier:
+                fallback_models = self._get_tier_models(fallback_tier)
+                for model in fallback_models:
+                    budget_check = self._budget_mgr.check_budget(model.provider, estimated_tokens)
+                    if budget_check.can_proceed:
+                        selected_model = model
+                        break
+                if selected_model:
+                    break
+                fallback_tier = self._get_fallback_tier(fallback_tier)
+        
+        # Last resort: use first available model
+        if not selected_model:
+            for model in self._models.values():
+                budget_check = self._budget_mgr.check_budget(model.provider, estimated_tokens)
+                if budget_check.can_proceed:
+                    selected_model = model
+                    break
+        
+        # Still nothing? Return default with warning
+        if not selected_model:
+            selected_model = self._models.get("gemini-3-flash", list(self._models.values())[0])
+            logger.warning(f"All providers over budget, using {selected_model.name} anyway")
+        
+        # Build decision
+        reason_parts = [
+            f"Task: {task_type.value}",
+            f"Complexity: {complexity.value}",
+            f"Target tier: {target_tier.name}",
+        ]
+        if selected_model.tier != target_tier:
+            reason_parts.append(f"Downgraded to {selected_model.tier.name} due to budget")
+        
+        return RoutingDecision(
+            model=selected_model.name,
+            provider=selected_model.provider,
+            tier=selected_model.tier,
+            task_type=task_type,
+            complexity=complexity,
+            estimated_tokens=estimated_tokens,
+            reason=" | ".join(reason_parts),
+            fallback_model=fallback_model,
+        )
+    
+    def get_model_for_tier(self, tier: ModelTier) -> Optional[ModelConfig]:
+        """Get the primary model for a specific tier."""
+        tier_models = self._get_tier_models(tier)
+        return tier_models[0] if tier_models else None

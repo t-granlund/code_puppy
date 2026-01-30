@@ -1,0 +1,155 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Code Puppy Extra Models Configuration",
+  "description": "Configuration for multi-provider model routing in Code Puppy",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Schema version",
+      "default": "1.0"
+    },
+    "models": {
+      "type": "object",
+      "description": "Model configurations keyed by model name",
+      "additionalProperties": {
+        "$ref": "#/definitions/ModelConfig"
+      }
+    },
+    "routing": {
+      "$ref": "#/definitions/RoutingConfig"
+    },
+    "pack_governor": {
+      "$ref": "#/definitions/PackGovernorConfig"
+    }
+  },
+  "required": ["models"],
+  "definitions": {
+    "ModelConfig": {
+      "type": "object",
+      "description": "Configuration for a single model",
+      "properties": {
+        "provider": {
+          "type": "string",
+          "description": "Provider identifier (cerebras, gemini, codex, claude_sonnet, claude_opus)"
+        },
+        "tier": {
+          "type": "string",
+          "enum": ["ARCHITECT", "BUILDER_HIGH", "BUILDER_MID", "LIBRARIAN", "SPRINTER"],
+          "description": "Model tier for routing decisions"
+        },
+        "max_context": {
+          "type": "integer",
+          "description": "Maximum input context tokens",
+          "default": 100000
+        },
+        "max_output": {
+          "type": "integer",
+          "description": "Maximum output tokens",
+          "default": 4000
+        },
+        "cost_per_1k_input": {
+          "type": "number",
+          "description": "Cost in USD per 1000 input tokens",
+          "default": 0.001
+        },
+        "cost_per_1k_output": {
+          "type": "number",
+          "description": "Cost in USD per 1000 output tokens",
+          "default": 0.003
+        },
+        "tokens_per_minute": {
+          "type": "integer",
+          "description": "Rate limit: tokens per minute",
+          "default": 100000
+        },
+        "tokens_per_day": {
+          "type": "integer",
+          "description": "Rate limit: tokens per day",
+          "default": 1000000
+        },
+        "supports_context_caching": {
+          "type": "boolean",
+          "description": "Whether model supports context caching",
+          "default": false
+        },
+        "context_cache_threshold": {
+          "type": "integer",
+          "description": "Minimum tokens to trigger context caching",
+          "default": 30000
+        },
+        "api_base": {
+          "type": "string",
+          "description": "Optional custom API base URL"
+        },
+        "api_key_env": {
+          "type": "string",
+          "description": "Environment variable name for API key"
+        }
+      },
+      "required": ["provider", "tier"]
+    },
+    "RoutingConfig": {
+      "type": "object",
+      "description": "Task routing configuration",
+      "properties": {
+        "default_model": {
+          "type": "string",
+          "description": "Default model when no routing decision can be made"
+        },
+        "task_overrides": {
+          "type": "object",
+          "description": "Override tier for specific task types",
+          "additionalProperties": {
+            "type": "string",
+            "enum": ["ARCHITECT", "BUILDER_HIGH", "BUILDER_MID", "LIBRARIAN", "SPRINTER"]
+          }
+        },
+        "complexity_thresholds": {
+          "type": "object",
+          "description": "Token thresholds for complexity assessment",
+          "properties": {
+            "low_max": {
+              "type": "integer",
+              "default": 1000
+            },
+            "medium_max": {
+              "type": "integer",
+              "default": 5000
+            },
+            "high_max": {
+              "type": "integer",
+              "default": 20000
+            }
+          }
+        }
+      }
+    },
+    "PackGovernorConfig": {
+      "type": "object",
+      "description": "Pack agent concurrency limits",
+      "properties": {
+        "max_coding_agents": {
+          "type": "integer",
+          "description": "Max concurrent coding agents (Cerebras)",
+          "default": 2
+        },
+        "max_reviewer_agents": {
+          "type": "integer",
+          "description": "Max concurrent reviewer agents (Claude)",
+          "default": 1
+        },
+        "force_summary_mode_threshold": {
+          "type": "integer",
+          "description": "Token threshold to force summary mode",
+          "default": 50000
+        },
+        "summary_model": {
+          "type": "string",
+          "description": "Model to use for summary mode",
+          "default": "gemini-3-flash"
+        }
+      }
+    }
+  }
+}
