@@ -7,6 +7,7 @@ This module provides:
 - SmartContextLoader: Artifact caching to prevent duplicate reads
 - PackGovernor: Concurrent agent execution management
 - RateLimitFailover: Automatic failover on 429 errors
+- AgentOrchestrator: Workload-aware agent coordination
 """
 
 from .token_budget import TokenBudgetManager, smart_retry
@@ -26,6 +27,14 @@ from .rate_limit_failover import (
     get_failover_manager,
     with_rate_limit_failover,
     WorkloadType,
+)
+from .agent_orchestration import (
+    AgentOrchestrator,
+    get_orchestrator,
+    get_model_for_agent,
+    get_failover_chain_for_agent,
+    get_workload_for_agent,
+    ORCHESTRATION_HIERARCHY,
 )
 
 __all__ = [
@@ -48,4 +57,10 @@ __all__ = [
     "get_failover_manager",
     "with_rate_limit_failover",
     "WorkloadType",
+    "AgentOrchestrator",
+    "get_orchestrator",
+    "get_model_for_agent",
+    "get_failover_chain_for_agent",
+    "get_workload_for_agent",
+    "ORCHESTRATION_HIERARCHY",
 ]

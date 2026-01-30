@@ -44,22 +44,27 @@ def fresh_governor():
 
 
 class TestAgentRole:
-    """Tests for agent role detection."""
+    """Tests for agent role detection using AGENT_WORKLOAD_REGISTRY."""
     
     def test_husky_is_coder(self, fresh_governor):
         """Husky should be classified as coder."""
         role = fresh_governor._get_role("husky")
         assert role == AgentRole.CODER
     
-    def test_shepherd_is_reviewer(self, fresh_governor):
-        """Shepherd should be classified as reviewer."""
+    def test_shepherd_is_reasoner(self, fresh_governor):
+        """Shepherd should be classified as reasoner (reviews code)."""
         role = fresh_governor._get_role("shepherd")
-        assert role == AgentRole.REVIEWER
+        assert role == AgentRole.REASONER
     
-    def test_bloodhound_is_searcher(self, fresh_governor):
-        """Bloodhound should be classified as searcher."""
+    def test_bloodhound_is_librarian(self, fresh_governor):
+        """Bloodhound should be classified as librarian (issue tracking)."""
         role = fresh_governor._get_role("bloodhound")
-        assert role == AgentRole.SEARCHER
+        assert role == AgentRole.LIBRARIAN
+    
+    def test_pack_leader_is_orchestrator(self, fresh_governor):
+        """Pack leader should be classified as orchestrator."""
+        role = fresh_governor._get_role("pack-leader")
+        assert role == AgentRole.ORCHESTRATOR
     
     def test_unknown_defaults_to_coder(self, fresh_governor):
         """Unknown agents should default to coder."""
@@ -153,7 +158,7 @@ class TestGovernorStatus:
         
         assert status["active_slots"] == 2
         assert "coder" in status["by_role"]
-        assert "reviewer" in status["by_role"]
+        assert "reasoner" in status["by_role"]
     
     def test_status_shows_token_totals(self, fresh_governor):
         """Status should show total estimated tokens."""

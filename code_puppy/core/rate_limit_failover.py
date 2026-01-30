@@ -153,6 +153,64 @@ class RateLimitFailover:
         ],
     }
 
+    # UNIFIED AGENT WORKLOAD REGISTRY
+    # Maps every agent to its appropriate workload type for automatic model selection
+    AGENT_WORKLOAD_REGISTRY: Dict[str, "WorkloadType"] = {
+        # ═══════════════════════════════════════════════════════════════════
+        # ORCHESTRATORS (Claude Opus → Antigravity Opus → Gemini Pro → Codex)
+        # These agents coordinate other agents and need strong reasoning
+        # ═══════════════════════════════════════════════════════════════════
+        "pack-leader": WorkloadType.ORCHESTRATOR,
+        "helios": WorkloadType.ORCHESTRATOR,  # Universal Constructor
+        "epistemic-architect": WorkloadType.ORCHESTRATOR,  # EAR/Ralph loops
+        "planning": WorkloadType.ORCHESTRATOR,
+        "agent-creator": WorkloadType.ORCHESTRATOR,  # Creates new agents
+        
+        # ═══════════════════════════════════════════════════════════════════
+        # REASONING (Claude Sonnet → Antigravity Sonnet → Gemini Pro → Codex)
+        # Complex analysis, code review, security audit, QA strategy
+        # ═══════════════════════════════════════════════════════════════════
+        # Pack reviewer agents
+        "shepherd": WorkloadType.REASONING,  # Code review guardian
+        "watchdog": WorkloadType.REASONING,  # Monitoring/guarding
+        
+        # Language-specific reviewers
+        "code-reviewer": WorkloadType.REASONING,
+        "python-reviewer": WorkloadType.REASONING,
+        "c-reviewer": WorkloadType.REASONING,
+        "cpp-reviewer": WorkloadType.REASONING,
+        "golang-reviewer": WorkloadType.REASONING,
+        "javascript-reviewer": WorkloadType.REASONING,
+        "typescript-reviewer": WorkloadType.REASONING,
+        "prompt-reviewer": WorkloadType.REASONING,
+        
+        # QA/Security (need deep analysis)
+        "qa-expert": WorkloadType.REASONING,
+        "security-auditor": WorkloadType.REASONING,
+        
+        # ═══════════════════════════════════════════════════════════════════
+        # CODING (Cerebras GLM 4.7 → Claude Haiku → Gemini Flash)
+        # Main code generation - speed matters for high-volume work
+        # ═══════════════════════════════════════════════════════════════════
+        # Pack coding agents
+        "husky": WorkloadType.CODING,  # Heavy lifting, task execution
+        "terrier": WorkloadType.CODING,  # Worktree management (git commands)
+        "retriever": WorkloadType.CODING,  # Code/file retrieval with modification
+        
+        # Main coding agents
+        "code-puppy": WorkloadType.CODING,  # Main agent
+        "python-programmer": WorkloadType.CODING,
+        "qa-kitten": WorkloadType.CODING,  # Lightweight QA (runs tests)
+        "terminal-qa": WorkloadType.CODING,  # Terminal-based QA
+        
+        # ═══════════════════════════════════════════════════════════════════
+        # LIBRARIAN (Haiku → GPT 5.2 → Gemini Flash)
+        # Search, docs, context gathering - efficiency over power
+        # ═══════════════════════════════════════════════════════════════════
+        "bloodhound": WorkloadType.LIBRARIAN,  # Issue tracking with bd
+        "json-agent": WorkloadType.LIBRARIAN,  # JSON parsing/generation
+    }
+
     def __new__(cls) -> "RateLimitFailover":
         if cls._instance is None:
             cls._instance = super().__new__(cls)
@@ -405,6 +463,81 @@ class RateLimitFailover:
         
         # Default to Librarian (safest)
         return WorkloadType.LIBRARIAN
+
+    def get_workload_for_agent(self, agent_name: str) -> WorkloadType:
+        """Get the workload type for a specific agent.
+        
+        Uses AGENT_WORKLOAD_REGISTRY to map agents to their appropriate workload,
+        which determines which model failover chain to use.
+        
+        Args:
+            agent_name: Name of the agent (e.g., "pack-leader", "husky")
+            
+        Returns:
+            WorkloadType for the agent (defaults to CODING if unknown)
+        """
+        # Normalize agent name (handle variations)
+        normalized = agent_name.lower().strip()
+        
+        # Direct lookup
+        if normalized in self.AGENT_WORKLOAD_REGISTRY:
+            return self.AGENT_WORKLOAD_REGISTRY[normalized]
+        
+        # Try with dashes converted to underscores and vice versa
+        underscore_name = normalized.replace("-", "_")
+        dash_name = normalized.replace("_", "-")
+        
+        if underscore_name in self.AGENT_WORKLOAD_REGISTRY:
+            return self.AGENT_WORKLOAD_REGISTRY[underscore_name]
+        if dash_name in self.AGENT_WORKLOAD_REGISTRY:
+            return self.AGENT_WORKLOAD_REGISTRY[dash_name]
+        
+        # Pattern-based inference for unknown agents
+        if "reviewer" in normalized or "auditor" in normalized:
+            return WorkloadType.REASONING
+        if "leader" in normalized or "orchestrat" in normalized or "planning" in normalized:
+            return WorkloadType.ORCHESTRATOR
+        if "search" in normalized or "librarian" in normalized or "doc" in normalized:
+            return WorkloadType.LIBRARIAN
+        
+        # Default to CODING for unknown agents
+        logger.debug(f"Agent '{agent_name}' not in registry, defaulting to CODING workload")
+        return WorkloadType.CODING
+
+    def get_failover_chain_for_agent(self, agent_name: str) -> List[str]:
+        """Get the appropriate failover chain for a specific agent.
+        
+        This is the main entry point for agent-aware model selection:
+        1. Looks up agent's workload type from AGENT_WORKLOAD_REGISTRY
+        2. Returns the appropriate WORKLOAD_CHAINS for that type
+        
+        Args:
+            agent_name: Name of the agent requesting models
+            
+        Returns:
+            List of model names in failover priority order
+        """
+        workload = self.get_workload_for_agent(agent_name)
+        return self.WORKLOAD_CHAINS.get(workload, self.WORKLOAD_CHAINS[WorkloadType.CODING])
+
+    def get_primary_model_for_agent(self, agent_name: str) -> str:
+        """Get the primary (first choice) model for an agent.
+        
+        Args:
+            agent_name: Name of the agent
+            
+        Returns:
+            Primary model name for this agent's workload
+        """
+        chain = self.get_failover_chain_for_agent(agent_name)
+        
+        # Filter out rate-limited models
+        for model in chain:
+            if model not in self._rate_limited:
+                return model
+        
+        # All rate-limited, return first anyway (will trigger failover)
+        return chain[0] if chain else "gemini-3-flash"
 
     def record_rate_limit(self, model_name: str, duration_seconds: float = 60.0) -> str:
         """Record that a model hit rate limit, return suggested failover.

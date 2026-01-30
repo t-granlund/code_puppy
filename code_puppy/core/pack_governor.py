@@ -4,6 +4,9 @@ Enforces constraints to prevent rate limit exhaustion:
 - Max 2 active "Coding" agents (Cerebras) at once
 - Max 1 active "Reviewer" agent (Claude)
 - Force summary mode (Gemini Flash) when over threshold
+
+Now integrated with the unified AGENT_WORKLOAD_REGISTRY for consistent
+workload-to-model mapping across the entire system.
 """
 
 import asyncio
@@ -15,17 +18,22 @@ from typing import Any, Callable, Dict, List, Optional, Set
 
 from .model_router import ModelRouter, ModelTier, TaskType
 from .token_budget import TokenBudgetManager
+from .rate_limit_failover import RateLimitFailover, WorkloadType
 
 logger = logging.getLogger(__name__)
 
 
 class AgentRole(Enum):
-    """Roles for pack agents with different concurrency limits."""
+    """Roles for pack agents with different concurrency limits.
     
+    Maps to WorkloadType from rate_limit_failover for consistent model selection.
+    """
+    
+    ORCHESTRATOR = "orchestrator"  # Pack leader, helios, planning - uses Opus
+    REASONER = "reasoner"  # Reviewers, security audit - uses Sonnet
     CODER = "coder"  # Uses Cerebras (Sprinter)
-    REVIEWER = "reviewer"  # Uses Claude (Architect/Builder)
-    SEARCHER = "searcher"  # Uses Gemini (Librarian)
-    SUMMARIZER = "summarizer"  # Uses Gemini Flash (Librarian)
+    LIBRARIAN = "librarian"  # Uses Gemini/Haiku
+    SUMMARIZER = "summarizer"  # Uses Gemini Flash (forced mode)
 
 
 @dataclass
@@ -74,35 +82,29 @@ class PackGovernor:
     """Governs concurrent Pack Agent execution.
     
     Ensures we don't exceed rate limits by:
-    1. Limiting concurrent agents by role
+    1. Limiting concurrent agents by role (derived from AGENT_WORKLOAD_REGISTRY)
     2. Tracking token usage across agents
     3. Forcing summary mode when approaching limits
     4. Providing cooldown between agent starts
+    5. Using workload-aware model selection with built-in failover
     """
     
     _instance: Optional["PackGovernor"] = None
     
-    # Agent name to role mapping
-    AGENT_ROLES: Dict[str, AgentRole] = {
-        # Pack agents
-        "husky": AgentRole.CODER,
-        "terrier": AgentRole.CODER,
-        "bloodhound": AgentRole.SEARCHER,
-        "retriever": AgentRole.CODER,
-        "shepherd": AgentRole.REVIEWER,
-        "watchdog": AgentRole.REVIEWER,
-        # Main agents
-        "code-puppy": AgentRole.CODER,
-        "python-programmer": AgentRole.CODER,
-        "qa-expert": AgentRole.REVIEWER,
-        "security-auditor": AgentRole.REVIEWER,
+    # WorkloadType to AgentRole mapping (bidirectional)
+    WORKLOAD_TO_ROLE: Dict[WorkloadType, AgentRole] = {
+        WorkloadType.ORCHESTRATOR: AgentRole.ORCHESTRATOR,
+        WorkloadType.REASONING: AgentRole.REASONER,
+        WorkloadType.CODING: AgentRole.CODER,
+        WorkloadType.LIBRARIAN: AgentRole.LIBRARIAN,
     }
     
     # Role to default tier mapping
     ROLE_TIERS: Dict[AgentRole, ModelTier] = {
+        AgentRole.ORCHESTRATOR: ModelTier.ARCHITECT,
+        AgentRole.REASONER: ModelTier.BUILDER_MID,
         AgentRole.CODER: ModelTier.SPRINTER,
-        AgentRole.REVIEWER: ModelTier.ARCHITECT,
-        AgentRole.SEARCHER: ModelTier.LIBRARIAN,
+        AgentRole.LIBRARIAN: ModelTier.LIBRARIAN,
         AgentRole.SUMMARIZER: ModelTier.LIBRARIAN,
     }
     
@@ -116,6 +118,8 @@ class PackGovernor:
         if self._initialized:
             return
         
+        self._failover_manager = RateLimitFailover()
+        
         self.config = config or GovernorConfig()
         self._active_slots: Dict[str, AgentSlot] = {}
         self._lock = asyncio.Lock()
@@ -126,8 +130,37 @@ class PackGovernor:
         self._initialized = True
     
     def _get_role(self, agent_name: str) -> AgentRole:
-        """Get role for an agent."""
-        return self.AGENT_ROLES.get(agent_name, AgentRole.CODER)
+        """Get role for an agent using the unified AGENT_WORKLOAD_REGISTRY.
+        
+        This ensures consistent workload categorization across the entire system.
+        """
+        workload = self._failover_manager.get_workload_for_agent(agent_name)
+        return self.WORKLOAD_TO_ROLE.get(workload, AgentRole.CODER)
+    
+    def get_model_for_agent(self, agent_name: str) -> str:
+        """Get the appropriate model for an agent based on workload.
+        
+        Uses the AGENT_WORKLOAD_REGISTRY to determine workload type,
+        then selects from the appropriate WORKLOAD_CHAINS with rate limit awareness.
+        
+        Args:
+            agent_name: Name of the agent
+            
+        Returns:
+            Primary model name (accounting for any rate-limited models)
+        """
+        return self._failover_manager.get_primary_model_for_agent(agent_name)
+    
+    def get_failover_chain_for_agent(self, agent_name: str) -> List[str]:
+        """Get the full failover chain for an agent.
+        
+        Args:
+            agent_name: Name of the agent
+            
+        Returns:
+            List of models in failover priority order
+        """
+        return self._failover_manager.get_failover_chain_for_agent(agent_name)
     
     def _count_active_by_role(self, role: AgentRole) -> int:
         """Count active agents by role."""
@@ -136,9 +169,10 @@ class PackGovernor:
     def _get_max_for_role(self, role: AgentRole) -> int:
         """Get max concurrent agents for role."""
         limits = {
+            AgentRole.ORCHESTRATOR: 1,  # Only 1 orchestrator at a time
+            AgentRole.REASONER: self.config.max_reviewer_agents,
             AgentRole.CODER: self.config.max_coding_agents,
-            AgentRole.REVIEWER: self.config.max_reviewer_agents,
-            AgentRole.SEARCHER: self.config.max_searcher_agents,
+            AgentRole.LIBRARIAN: self.config.max_searcher_agents,
             AgentRole.SUMMARIZER: 5,  # Summary agents are cheap
         }
         return limits.get(role, 2)
@@ -184,7 +218,7 @@ class PackGovernor:
             active_count = self._count_active_by_role(role)
             if active_count >= max_for_role:
                 # Check if we should wait or force summary mode
-                if role in (AgentRole.CODER, AgentRole.REVIEWER):
+                if role in (AgentRole.CODER, AgentRole.REASONER, AgentRole.ORCHESTRATOR):
                     # Try forcing to summary mode
                     logger.info(
                         f"{agent_name} ({role.value}) at limit {active_count}/{max_for_role}, "
@@ -202,7 +236,8 @@ class PackGovernor:
                         reason=f"Max {role.value} agents ({max_for_role}) already active",
                     )
             
-            # Check budget
+            # Get workload-aware model for this agent
+            model_name = self.get_model_for_agent(agent_name)
             tier = self.ROLE_TIERS.get(role, ModelTier.BUILDER_MID)
             model = self._router.get_model_for_tier(tier)
             if not model:
@@ -369,21 +404,21 @@ class PackGovernor:
             Dict with deadlock risk assessment
         """
         coder_count = self._count_active_by_role(AgentRole.CODER)
-        reviewer_count = self._count_active_by_role(AgentRole.REVIEWER)
+        reasoner_count = self._count_active_by_role(AgentRole.REASONER)
         
         risk_level = "LOW"
         
         if (coder_count >= self.config.max_coding_agents and 
-            reviewer_count >= self.config.max_reviewer_agents):
+            reasoner_count >= self.config.max_reviewer_agents):
             risk_level = "HIGH"
         elif (coder_count >= self.config.max_coding_agents or
-              reviewer_count >= self.config.max_reviewer_agents):
+              reasoner_count >= self.config.max_reviewer_agents):
             risk_level = "MEDIUM"
         
         return {
             "risk_level": risk_level,
             "coders_active": f"{coder_count}/{self.config.max_coding_agents}",
-            "reviewers_active": f"{reviewer_count}/{self.config.max_reviewer_agents}",
+            "reasoners_active": f"{reasoner_count}/{self.config.max_reviewer_agents}",
             "recommendation": (
                 "Force summary mode for new agents" if risk_level == "HIGH"
                 else "Normal operation" if risk_level == "LOW"
