@@ -290,19 +290,132 @@ class ModelRouter:
             r"\bstarter\b", r"\bskeleton\b",
         ],
     }
+
+    # Model type to tier mapping (for auto-detection from ModelFactory configs)
+    MODEL_TYPE_TIERS: Dict[str, ModelTier] = {
+        # Claude Code OAuth models (Architect/Builder tier)
+        "claude_code": ModelTier.ARCHITECT,
+        "claude_opus": ModelTier.ARCHITECT,
+        "claude_sonnet": ModelTier.BUILDER_MID,
+        "claude_haiku": ModelTier.LIBRARIAN,
+        "anthropic": ModelTier.BUILDER_MID,
+        # Antigravity OAuth (Gemini = Librarian, Claude = same as above)
+        "antigravity": ModelTier.LIBRARIAN,
+        "gemini": ModelTier.LIBRARIAN,
+        "gemini_flash": ModelTier.LIBRARIAN,
+        # ChatGPT Teams (Builder tier)
+        "openai": ModelTier.BUILDER_HIGH,
+        "codex": ModelTier.BUILDER_HIGH,
+        # Cerebras (Sprinter - free)
+        "cerebras": ModelTier.SPRINTER,
+        # Custom endpoints
+        "custom_openai": ModelTier.BUILDER_MID,
+        "custom_anthropic": ModelTier.BUILDER_MID,
+    }
     
-    def __init__(self, extra_models_path: Optional[Path] = None):
-        """Initialize router with optional extra models config.
+    def __init__(self, extra_models_path: Optional[Path] = None, load_from_factory: bool = True):
+        """Initialize router with models from ModelFactory or custom config.
         
         Args:
             extra_models_path: Path to extra_models.json for custom configs
+            load_from_factory: If True, load available models from ModelFactory
         """
-        self._models = dict(self.DEFAULT_MODELS)
+        self._models: Dict[str, ModelConfig] = {}
         self._budget_mgr = TokenBudgetManager()
+        
+        if load_from_factory:
+            self._load_from_model_factory()
+        else:
+            # Use hardcoded defaults only if factory loading disabled
+            self._models = dict(self.DEFAULT_MODELS)
         
         if extra_models_path:
             self._load_extra_models(extra_models_path)
+        
+        logger.info(f"ModelRouter initialized with {len(self._models)} models")
     
+    def _load_from_model_factory(self) -> None:
+        """Load available models from ModelFactory config.
+        
+        This ensures we only route to models that are actually
+        configured and authenticated (OAuth, API keys, etc.)
+        """
+        try:
+            from code_puppy.model_factory import ModelFactory
+            
+            configs = ModelFactory.load_config()
+            
+            for name, config in configs.items():
+                if not isinstance(config, dict):
+                    continue
+                
+                model_type = config.get("type", "unknown")
+                tier = self._detect_tier_from_config(name, config)
+                
+                self._models[name] = ModelConfig(
+                    name=config.get("name", name),
+                    provider=model_type,
+                    tier=tier,
+                    max_context=config.get("context_length", 100_000),
+                    max_output=config.get("max_output", 4_000),
+                    cost_per_1k_input=config.get("cost_per_1k_input", 0.0),
+                    cost_per_1k_output=config.get("cost_per_1k_output", 0.0),
+                    supports_context_caching=config.get("supports_context_caching", False),
+                    context_cache_threshold=config.get("context_cache_threshold", 30_000),
+                )
+            
+            logger.info(f"Loaded {len(self._models)} models from ModelFactory")
+            
+        except Exception as e:
+            logger.warning(f"Failed to load from ModelFactory, using defaults: {e}")
+            self._models = dict(self.DEFAULT_MODELS)
+    
+    def _detect_tier_from_config(self, name: str, config: Dict[str, Any]) -> ModelTier:
+        """Detect appropriate tier from model configuration.
+        
+        Uses model type, name patterns, and explicit tier setting.
+        """
+        # Check for explicit tier setting
+        if "tier" in config:
+            try:
+                return ModelTier[config["tier"].upper()]
+            except KeyError:
+                pass
+        
+        model_type = config.get("type", "")
+        model_name = config.get("name", name).lower()
+        
+        # Check type-based tier
+        if model_type in self.MODEL_TYPE_TIERS:
+            base_tier = self.MODEL_TYPE_TIERS[model_type]
+            
+            # Refine based on model name patterns
+            if "opus" in model_name:
+                return ModelTier.ARCHITECT
+            elif "sonnet" in model_name:
+                return ModelTier.BUILDER_MID
+            elif "haiku" in model_name:
+                return ModelTier.LIBRARIAN
+            elif "flash" in model_name:
+                return ModelTier.LIBRARIAN
+            elif "codex" in model_name:
+                return ModelTier.BUILDER_HIGH
+            elif "cerebras" in model_name or "glm" in model_name:
+                return ModelTier.SPRINTER
+            
+            return base_tier
+        
+        # Default to Builder Mid for unknown types
+        return ModelTier.BUILDER_MID
+    
+    def get_available_models(self) -> List[str]:
+        """Get list of all available model names."""
+        return list(self._models.keys())
+    
+    def get_models_by_tier(self, tier: ModelTier) -> List[ModelConfig]:
+        """Get all models for a specific tier."""
+        return [m for m in self._models.values() if m.tier == tier]
+
     def _load_extra_models(self, path: Path) -> None:
         """Load additional model configurations from JSON file."""
         try:
