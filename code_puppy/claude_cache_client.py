@@ -514,6 +514,42 @@ class ClaudeCacheAsyncClient(httpx.AsyncClient):
                 if attempt >= max_retries:
                     return response, req
 
+                # For 429 errors, try workload-aware failover FIRST
+                if response.status_code == 429:
+                    model_name = _extract_model_from_body(body)
+                    if model_name:
+                        # Try failover - lazy import to avoid circular dependency
+                        try:
+                            from code_puppy.core.rate_limit_failover import RateLimitFailover
+                            
+                            failover = RateLimitFailover()
+                            failover.load_from_model_factory()
+                            failover.mark_rate_limited(model_name)
+                            
+                            # Try to get workload-appropriate failover
+                            next_model = failover.get_workload_failover(model_name)
+                            
+                            if next_model:
+                                logger.info(
+                                    f"🔄 Rate limit on {model_name} → Failing over to {next_model}"
+                                )
+                                # Store failover model in extensions for caller to detect
+                                extensions['rate_limit_failover_to'] = next_model
+                                logger.info(
+                                    f"🚀 Triggering failover to {next_model} (attempt {attempt + 1}/{max_retries})"
+                                )
+                                await response.aclose()
+                                # Return the 429 response with failover hint in extensions
+                                # The SDK/caller should detect this and switch models
+                                return response, req
+                            else:
+                                logger.warning(
+                                    f"⚠️  No failover available for {model_name}, will retry with backoff"
+                                )
+                        except Exception as exc:
+                            logger.debug(f"Failover attempt failed: {exc}", exc_info=True)
+
+                # No failover available or not a 429 - use exponential backoff
                 wait_time = _compute_retry_wait_seconds(response, attempt)
                 logger.warning(
                     "Anthropic HTTP %s (%s/%s). Backing off %.1fs before retry.",

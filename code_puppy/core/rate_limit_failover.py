@@ -539,6 +539,23 @@ class RateLimitFailover:
         # All rate-limited, return first anyway (will trigger failover)
         return chain[0] if chain else "gemini-3-flash"
 
+    def mark_rate_limited(self, model_name: str, duration_seconds: float = 60.0) -> None:
+        """Mark a model as rate-limited (simpler version without auto-scheduling).
+        
+        Args:
+            model_name: Model that hit rate limit
+            duration_seconds: How long to consider it rate-limited (for record keeping)
+        """
+        import time
+
+        self._rate_limited.add(model_name)
+
+        if model_name in self._available_models:
+            self._available_models[model_name].rate_limited = True
+            self._available_models[model_name].last_429_time = time.time()
+        
+        logger.debug(f"Marked {model_name} as rate-limited")
+
     def record_rate_limit(self, model_name: str, duration_seconds: float = 60.0) -> str:
         """Record that a model hit rate limit, return suggested failover.
 

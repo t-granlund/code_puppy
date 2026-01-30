@@ -701,7 +701,7 @@ class TestUrlBetaParam:
 
     @pytest.mark.asyncio
     async def test_retries_on_429(self, monkeypatch):
-        """Test that 429 responses trigger backoff+retry in the HTTP client layer."""
+        """Test that 429 responses trigger backoff+retry when no failover is available."""
         # Keep retries tight for the test
         monkeypatch.setenv("CODE_PUPPY_ANTHROPIC_MAX_RETRIES", "2")
         monkeypatch.setenv("CODE_PUPPY_ANTHROPIC_BASE_RETRY_WAIT_SECONDS", "0.01")
@@ -733,13 +733,16 @@ class TestUrlBetaParam:
             with patch.object(
                 ClaudeCacheAsyncClient, "_check_stored_token_expiry", return_value=False
             ):
-                client = ClaudeCacheAsyncClient()
-                request = httpx.Request(
-                    "POST",
-                    "https://api.anthropic.com/v1/messages",
-                    content='{"model":"claude-opus-4-5-20251101","messages":[{"role":"user","content":"hi"}]}'.encode("utf-8"),
-                )
-                resp = await client.send(request)
+                # Mock the failover module to return None (no failover available)
+                # This ensures we test the backoff-retry path, not the failover path
+                with patch.dict('sys.modules', {'code_puppy.core.rate_limit_failover': None}):
+                    client = ClaudeCacheAsyncClient()
+                    request = httpx.Request(
+                        "POST",
+                        "https://api.anthropic.com/v1/messages",
+                        content='{"model":"claude-opus-4-5-20251101","messages":[{"role":"user","content":"hi"}]}'.encode("utf-8"),
+                    )
+                    resp = await client.send(request)
 
         assert resp.status_code == 200
         assert mock_send.call_count == 3
