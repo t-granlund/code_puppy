@@ -146,13 +146,18 @@ class TokenBudgetManager:
         },
     }
     
-    # Failover chain: when provider X hits limits, try Y
+    # Static failover chain: when provider X hits limits, try Y
+    # This is enhanced dynamically by RateLimitFailover using OAuth models
     FAILOVER_CHAIN: Dict[str, str] = {
         "cerebras": "gemini_flash",
         "gemini": "gemini_flash",
         "codex": "claude_sonnet",
         "claude_sonnet": "gemini_flash",
-        # claude_opus has no failover - it's the last resort
+        # Additional OAuth-aware failovers added dynamically
+        "claude_opus": "claude_sonnet",  # Opus → Sonnet before giving up
+        "gemini_flash": "cerebras",  # Flash → Cerebras for speed
+        "gpt-5.2": "codex",  # GPT 5 → Codex
+        "chatgpt-codex-5.2": "claude_sonnet",  # Codex → Sonnet
     }
     
     _instance: Optional["TokenBudgetManager"] = None
@@ -389,18 +394,29 @@ class TokenBudgetManager:
             limits = self.PROVIDER_LIMITS[provider]
             self._budgets[provider] = ProviderBudget(**limits)
 
+    def get_failover(self, provider: str) -> Optional[str]:
+        """Get failover provider for a given provider.
+        
+        Uses static FAILOVER_CHAIN, can be enhanced by RateLimitFailover.
+        """
+        provider = self._normalize_provider(provider)
+        return self.FAILOVER_CHAIN.get(provider)
+
 
 def smart_retry(
     provider: str,
     max_retries: int = 5,
     max_wait: float = 60.0,
     allow_failover: bool = True,
+    model_param: str = "model",
 ) -> Callable[[F], F]:
     """Decorator for smart retry with exponential backoff and failover.
     
+    Enhanced to actually inject failover model into kwargs when 429 occurs.
+    
     Usage:
-        @smart_retry("cerebras", max_retries=5)
-        async def call_cerebras(prompt: str) -> str:
+        @smart_retry("cerebras", max_retries=5, model_param="model_name")
+        async def call_cerebras(prompt: str, model_name: str = "cerebras") -> str:
             ...
     
     Args:
@@ -408,6 +424,7 @@ def smart_retry(
         max_retries: Maximum retry attempts
         max_wait: Maximum wait time per retry
         allow_failover: Whether to failover on repeated 429s
+        model_param: Kwarg name for model injection on failover
         
     Returns:
         Decorated function with retry logic
@@ -429,13 +446,16 @@ def smart_retry(
                     error_str = str(e).lower()
                     
                     # Check for rate limit error
-                    if "429" in error_str or "rate limit" in error_str:
+                    if "429" in error_str or "rate limit" in error_str or "too many requests" in error_str:
                         wait_time, failover = budget_mgr.record_429(current_provider)
                         
                         if failover and allow_failover:
                             logger.info(f"Failing over from {current_provider} to {failover}")
                             current_provider = failover
-                            # Could inject failover into kwargs here if function supports it
+                            # INJECT failover model into kwargs for retry
+                            if model_param in kwargs or model_param == "model":
+                                kwargs[model_param] = failover
+                                logger.debug(f"Injected {model_param}={failover} for retry")
                         
                         if attempt < max_retries - 1:
                             capped_wait = min(wait_time, max_wait)

@@ -6,6 +6,7 @@ This module provides:
 - ContextCompressor: AST pruning and history truncation
 - SmartContextLoader: Artifact caching to prevent duplicate reads
 - PackGovernor: Concurrent agent execution management
+- RateLimitFailover: Automatic failover on 429 errors
 """
 
 from .token_budget import TokenBudgetManager, smart_retry
@@ -19,6 +20,11 @@ from .pack_governor import (
     acquire_agent_slot,
     release_agent_slot,
     get_governor_status,
+)
+from .rate_limit_failover import (
+    RateLimitFailover,
+    get_failover_manager,
+    with_rate_limit_failover,
 )
 
 __all__ = [
@@ -37,4 +43,7 @@ __all__ = [
     "acquire_agent_slot",
     "release_agent_slot",
     "get_governor_status",
+    "RateLimitFailover",
+    "get_failover_manager",
+    "with_rate_limit_failover",
 ]

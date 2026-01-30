@@ -635,6 +635,87 @@ class ModelRouter:
         return tier_models[0] if tier_models else None
 
     # =========================================================================
+    # RATE LIMIT FAILOVER
+    # =========================================================================
+
+    def get_failover_for_model(self, model_name: str) -> Optional[str]:
+        """Get failover model when the primary hits rate limits.
+        
+        Uses tier-aware logic:
+        1. Try same tier, different provider
+        2. Try one tier down
+        3. Try any available model
+        
+        Args:
+            model_name: Model that hit rate limit
+            
+        Returns:
+            Alternative model name, or None if no failover available
+        """
+        # Get the rate-limited model's tier
+        rate_limited = self._models.get(model_name)
+        if not rate_limited:
+            # Unknown model - try RateLimitFailover
+            try:
+                from .rate_limit_failover import get_failover_manager
+                return get_failover_manager().get_next_failover(model_name)
+            except ImportError:
+                return None
+        
+        # 1. Try same tier, different provider
+        same_tier = self._get_tier_models(rate_limited.tier)
+        for model in same_tier:
+            if model.name != model_name:
+                budget_check = self._budget_mgr.check_budget(model.provider, 10_000)
+                if budget_check.can_proceed:
+                    logger.info(f"Failover: {model_name} → {model.name} (same tier)")
+                    return model.name
+        
+        # 2. Try one tier down
+        fallback_tier = self._get_fallback_tier(rate_limited.tier)
+        if fallback_tier:
+            fallback_models = self._get_tier_models(fallback_tier)
+            for model in fallback_models:
+                budget_check = self._budget_mgr.check_budget(model.provider, 10_000)
+                if budget_check.can_proceed:
+                    logger.info(f"Failover: {model_name} → {model.name} (tier down)")
+                    return model.name
+        
+        # 3. Try any available model
+        for model in self._models.values():
+            if model.name != model_name:
+                budget_check = self._budget_mgr.check_budget(model.provider, 10_000)
+                if budget_check.can_proceed:
+                    logger.info(f"Failover: {model_name} → {model.name} (emergency)")
+                    return model.name
+        
+        logger.warning(f"No failover available for {model_name}")
+        return None
+
+    def record_rate_limit(self, model_name: str) -> Optional[str]:
+        """Record that a model hit rate limit and return failover.
+        
+        This integrates with TokenBudgetManager's 429 tracking.
+        
+        Args:
+            model_name: Model that hit rate limit
+            
+        Returns:
+            Suggested failover model, or None
+        """
+        model = self._models.get(model_name)
+        if model:
+            wait_time, budget_failover = self._budget_mgr.record_429(model.provider)
+            if budget_failover:
+                # Map provider back to model name
+                for m in self._models.values():
+                    if m.provider == budget_failover:
+                        return m.name
+        
+        # Fall back to tier-aware failover
+        return self.get_failover_for_model(model_name)
+
+    # =========================================================================
     # PROMPT ADAPTATION
     # =========================================================================
 
