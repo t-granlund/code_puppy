@@ -19,6 +19,21 @@ from pathlib import Path
 from dbos import DBOS, DBOSConfig
 from rich.console import Console
 
+# Configure logfire for AI observability
+try:
+    import logfire
+    logfire.configure(
+        service_name="code-puppy",
+        ignore_no_config=True,  # Don't fail if no config file
+        send_to_logfire=False,  # Local-only by default (user can enable)
+    )
+    # Instrument pydantic-ai agents and MCP
+    logfire.instrument_pydantic_ai()
+    logfire.instrument_mcp()
+except Exception as e:
+    # Fail gracefully if logfire isn't available
+    pass
+
 from code_puppy import __version__, callbacks, plugins
 from code_puppy.agents import get_current_agent
 from code_puppy.command_line.attachments import parse_prompt_attachments

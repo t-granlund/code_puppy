@@ -13,8 +13,16 @@ import logging
 import random
 import time
 from dataclasses import dataclass, field
+from decimal import Decimal
 from functools import wraps
 from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar
+
+# Import genai-prices for cost tracking
+try:
+    from genai_prices import Usage, calc_price
+    GENAI_PRICES_AVAILABLE = True
+except ImportError:
+    GENAI_PRICES_AVAILABLE = False
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +45,11 @@ class ProviderBudget:
     last_minute_reset: float = field(default_factory=time.time)
     last_daily_reset: float = field(default_factory=time.time)
     consecutive_429s: int = 0
+    
+    # Cost tracking (genai-prices integration)
+    total_cost_usd: Decimal = field(default_factory=lambda: Decimal("0.0"))
+    cost_this_minute: Decimal = field(default_factory=lambda: Decimal("0.0"))
+    cost_today: Decimal = field(default_factory=lambda: Decimal("0.0"))
     
     def reset_minute_if_needed(self) -> None:
         """Reset minute counter if window has passed."""
@@ -96,6 +109,8 @@ class BudgetCheckResult:
     wait_seconds: float = 0.0
     failover_to: Optional[str] = None
     reason: str = ""
+    estimated_cost_usd: Optional[Decimal] = None
+    total_cost_usd: Optional[Decimal] = None
 
 
 class TokenBudgetManager:
@@ -389,6 +404,40 @@ class TokenBudgetManager:
             )
         
         # All good - can proceed
+        # Estimate cost if possible (assume 50/50 split for estimation)
+        estimated_cost = None
+        if GENAI_PRICES_AVAILABLE:
+            try:
+                provider_id_map = {
+                    "cerebras": "cerebras",
+                    "gemini": "google",
+                    "gemini_flash": "google",
+                    "codex": "openai",
+                    "claude_sonnet": "anthropic",
+                    "claude_opus": "anthropic",
+                    "claude_haiku": "anthropic",
+                }
+                if provider in provider_id_map:
+                    # Rough estimate: assume 50/50 input/output split
+                    est_input = estimated_tokens // 2
+                    est_output = estimated_tokens - est_input
+                    usage = Usage(input_tokens=est_input, output_tokens=est_output)
+                    # Use a generic model for provider if we don't have specific model
+                    model_map = {
+                        "cerebras": "cerebras-glm-4.7",
+                        "gemini": "gemini-3-pro",
+                        "gemini_flash": "gemini-3-flash",
+                        "codex": "gpt-5.2",
+                        "claude_sonnet": "claude-sonnet-4.5",
+                        "claude_opus": "claude-opus-4.5",
+                        "claude_haiku": "claude-haiku",
+                    }
+                    model_ref = model_map.get(provider, provider)
+                    price_calc = calc_price(usage, model_ref, provider_id=provider_id_map[provider])
+                    estimated_cost = price_calc.total_price
+            except Exception:
+                pass
+        
         return BudgetCheckResult(
             provider=provider,
             can_proceed=True,
@@ -396,29 +445,80 @@ class TokenBudgetManager:
             remaining_minute=budget.remaining_minute,
             remaining_daily=budget.remaining_daily,
             reason="Within budget",
+            estimated_cost_usd=estimated_cost,
+            total_cost_usd=budget.total_cost_usd if hasattr(budget, 'total_cost_usd') else None,
         )
     
-    def record_usage(self, provider: str, tokens_used: int) -> None:
+    def record_usage(
+        self, 
+        provider: str, 
+        tokens_used: int,
+        input_tokens: Optional[int] = None,
+        output_tokens: Optional[int] = None,
+        model_ref: Optional[str] = None,
+    ) -> Optional[Decimal]:
         """Record actual token usage after a request completes.
         
         Args:
             provider: Provider that was used
             tokens_used: Actual tokens consumed
+            input_tokens: Input tokens (for cost calculation)
+            output_tokens: Output tokens (for cost calculation)
+            model_ref: Model reference (e.g., 'gpt-5', 'claude-opus-4.5')
+            
+        Returns:
+            Cost in USD if genai-prices is available, None otherwise
         """
         provider = self._normalize_provider(provider)
         
         if provider not in self._budgets:
-            return
+            return None
         
         budget = self._budgets[provider]
         budget.tokens_used_this_minute += tokens_used
         budget.tokens_used_today += tokens_used
         
+        # Calculate cost if genai-prices is available and we have token breakdown
+        cost_usd = None
+        if GENAI_PRICES_AVAILABLE and input_tokens is not None and output_tokens is not None and model_ref:
+            try:
+                # Map provider to genai-prices provider_id
+                provider_id_map = {
+                    "cerebras": "cerebras",
+                    "gemini": "google",
+                    "gemini_flash": "google",
+                    "codex": "openai",
+                    "claude_sonnet": "anthropic",
+                    "claude_opus": "anthropic",
+                    "claude_haiku": "anthropic",
+                }
+                
+                provider_id = provider_id_map.get(provider)
+                if provider_id:
+                    usage = Usage(input_tokens=input_tokens, output_tokens=output_tokens)
+                    price_calc = calc_price(usage, model_ref, provider_id=provider_id)
+                    cost_usd = price_calc.total_price
+                    
+                    # Track costs
+                    budget.total_cost_usd += cost_usd
+                    budget.cost_this_minute += cost_usd
+                    budget.cost_today += cost_usd
+                    
+                    logger.debug(
+                        f"Cost for {provider}/{model_ref}: ${cost_usd:.6f} "
+                        f"(in={input_tokens}, out={output_tokens})"
+                    )
+            except Exception as e:
+                logger.debug(f"Could not calculate cost for {provider}/{model_ref}: {e}")
+        
         logger.debug(
             f"Recorded {tokens_used} tokens for {provider}. "
             f"Minute: {budget.tokens_used_this_minute}/{budget.tokens_per_minute}, "
             f"Daily: {budget.tokens_used_today}/{budget.tokens_per_day}"
+            + (f", Cost: ${cost_usd:.6f}" if cost_usd else "")
         )
+        
+        return cost_usd
     
     def record_429(self, provider: str) -> Tuple[float, Optional[str]]:
         """Record a 429 error and return backoff time + failover suggestion.
@@ -467,7 +567,7 @@ class TokenBudgetManager:
         for provider, budget in self._budgets.items():
             budget.reset_minute_if_needed()
             budget.reset_daily_if_needed()
-            status[provider] = {
+            provider_status = {
                 "remaining_minute": budget.remaining_minute,
                 "remaining_daily": budget.remaining_daily,
                 "usage_percent_minute": f"{budget.usage_percent_minute:.1%}",
@@ -475,6 +575,11 @@ class TokenBudgetManager:
                 "seconds_until_reset": budget.seconds_until_reset,
                 "consecutive_429s": budget.consecutive_429s,
             }
+            # Add cost tracking if available
+            if hasattr(budget, 'total_cost_usd'):
+                provider_status["total_cost_usd"] = f"${budget.total_cost_usd:.6f}"
+                provider_status["cost_today"] = f"${budget.cost_today:.6f}"
+            status[provider] = provider_status
         return status
     
     def reset_provider(self, provider: str) -> None:
