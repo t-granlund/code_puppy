@@ -252,3 +252,31 @@ def get_failover_chain_for_agent(agent_name: str) -> List[str]:
 def get_workload_for_agent(agent_name: str) -> WorkloadType:
     """Get the workload type for an agent."""
     return get_orchestrator().get_workload_for_agent(agent_name)
+
+
+def create_failover_model_for_agent(
+    agent_name: str,
+    primary_model=None,
+    model_factory_func=None,
+):
+    """Create a FailoverModel for an agent with automatic workload-based failover.
+    
+    This wraps the primary model with automatic rate limit detection and failover
+    to workload-appropriate backup models.
+    
+    Args:
+        agent_name: Name of the agent (e.g., "bloodhound", "husky")
+        primary_model: The primary Model instance. If None, created from workload chain.
+        model_factory_func: Function to create Model from name: (str) -> Model
+        
+    Returns:
+        FailoverModel wrapping the primary with failover chain,
+        or the primary model if failover creation fails.
+    
+    Example:
+        model = create_failover_model_for_agent("bloodhound")
+        agent = Agent(model=model, ...)
+    """
+    from code_puppy.failover_model import FailoverModel, create_failover_model_for_agent as _create
+    
+    return _create(agent_name, primary_model, model_factory_func)

@@ -34,6 +34,7 @@ from .agent_orchestration import (
     get_model_for_agent,
     get_failover_chain_for_agent,
     get_workload_for_agent,
+    create_failover_model_for_agent,
     ORCHESTRATION_HIERARCHY,
 )
 
@@ -62,5 +63,6 @@ __all__ = [
     "get_model_for_agent",
     "get_failover_chain_for_agent",
     "get_workload_for_agent",
+    "create_failover_model_for_agent",
     "ORCHESTRATION_HIERARCHY",
 ]
