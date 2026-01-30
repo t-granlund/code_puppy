@@ -225,6 +225,14 @@ class TokenBudgetManager:
             cls._instance._initialized = False
         return cls._instance
     
+    @classmethod
+    def get_instance(cls) -> "TokenBudgetManager":
+        """Get the singleton instance of TokenBudgetManager.
+        
+        This is an alias for the __new__ singleton pattern for compatibility.
+        """
+        return cls()
+    
     def __init__(self):
         if self._initialized:
             return
@@ -254,9 +262,35 @@ class TokenBudgetManager:
             "sonnet-4.5": "claude_sonnet",
             "claude-opus-4.5": "claude_opus",
             "opus-4.5": "claude_opus",
+            # Antigravity OAuth models
+            "antigravity-gemini-3-flash": "gemini_flash",
+            "antigravity-gemini-3-pro-low": "gemini",
+            "antigravity-gemini-3-pro-high": "gemini",
+            "antigravity-claude-sonnet-4-5": "claude_sonnet",
+            "antigravity-claude-sonnet-4-5-thinking-low": "claude_sonnet",
+            "antigravity-claude-sonnet-4-5-thinking-medium": "claude_sonnet",
+            "antigravity-claude-sonnet-4-5-thinking-high": "claude_sonnet",
+            "antigravity-claude-opus-4-5-thinking-low": "claude_opus",
+            "antigravity-claude-opus-4-5-thinking-medium": "claude_opus",
+            "antigravity-claude-opus-4-5-thinking-high": "claude_opus",
         }
         
-        return mappings.get(provider, provider)
+        # Check direct mapping first
+        if provider in mappings:
+            return mappings[provider]
+        
+        # Fallback: detect from prefix patterns
+        if "antigravity" in provider:
+            if "gemini" in provider and "flash" in provider:
+                return "gemini_flash"
+            elif "gemini" in provider:
+                return "gemini"
+            elif "opus" in provider:
+                return "claude_opus"
+            elif "sonnet" in provider or "claude" in provider:
+                return "claude_sonnet"
+        
+        return provider
     
     def check_budget(
         self,

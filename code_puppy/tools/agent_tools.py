@@ -33,6 +33,7 @@ from code_puppy.messaging import (
     emit_error,
     emit_info,
     emit_success,
+    emit_warning,
     get_message_bus,
     get_session_context,
     set_session_context,
@@ -498,20 +499,40 @@ def register_invoke_agent(agent):
             
             acquired_slot_id = slot_result.slot_id
             
-            # If forced to summary mode, log it
+            # If forced to summary mode, log it and use summary model
             if slot_result.forced_summary_mode:
                 emit_info(
                     f"📝 {agent_name} running in summary mode (token threshold exceeded)",
                     message_group=group_id,
                 )
+                model_name = slot_result.assigned_model
+            else:
+                # === WORKLOAD-BASED MODEL SELECTION ===
+                # Use the AGENT_WORKLOAD_REGISTRY to get the right model for this agent
+                from code_puppy.core.agent_orchestration import get_model_for_agent
+                model_name = get_model_for_agent(agent_name)
+                
+                # Log the workload-aware model selection
+                from code_puppy.core import WorkloadType, get_workload_for_agent
+                workload = get_workload_for_agent(agent_name)
+                emit_info(
+                    f"🎯 {agent_name} using {model_name} ({workload.name} workload)",
+                    message_group=group_id,
+                )
 
-            # Get the current model for creating a temporary agent
-            model_name = agent_config.get_model_name()
             models_config = ModelFactory.load_config()
 
             # Only proceed if we have a valid model configuration
             if model_name not in models_config:
-                raise ValueError(f"Model '{model_name}' not found in configuration")
+                # Fallback to agent's configured model if workload model not available
+                fallback_model = agent_config.get_model_name()
+                emit_warning(
+                    f"Model '{model_name}' not found, falling back to {fallback_model}",
+                    message_group=group_id,
+                )
+                model_name = fallback_model
+                if model_name not in models_config:
+                    raise ValueError(f"Model '{model_name}' not found in configuration")
 
             model = ModelFactory.get_model(model_name, models_config)
 

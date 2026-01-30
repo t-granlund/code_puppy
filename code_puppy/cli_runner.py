@@ -120,10 +120,23 @@ async def main():
     if not args.prompt:
         try:
             import pyfiglet
+            import shutil
 
-            intro_lines = pyfiglet.figlet_format(
-                "CODE PUPPY", font="ansi_shadow"
-            ).split("\n")
+            # Get terminal width to pick appropriate font
+            term_width = shutil.get_terminal_size().columns
+            
+            # Use compact font for narrow terminals, ansi_shadow for wide
+            if term_width >= 100:
+                font = "ansi_shadow"
+                text = "CODE PUPPY"
+            elif term_width >= 70:
+                font = "slant"
+                text = "CODE PUPPY"
+            else:
+                font = "small"
+                text = "CODE PUPPY"
+
+            intro_lines = pyfiglet.figlet_format(text, font=font).split("\n")
 
             # Simple blue to green gradient (top to bottom)
             gradient_colors = ["bright_blue", "bright_cyan", "bright_green"]
