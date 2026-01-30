@@ -158,6 +158,19 @@ class TokenBudgetManager:
         "gemini_flash": "cerebras",  # Flash → Cerebras for speed
         "gpt-5.2": "codex",  # GPT 5 → Codex
         "chatgpt-codex-5.2": "claude_sonnet",  # Codex → Sonnet
+        # Antigravity OAuth models
+        "antigravity_gemini": "antigravity_claude",  # Gemini → Claude
+        "antigravity_claude": "gemini_flash",  # Antigravity Claude → regular Gemini
+        "antigravity-gemini-3-flash": "antigravity-claude-sonnet-4-5",
+        "antigravity-gemini-3-pro-low": "antigravity-gemini-3-flash",
+        "antigravity-gemini-3-pro-high": "antigravity-gemini-3-pro-low",
+        "antigravity-claude-opus-4-5-thinking-high": "antigravity-claude-opus-4-5-thinking-medium",
+        "antigravity-claude-opus-4-5-thinking-medium": "antigravity-claude-opus-4-5-thinking-low",
+        "antigravity-claude-opus-4-5-thinking-low": "antigravity-claude-sonnet-4-5-thinking-high",
+        "antigravity-claude-sonnet-4-5-thinking-high": "antigravity-claude-sonnet-4-5-thinking-medium",
+        "antigravity-claude-sonnet-4-5-thinking-medium": "antigravity-claude-sonnet-4-5-thinking-low",
+        "antigravity-claude-sonnet-4-5-thinking-low": "antigravity-claude-sonnet-4-5",
+        "antigravity-claude-sonnet-4-5": "antigravity-gemini-3-flash",
     }
     
     _instance: Optional["TokenBudgetManager"] = None

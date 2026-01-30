@@ -68,16 +68,22 @@ class RateLimitFailover:
         "opus": 1,
         "o3": 1,
         "o1": 1,
+        "opus-4-5-thinking": 1,  # Antigravity Opus thinking
         # Tier 2: Builder High (strong coding)
         "codex": 2,
         "gpt-5": 2,
+        "sonnet-4-5-thinking-high": 2,  # Sonnet high thinking = Builder
         # Tier 3: Builder Mid (capable all-rounder)
         "sonnet": 3,
         "gpt-4": 3,
+        "sonnet-4-5-thinking-medium": 3,
+        "sonnet-4-5-thinking-low": 3,
         # Tier 4: Librarian (fast search/docs)
         "gemini": 4,
         "haiku": 4,
         "flash": 4,
+        "gemini-3-pro": 4,  # Antigravity Gemini Pro
+        "gemini-3-flash": 4,  # Antigravity Gemini Flash
         # Tier 5: Sprinter (ultra-fast)
         "cerebras": 5,
         "glm": 5,
@@ -116,6 +122,15 @@ class RateLimitFailover:
 
         # Infer from model name
         model_lower = model_name.lower()
+        
+        # Antigravity OAuth models (prefix detection)
+        if "antigravity" in model_lower:
+            if "gemini" in model_lower:
+                return "antigravity_gemini"
+            elif "claude" in model_lower or "opus" in model_lower or "sonnet" in model_lower:
+                return "antigravity_claude"
+            return "antigravity"
+        
         if "cerebras" in model_lower or "glm" in model_lower:
             return "cerebras"
         elif "gemini" in model_lower:
@@ -172,10 +187,22 @@ class RateLimitFailover:
     def _load_fallback_models(self) -> None:
         """Load fallback models if ModelFactory fails."""
         fallbacks = [
+            # Standard models
             ("gemini-3-flash", "gemini", 4),
             ("gemini-3-pro", "gemini", 4),
             ("claude-sonnet-4.5", "anthropic", 3),
             ("cerebras-glm-4.7", "cerebras", 5),
+            # Antigravity OAuth models
+            ("antigravity-gemini-3-flash", "antigravity_gemini", 4),
+            ("antigravity-gemini-3-pro-low", "antigravity_gemini", 4),
+            ("antigravity-gemini-3-pro-high", "antigravity_gemini", 4),
+            ("antigravity-claude-sonnet-4-5", "antigravity_claude", 3),
+            ("antigravity-claude-sonnet-4-5-thinking-low", "antigravity_claude", 3),
+            ("antigravity-claude-sonnet-4-5-thinking-medium", "antigravity_claude", 3),
+            ("antigravity-claude-sonnet-4-5-thinking-high", "antigravity_claude", 2),
+            ("antigravity-claude-opus-4-5-thinking-low", "antigravity_claude", 1),
+            ("antigravity-claude-opus-4-5-thinking-medium", "antigravity_claude", 1),
+            ("antigravity-claude-opus-4-5-thinking-high", "antigravity_claude", 1),
         ]
         for name, provider, tier in fallbacks:
             self._available_models[name] = FailoverTarget(

@@ -57,6 +57,31 @@ class TestRateLimitFailover:
         mgr = RateLimitFailover()
         assert mgr._detect_tier("unknown-model") == 4
 
+    def test_detect_tier_antigravity_opus(self):
+        """Should detect Antigravity Opus as Architect tier."""
+        mgr = RateLimitFailover()
+        assert mgr._detect_tier("antigravity-claude-opus-4-5-thinking-high") == 1
+
+    def test_detect_tier_antigravity_sonnet(self):
+        """Should detect Antigravity Sonnet as Builder tier."""
+        mgr = RateLimitFailover()
+        # High thinking = Builder High (tier 2)
+        assert mgr._detect_tier("antigravity-claude-sonnet-4-5-thinking-high") == 2
+        # Regular sonnet = Builder Mid (tier 3)
+        assert mgr._detect_tier("antigravity-claude-sonnet-4-5") == 3
+
+    def test_detect_tier_antigravity_gemini(self):
+        """Should detect Antigravity Gemini as Librarian tier."""
+        mgr = RateLimitFailover()
+        assert mgr._detect_tier("antigravity-gemini-3-flash") == 4
+        assert mgr._detect_tier("antigravity-gemini-3-pro-high") == 4
+
+    def test_detect_provider_antigravity(self):
+        """Should detect Antigravity provider correctly."""
+        mgr = RateLimitFailover()
+        assert mgr._detect_provider("antigravity-gemini-3-flash", {}) == "antigravity_gemini"
+        assert mgr._detect_provider("antigravity-claude-sonnet-4-5", {}) == "antigravity_claude"
+
     def test_load_fallback_models(self):
         """Should load fallback models when factory fails."""
         mgr = RateLimitFailover()

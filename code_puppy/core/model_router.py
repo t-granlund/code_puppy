@@ -299,8 +299,11 @@ class ModelRouter:
         "claude_sonnet": ModelTier.BUILDER_MID,
         "claude_haiku": ModelTier.LIBRARIAN,
         "anthropic": ModelTier.BUILDER_MID,
-        # Antigravity OAuth (Gemini = Librarian, Claude = same as above)
+        # Antigravity OAuth (provider-level mappings)
         "antigravity": ModelTier.LIBRARIAN,
+        "antigravity_gemini": ModelTier.LIBRARIAN,
+        "antigravity_claude": ModelTier.BUILDER_MID,
+        # Standard Gemini
         "gemini": ModelTier.LIBRARIAN,
         "gemini_flash": ModelTier.LIBRARIAN,
         # ChatGPT Teams (Builder tier)
