@@ -526,8 +526,11 @@ class ModelRouter:
     # =========================================================================
 
     # Personality text patterns to strip for Sprinter models
+    # DIALECT OPTIMIZATION: Aggressively remove token-wasting preamble
     PERSONALITY_PATTERNS = [
         r"You are [a-zA-Z\s]+\. ",  # "You are a helpful assistant."
+        r"You are a [^.]+\.",  # "You are a friendly coder."
+        r"As an? [^,]+, ",  # "As a helpful assistant, "
         r"\bfriendly\b",
         r"\bhelpful\b",
         r"\bpolite\b",
@@ -535,13 +538,22 @@ class ModelRouter:
         r"Please feel free to[^.]+\.",
         r"Don't hesitate to[^.]+\.",
         r"You're here to help[^.]+\.",
+        r"I'm here to help[^.]+\.",
+        r"Feel free to ask[^.]+\.",
+        r"Let me know if[^.]+\.",
+        r"Happy to help[^.]+\.",
+        r"I'd be happy to[^.]+\.",
     ]
 
     # Suffixes for different tiers
+    # DIALECT OPTIMIZATION: Each tier gets appropriate instruction mode
     TIER_SUFFIXES = {
-        ModelTier.SPRINTER: "\n\n[STRICT OUTPUT MODE: CODE ONLY. NO EXPLANATIONS. NO COMMENTARY.]",
-        ModelTier.ARCHITECT: "",  # Keep full instructions for Architect
-        ModelTier.LIBRARIAN: "\n\n[CONCISE MODE: Summarize efficiently.]",
+        # Sprinter (Cerebras): Maximum token efficiency, zero explanation overhead
+        ModelTier.SPRINTER: "\n\n[STRICT MODE]: OUTPUT CODE ONLY. NO MARKDOWN. NO EXPLANATION. NO COMMENTS UNLESS EXPLICITLY REQUIRED. RESPOND WITH RAW CODE.",
+        # Architect (Claude Opus): Full reasoning and architectural context preserved
+        ModelTier.ARCHITECT: "",
+        # Librarian (Gemini): Concise summaries, no verbose explanations
+        ModelTier.LIBRARIAN: "\n\n[CONCISE MODE]: Summarize efficiently. No redundant context.",
     }
 
     def adapt_prompt(self, prompt: str, tier: ModelTier) -> str:

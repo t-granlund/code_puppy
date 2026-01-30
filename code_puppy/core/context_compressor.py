@@ -450,11 +450,17 @@ class ContextCompressor:
         source: str,
         target_symbol: str,
         include_dependencies: bool = True,
-    ) -> Optional[str]:
+    ) -> str:
         """Extract ONLY the relevant function/class for a specific symbol.
 
-        This is more efficient than returning the full file when
-        only one function/class needs modification.
+        FAIL-SAFE CONTEXT SLICING:
+        - If slicing succeeds: Returns just the target symbol
+        - If symbol not found: Returns class signatures summary (NOT full file!)
+        - If AST parse fails: Returns truncated head/tail (NOT full file!)
+        
+        CRITICAL: Never returns full file content to avoid:
+        - Crashing Cerebras 50K context window
+        - Burning budget on large files
 
         Args:
             source: Python source code
@@ -464,12 +470,13 @@ class ContextCompressor:
 
         Returns:
             Sliced source containing only the target symbol,
-            or None if symbol not found
+            OR a compressed summary if symbol not found (NEVER full file!)
         """
         try:
             tree = ast.parse(source)
         except SyntaxError:
-            return None
+            # FAIL-SAFE: Return truncated version, never full file
+            return self._truncate_head_tail(source, 30, 10) + "\n# [CONTEXT SLICING FAILED: Parse error]"
 
         lines = source.splitlines()
         result_parts: List[str] = []
@@ -523,13 +530,52 @@ class ContextCompressor:
                     break
 
         if not found:
-            return None
+            # FAIL-SAFE: Return class signatures summary, NEVER full file!
+            # This prevents context window overflow on Cerebras
+            return self._generate_symbol_not_found_summary(source, target_symbol, tree)
 
         # Combine imports + target
         if include_dependencies and import_lines:
             return "\n".join(import_lines) + "\n\n" + "\n".join(result_parts)
         else:
             return "\n".join(result_parts)
+
+    def _generate_symbol_not_found_summary(
+        self,
+        source: str,
+        target_symbol: str,
+        tree: ast.AST,
+    ) -> str:
+        """Generate a compressed summary when target symbol is not found.
+        
+        FAIL-SAFE: Returns class/function signatures instead of full file.
+        This prevents Cerebras context window overflow and budget waste.
+        
+        Args:
+            source: Original source code
+            target_symbol: Symbol that was not found
+            tree: Parsed AST
+            
+        Returns:
+            Compressed summary with signatures only
+        """
+        summary_parts = [f"# Symbol '{target_symbol}' not found. File summary:"]
+        summary_parts.append("")
+        
+        # Extract just the signatures using AST pruning
+        pruned = self.prune_python_ast(source, keep_bodies=False)
+        
+        # Limit to first ~100 lines of pruned content
+        pruned_lines = pruned.splitlines()[:100]
+        summary_parts.extend(pruned_lines)
+        
+        if len(pruned.splitlines()) > 100:
+            summary_parts.append("# ... (additional signatures omitted)")
+        
+        summary_parts.append("")
+        summary_parts.append(f"# [CONTEXT SLICING: Symbol '{target_symbol}' not found]")
+        
+        return "\n".join(summary_parts)
 
     def find_symbol_location(
         self,

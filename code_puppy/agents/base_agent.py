@@ -1020,9 +1020,10 @@ class BaseAgent(ABC):
         original_prompt: str,
         max_retries: int = 2,
     ) -> Tuple[str, bool]:
-        """Auto-retry code generation if lint check fails.
+        """Auto-retry code generation if lint check fails (sync version).
 
-        LOCAL LINT GUARD: If syntax check fails, retry with error context.
+        LOCAL LINT GUARD: If syntax check fails, log and return.
+        For async retry, use async_lint_guard_retry().
 
         Args:
             code: Generated code
@@ -1043,9 +1044,135 @@ class BaseAgent(ABC):
             message_group="lint_guard",
         )
 
-        # For now, just return the code with the error noted
-        # Full auto-retry would require async context
+        # Sync version cannot retry - use async_lint_guard_retry for that
         return code, False
+
+    async def async_lint_guard_retry(
+        self,
+        code: str,
+        filepath: str,
+        original_context: str,
+        max_retries: int = 2,
+    ) -> Tuple[str, bool, Optional[str]]:
+        """Async self-correction retry loop for lint failures.
+
+        LOCAL LINT GUARD (Zero-Cost Verification):
+        1. Run local syntax check (ast.parse for Python, eslint for JS)
+        2. If FAIL: DO NOT send to Claude Reviewer (waste of $$$)
+        3. Trigger fast self-correction on Sprinter model using error context
+        
+        This saves tokens by catching obvious syntax errors locally
+        before burning budget on expensive reviewer models.
+
+        Args:
+            code: Generated code to verify
+            filepath: File path for language detection
+            original_context: Context for retry prompt
+            max_retries: Maximum self-correction attempts
+
+        Returns:
+            (final_code, was_fixed, final_error) - Fixed code and status
+        """
+        current_code = code
+        
+        for attempt in range(max_retries + 1):
+            is_valid, error = self.lint_check_code(current_code, filepath)
+            
+            if is_valid:
+                if attempt > 0:
+                    emit_warning(
+                        f"✅ Lint guard: Fixed after {attempt} retry(ies)",
+                        message_group="lint_guard",
+                    )
+                return current_code, attempt > 0, None
+            
+            if attempt >= max_retries:
+                emit_warning(
+                    f"❌ Lint guard: Failed after {max_retries} retries: {error}",
+                    message_group="lint_guard",
+                )
+                return current_code, False, error
+            
+            # Attempt self-correction with Sprinter model
+            emit_warning(
+                f"🔄 Lint guard: Retry {attempt + 1}/{max_retries} - {error}",
+                message_group="lint_guard",
+            )
+            
+            # Build correction prompt
+            correction_prompt = self._build_lint_correction_prompt(
+                current_code, filepath, error, original_context
+            )
+            
+            try:
+                # Use fast Sprinter model for self-correction
+                fixed_code = await self._quick_sprinter_fix(correction_prompt, filepath)
+                if fixed_code:
+                    current_code = fixed_code
+            except Exception as e:
+                emit_warning(
+                    f"⚠️ Lint guard: Sprinter retry failed: {e}",
+                    message_group="lint_guard",
+                )
+                break
+        
+        return current_code, False, error
+
+    def _build_lint_correction_prompt(
+        self,
+        code: str,
+        filepath: str,
+        error: str,
+        context: str,
+    ) -> str:
+        """Build a prompt for lint error self-correction.
+        
+        Args:
+            code: Code with syntax error
+            filepath: File path for context
+            error: The lint error message
+            context: Original task context
+            
+        Returns:
+            Prompt for Sprinter model to fix the error
+        """
+        ext = pathlib.Path(filepath).suffix.lower() if filepath else ".py"
+        lang = "Python" if ext in ('.py', '.pyw') else "JavaScript/TypeScript"
+        
+        return f"""[SYNTAX FIX REQUIRED]
+Language: {lang}
+Error: {error}
+File: {filepath}
+
+BROKEN CODE:
+```
+{code}
+```
+
+TASK: Fix ONLY the syntax error. Output ONLY the corrected code.
+NO explanations. NO markdown. JUST the fixed code.
+"""
+
+    async def _quick_sprinter_fix(
+        self,
+        prompt: str,
+        filepath: str,
+    ) -> Optional[str]:
+        """Quick fix attempt using Sprinter model.
+        
+        This is a lightweight call specifically for syntax fixes.
+        
+        Args:
+            prompt: The correction prompt
+            filepath: File path for context
+            
+        Returns:
+            Fixed code or None if failed
+        """
+        # This is a stub - actual implementation would use ModelRouter
+        # to route to Cerebras Sprinter tier for fast, cheap fixes
+        # For now, return None to skip retry
+        return None
 
     def get_model_context_length(self) -> int:
         """

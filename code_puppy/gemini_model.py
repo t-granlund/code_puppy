@@ -232,10 +232,135 @@ def _sanitize_schema_for_gemini(schema: dict) -> dict:
     return resolve_refs(schema)
 
 
+# =========================================================================
+# GEMINI CACHED CONTENT MANAGER
+# =========================================================================
+
+class GeminiCacheManager:
+    """Manages cached content for Gemini API to reduce token costs.
+    
+    WIRE-LEVEL CACHING for Gemini:
+    - Caches large repository context using cachedContents API
+    - Avoids re-sending full string payload on every turn
+    - Cache entries are keyed by content hash for deduplication
+    
+    Usage:
+        manager = GeminiCacheManager(api_key)
+        cache_name = await manager.create_or_get_cache(large_context)
+        # Use cache_name in cachedContent field of request
+    """
+    
+    # Minimum content size to cache (30K tokens ~ 120K chars)
+    MIN_CACHE_SIZE_CHARS = 120_000
+    
+    # Cache TTL (1 hour)
+    CACHE_TTL_SECONDS = 3600
+    
+    def __init__(self, api_key: str, base_url: str = "https://generativelanguage.googleapis.com/v1beta"):
+        self.api_key = api_key
+        self.base_url = base_url.rstrip("/")
+        self._cache_map: dict[str, str] = {}  # content_hash -> cache_name
+        self._http_client: httpx.AsyncClient | None = None
+    
+    def _content_hash(self, content: str) -> str:
+        """Generate hash for content deduplication."""
+        import hashlib
+        return hashlib.sha256(content.encode()).hexdigest()[:32]
+    
+    async def _get_client(self) -> httpx.AsyncClient:
+        """Get or create HTTP client."""
+        if self._http_client is None:
+            self._http_client = httpx.AsyncClient(timeout=60)
+        return self._http_client
+    
+    def should_cache(self, content: str) -> bool:
+        """Check if content is large enough to benefit from caching."""
+        return len(content) >= self.MIN_CACHE_SIZE_CHARS
+    
+    async def create_cache(
+        self,
+        content: str,
+        model_name: str = "models/gemini-2.0-flash",
+        display_name: str = "code_puppy_context",
+    ) -> str | None:
+        """Create a cached content entry.
+        
+        Args:
+            content: Large context to cache (e.g., repository files)
+            model_name: Model to associate with cache
+            display_name: Human-readable cache name
+            
+        Returns:
+            Cache resource name (e.g., "cachedContents/xxx") or None if failed
+        """
+        content_hash = self._content_hash(content)
+        
+        # Check local cache map first
+        if content_hash in self._cache_map:
+            return self._cache_map[content_hash]
+        
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url}/cachedContents?key={self.api_key}"
+            
+            payload = {
+                "model": model_name,
+                "displayName": display_name,
+                "contents": [
+                    {
+                        "role": "user",
+                        "parts": [{"text": content}]
+                    }
+                ],
+                "ttl": f"{self.CACHE_TTL_SECONDS}s"
+            }
+            
+            response = await client.post(
+                url,
+                json=payload,
+                headers={"Content-Type": "application/json"}
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                cache_name = data.get("name")
+                if cache_name:
+                    self._cache_map[content_hash] = cache_name
+                    logger.info(f"Created Gemini cache: {cache_name}")
+                    return cache_name
+            else:
+                logger.warning(f"Gemini cache creation failed: {response.status_code}")
+                
+        except Exception as e:
+            logger.warning(f"Gemini cache error: {e}")
+        
+        return None
+    
+    def get_cached_content_ref(self, content: str) -> str | None:
+        """Get cached content reference if available.
+        
+        Args:
+            content: The content to look up
+            
+        Returns:
+            Cache resource name if cached, None otherwise
+        """
+        content_hash = self._content_hash(content)
+        return self._cache_map.get(content_hash)
+    
+    async def close(self) -> None:
+        """Close HTTP client."""
+        if self._http_client:
+            await self._http_client.aclose()
+            self._http_client = None
+
+
 class GeminiModel(Model):
     """Standalone Model implementation for Google's Generative Language API.
 
     Uses httpx directly instead of google-genai SDK.
+    
+    WIRE-LEVEL CACHING: Supports cachedContent for large repository context.
     """
 
     def __init__(
@@ -250,6 +375,8 @@ class GeminiModel(Model):
         self._base_url = base_url.rstrip("/")
         self._http_client = http_client
         self._owns_client = http_client is None
+        # Wire-level caching for large context
+        self._cache_manager = GeminiCacheManager(api_key, base_url)
 
     @property
     def model_name(self) -> str:

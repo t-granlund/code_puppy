@@ -346,8 +346,10 @@ class ClaudeCacheAsyncClient(httpx.AsyncClient):
         include_claude_code = "claude-code-20250219" in incoming_betas
 
         # Build merged betas list
+        # CRITICAL: prompt-caching enables $$$-saving on repeated context
         merged_betas = [
             "oauth-2025-04-20",
+            "prompt-caching-2024-07-31",  # WIRE-LEVEL CACHING: Critical cost saver
             "interleaved-thinking-2025-05-14",
         ]
         if include_claude_code:
