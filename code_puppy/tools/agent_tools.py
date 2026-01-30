@@ -9,10 +9,13 @@ import traceback
 from datetime import datetime
 from functools import partial
 from pathlib import Path
-from typing import List, Set
+from typing import List, Optional, Set
 
 from dbos import DBOS, SetWorkflowID
 from pydantic import BaseModel
+
+# Pack Governor for concurrent agent limits
+from code_puppy.core import PackGovernor, AgentRole, acquire_agent_slot, release_agent_slot
 
 # Import Agent from pydantic_ai to create temporary agents for invocation
 from pydantic_ai import Agent, RunContext, UsageLimits
@@ -451,12 +454,56 @@ def register_invoke_agent(agent):
 
         browser_session_token = set_browser_session(f"browser-{session_id}")
 
+        # Track acquired slot for cleanup
+        acquired_slot_id: Optional[str] = None
+
         try:
             # Lazy import to break circular dependency with messaging module
             from code_puppy.model_factory import ModelFactory, make_model_settings
 
             # Load the specified agent config
             agent_config = load_agent(agent_name)
+
+            # === PACK GOVERNOR: Acquire slot before running agent ===
+            slot_result = await acquire_agent_slot(
+                agent_name=agent_name,
+                estimated_tokens=10_000,  # Conservative estimate
+            )
+            
+            if not slot_result.granted:
+                # Slot not available - wait or fail
+                if slot_result.wait_seconds > 0:
+                    emit_info(
+                        f"⏳ Waiting {slot_result.wait_seconds:.1f}s for {agent_name} slot: {slot_result.reason}",
+                        message_group=group_id,
+                    )
+                    await asyncio.sleep(slot_result.wait_seconds)
+                    # Retry once after waiting
+                    slot_result = await acquire_agent_slot(
+                        agent_name=agent_name,
+                        estimated_tokens=10_000,
+                    )
+                    if not slot_result.granted:
+                        error_msg = f"Failed to acquire slot for {agent_name}: {slot_result.reason}"
+                        emit_error(error_msg, message_group=group_id)
+                        return AgentInvokeOutput(
+                            response=None, agent_name=agent_name, session_id=session_id, error=error_msg
+                        )
+                else:
+                    error_msg = f"Cannot start {agent_name}: {slot_result.reason}"
+                    emit_error(error_msg, message_group=group_id)
+                    return AgentInvokeOutput(
+                        response=None, agent_name=agent_name, session_id=session_id, error=error_msg
+                    )
+            
+            acquired_slot_id = slot_result.slot_id
+            
+            # If forced to summary mode, log it
+            if slot_result.forced_summary_mode:
+                emit_info(
+                    f"📝 {agent_name} running in summary mode (token threshold exceeded)",
+                    message_group=group_id,
+                )
 
             # Get the current model for creating a temporary agent
             model_name = agent_config.get_model_name()
@@ -660,6 +707,10 @@ def register_invoke_agent(agent):
             )
 
         finally:
+            # === PACK GOVERNOR: Release slot ===
+            if acquired_slot_id:
+                await release_agent_slot(acquired_slot_id)
+            
             # Restore the previous session context
             set_session_context(previous_session_id)
             # Reset terminal session context

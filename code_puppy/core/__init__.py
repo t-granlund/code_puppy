@@ -9,7 +9,7 @@ This module provides:
 """
 
 from .token_budget import TokenBudgetManager, smart_retry
-from .model_router import ModelRouter, TaskComplexity, ModelTier
+from .model_router import ModelRouter, TaskComplexity, ModelTier, TaskType
 from .context_compressor import ContextCompressor
 from .smart_context_loader import SmartContextLoader, ContextManager
 from .pack_governor import (
@@ -27,6 +27,7 @@ __all__ = [
     "ModelRouter",
     "TaskComplexity",
     "ModelTier",
+    "TaskType",
     "ContextCompressor",
     "SmartContextLoader",
     "ContextManager",

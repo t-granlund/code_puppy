@@ -67,6 +67,17 @@ from code_puppy.config import (
     get_use_dbos,
     get_value,
 )
+
+# Core infrastructure for hybrid inference
+from code_puppy.core import (
+    ContextCompressor,
+    TokenBudgetManager,
+    ModelRouter,
+    ModelTier,
+    TaskType,
+    TaskComplexity,
+)
+
 from code_puppy.error_logging import log_error
 from code_puppy.keymap import cancel_agent_uses_signal, get_cancel_agent_char_code
 from code_puppy.mcp_ import get_mcp_manager
@@ -147,6 +158,8 @@ class BaseAgent(ABC):
         self._last_model_name: Optional[str] = None
         # Puppy rules loaded lazily
         self._puppy_rules: Optional[str] = None
+        # Model router for task-based routing (lazy init)
+        self._model_router: Optional[ModelRouter] = None
         self.cur_model: pydantic_ai.models.Model
         # Cache for MCP tool definitions (for token estimation)
         # This is populated after the first successful run when MCP tools are retrieved
@@ -295,6 +308,43 @@ class BaseAgent(ABC):
         if pinned == "" or pinned is None:
             return get_global_model_name()
         return pinned
+
+    def get_model_router(self) -> ModelRouter:
+        """Get or create the ModelRouter instance for this agent.
+        
+        Returns:
+            ModelRouter instance for task-based model routing.
+        """
+        if self._model_router is None:
+            self._model_router = ModelRouter()
+        return self._model_router
+
+    def route_task(self, prompt: str) -> str:
+        """Route a task to the optimal model based on prompt analysis.
+        
+        Uses ModelRouter to analyze the prompt and select the best model
+        based on task type and complexity. Falls back to pinned model
+        if router returns no result.
+        
+        Args:
+            prompt: The user prompt to analyze
+            
+        Returns:
+            Model name to use for this task
+        """
+        router = self.get_model_router()
+        decision = router.route(prompt)
+        
+        if decision.model:
+            emit_info(
+                f"🎯 Routed to {decision.model} (tier={decision.tier.name}, "
+                f"task={decision.task_type.value}, complexity={decision.complexity.value})",
+                message_group="model_routing",
+            )
+            return decision.model
+        
+        # Fall back to pinned or global model
+        return self.get_model_name() or "claude-sonnet"
 
     def _clean_binaries(self, messages: List[ModelMessage]) -> List[ModelMessage]:
         cleaned = []
@@ -780,6 +830,49 @@ class BaseAgent(ABC):
         except Exception as e:
             emit_error(f"Summarization failed during compaction: {e}")
             return messages, []  # Return original messages on failure
+
+    def compress_history(
+        self,
+        messages: List[ModelMessage],
+        target_tokens: int = 15_000,
+    ) -> List[ModelMessage]:
+        """
+        Compress message history using the ContextCompressor.
+        
+        This is a faster alternative to summarization that uses AST pruning
+        and head/tail truncation instead of an LLM call.
+        
+        Args:
+            messages: List of messages to compress
+            target_tokens: Target token count for compression
+            
+        Returns:
+            Compressed message list
+        """
+        if not messages:
+            return messages
+            
+        try:
+            compressor = ContextCompressor(
+                max_tokens=target_tokens,
+                estimate_tokens_fn=self.estimate_token_count,
+            )
+            
+            # Convert messages to format expected by compressor
+            compressed = compressor.compress_history(
+                messages,
+                preserve_recent=3,  # Keep last 3 exchanges
+            )
+            
+            emit_info(
+                f"🗜️ History compressed: {len(messages)} → {len(compressed)} messages",
+                message_group="token_context_status",
+            )
+            
+            return compressed
+        except Exception as e:
+            emit_warning(f"Compression failed, using original: {e}")
+            return messages
 
     def get_model_context_length(self) -> int:
         """
@@ -1752,6 +1845,39 @@ class BaseAgent(ABC):
                     self.prune_interrupted_tool_calls(self.get_message_history())
                 )
 
+                # === TOKEN BUDGET CHECK ===
+                # Check if we have budget for this request
+                model_name = self.get_model_name() or "unknown"
+                budget_manager = TokenBudgetManager.get_instance()
+                
+                # Estimate input tokens
+                estimated_tokens = sum(
+                    self.estimate_tokens_for_message(msg) 
+                    for msg in self.get_message_history()
+                ) + self.estimate_token_count(prompt if isinstance(prompt, str) else str(prompt))
+                
+                budget_check = budget_manager.check_budget(model_name, estimated_tokens)
+                
+                if not budget_check.allowed:
+                    if budget_check.wait_seconds > 0:
+                        emit_warning(
+                            f"⏳ Rate limit: waiting {budget_check.wait_seconds:.1f}s "
+                            f"({budget_check.reason})",
+                            message_group="token_budget",
+                        )
+                        await asyncio.sleep(budget_check.wait_seconds)
+                    elif budget_check.fallback_model:
+                        emit_info(
+                            f"🔄 Switching to {budget_check.fallback_model}: {budget_check.reason}",
+                            message_group="token_budget",
+                        )
+                        # TODO: Implement model switching on the fly
+                    else:
+                        emit_warning(
+                            f"⚠️ Budget exceeded: {budget_check.reason}",
+                            message_group="token_budget",
+                        )
+
                 # DELAYED COMPACTION: Check if we should attempt delayed compaction
                 if self.should_attempt_delayed_compaction():
                     emit_info(
@@ -1869,6 +1995,16 @@ class BaseAgent(ABC):
 
                 collect_cancelled_exceptions(other_error)
             finally:
+                # === RECORD TOKEN USAGE ===
+                try:
+                    final_tokens = sum(
+                        self.estimate_tokens_for_message(msg) 
+                        for msg in self.get_message_history()
+                    )
+                    budget_manager.record_usage(model_name, final_tokens)
+                except Exception:
+                    pass  # Don't let usage recording break the flow
+                
                 self.set_message_history(
                     self.prune_interrupted_tool_calls(self.get_message_history())
                 )

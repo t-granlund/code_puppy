@@ -4,10 +4,13 @@ import os
 import shutil
 import subprocess
 import tempfile
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel, conint
 from pydantic_ai import RunContext
+
+# Smart context loading for caching
+from code_puppy.core import SmartContextLoader, ContextManager
 
 # ---------------------------------------------------------------------------
 # Module-level helper functions (exposed for unit tests _and_ used as tools)
@@ -465,6 +468,58 @@ def _read_file(
     if not os.path.isfile(file_path):
         error_msg = f"{file_path} is not a file"
         return ReadFileOutput(content=error_msg, num_tokens=0, error=error_msg)
+    
+    # === SMART CONTEXT LOADER: Check cache first ===
+    try:
+        loader = SmartContextLoader()
+        cached = loader.load_file(file_path)
+        
+        if cached and cached.content:
+            content = cached.content
+            
+            # Apply line range if specified
+            if start_line is not None and num_lines is not None:
+                lines = content.split('\n')
+                start_idx = start_line - 1 if start_line > 0 else 0
+                end_idx = start_idx + num_lines
+                start_idx = max(0, start_idx)
+                end_idx = min(len(lines), end_idx)
+                content = '\n'.join(lines[start_idx:end_idx])
+            
+            # Token estimation
+            num_tokens = len(content) // 4
+            if num_tokens > 10000:
+                return ReadFileOutput(
+                    content=None,
+                    error="The file is massive, greater than 10,000 tokens which is dangerous to read entirely. Please read this file in chunks.",
+                    num_tokens=0,
+                )
+            
+            total_lines = content.count("\n") + (
+                1 if content and not content.endswith("\n") else 0
+            )
+            
+            emit_start_line = (
+                start_line if start_line is not None and start_line >= 1 else None
+            )
+            emit_num_lines = (
+                num_lines if num_lines is not None and num_lines >= 1 else None
+            )
+            file_content_msg = FileContentMessage(
+                path=file_path,
+                content=content,
+                start_line=emit_start_line,
+                num_lines=emit_num_lines,
+                total_lines=total_lines,
+                num_tokens=num_tokens,
+            )
+            get_message_bus().emit(file_content_msg)
+            
+            return ReadFileOutput(content=content, num_tokens=num_tokens)
+    except Exception:
+        pass  # Fall back to direct file read
+    
+    # === FALLBACK: Direct file read ===
     try:
         # Use errors="surrogateescape" to handle files with invalid UTF-8 sequences
         # This is common on Windows when files contain emojis or were created by

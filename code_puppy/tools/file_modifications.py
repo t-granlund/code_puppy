@@ -21,6 +21,7 @@ from pydantic import BaseModel
 from pydantic_ai import RunContext
 
 from code_puppy.callbacks import on_delete_file, on_edit_file
+from code_puppy.core import ContextManager  # For cache invalidation
 from code_puppy.messaging import (  # Structured messaging types
     DiffLine,
     DiffMessage,
@@ -28,6 +29,15 @@ from code_puppy.messaging import (  # Structured messaging types
     emit_warning,
     get_message_bus,
 )
+
+
+def _invalidate_file_cache(file_path: str) -> None:
+    """Invalidate the SmartContextLoader cache for a modified file."""
+    try:
+        cm = ContextManager.get_instance()
+        cm.mark_modified(file_path)
+    except Exception:
+        pass  # Don't let cache invalidation break file operations
 from code_puppy.tools.common import _find_best_window, generate_group_id
 
 
@@ -245,6 +255,7 @@ def _delete_snippet_from_file(
         )
         with open(file_path, "w", encoding="utf-8") as f:
             f.write(modified)
+        _invalidate_file_cache(file_path)  # Invalidate cache after write
         return {
             "success": True,
             "path": file_path,
@@ -331,6 +342,7 @@ def _replace_in_file(
     )
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(modified)
+    _invalidate_file_cache(file_path)  # Invalidate cache after write
     return {
         "success": True,
         "path": file_path,
@@ -374,6 +386,7 @@ def _write_to_file(
         os.makedirs(os.path.dirname(file_path) or ".", exist_ok=True)
         with open(file_path, "w", encoding="utf-8") as f:
             f.write(content)
+        _invalidate_file_cache(file_path)  # Invalidate cache after write
 
         action = "overwritten" if exists else "created"
         return {
