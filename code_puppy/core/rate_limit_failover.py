@@ -52,8 +52,31 @@ class FailoverResult:
     error: Optional[str] = None
 
 
+class WorkloadType(IntEnum):
+    """Types of workloads for smart failover routing."""
+    
+    ORCHESTRATOR = 1  # Pack leader, governor, planning - needs Opus/Sonnet
+    REASONING = 2     # Complex logic, security audit - needs Opus/Sonnet
+    CODING = 3        # Main code generation - Cerebras preferred
+    LIBRARIAN = 4     # Search, docs, context - Gemini/Haiku
+
+
 class RateLimitFailover:
     """Manages automatic failover when models hit rate limits.
+
+    PURPOSE-DRIVEN FAILOVER STRUCTURE:
+    
+    ARCHITECT TIER (Orchestrator, Pack Leader, Governor, Planning):
+      Claude Code Opus → Antigravity Opus → Gemini Pro → Codex 5.2
+    
+    BUILDER TIER (Complex logic, design, refactoring):
+      Claude Code Sonnet → Antigravity Sonnet → Gemini Pro → Codex 5.2
+    
+    SPRINTER TIER (Main code work, high volume generation):
+      Cerebras GLM 4.7 → Claude Haiku → Gemini Flash
+    
+    LIBRARIAN TIER (Search, docs, context, less intensive):
+      Haiku → GPT 5.2 → Gemini Flash
 
     Reads from existing OAuth configurations to build failover chains.
     Never modifies authentication credentials.
@@ -64,12 +87,12 @@ class RateLimitFailover:
     # Tier mapping for known model types
     # This is read-only reference data, not modifying any config
     TIER_MAPPINGS: Dict[str, int] = {
-        # Tier 1: Architect (premium reasoning)
+        # Tier 1: Architect (big reasoning, planning, orchestrator)
         "opus": 1,
         "o3": 1,
         "o1": 1,
         "opus-4-5-thinking": 1,  # Antigravity Opus thinking
-        # Tier 2: Builder High (strong coding)
+        # Tier 2: Builder High (strong coding, complex logic)
         "codex": 2,
         "gpt-5": 2,
         "sonnet-4-5-thinking-high": 2,  # Sonnet high thinking = Builder
@@ -78,15 +101,56 @@ class RateLimitFailover:
         "gpt-4": 3,
         "sonnet-4-5-thinking-medium": 3,
         "sonnet-4-5-thinking-low": 3,
-        # Tier 4: Librarian (fast search/docs)
+        # Tier 4: Librarian (search, docs, less intensive code)
         "gemini": 4,
         "haiku": 4,
         "flash": 4,
-        "gemini-3-pro": 4,  # Antigravity Gemini Pro
-        "gemini-3-flash": 4,  # Antigravity Gemini Flash
-        # Tier 5: Sprinter (ultra-fast)
+        "gemini-3-pro": 4,
+        "gemini-3-flash": 4,
+        # Tier 5: Sprinter (main code work, ultra-fast)
         "cerebras": 5,
         "glm": 5,
+    }
+
+    # PURPOSE-DRIVEN FAILOVER CHAINS
+    # These chains respect the intended use of each model
+    WORKLOAD_CHAINS: Dict[WorkloadType, List[str]] = {
+        # Pack leader, governor, planning - needs reasoning power
+        WorkloadType.ORCHESTRATOR: [
+            "claude-opus-4.5",  # Claude Code OAuth
+            "antigravity-claude-opus-4-5-thinking-high",
+            "antigravity-claude-opus-4-5-thinking-medium",
+            "antigravity-claude-opus-4-5-thinking-low",
+            "claude-sonnet-4.5",  # Downgrade to Sonnet if Opus exhausted
+            "antigravity-claude-sonnet-4-5-thinking-high",
+            "gemini-3-pro",  # Last resort for reasoning
+            "chatgpt-codex-5.2",
+        ],
+        # Complex logic, security audit, design
+        WorkloadType.REASONING: [
+            "claude-sonnet-4.5",
+            "antigravity-claude-sonnet-4-5",
+            "antigravity-claude-sonnet-4-5-thinking-high",
+            "antigravity-claude-sonnet-4-5-thinking-medium",
+            "gemini-3-pro",
+            "chatgpt-codex-5.2",
+            "gemini-3-flash",
+        ],
+        # Main code generation - speed matters
+        WorkloadType.CODING: [
+            "cerebras-glm-4.7",  # Primary: ultra-fast
+            "claude-haiku",  # Fast fallback
+            "gemini-3-flash",  # Reliable fallback
+            "antigravity-gemini-3-flash",
+        ],
+        # Search, docs, context - efficiency matters
+        WorkloadType.LIBRARIAN: [
+            "claude-haiku",  # Fast and cheap
+            "gpt-5.2",
+            "gemini-3-flash",
+            "antigravity-gemini-3-flash",
+            "cerebras-glm-4.7",  # Can do search too
+        ],
     }
 
     def __new__(cls) -> "RateLimitFailover":
@@ -268,6 +332,79 @@ class RateLimitFailover:
         """Get the next available failover model."""
         chain = self.get_failover_chain(model_name)
         return chain[0] if chain else None
+
+    def get_workload_failover(
+        self, 
+        model_name: str, 
+        workload: Optional[WorkloadType] = None
+    ) -> Optional[str]:
+        """Get workload-appropriate failover model.
+        
+        Uses purpose-driven chains based on workload type:
+        - ORCHESTRATOR: Pack leader, governor, planning → needs Opus/Sonnet
+        - REASONING: Complex logic, security → needs Sonnet/Pro
+        - CODING: Main code generation → Cerebras/Haiku/Flash
+        - LIBRARIAN: Search, docs → Haiku/Flash
+        
+        Args:
+            model_name: Model that needs failover
+            workload: Type of workload (auto-detected if None)
+            
+        Returns:
+            Workload-appropriate failover model
+        """
+        self.load_from_model_factory()
+        
+        # Auto-detect workload from model if not specified
+        if workload is None:
+            workload = self._detect_workload(model_name)
+        
+        # Get the workload-specific chain
+        chain = self.WORKLOAD_CHAINS.get(workload, [])
+        
+        # Find the current model's position in chain (if present)
+        try:
+            current_idx = chain.index(model_name)
+            # Return next model in chain
+            remaining = chain[current_idx + 1:]
+        except ValueError:
+            # Model not in chain, use full chain
+            remaining = chain
+        
+        # Filter out rate-limited models
+        for model in remaining:
+            if model not in self._rate_limited:
+                return model
+        
+        # Chain exhausted, fall back to generic failover
+        return self.get_next_failover(model_name)
+
+    def _detect_workload(self, model_name: str) -> WorkloadType:
+        """Detect workload type from model name."""
+        model_lower = model_name.lower()
+        
+        # Opus models → Orchestrator/Reasoning
+        if "opus" in model_lower:
+            return WorkloadType.ORCHESTRATOR
+        
+        # Sonnet models → Reasoning/Complex logic
+        if "sonnet" in model_lower:
+            return WorkloadType.REASONING
+        
+        # Cerebras → Coding (main code work)
+        if "cerebras" in model_lower or "glm" in model_lower:
+            return WorkloadType.CODING
+        
+        # Haiku, Gemini → Librarian
+        if "haiku" in model_lower or "gemini" in model_lower or "flash" in model_lower:
+            return WorkloadType.LIBRARIAN
+        
+        # Codex → could be coding or reasoning
+        if "codex" in model_lower:
+            return WorkloadType.REASONING
+        
+        # Default to Librarian (safest)
+        return WorkloadType.LIBRARIAN
 
     def record_rate_limit(self, model_name: str, duration_seconds: float = 60.0) -> str:
         """Record that a model hit rate limit, return suggested failover.

@@ -147,30 +147,73 @@ class TokenBudgetManager:
     }
     
     # Static failover chain: when provider X hits limits, try Y
-    # This is enhanced dynamically by RateLimitFailover using OAuth models
+    # PURPOSE-DRIVEN FAILOVER STRUCTURE:
+    #
+    # ARCHITECT TIER (Big reasoning, planning, orchestrator, pack-leader, governor):
+    #   Claude Code Opus → Antigravity Opus → Gemini Pro → Codex 5.2
+    #
+    # BUILDER TIER (Complex logic, design, refactoring):
+    #   Claude Code Sonnet → Antigravity Sonnet → Gemini Pro → Codex 5.2
+    #
+    # SPRINTER TIER (Main code work, high volume generation):
+    #   Cerebras GLM 4.7 → Claude Haiku → Gemini Flash
+    #
+    # LIBRARIAN TIER (Search, docs, context, less intensive):
+    #   Claude Haiku → GPT 5.2 → Gemini Flash
+    #   Gemini Pro → Gemini Flash
+    #   Codex 5.2 → Gemini Flash
+    #
     FAILOVER_CHAIN: Dict[str, str] = {
-        "cerebras": "gemini_flash",
-        "gemini": "gemini_flash",
-        "codex": "claude_sonnet",
-        "claude_sonnet": "gemini_flash",
-        # Additional OAuth-aware failovers added dynamically
-        "claude_opus": "claude_sonnet",  # Opus → Sonnet before giving up
-        "gemini_flash": "cerebras",  # Flash → Cerebras for speed
-        "gpt-5.2": "codex",  # GPT 5 → Codex
-        "chatgpt-codex-5.2": "claude_sonnet",  # Codex → Sonnet
-        # Antigravity OAuth models
-        "antigravity_gemini": "antigravity_claude",  # Gemini → Claude
-        "antigravity_claude": "gemini_flash",  # Antigravity Claude → regular Gemini
-        "antigravity-gemini-3-flash": "antigravity-claude-sonnet-4-5",
-        "antigravity-gemini-3-pro-low": "antigravity-gemini-3-flash",
-        "antigravity-gemini-3-pro-high": "antigravity-gemini-3-pro-low",
+        # =====================================================================
+        # ARCHITECT TIER - Big reasoning, planning, orchestrator roles
+        # Claude Code Opus → Antigravity Opus → Gemini Pro → Codex
+        # =====================================================================
+        "claude_opus": "antigravity-claude-opus-4-5-thinking-high",
+        "claude-opus-4.5": "antigravity-claude-opus-4-5-thinking-high",
         "antigravity-claude-opus-4-5-thinking-high": "antigravity-claude-opus-4-5-thinking-medium",
         "antigravity-claude-opus-4-5-thinking-medium": "antigravity-claude-opus-4-5-thinking-low",
-        "antigravity-claude-opus-4-5-thinking-low": "antigravity-claude-sonnet-4-5-thinking-high",
+        "antigravity-claude-opus-4-5-thinking-low": "gemini-3-pro",
+        
+        # =====================================================================
+        # BUILDER TIER - Complex logic, design, refactoring
+        # Claude Code Sonnet → Antigravity Sonnet → Gemini Pro → Codex
+        # =====================================================================
+        "claude_sonnet": "antigravity-claude-sonnet-4-5",
+        "claude-sonnet-4.5": "antigravity-claude-sonnet-4-5",
+        "antigravity-claude-sonnet-4-5": "antigravity-claude-sonnet-4-5-thinking-high",
         "antigravity-claude-sonnet-4-5-thinking-high": "antigravity-claude-sonnet-4-5-thinking-medium",
         "antigravity-claude-sonnet-4-5-thinking-medium": "antigravity-claude-sonnet-4-5-thinking-low",
-        "antigravity-claude-sonnet-4-5-thinking-low": "antigravity-claude-sonnet-4-5",
-        "antigravity-claude-sonnet-4-5": "antigravity-gemini-3-flash",
+        "antigravity-claude-sonnet-4-5-thinking-low": "gemini-3-pro",
+        
+        # =====================================================================
+        # SPRINTER TIER - Main code work (high volume, fast generation)
+        # Cerebras GLM 4.7 → Claude Haiku → Gemini Flash
+        # =====================================================================
+        "cerebras": "claude-haiku",
+        "cerebras-glm-4.7": "claude-haiku",
+        "claude-haiku": "gemini-3-flash",
+        "claude_haiku": "gemini-3-flash",
+        
+        # =====================================================================
+        # LIBRARIAN TIER - Search, docs, context, less intensive code
+        # Haiku → GPT 5.2 → Flash, Codex → Flash, Gemini Pro → Flash
+        # =====================================================================
+        "gemini": "gemini-3-flash",
+        "gemini-3-pro": "gemini-3-flash",
+        "antigravity-gemini-3-pro-high": "antigravity-gemini-3-pro-low",
+        "antigravity-gemini-3-pro-low": "antigravity-gemini-3-flash",
+        "antigravity-gemini-3-flash": "gemini-3-flash",
+        "gemini-3-flash": "cerebras-glm-4.7",  # Flash can fall back to Cerebras for speed
+        "gemini_flash": "cerebras-glm-4.7",
+        
+        # ChatGPT Teams models
+        "gpt-5.2": "gemini-3-flash",
+        "chatgpt-codex-5.2": "gemini-3-flash",
+        "codex": "gemini-3-flash",
+        
+        # Cross-tier emergency fallbacks (when primary chain exhausted)
+        # Architect → Builder → Librarian
+        # These kick in after tier-specific chains are exhausted
     }
     
     _instance: Optional["TokenBudgetManager"] = None

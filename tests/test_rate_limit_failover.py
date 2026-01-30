@@ -8,6 +8,7 @@ from code_puppy.core.rate_limit_failover import (
     RateLimitFailover,
     FailoverTarget,
     FailoverPriority,
+    WorkloadType,
     get_failover_manager,
     with_rate_limit_failover,
     enhanced_failover_chain,
@@ -232,6 +233,28 @@ class TestTokenBudgetFailoverIntegration:
         assert "cerebras" in mgr.FAILOVER_CHAIN
         assert "claude_sonnet" in mgr.FAILOVER_CHAIN
         assert "claude_opus" in mgr.FAILOVER_CHAIN
+        
+        # Check Antigravity models
+        assert "antigravity-claude-opus-4-5-thinking-high" in mgr.FAILOVER_CHAIN
+        assert "antigravity-claude-sonnet-4-5" in mgr.FAILOVER_CHAIN
+
+    def test_purpose_driven_failover_chains(self):
+        """FAILOVER_CHAIN should follow purpose-driven structure."""
+        from code_puppy.core.token_budget import TokenBudgetManager
+        
+        mgr = TokenBudgetManager()
+        
+        # Architect: Opus → Antigravity Opus
+        assert mgr.FAILOVER_CHAIN["claude_opus"] == "antigravity-claude-opus-4-5-thinking-high"
+        
+        # Builder: Sonnet → Antigravity Sonnet
+        assert mgr.FAILOVER_CHAIN["claude_sonnet"] == "antigravity-claude-sonnet-4-5"
+        
+        # Sprinter: Cerebras → Haiku
+        assert mgr.FAILOVER_CHAIN["cerebras"] == "claude-haiku"
+        
+        # Librarian: Haiku → Flash
+        assert mgr.FAILOVER_CHAIN["claude-haiku"] == "gemini-3-flash"
 
     def test_get_failover_method(self):
         """TokenBudgetManager should have get_failover method."""
@@ -242,7 +265,74 @@ class TestTokenBudgetFailoverIntegration:
         mgr = TokenBudgetManager()
         
         failover = mgr.get_failover("cerebras")
-        assert failover == "gemini_flash"
+        assert failover == "claude-haiku"
+
+
+class TestWorkloadAwareFailover:
+    """Tests for workload-aware failover."""
+
+    def setup_method(self):
+        """Reset singleton for each test."""
+        RateLimitFailover._instance = None
+
+    def test_workload_chains_exist(self):
+        """Should have workload-specific chains."""
+        mgr = RateLimitFailover()
+        
+        assert WorkloadType.ORCHESTRATOR in mgr.WORKLOAD_CHAINS
+        assert WorkloadType.REASONING in mgr.WORKLOAD_CHAINS
+        assert WorkloadType.CODING in mgr.WORKLOAD_CHAINS
+        assert WorkloadType.LIBRARIAN in mgr.WORKLOAD_CHAINS
+
+    def test_orchestrator_chain_starts_with_opus(self):
+        """Orchestrator chain should start with Opus models."""
+        mgr = RateLimitFailover()
+        
+        chain = mgr.WORKLOAD_CHAINS[WorkloadType.ORCHESTRATOR]
+        assert "opus" in chain[0].lower()
+
+    def test_coding_chain_starts_with_cerebras(self):
+        """Coding chain should start with Cerebras."""
+        mgr = RateLimitFailover()
+        
+        chain = mgr.WORKLOAD_CHAINS[WorkloadType.CODING]
+        assert "cerebras" in chain[0].lower()
+
+    def test_detect_workload_opus(self):
+        """Should detect Opus models as Orchestrator workload."""
+        mgr = RateLimitFailover()
+        
+        workload = mgr._detect_workload("claude-opus-4.5")
+        assert workload == WorkloadType.ORCHESTRATOR
+        
+        workload = mgr._detect_workload("antigravity-claude-opus-4-5-thinking-high")
+        assert workload == WorkloadType.ORCHESTRATOR
+
+    def test_detect_workload_cerebras(self):
+        """Should detect Cerebras as Coding workload."""
+        mgr = RateLimitFailover()
+        
+        workload = mgr._detect_workload("cerebras-glm-4.7")
+        assert workload == WorkloadType.CODING
+
+    def test_detect_workload_gemini(self):
+        """Should detect Gemini as Librarian workload."""
+        mgr = RateLimitFailover()
+        
+        workload = mgr._detect_workload("gemini-3-flash")
+        assert workload == WorkloadType.LIBRARIAN
+
+    def test_get_workload_failover(self):
+        """Should return workload-appropriate failover."""
+        mgr = RateLimitFailover()
+        mgr._load_fallback_models()
+        mgr._loaded = True
+        
+        # Coding workload with Cerebras should fallback to Haiku/Flash
+        failover = mgr.get_workload_failover("cerebras-glm-4.7", WorkloadType.CODING)
+        assert failover is not None
+        # Should not be Opus (wrong workload)
+        assert "opus" not in failover.lower()
 
 
 class TestModelRouterFailoverIntegration:
@@ -267,4 +357,15 @@ class TestModelRouterFailoverIntegration:
         
         # Should not crash
         failover = router.record_rate_limit("gemini-3-flash")
+        assert failover is None or isinstance(failover, str)
+
+    def test_task_type_aware_failover(self):
+        """ModelRouter should consider task type in failover."""
+        from code_puppy.core.model_router import ModelRouter, TaskType
+        
+        RateLimitFailover._instance = None
+        router = ModelRouter(load_from_factory=False)
+        
+        # Should not crash with task_type parameter
+        failover = router.get_failover_for_model("cerebras-glm-4.7", TaskType.CODE_GENERATION)
         assert failover is None or isinstance(failover, str)

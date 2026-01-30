@@ -25,6 +25,7 @@ from .rate_limit_failover import (
     RateLimitFailover,
     get_failover_manager,
     with_rate_limit_failover,
+    WorkloadType,
 )
 
 __all__ = [
@@ -46,4 +47,5 @@ __all__ = [
     "RateLimitFailover",
     "get_failover_manager",
     "with_rate_limit_failover",
+    "WorkloadType",
 ]

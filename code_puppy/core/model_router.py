@@ -638,32 +638,72 @@ class ModelRouter:
         return tier_models[0] if tier_models else None
 
     # =========================================================================
-    # RATE LIMIT FAILOVER
+    # RATE LIMIT FAILOVER - PURPOSE-DRIVEN
+    # =========================================================================
+    #
+    # ARCHITECT (Orchestrator, Pack Leader, Governor, Planning):
+    #   Claude Code Opus → Antigravity Opus → Gemini Pro → Codex 5.2
+    #
+    # BUILDER (Complex logic, design, refactoring):
+    #   Claude Code Sonnet → Antigravity Sonnet → Gemini Pro → Codex 5.2
+    #
+    # SPRINTER (Main code work, high volume):
+    #   Cerebras GLM 4.7 → Claude Haiku → Gemini Flash
+    #
+    # LIBRARIAN (Search, docs, less intensive):
+    #   Haiku → GPT 5.2 → Gemini Flash
     # =========================================================================
 
-    def get_failover_for_model(self, model_name: str) -> Optional[str]:
+    def get_failover_for_model(
+        self, 
+        model_name: str,
+        task_type: Optional[TaskType] = None,
+    ) -> Optional[str]:
         """Get failover model when the primary hits rate limits.
         
-        Uses tier-aware logic:
-        1. Try same tier, different provider
-        2. Try one tier down
-        3. Try any available model
+        Uses PURPOSE-DRIVEN failover logic:
+        1. If task_type provided, use workload-appropriate chain
+        2. Otherwise, use tier-aware fallback
         
         Args:
             model_name: Model that hit rate limit
+            task_type: Optional task type for smarter failover
             
         Returns:
             Alternative model name, or None if no failover available
         """
-        # Get the rate-limited model's tier
+        # Try workload-aware failover first
+        try:
+            from .rate_limit_failover import get_failover_manager, WorkloadType
+            
+            failover_mgr = get_failover_manager()
+            
+            # Map TaskType to WorkloadType for smarter failover
+            workload = None
+            if task_type:
+                if task_type in (TaskType.PLANNING, TaskType.CONFLICT_RESOLUTION, TaskType.FINAL_QA):
+                    workload = WorkloadType.ORCHESTRATOR
+                elif task_type in (TaskType.SECURITY_AUDIT, TaskType.COMPLEX_REFACTORING, 
+                                   TaskType.CLASS_DESIGN, TaskType.API_DESIGN):
+                    workload = WorkloadType.REASONING
+                elif task_type in (TaskType.CODE_GENERATION, TaskType.SYNTAX_FIXING,
+                                   TaskType.UNIT_TESTS, TaskType.BOILERPLATE):
+                    workload = WorkloadType.CODING
+                else:
+                    workload = WorkloadType.LIBRARIAN
+            
+            failover = failover_mgr.get_workload_failover(model_name, workload)
+            if failover:
+                logger.info(f"Workload failover: {model_name} → {failover}")
+                return failover
+                
+        except ImportError:
+            pass
+        
+        # Fall back to tier-aware logic
         rate_limited = self._models.get(model_name)
         if not rate_limited:
-            # Unknown model - try RateLimitFailover
-            try:
-                from .rate_limit_failover import get_failover_manager
-                return get_failover_manager().get_next_failover(model_name)
-            except ImportError:
-                return None
+            return None
         
         # 1. Try same tier, different provider
         same_tier = self._get_tier_models(rate_limited.tier)
@@ -695,13 +735,14 @@ class ModelRouter:
         logger.warning(f"No failover available for {model_name}")
         return None
 
-    def record_rate_limit(self, model_name: str) -> Optional[str]:
+    def record_rate_limit(self, model_name: str, task_type: Optional[TaskType] = None) -> Optional[str]:
         """Record that a model hit rate limit and return failover.
         
         This integrates with TokenBudgetManager's 429 tracking.
         
         Args:
             model_name: Model that hit rate limit
+            task_type: Optional task type for smarter failover
             
         Returns:
             Suggested failover model, or None
@@ -715,8 +756,8 @@ class ModelRouter:
                     if m.provider == budget_failover:
                         return m.name
         
-        # Fall back to tier-aware failover
-        return self.get_failover_for_model(model_name)
+        # Fall back to workload-aware failover
+        return self.get_failover_for_model(model_name, task_type)
 
     # =========================================================================
     # PROMPT ADAPTATION
