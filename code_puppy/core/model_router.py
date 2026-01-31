@@ -1,4 +1,4 @@
-"""Model Router - The Brain.
+"""Model Router - BART Reasoning Layer.
 
 Routes tasks to the optimal model based on:
 - Task type and complexity

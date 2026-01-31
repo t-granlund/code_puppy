@@ -1,6 +1,6 @@
-"""Epistemic Architect Agent - Structured planning through evidence-based reasoning.
+"""BART Architect Agent - Structured planning through evidence-based reasoning.
 
-This agent implements the Epistemic Agent Runtime (EAR) methodology:
+This agent implements the BART System (Belief-Augmented Reasoning & Tasking) methodology:
 - Ralph (Wiggum) Loops: Observe → Orient → Decide → Act → Observe
 - 7 Expert Lenses for multi-perspective analysis
 - 6 Quality Gates for goal validation

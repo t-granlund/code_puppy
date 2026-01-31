@@ -98,7 +98,7 @@ def log_error(message: str, **kwargs: Any) -> None:
 
 
 # =============================================================================
-# 🧱 CORE PYDANTIC MODELS - The Epistemic State Artifact
+# 🧱 CORE PYDANTIC MODELS - The Belief State Artifact
 # =============================================================================
 
 
@@ -295,12 +295,12 @@ class Epic(BaseModel):
 
 
 class EpistemicStateArtifact(BaseModel):
-    """The complete epistemic state - the 'source of truth' for the project.
+    """The complete belief state - the 'source of truth' for the project.
     
-    This is what the Traycer-style orchestrator uses to:
-    1. Plan work (which epics/phases/milestones)
-    2. Curate context (what files/specs each sub-agent sees)
-    3. Verify work (does output match specs and constraints?)
+    This is what the BART orchestrator uses to:
+    1. Plan work (which epics/phases/milestones) [Reasoning Layer]
+    2. Curate context (what files/specs each sub-agent sees) [Context Filter]
+    3. Verify work (does output match specs and constraints?) [Bidirectional Verification]
     """
     
     id: str = Field(default_factory=_new_id)
@@ -414,12 +414,12 @@ class MinimumViableContext:
 
 
 class ContextCurator:
-    """Curates context for sub-agents based on current milestone.
+    """Curates context for the Tasking Layer based on current milestone.
     
-    Implements the 'smart handoff' from Traycer methodology:
-    - Filters epistemic state to current phase requirements
+    Implements the 'Context Filter' from BART methodology:
+    - Filters belief state to current phase requirements
     - Respects token budgets (especially for Cerebras)
-    - Ensures sub-agents don't see irrelevant context
+    - Ensures sub-agents don't see irrelevant context (prevents pollution)
     """
     
     def __init__(
@@ -523,7 +523,7 @@ class ContextCurator:
 
 
 # =============================================================================
-# 👁️ RALPH LOOP VERIFIER - The Eyes
+# 👁️ RALPH LOOP VERIFIER - Bidirectional Verification Layer
 # =============================================================================
 
 
@@ -597,13 +597,13 @@ class VerificationReport:
 
 
 class RalphLoopVerifier:
-    """The Ralph Loop verification engine.
+    """The Ralph Loop verification engine - Bidirectional Verification Layer.
     
     Implements the recursive Execute → Verify → Fix cycle:
     
-    1. Drift Detection: After Cerebras generates code, don't save immediately
+    1. Drift Detection: After Tasking Layer generates code, don't save immediately
     2. Static Analysis: Run local linting/syntax checks (Cost: $0)
-    3. Intent Verification: Use Claude Sonnet to compare diff vs specs
+    3. Intent Verification: Use Claude Sonnet to compare diff vs belief state
     4. Auto-Fix: If Drift > Tolerance, reject and retry
     5. Commit: Only when Verification == PASS
     """
@@ -858,16 +858,16 @@ class OrchestratorState:
 
 
 class EpistemicOrchestrator:
-    """The Traycer-Style Orchestrator - Plan → Execute → Verify.
+    """The BART Orchestrator - Plan → Execute → Verify.
     
-    This is the 'Pack Leader' upgraded with epistemic enforcement.
+    This is the 'Pack Leader' upgraded with BART belief state enforcement.
     It manages the complete flow from idea to working code.
     
     Key responsibilities:
-    1. Brain (Planning): Interview user, create Epistemic State Artifact
-    2. Context Curator: Slice context for each sub-agent task
-    3. Hands (Execution): Dispatch work to Cerebras GLM 4.7
-    4. Eyes (Verification): Run Ralph Loop until specs are met
+    1. Reasoning Layer (Planning): Interview user, create Belief State Artifact
+    2. Context Filter: Slice context for each sub-agent task
+    3. Tasking Layer (Execution): Dispatch work to execution models
+    4. Bidirectional Verification: Run Ralph Loop until specs are met
     
     Usage:
         orchestrator = EpistemicOrchestrator()
@@ -907,7 +907,7 @@ class EpistemicOrchestrator:
         return self._state.epistemic_state
     
     # -------------------------------------------------------------------------
-    # Phase 1: Planning (The Brain)
+    # Phase 1: Planning (Reasoning Layer - The Belief State)
     # -------------------------------------------------------------------------
     
     async def create_epistemic_state(
@@ -947,7 +947,7 @@ class EpistemicOrchestrator:
             self.max_retries
         )
         
-        logger.info(f"Created epistemic state for: {project_name}")
+        logger.info(f"Created belief state for: {project_name}")
         
         return state
     
@@ -1112,7 +1112,7 @@ class EpistemicOrchestrator:
     ) -> VerificationReport:
         """The recursive Ralph Loop: Execute → Verify → Fix.
         
-        This is THE core primitive from the Traycer methodology.
+        This is THE core primitive from the BART methodology - Bidirectional Verification.
         
         Args:
             milestone: Current milestone
@@ -1237,7 +1237,7 @@ class EpistemicOrchestrator:
             raise ValueError("No state to save")
         
         path.write_text(self._state.epistemic_state.to_json())
-        logger.info(f"Saved epistemic state to: {path}")
+        logger.info(f"Saved belief state to: {path}")
     
     async def load_state(self, path: Path) -> EpistemicStateArtifact:
         """Load epistemic state from file."""

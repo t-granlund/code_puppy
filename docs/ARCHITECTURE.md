@@ -333,18 +333,18 @@ TaskComplexity.CRITICAL  → Tier 1 (Opus) always
 
 ---
 
-## Epistemic Orchestrator
+## BART Orchestration System
 
-### The Traycer-Style Brain
+### The Reasoning & Tasking Architecture
 
-The EpistemicOrchestrator implements a sophisticated Plan → Execute → Verify loop:
+The EpistemicOrchestrator implements the BART Plan → Execute → Verify loop:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                      EPISTEMIC ORCHESTRATOR                             │
+│                      BART ORCHESTRATION SYSTEM                          │
 ├─────────────────────────────────────────────────────────────────────────┤
 │                                                                         │
-│  1. PLAN (Claude Opus 4.5)                                              │
+│  1. REASONING LAYER (Claude Opus 4.5)                                   │
 │     ┌────────────────────────────────────────────────────────────┐     │
 │     │ conduct_planning_interview()                               │     │
 │     │   • Extract goals, assumptions, constraints                │     │
@@ -368,7 +368,7 @@ The EpistemicOrchestrator implements a sophisticated Plan → Execute → Verify
 │     └────────────────────────────────────────────────────────────┘     │
 │                              │                                          │
 │                              ▼                                          │
-│  3. VERIFY (Ralph Loop)                                                 │
+│  3. BIDIRECTIONAL VERIFICATION (Ralph Loop)                             │
 │     ┌────────────────────────────────────────────────────────────┐     │
 │     │ RalphLoopVerifier.verify_code_generation()                 │     │
 │     │   Phase 1: Static Analysis (Cost: $0)                      │     │

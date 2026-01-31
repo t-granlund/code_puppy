@@ -1,13 +1,13 @@
-"""Epistemic state management for structured planning workflows.
+"""BART Belief State management for structured planning workflows.
 
-This module tracks the state for epistemic planning sessions, including:
+This module tracks the belief state for BART planning sessions, including:
 - Current pipeline stage (0-12)
 - Assumptions, hypotheses, constraints
 - Lens evaluations and gaps
 - Goal candidates and gate results
 - Build progress tracking
 
-Integrates with the Epistemic Agent Runtime (EAR) methodology.
+Integrates with the BART System (Belief-Augmented Reasoning & Tasking) methodology.
 """
 
 from dataclasses import dataclass, field

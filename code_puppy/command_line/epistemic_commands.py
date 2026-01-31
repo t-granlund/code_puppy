@@ -1,7 +1,7 @@
-"""Epistemic workflow commands for Code Puppy.
+"""BART workflow commands for Code Puppy.
 
-Slash commands for managing epistemic planning sessions:
-- /epistemic start <project> - Start a new epistemic session
+Slash commands for managing BART planning sessions:
+- /epistemic start <project> - Start a new BART session
 - /epistemic status - Show current session status
 - /epistemic stage - Advance to next pipeline stage
 - /epistemic gaps - Show identified gaps
@@ -10,7 +10,7 @@ Slash commands for managing epistemic planning sessions:
 - /epistemic load - Load state from epistemic/state.json
 - /epistemic end - End the session
 
-These commands integrate with the Epistemic Architect agent.
+These commands integrate with the BART Architect agent.
 """
 
 import os
@@ -33,14 +33,14 @@ from code_puppy.messaging import emit_error, emit_info, emit_success, emit_warni
 
 
 def _format_status_display() -> str:
-    """Format the current epistemic session status."""
+    """Format the current BART session status."""
     state = get_epistemic_state()
     if not state:
-        return "No active epistemic session. Use `/epistemic start <project>` to begin."
+        return "No active BART session. Use `/epistemic start <project>` to begin."
     
     # Build status display
     lines = [
-        "## 🏛️ Epistemic Session Status",
+        "## 🏛️ BART Session Status",
         "",
         f"**Project:** {state.project_name or '(unnamed)'}",
         f"**Stage:** {state.current_stage}/12 — {get_stage_name(state.current_stage)}",

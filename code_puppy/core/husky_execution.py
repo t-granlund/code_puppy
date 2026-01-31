@@ -1,6 +1,6 @@
 """🦮 Husky Execution Layer - Cerebras GLM 4.7 Integration.
 
-The 'Hands' of the Traycer-style orchestrator - executes code generation
+The 'Tasking Layer' of the BART orchestrator - executes code generation
 tasks using Cerebras GLM 4.7 with all optimizations from the migration guide.
 
 Implements the 10 Rules from Cerebras GLM-4.7 Migration Guide:
