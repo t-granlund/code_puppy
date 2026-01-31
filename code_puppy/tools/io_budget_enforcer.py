@@ -1,5 +1,21 @@
 """Enforced IO Budgeting for Cerebras and other token-sensitive providers.
 
+⚠️ DEPRECATION NOTICE (2026-01-30):
+This module is NOT currently imported anywhere in the codebase.
+The token optimization logic has been consolidated into token_slimmer.py.
+
+Use token_slimmer.py instead:
+    from code_puppy.tools.token_slimmer import (
+        check_token_budget,
+        apply_sliding_window,
+        get_provider_limits,
+        PROVIDER_LIMITS,
+    )
+
+This file is kept for reference and may be deleted in a future cleanup.
+See docs/AUDIT-TOKEN-OPTIMIZATION.md for the full audit report.
+
+Original Purpose:
 This module implements hard caps on input/output tokens per request,
 with automatic context narrowing when budgets are exceeded.
 
@@ -27,14 +43,45 @@ from code_puppy.config import get_value, set_value
 # ============================================================================
 
 # Default budgets per provider (can be overridden in config)
+# Philosophy: Free tiers aggressive, paid tiers relaxed, OAuth balanced
 PROVIDER_BUDGETS = {
+    # 🏋️ BOOT CAMP: Cerebras free tier - ultra aggressive
     "cerebras": {
         "max_input_tokens": 50000,
-        "max_output_tokens": 8192,
-        "hard_fail_threshold": 0.95,  # Refuse if > 95% of max
-        "warning_threshold": 0.70,    # Warn if > 70% of max
-        "compaction_threshold": 0.70, # Auto-compact at 70%
+        "max_output_tokens": 4096,
+        "hard_fail_threshold": 0.80,  # Refuse if > 80%
+        "warning_threshold": 0.50,    # Warn if > 50%
+        "compaction_threshold": 0.50, # Auto-compact at 50%
     },
+    
+    # 🥗 BALANCED: OAuth Antigravity (uses various backends)
+    "antigravity": {
+        "max_input_tokens": 100000,
+        "max_output_tokens": 8192,
+        "hard_fail_threshold": 0.90,
+        "warning_threshold": 0.70,
+        "compaction_threshold": 0.60,
+    },
+    
+    # 🥗 BALANCED: Claude Code OAuth
+    "claude_code": {
+        "max_input_tokens": 180000,
+        "max_output_tokens": 8192,
+        "hard_fail_threshold": 0.90,
+        "warning_threshold": 0.75,
+        "compaction_threshold": 0.65,
+    },
+    
+    # 🥗 BALANCED: ChatGPT Teams OAuth
+    "chatgpt_teams": {
+        "max_input_tokens": 120000,
+        "max_output_tokens": 16384,
+        "hard_fail_threshold": 0.90,
+        "warning_threshold": 0.75,
+        "compaction_threshold": 0.65,
+    },
+    
+    # 🍽️ MAINTENANCE: Anthropic API (paid, high limits)
     "anthropic": {
         "max_input_tokens": 180000,
         "max_output_tokens": 8192,
@@ -42,6 +89,8 @@ PROVIDER_BUDGETS = {
         "warning_threshold": 0.80,
         "compaction_threshold": 0.80,
     },
+    
+    # 🍽️ MAINTENANCE: OpenAI API (paid)
     "openai": {
         "max_input_tokens": 120000,
         "max_output_tokens": 16384,
@@ -49,6 +98,8 @@ PROVIDER_BUDGETS = {
         "warning_threshold": 0.80,
         "compaction_threshold": 0.80,
     },
+    
+    # 🥗 DEFAULT: Safe middle ground
     "default": {
         "max_input_tokens": 30000,
         "max_output_tokens": 4096,
@@ -58,10 +109,10 @@ PROVIDER_BUDGETS = {
     },
 }
 
-# File reading defaults
-DEFAULT_MAX_FILE_LINES = 300
-DEFAULT_MAX_FILE_TOKENS = 5000
-SLICE_REQUIRED_THRESHOLD = 500  # Lines above this require explicit slice
+# File reading defaults - TIGHTENED for token efficiency
+DEFAULT_MAX_FILE_LINES = 200  # Reduced from 300
+DEFAULT_MAX_FILE_TOKENS = 3000  # Reduced from 5000
+SLICE_REQUIRED_THRESHOLD = 300  # Reduced from 500 - require slice earlier
 
 
 class BudgetViolation(Enum):
@@ -153,7 +204,7 @@ def get_provider_budget(provider: str) -> Dict[str, Any]:
     """Get budget configuration for a provider.
     
     Args:
-        provider: Provider name (cerebras, anthropic, openai, etc.)
+        provider: Provider name (cerebras, anthropic, openai, antigravity, etc.)
         
     Returns:
         Budget configuration dict.
@@ -171,8 +222,28 @@ def get_provider_budget(provider: str) -> Dict[str, Any]:
         except (ValueError, TypeError):
             pass
     
-    # Return provider-specific or default budget
-    return PROVIDER_BUDGETS.get(provider_lower, PROVIDER_BUDGETS["default"])
+    # Direct match
+    if provider_lower in PROVIDER_BUDGETS:
+        return PROVIDER_BUDGETS[provider_lower]
+    
+    # Pattern matching for OAuth providers
+    if "antigravity" in provider_lower:
+        return PROVIDER_BUDGETS["antigravity"]
+    if "claude_code" in provider_lower or "claude-code" in provider_lower:
+        return PROVIDER_BUDGETS["claude_code"]
+    if "chatgpt" in provider_lower or "teams" in provider_lower:
+        return PROVIDER_BUDGETS["chatgpt_teams"]
+    
+    # Pattern matching for API providers
+    if "cerebras" in provider_lower or "glm-4" in provider_lower:
+        return PROVIDER_BUDGETS["cerebras"]
+    if "anthropic" in provider_lower or "claude" in provider_lower:
+        return PROVIDER_BUDGETS["anthropic"]
+    if "openai" in provider_lower or "gpt" in provider_lower:
+        return PROVIDER_BUDGETS["openai"]
+    
+    # Return default budget
+    return PROVIDER_BUDGETS["default"]
 
 
 def get_max_input_tokens(provider: str = "cerebras") -> int:

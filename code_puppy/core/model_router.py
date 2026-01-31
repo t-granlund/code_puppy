@@ -114,11 +114,11 @@ class ModelRouter:
     4. Route to appropriate tier with fallback
     """
     
-    # Default model configurations
+    # Default model configurations - use EXACT keys from models.json
     DEFAULT_MODELS: Dict[str, ModelConfig] = {
-        # Tier 5: Sprinter
-        "cerebras-glm-4.7": ModelConfig(
-            name="cerebras-glm-4.7",
+        # Tier 5: Sprinter - NOTE: models.json uses "Cerebras-GLM-4.7" (capital C)
+        "Cerebras-GLM-4.7": ModelConfig(
+            name="Cerebras-GLM-4.7",
             provider="cerebras",
             tier=ModelTier.SPRINTER,
             max_context=50_000,
@@ -126,9 +126,9 @@ class ModelRouter:
             cost_per_1k_input=0.0,  # Free tier
             cost_per_1k_output=0.0,
         ),
-        # Tier 4: Librarian
-        "gemini-3-flash": ModelConfig(
-            name="gemini-3-flash",
+        # Tier 4: Librarian - NOTE: models.json uses "antigravity-gemini-3-flash"
+        "antigravity-gemini-3-flash": ModelConfig(
+            name="antigravity-gemini-3-flash",
             provider="gemini_flash",
             tier=ModelTier.LIBRARIAN,
             max_context=1_000_000,
@@ -138,8 +138,8 @@ class ModelRouter:
             supports_context_caching=True,
             context_cache_threshold=30_000,
         ),
-        "gemini-3-pro": ModelConfig(
-            name="gemini-3-pro",
+        "antigravity-gemini-3-pro-low": ModelConfig(
+            name="antigravity-gemini-3-pro-low",
             provider="gemini",
             tier=ModelTier.LIBRARIAN,
             max_context=2_000_000,
@@ -149,9 +149,9 @@ class ModelRouter:
             supports_context_caching=True,
             context_cache_threshold=30_000,
         ),
-        # Tier 2/3: Builders
-        "chatgpt-codex-5.2": ModelConfig(
-            name="chatgpt-codex-5.2",
+        # Tier 2/3: Builders - NOTE: models.json uses "chatgpt-gpt-5.2-codex"
+        "chatgpt-gpt-5.2-codex": ModelConfig(
+            name="chatgpt-gpt-5.2-codex",
             provider="codex",
             tier=ModelTier.BUILDER_HIGH,
             max_context=128_000,
@@ -159,8 +159,8 @@ class ModelRouter:
             cost_per_1k_input=0.003,
             cost_per_1k_output=0.015,
         ),
-        "claude-sonnet-4.5": ModelConfig(
-            name="claude-sonnet-4.5",
+        "claude-code-claude-sonnet-4-5-20250929": ModelConfig(
+            name="claude-code-claude-sonnet-4-5-20250929",
             provider="claude_sonnet",
             tier=ModelTier.BUILDER_MID,
             max_context=200_000,
@@ -169,8 +169,8 @@ class ModelRouter:
             cost_per_1k_output=0.015,
         ),
         # Tier 1: Architect
-        "claude-opus-4.5": ModelConfig(
-            name="claude-opus-4.5",
+        "claude-code-claude-opus-4-5-20251101": ModelConfig(
+            name="claude-code-claude-opus-4-5-20251101",
             provider="claude_opus",
             tier=ModelTier.ARCHITECT,
             max_context=200_000,
@@ -609,7 +609,9 @@ class ModelRouter:
         
         # Still nothing? Return default with warning
         if not selected_model:
-            selected_model = self._models.get("gemini-3-flash", list(self._models.values())[0])
+            selected_model = self._models.get(
+                "antigravity-gemini-3-flash", list(self._models.values())[0]
+            )
             logger.warning(f"All providers over budget, using {selected_model.name} anyway")
         
         # Build decision

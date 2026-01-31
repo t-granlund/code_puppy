@@ -9,7 +9,9 @@ based on the agent's workload type (ORCHESTRATOR, REASONING, CODING, LIBRARIAN).
 
 from __future__ import annotations
 
+import asyncio
 import logging
+import time
 from dataclasses import dataclass, field
 from typing import Any, List
 
@@ -23,6 +25,13 @@ from pydantic_ai.models import (
 )
 
 logger = logging.getLogger(__name__)
+
+# Rate limit backoff configuration
+# These prevent rapid cascade failures across providers
+BACKOFF_BASE_SECONDS = 2.0  # Initial backoff delay
+BACKOFF_MULTIPLIER = 1.5    # Exponential multiplier
+BACKOFF_MAX_SECONDS = 30.0  # Cap on backoff delay
+COOLDOWN_SECONDS = 60.0     # How long a model stays in cooldown after 429
 
 
 def _is_rate_limit_error(exc: Exception) -> bool:
@@ -87,6 +96,10 @@ class FailoverModel(Model):
     _current_model: Model = field(repr=False)
     _failed_models: set = field(default_factory=set, repr=False)
     _max_failovers: int = field(default=3, repr=False)
+    # Rate limit backoff tracking
+    _last_failover_time: float = field(default=0.0, repr=False)
+    _consecutive_429s: int = field(default=0, repr=False)
+    _model_cooldowns: dict = field(default_factory=dict, repr=False)  # model_name -> cooldown_until
     
     def __init__(
         self,
@@ -112,6 +125,10 @@ class FailoverModel(Model):
         self._current_model = primary_model
         self._failed_models = set()
         self._max_failovers = max_failovers
+        # Rate limit backoff tracking
+        self._last_failover_time = 0.0
+        self._consecutive_429s = 0
+        self._model_cooldowns = {}
     
     @property
     def model_name(self) -> str:
@@ -133,33 +150,69 @@ class FailoverModel(Model):
         return [self.primary_model] + self.failover_models
     
     def _get_next_model(self) -> Model | None:
-        """Get the next available model that hasn't failed.
+        """Get the next available model that hasn't failed and isn't in cooldown.
         
         Returns:
-            Next available model, or None if all models have failed.
+            Next available model, or None if all models have failed/cooling down.
         """
+        now = time.time()
         for model in self._get_all_models():
-            if model.model_name not in self._failed_models:
-                return model
+            model_name = model.model_name
+            # Skip permanently failed models
+            if model_name in self._failed_models:
+                continue
+            # Skip models still in cooldown
+            cooldown_until = self._model_cooldowns.get(model_name, 0.0)
+            if now < cooldown_until:
+                remaining = cooldown_until - now
+                logger.debug(f"⏳ {model_name} still cooling down ({remaining:.1f}s remaining)")
+                continue
+            return model
         return None
     
-    def _mark_model_failed(self, model: Model) -> None:
-        """Mark a model as failed (rate limited).
+    def _calculate_backoff_delay(self) -> float:
+        """Calculate exponential backoff delay based on consecutive 429s.
         
+        Uses exponential backoff to prevent rapid cascade failures:
+        - 1st failover: 2s delay
+        - 2nd failover: 3s delay  
+        - 3rd failover: 4.5s delay
+        - etc., capped at 30s max
+        
+        Returns:
+            Delay in seconds before trying next model.
+        """
+        delay = BACKOFF_BASE_SECONDS * (BACKOFF_MULTIPLIER ** self._consecutive_429s)
+        return min(delay, BACKOFF_MAX_SECONDS)
+    
+    def _mark_model_failed(self, model: Model) -> None:
+        """Mark a model as failed (rate limited) with cooldown.
+        
+        Sets a cooldown period during which this model won't be tried.
         Also notifies RateLimitFailover to track the failure.
         """
         model_name = model.model_name
-        self._failed_models.add(model_name)
+        now = time.time()
+        
+        # Set cooldown - this model won't be tried until cooldown expires
+        self._model_cooldowns[model_name] = now + COOLDOWN_SECONDS
+        
+        # Track consecutive 429s for backoff calculation
+        self._consecutive_429s += 1
+        self._last_failover_time = now
         
         # Notify the global failover manager
         try:
             from code_puppy.core.rate_limit_failover import RateLimitFailover
             failover = RateLimitFailover()
-            failover.mark_rate_limited(model_name)
+            failover.mark_rate_limited(model_name, COOLDOWN_SECONDS)
         except Exception as e:
             logger.debug(f"Failed to mark model in RateLimitFailover: {e}")
         
-        logger.info(f"🔴 Rate limited: {model_name} ({self.workload} workload)")
+        logger.info(
+            f"🔴 Rate limited: {model_name} ({self.workload} workload) "
+            f"- cooldown {COOLDOWN_SECONDS}s, consecutive 429s: {self._consecutive_429s}"
+        )
     
     async def request(
         self,
@@ -209,17 +262,23 @@ class FailoverModel(Model):
                 if _is_rate_limit_error(e):
                     self._mark_model_failed(model)
                     
+                    # Calculate backoff delay to prevent rapid cascade failures
+                    backoff_delay = self._calculate_backoff_delay()
+                    
                     # Get next model for log message
                     next_model = self._get_next_model()
                     if next_model:
                         logger.info(
                             f"🔄 Rate limit on {model.model_name} → "
+                            f"Backing off {backoff_delay:.1f}s → "
                             f"Failing over to {next_model.model_name}"
                         )
+                        # Apply backoff delay before trying next model
+                        await asyncio.sleep(backoff_delay)
                     else:
                         logger.warning(
                             f"⚠️  Rate limit on {model.model_name}, "
-                            f"no more failover models available"
+                            f"no more failover models available (all in cooldown)"
                         )
                     
                     attempts += 1

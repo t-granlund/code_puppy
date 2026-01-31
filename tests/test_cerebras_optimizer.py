@@ -132,27 +132,28 @@ class TestOptimalMaxTokens:
         """Tool calls should get low max_tokens."""
         messages = [MockMessage(parts=[MockPart("read file config.py")])]
         max_tokens = get_optimal_max_tokens(messages, "cerebras")
-        assert max_tokens == 300  # Reduced from 500 for aggressive optimization
+        assert max_tokens == 195  # Scaled: 300 * 0.65 (boot_camp diet)
     
     def test_code_gen_gets_high_limit(self):
         """Code generation should get higher max_tokens."""
         messages = [MockMessage(parts=[MockPart("build a new module for auth")])]
         max_tokens = get_optimal_max_tokens(messages, "cerebras")
-        assert max_tokens == 3000  # Reduced from 4000 for aggressive optimization
+        assert max_tokens == 2600  # Scaled: 4000 * 0.65 (boot_camp diet)
     
-    def test_non_cerebras_gets_default(self):
-        """Non-Cerebras providers get default limit."""
+    def test_non_cerebras_gets_provider_limit(self):
+        """Non-Cerebras providers get their own limits (OpenAI uses 1.0 scale)."""
         messages = [MockMessage(parts=[MockPart("read file")])]
         max_tokens = get_optimal_max_tokens(messages, "openai")
-        assert max_tokens == 4000
+        # OpenAI uses _scale_output_limits(1.0), so tool_call = 300
+        assert max_tokens == 300  # Full scale for maintenance tier
 
 
 class TestBudgetCheck:
     """Tests for check_cerebras_budget function."""
     
     def test_healthy_budget(self):
-        """Should report healthy when under 30%."""
-        result = check_cerebras_budget(10_000)  # Under 30% of 50K = 15K
+        """Should report healthy when under 20% (ultra-aggressive)."""
+        result = check_cerebras_budget(5_000)  # Under 20% of 50K = 10K
         assert not result.should_compact
         assert not result.should_block
         assert "healthy" in result.recommended_action.lower() or "✅" in result.recommended_action
@@ -386,21 +387,21 @@ class TestPreRequestHook:
 class TestCerebrasLimits:
     """Tests for CEREBRAS_LIMITS constants (AGGRESSIVE settings)."""
     
-    def test_compaction_threshold_is_30_percent(self):
-        """Compaction threshold should be 30% (aggressive)."""
-        assert CEREBRAS_LIMITS["compaction_threshold"] == 0.30
+    def test_compaction_threshold_is_20_percent(self):
+        """Compaction threshold should be 20% (ultra-aggressive for 56:1 ratio fix)."""
+        assert CEREBRAS_LIMITS["compaction_threshold"] == 0.20
     
-    def test_hard_limit_is_50_percent(self):
-        """Hard limit should be 50% (aggressive)."""
-        assert CEREBRAS_LIMITS["hard_limit_threshold"] == 0.50
+    def test_hard_limit_is_40_percent(self):
+        """Hard limit should be 40% (ultra-aggressive for 56:1 ratio fix)."""
+        assert CEREBRAS_LIMITS["hard_limit_threshold"] == 0.40
     
-    def test_max_exchanges_is_4(self):
-        """Max exchanges should be 4 (aggressive)."""
-        assert CEREBRAS_LIMITS["max_exchanges"] == 4
+    def test_max_exchanges_is_3(self):
+        """Max exchanges should be 3 (ultra-aggressive for 56:1 ratio fix)."""
+        assert CEREBRAS_LIMITS["max_exchanges"] == 3
     
-    def test_target_input_is_15k(self):
-        """Target input tokens should be 15K (aggressive)."""
-        assert CEREBRAS_LIMITS["target_input_tokens"] == 15_000
+    def test_target_input_is_8k(self):
+        """Target input tokens should be 8K (ultra-aggressive for 56:1 ratio fix)."""
+        assert CEREBRAS_LIMITS["target_input_tokens"] == 8_000
     
     def test_max_input_is_50k(self):
         """Max input tokens should be 50K."""

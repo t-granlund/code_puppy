@@ -204,8 +204,9 @@ class TestBaseAgentRunMCP:
         with patch.object(agent, "_code_generation_agent") as mock_agent:
             mock_run = AsyncMock(return_value=MagicMock(data="response"))
             mock_agent.run = mock_run
-
-            await agent.run_with_mcp("No compaction test")
+            # Patch token estimation to handle string messages
+            with patch.object(agent, "estimate_tokens_for_message", return_value=10):
+                await agent.run_with_mcp("No compaction test")
 
             assert mock_run.called
             # Verify compaction check was made but not executed
@@ -227,8 +228,9 @@ class TestBaseAgentRunMCP:
         with patch.object(agent, "_code_generation_agent") as mock_agent:
             mock_run = AsyncMock(return_value=MagicMock(data="response"))
             mock_agent.run = mock_run
-
-            await agent.run_with_mcp("No compaction test")
+            # Patch token estimation to handle string messages
+            with patch.object(agent, "estimate_tokens_for_message", return_value=10):
+                await agent.run_with_mcp("No compaction test")
 
             assert mock_run.called
             # Verify compaction check was made but not executed
@@ -331,8 +333,9 @@ class TestBaseAgentRunMCP:
         with patch.object(agent, "_code_generation_agent") as mock_agent:
             mock_run = AsyncMock(return_value=MagicMock(data="response"))
             mock_agent.run = mock_run
-
-            await agent.run_with_mcp("Prune test")
+            # Patch token estimation to handle string messages
+            with patch.object(agent, "estimate_tokens_for_message", return_value=10):
+                await agent.run_with_mcp("Prune test")
 
             assert mock_run.called
             # Verify prune was called (at least once, likely twice)

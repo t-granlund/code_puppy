@@ -14,30 +14,61 @@ from typing import Optional
 # The instruction override used for claude-code models
 CLAUDE_CODE_INSTRUCTIONS = "You are Claude Code, Anthropic's official CLI for Claude."
 
-# Path to the Antigravity system prompt file
-_ANTIGRAVITY_PROMPT_PATH = (
+# Paths to Antigravity system prompt files
+# COMPACT prompt (~1KB) for CLI/coding tasks - strips web design sections
+# FULL prompt (~6.8KB) for web application development tasks
+_ANTIGRAVITY_PROMPT_COMPACT_PATH = (
+    pathlib.Path(__file__).parent / "prompts" / "antigravity_system_prompt_compact.md"
+)
+_ANTIGRAVITY_PROMPT_FULL_PATH = (
     pathlib.Path(__file__).parent / "prompts" / "antigravity_system_prompt.md"
 )
 
-# Cache for the loaded Antigravity prompt
-_antigravity_prompt_cache: Optional[str] = None
+# Caches for loaded prompts
+_antigravity_prompt_compact_cache: Optional[str] = None
+_antigravity_prompt_full_cache: Optional[str] = None
 
 
-def _load_antigravity_prompt() -> str:
-    """Load the Antigravity system prompt from file, with caching."""
-    global _antigravity_prompt_cache
-    if _antigravity_prompt_cache is None:
-        if _ANTIGRAVITY_PROMPT_PATH.exists():
-            _antigravity_prompt_cache = _ANTIGRAVITY_PROMPT_PATH.read_text(
-                encoding="utf-8"
-            )
-        else:
-            # Fallback to a minimal prompt if file is missing
-            _antigravity_prompt_cache = (
-                "You are Antigravity, a powerful agentic AI coding assistant "
-                "designed by the Google Deepmind team."
-            )
-    return _antigravity_prompt_cache
+def _load_antigravity_prompt(use_compact: bool = True) -> str:
+    """Load the Antigravity system prompt from file, with caching.
+    
+    Args:
+        use_compact: If True (default), loads the compact ~1KB prompt suitable
+            for CLI/coding tasks. If False, loads the full ~6.8KB prompt that
+            includes web application development guidelines.
+            
+    The compact prompt strips ~5.8KB of web design/aesthetic instructions
+    that are irrelevant for CLI coding agents, significantly reducing
+    context size and helping prevent 429 rate limit cascades.
+    
+    Returns:
+        The Antigravity system prompt content.
+    """
+    global _antigravity_prompt_compact_cache, _antigravity_prompt_full_cache
+    
+    if use_compact:
+        if _antigravity_prompt_compact_cache is None:
+            if _ANTIGRAVITY_PROMPT_COMPACT_PATH.exists():
+                _antigravity_prompt_compact_cache = _ANTIGRAVITY_PROMPT_COMPACT_PATH.read_text(
+                    encoding="utf-8"
+                )
+            else:
+                # Fall back to full prompt if compact doesn't exist
+                return _load_antigravity_prompt(use_compact=False)
+        return _antigravity_prompt_compact_cache
+    else:
+        if _antigravity_prompt_full_cache is None:
+            if _ANTIGRAVITY_PROMPT_FULL_PATH.exists():
+                _antigravity_prompt_full_cache = _ANTIGRAVITY_PROMPT_FULL_PATH.read_text(
+                    encoding="utf-8"
+                )
+            else:
+                # Fallback to a minimal prompt if file is missing
+                _antigravity_prompt_full_cache = (
+                    "You are Antigravity, a powerful agentic AI coding assistant "
+                    "designed by the Google Deepmind team."
+                )
+        return _antigravity_prompt_full_cache
 
 
 @dataclass
@@ -143,6 +174,15 @@ def get_claude_code_instructions() -> str:
     return CLAUDE_CODE_INSTRUCTIONS
 
 
-def get_antigravity_instructions() -> str:
-    """Get the Antigravity system prompt for Antigravity models."""
-    return _load_antigravity_prompt()
+def get_antigravity_instructions(use_compact: bool = True) -> str:
+    """Get the Antigravity system prompt for Antigravity models.
+    
+    Args:
+        use_compact: If True (default), returns the compact ~1KB prompt
+            suitable for CLI/coding tasks. If False, returns the full 
+            ~6.8KB prompt with web development guidelines.
+            
+    Returns:
+        The Antigravity system prompt content.
+    """
+    return _load_antigravity_prompt(use_compact=use_compact)

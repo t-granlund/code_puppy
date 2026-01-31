@@ -42,10 +42,14 @@ class TestProviderBudgets:
     """Test provider budget configuration."""
     
     def test_cerebras_budget_exists(self):
-        """Cerebras has specific budget config."""
+        """Cerebras has specific ultra-aggressive budget config for 56:1 ratio fix."""
         budget = get_provider_budget("cerebras")
         assert budget["max_input_tokens"] == 50000
-        assert budget["max_output_tokens"] == 8192
+        assert budget["max_output_tokens"] == 4096  # Reduced for efficiency
+        # Ultra-aggressive thresholds
+        assert budget["hard_fail_threshold"] == 0.80
+        assert budget["warning_threshold"] == 0.50
+        assert budget["compaction_threshold"] == 0.50
     
     def test_default_budget_fallback(self):
         """Unknown providers get default budget."""
@@ -64,10 +68,10 @@ class TestProviderBudgets:
         assert get_max_input_tokens("anthropic") == 180000
     
     def test_get_hard_fail_threshold(self):
-        """Get hard fail threshold."""
+        """Get hard fail threshold - ultra-aggressive 80% for Cerebras."""
         threshold = get_hard_fail_threshold("cerebras")
         assert 0 < threshold <= 1.0
-        assert threshold == 0.95
+        assert threshold == 0.80  # Ultra-aggressive for 56:1 ratio fix
 
 
 class TestTokenEstimation:

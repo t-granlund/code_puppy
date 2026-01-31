@@ -164,15 +164,17 @@ class TestModelConfig:
         """Should have default models configured."""
         router = ModelRouter()
         
-        assert "cerebras-glm-4.7" in router._models
-        assert "gemini-3-flash" in router._models
-        assert "claude-opus-4.5" in router._models
+        # Use correct keys from models.json (capital C for Cerebras)
+        assert "Cerebras-GLM-4.7" in router._models
+        assert "antigravity-gemini-3-flash" in router._models
+        assert "claude-code-claude-opus-4-5-20251101" in router._models
     
     def test_cerebras_is_sprinter(self):
         """Cerebras should be in Sprinter tier."""
         router = ModelRouter()
         
-        cerebras = router._models.get("cerebras-glm-4.7")
+        # Use correct key with capital C
+        cerebras = router._models.get("Cerebras-GLM-4.7")
         assert cerebras is not None
         assert cerebras.tier == ModelTier.SPRINTER
     
@@ -180,7 +182,8 @@ class TestModelConfig:
         """Claude Opus should be in Architect tier."""
         router = ModelRouter()
         
-        opus = router._models.get("claude-opus-4.5")
+        # Use correct key with date suffix
+        opus = router._models.get("claude-code-claude-opus-4-5-20251101")
         assert opus is not None
         assert opus.tier == ModelTier.ARCHITECT
     

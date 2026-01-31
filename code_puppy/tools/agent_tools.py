@@ -522,8 +522,22 @@ def register_invoke_agent(agent):
 
             models_config = ModelFactory.load_config()
 
-            # Only proceed if we have a valid model configuration
-            if model_name not in models_config:
+            # Case-insensitive model lookup helper
+            def find_model_key(name: str, config: dict) -> str | None:
+                """Find model key with case-insensitive matching."""
+                if name in config:
+                    return name
+                name_lower = name.lower()
+                for key in config:
+                    if key.lower() == name_lower:
+                        return key
+                return None
+
+            # Try case-insensitive lookup first
+            matched_key = find_model_key(model_name, models_config)
+            if matched_key:
+                model_name = matched_key
+            elif model_name not in models_config:
                 # Fallback to agent's configured model if workload model not available
                 fallback_model = agent_config.get_model_name()
                 emit_warning(
@@ -531,7 +545,10 @@ def register_invoke_agent(agent):
                     message_group=group_id,
                 )
                 model_name = fallback_model
-                if model_name not in models_config:
+                matched_key = find_model_key(model_name, models_config)
+                if matched_key:
+                    model_name = matched_key
+                elif model_name not in models_config:
                     raise ValueError(f"Model '{model_name}' not found in configuration")
 
             model = ModelFactory.get_model(model_name, models_config)

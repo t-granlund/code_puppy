@@ -95,24 +95,24 @@ class SmartModelSelector:
     - Budget constraints
     """
     
-    # Model capability tiers (1 = highest capability)
+    # Model capability tiers (1 = highest capability) - Use EXACT keys from models.json
     CAPABILITY_TIERS: Dict[str, int] = {
-        "claude-opus-4.5": 1,
-        "chatgpt-codex-5.2": 2,
-        "claude-sonnet-4.5": 3,
-        "gemini-3-pro": 4,
-        "gemini-3-flash": 5,
-        "cerebras-glm-4.7": 5,
+        "claude-code-claude-opus-4-5-20251101": 1,
+        "chatgpt-gpt-5.2-codex": 2,
+        "claude-code-claude-sonnet-4-5-20250929": 3,
+        "antigravity-gemini-3-pro-low": 4,
+        "antigravity-gemini-3-flash": 5,
+        "Cerebras-GLM-4.7": 5,
     }
     
-    # Model to provider mapping
+    # Model to provider mapping - Use EXACT keys from models.json
     MODEL_PROVIDERS: Dict[str, str] = {
-        "claude-opus-4.5": "claude_opus",
-        "claude-sonnet-4.5": "claude_sonnet",
-        "chatgpt-codex-5.2": "codex",
-        "gemini-3-pro": "gemini",
-        "gemini-3-flash": "gemini_flash",
-        "cerebras-glm-4.7": "cerebras",
+        "claude-code-claude-opus-4-5-20251101": "claude_opus",
+        "claude-code-claude-sonnet-4-5-20250929": "claude_sonnet",
+        "chatgpt-gpt-5.2-codex": "codex",
+        "antigravity-gemini-3-pro-low": "gemini",
+        "antigravity-gemini-3-flash": "gemini_flash",
+        "Cerebras-GLM-4.7": "cerebras",
     }
     
     # Weight factors for balanced scoring

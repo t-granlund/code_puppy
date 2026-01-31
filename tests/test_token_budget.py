@@ -130,7 +130,8 @@ class TestTokenBudgetManager:
         assert wait2 > wait1
         assert wait3 > wait2
         # Should suggest failover after 3 429s
-        assert failover == "gemini_flash"
+        # Updated: Cerebras chain now goes to Haiku with dated name
+        assert failover == "claude-code-claude-haiku-4-5-20251001"
     
     def test_failover_chain(self):
         """Should suggest failover when budget exceeded."""
@@ -143,7 +144,8 @@ class TestTokenBudgetManager:
         result = mgr.check_budget("cerebras", 10_000, allow_failover=True)
         
         assert not result.can_proceed
-        assert result.failover_to == "gemini_flash"
+        # Updated: Cerebras chain now goes to Haiku with dated name
+        assert result.failover_to == "claude-code-claude-haiku-4-5-20251001"
 
 
 class TestSmartRetry:

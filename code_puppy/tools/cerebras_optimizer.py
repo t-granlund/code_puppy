@@ -1,543 +1,60 @@
-"""Cerebras-specific token optimization strategies.
+"""Cerebras Token Optimizer - DEPRECATED, use token_slimmer instead.
 
-Implements aggressive token management for Cerebras Code Pro:
-- Auto-compaction at 50% context usage (vs default 85%)
-- Sliding window with max 6 exchanges
-- Smart max_tokens based on task type
-- Provider-specific output limits
+This module is maintained for backward compatibility only.
+All functionality has been moved to token_slimmer.py which provides
+universal, provider-aware token optimization.
 
-Based on analysis showing 98:1 input:output ratio with avg 28.5K tokens/request.
-Target: Reduce to <15K tokens/request for 50%+ savings.
+Usage migration:
+    # Old (Cerebras-only):
+    from code_puppy.tools.cerebras_optimizer import check_cerebras_budget
+    
+    # New (Universal):
+    from code_puppy.tools.token_slimmer import check_token_budget
+    result = check_token_budget(tokens, provider="cerebras")  # or any provider
 """
 
-from dataclasses import dataclass, field
-from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
-import re
+# Re-export everything from token_slimmer for backward compatibility
+from code_puppy.tools.token_slimmer import (
+    # Core types
+    TaskType,
+    CompactionResult,
+    TokenBudgetCheck,
+    SlidingWindowConfig,
+    
+    # Provider configuration
+    PROVIDER_LIMITS,
+    get_provider_limits,
+    
+    # Universal functions
+    detect_task_type,
+    get_optimal_max_tokens,
+    check_token_budget,
+    apply_sliding_window,
+    should_auto_compact,
+    count_exchanges,
+    
+    # Backward compatibility aliases
+    CEREBRAS_LIMITS,
+    check_cerebras_budget,
+    get_cerebras_model_settings_override,
+    cerebras_pre_request_hook,
+)
 
-
-class TaskType(Enum):
-    """Task types for output token estimation."""
-    TOOL_CALL = "tool_call"  # Short response, typically <500 tokens
-    CODE_GENERATION = "code_generation"  # Medium, 1-4K tokens
-    EXPLANATION = "explanation"  # Variable, 500-2K tokens
-    FILE_READ = "file_read"  # Just requesting, output is tool result
-    PLANNING = "planning"  # Medium-long, 1-3K tokens
-    REVIEW = "review"  # Medium, 1-2K tokens
-    UNKNOWN = "unknown"
-
-
-# Cerebras-specific limits (AGGRESSIVE - based on usage analysis showing 28K avg/req)
-# Goal: Reduce from 28K to <15K tokens/request
-CEREBRAS_LIMITS = {
-    "compaction_threshold": 0.30,  # Trigger compaction at 30% (was 50%)
-    "hard_limit_threshold": 0.50,  # Hard block at 50% (was 70%)
-    "max_input_tokens": 50_000,  # Cerebras Pro limit
-    "target_input_tokens": 15_000,  # Target to stay under (was 25K)
-    "max_exchanges": 4,  # Keep only last 4 user-assistant pairs (was 6)
-    "max_output_by_task": {
-        TaskType.TOOL_CALL: 300,  # Reduced from 500
-        TaskType.CODE_GENERATION: 3000,  # Reduced from 4000
-        TaskType.EXPLANATION: 1500,  # Reduced from 2000
-        TaskType.FILE_READ: 150,  # Reduced from 200
-        TaskType.PLANNING: 2000,  # Reduced from 3000
-        TaskType.REVIEW: 1500,  # Reduced from 2000
-        TaskType.UNKNOWN: 1500,  # Reduced from 2000
-    },
-    "default_max_output": 1500,  # Reduced from 2000
-}
-
-
-@dataclass
-class CompactionResult:
-    """Result of a compaction operation."""
-    original_tokens: int
-    compacted_tokens: int
-    original_messages: int
-    compacted_messages: int
-    strategy_used: str
-    savings_percent: float
-    
-    @property
-    def tokens_saved(self) -> int:
-        return self.original_tokens - self.compacted_tokens
-
-
-@dataclass
-class TokenBudgetCheck:
-    """Result of checking token budget."""
-    current_tokens: int
-    max_tokens: int
-    usage_percent: float
-    should_compact: bool
-    should_block: bool
-    recommended_action: str
-    estimated_output_tokens: int
-    
-    
-@dataclass
-class SlidingWindowConfig:
-    """Configuration for sliding window context management."""
-    max_exchanges: int = 6
-    preserve_system: bool = True
-    preserve_tool_results: bool = True  # Keep pending tool results
-    summarize_old: bool = True  # Summarize rather than drop
-
-
-def detect_task_type(messages: List[Any]) -> TaskType:
-    """Detect the likely task type from recent messages.
-    
-    Analyzes the last user message to determine what kind of response
-    is expected, allowing for smarter max_tokens allocation.
-    """
-    if not messages:
-        return TaskType.UNKNOWN
-    
-    # Find the last user message
-    last_user_content = ""
-    for msg in reversed(messages):
-        if hasattr(msg, 'parts'):
-            for part in msg.parts:
-                if hasattr(part, 'content') and isinstance(part.content, str):
-                    last_user_content = part.content.lower()
-                    break
-        if last_user_content:
-            break
-    
-    if not last_user_content:
-        return TaskType.UNKNOWN
-    
-    # Pattern matching for task types
-    tool_patterns = [
-        r'\bread\b.*file', r'\blist\b.*files?', r'\bgrep\b', r'\bsearch\b',
-        r'\brun\b.*command', r'\bexecute\b', r'\bcheck\b.*status',
-        r'\bwhat\s+is\b.*in', r'\bshow\s+me\b',
-    ]
-    
-    code_gen_patterns = [
-        r'\bwrite\b.*code', r'\bcreate\b.*function', r'\bimplement\b',
-        r'\bgenerate\b', r'\bbuild\b.*module', r'\badd\b.*feature',
-        r'\bfix\b.*bug', r'\bedit\b.*file', r'\bmodify\b', r'\brefactor\b',
-    ]
-    
-    explanation_patterns = [
-        r'\bexplain\b', r'\bwhy\b', r'\bhow\s+does\b', r'\bwhat\s+is\b',
-        r'\bdescribe\b', r'\btell\s+me\b.*about',
-    ]
-    
-    planning_patterns = [
-        r'\bplan\b', r'\bdesign\b', r'\barchitect', r'\bstrategy\b',
-        r'\bhow\s+should\b', r'\bwhat\s+approach\b', r'\bpropose\b',
-    ]
-    
-    review_patterns = [
-        r'\breview\b', r'\baudit\b', r'\bcheck\b.*code', r'\banalyze\b',
-        r'\bvalidate\b', r'\bverify\b',
-    ]
-    
-    for pattern in tool_patterns:
-        if re.search(pattern, last_user_content):
-            return TaskType.TOOL_CALL
-    
-    for pattern in code_gen_patterns:
-        if re.search(pattern, last_user_content):
-            return TaskType.CODE_GENERATION
-    
-    for pattern in explanation_patterns:
-        if re.search(pattern, last_user_content):
-            return TaskType.EXPLANATION
-    
-    for pattern in planning_patterns:
-        if re.search(pattern, last_user_content):
-            return TaskType.PLANNING
-    
-    for pattern in review_patterns:
-        if re.search(pattern, last_user_content):
-            return TaskType.REVIEW
-    
-    return TaskType.UNKNOWN
-
-
-def get_optimal_max_tokens(
-    messages: List[Any],
-    provider: str = "cerebras",
-) -> int:
-    """Get optimal max_tokens based on detected task type.
-    
-    This prevents over-allocation which counts against TPM limits
-    even if the actual response is shorter.
-    """
-    if provider.lower() != "cerebras":
-        # Default for non-Cerebras providers
-        return 4000
-    
-    task_type = detect_task_type(messages)
-    max_output = CEREBRAS_LIMITS["max_output_by_task"].get(
-        task_type, 
-        CEREBRAS_LIMITS["default_max_output"]
-    )
-    
-    return max_output
-
-
-def check_cerebras_budget(
-    current_input_tokens: int,
-    messages: List[Any] = None,
-) -> TokenBudgetCheck:
-    """Check if current context is within Cerebras budget.
-    
-    Returns actionable recommendations for token management.
-    """
-    max_tokens = CEREBRAS_LIMITS["max_input_tokens"]
-    target_tokens = CEREBRAS_LIMITS["target_input_tokens"]
-    compaction_threshold = CEREBRAS_LIMITS["compaction_threshold"]
-    hard_limit = CEREBRAS_LIMITS["hard_limit_threshold"]
-    
-    usage_percent = current_input_tokens / max_tokens if max_tokens > 0 else 1.0
-    
-    # Estimate output tokens based on task
-    estimated_output = get_optimal_max_tokens(messages or [], "cerebras")
-    
-    should_compact = usage_percent >= compaction_threshold
-    should_block = usage_percent >= hard_limit
-    
-    if should_block:
-        action = (
-            f"🚫 HARD LIMIT: Context at {usage_percent:.0%} ({current_input_tokens:,} tokens). "
-            f"Must compact or truncate before proceeding. Run `/truncate 4` now."
-        )
-    elif should_compact:
-        action = (
-            f"⚠️ COMPACT NEEDED: Context at {usage_percent:.0%} ({current_input_tokens:,} tokens). "
-            f"Auto-compacting to stay under {target_tokens:,} target."
-        )
-    elif current_input_tokens > target_tokens:
-        action = (
-            f"📊 Context at {usage_percent:.0%} ({current_input_tokens:,} tokens). "
-            f"Consider `/truncate 6` to improve response quality."
-        )
-    else:
-        action = f"✅ Context healthy: {current_input_tokens:,} tokens ({usage_percent:.0%})"
-    
-    return TokenBudgetCheck(
-        current_tokens=current_input_tokens,
-        max_tokens=max_tokens,
-        usage_percent=usage_percent,
-        should_compact=should_compact,
-        should_block=should_block,
-        recommended_action=action,
-        estimated_output_tokens=estimated_output,
-    )
-
-
-def count_exchanges(messages: List[Any]) -> int:
-    """Count user-assistant exchange pairs in message history."""
-    user_count = 0
-    assistant_count = 0
-    
-    for msg in messages:
-        kind = getattr(msg, 'kind', '')
-        if kind == 'request':
-            user_count += 1
-        elif kind == 'response':
-            assistant_count += 1
-    
-    return min(user_count, assistant_count)
-
-
-def _extract_tool_call_ids(msg: Any) -> set:
-    """Extract tool_call IDs from ToolCallPart in response messages.
-    
-    In pydantic-ai:
-    - ModelResponse contains ToolCallPart (part_kind='tool-call')
-    - These are the source of tool_call_ids that tool results reference
-    """
-    ids = set()
-    # Only look in response messages (where ToolCallPart lives)
-    kind = getattr(msg, 'kind', '')
-    if kind != 'response':
-        return ids
-    
-    if hasattr(msg, 'parts'):
-        for part in msg.parts:
-            part_kind = getattr(part, 'part_kind', '')
-            # ToolCallPart has part_kind='tool-call'
-            if part_kind == 'tool-call' and hasattr(part, 'tool_call_id'):
-                tc_id = part.tool_call_id
-                if tc_id:
-                    ids.add(tc_id)
-    return ids
-
-
-def _get_tool_result_id(msg: Any) -> Optional[str]:
-    """Get the tool_call_id that this ToolReturnPart responds to.
-    
-    In pydantic-ai:
-    - ModelRequest can contain ToolReturnPart (part_kind='tool-return')
-    - Each ToolReturnPart has tool_call_id referencing a ToolCallPart
-    """
-    if hasattr(msg, 'parts'):
-        for part in msg.parts:
-            part_kind = getattr(part, 'part_kind', '')
-            # ToolReturnPart has part_kind='tool-return'
-            if part_kind == 'tool-return' and hasattr(part, 'tool_call_id'):
-                return part.tool_call_id
-    return None
-
-
-def _is_tool_result_message(msg: Any) -> bool:
-    """Check if a message contains ToolReturnPart(s).
-    
-    In pydantic-ai:
-    - ModelRequest (kind='request') can contain ToolReturnPart
-    - ToolReturnPart has part_kind='tool-return'
-    """
-    if not hasattr(msg, 'parts'):
-        return False
-    
-    for part in msg.parts:
-        part_kind = getattr(part, 'part_kind', '')
-        if part_kind == 'tool-return':
-            return True
-    return False
-
-
-def apply_sliding_window(
-    messages: List[Any],
-    config: SlidingWindowConfig = None,
-    estimate_tokens_fn=None,
-) -> Tuple[List[Any], CompactionResult]:
-    """Apply sliding window to keep only recent exchanges.
-    
-    Keeps the last N exchange pairs while preserving:
-    - System messages (if configured)
-    - Tool call/result chains (never orphan tool results)
-    
-    CRITICAL: Tool results MUST have their corresponding assistant message
-    with tool_calls in the kept messages, or the API will reject with 422.
-    """
-    if config is None:
-        config = SlidingWindowConfig(max_exchanges=CEREBRAS_LIMITS["max_exchanges"])
-    
-    if estimate_tokens_fn is None:
-        # Simple fallback token estimation
-        def estimate_tokens_fn(msg):
-            content = ""
-            if hasattr(msg, 'parts'):
-                for part in msg.parts:
-                    if hasattr(part, 'content'):
-                        content += str(part.content)
-            return len(content) // 4
-    
-    original_count = len(messages)
-    original_tokens = sum(estimate_tokens_fn(m) for m in messages)
-    
-    if count_exchanges(messages) <= config.max_exchanges:
-        # Already within limit
-        return messages, CompactionResult(
-            original_tokens=original_tokens,
-            compacted_tokens=original_tokens,
-            original_messages=original_count,
-            compacted_messages=original_count,
-            strategy_used="none_needed",
-            savings_percent=0.0,
-        )
-    
-    # Separate messages by type
-    system_messages = []
-    exchanges = []  # Each exchange is a list of messages starting with user request
-    current_exchange = []
-    
-    for msg in messages:
-        kind = getattr(msg, 'kind', '')
-        
-        if kind == 'system-prompt':
-            system_messages.append(msg)
-        elif kind == 'request':
-            if current_exchange:
-                exchanges.append(current_exchange)
-            current_exchange = [msg]
-        else:
-            current_exchange.append(msg)
-    
-    # Don't forget the last exchange
-    if current_exchange:
-        exchanges.append(current_exchange)
-    
-    # Keep only the last N exchanges
-    kept_exchanges = exchanges[-config.max_exchanges:]
-    
-    # CRITICAL FIX: Collect all tool_call IDs from kept messages FIRST
-    # Then filter out any tool results that reference missing tool_calls
-    valid_tool_call_ids = set()
-    for exchange in kept_exchanges:
-        for msg in exchange:
-            valid_tool_call_ids.update(_extract_tool_call_ids(msg))
-    
-    # Now filter each exchange to remove orphaned tool results
-    cleaned_exchanges = []
-    for exchange in kept_exchanges:
-        cleaned = []
-        for msg in exchange:
-            if _is_tool_result_message(msg):
-                result_id = _get_tool_result_id(msg)
-                if result_id and result_id not in valid_tool_call_ids:
-                    # Orphaned tool result - skip it
-                    continue
-            cleaned.append(msg)
-        cleaned_exchanges.append(cleaned)
-    
-    # Rebuild message list
-    compacted = []
-    
-    if config.preserve_system:
-        compacted.extend(system_messages)
-    
-    for exchange in cleaned_exchanges:
-        compacted.extend(exchange)
-    
-    compacted_tokens = sum(estimate_tokens_fn(m) for m in compacted)
-    savings = (
-        (original_tokens - compacted_tokens) / original_tokens * 100
-        if original_tokens > 0
-        else 0.0
-    )
-    
-    return compacted, CompactionResult(
-        original_tokens=original_tokens,
-        compacted_tokens=compacted_tokens,
-        original_messages=original_count,
-        compacted_messages=len(compacted),
-        strategy_used=f"sliding_window_{config.max_exchanges}",
-        savings_percent=savings,
-    )
-
-
-def should_auto_compact(
-    messages: List[Any],
-    provider: str,
-    estimate_tokens_fn=None,
-) -> Tuple[bool, str]:
-    """Determine if auto-compaction should trigger.
-    
-    Returns:
-        Tuple of (should_compact, reason)
-    """
-    if provider.lower() != "cerebras":
-        return False, "Not Cerebras provider"
-    
-    if estimate_tokens_fn is None:
-        def estimate_tokens_fn(msg):
-            content = ""
-            if hasattr(msg, 'parts'):
-                for part in msg.parts:
-                    if hasattr(part, 'content'):
-                        content += str(part.content)
-            return len(content) // 4
-    
-    current_tokens = sum(estimate_tokens_fn(m) for m in messages)
-    exchange_count = count_exchanges(messages)
-    
-    # Check token threshold
-    budget_check = check_cerebras_budget(current_tokens, messages)
-    if budget_check.should_compact:
-        return True, f"Token usage at {budget_check.usage_percent:.0%}"
-    
-    # Check exchange count
-    max_exchanges = CEREBRAS_LIMITS["max_exchanges"]
-    if exchange_count > max_exchanges:
-        return True, f"Exchange count ({exchange_count}) exceeds max ({max_exchanges})"
-    
-    return False, "Within limits"
-
-
-def get_cerebras_model_settings_override(
-    messages: List[Any],
-    base_max_tokens: int = None,
-) -> Dict[str, Any]:
-    """Get Cerebras-optimized model settings.
-    
-    Returns settings dict to merge with base model settings.
-    """
-    optimal_output = get_optimal_max_tokens(messages, "cerebras")
-    
-    overrides = {
-        "max_tokens": min(optimal_output, base_max_tokens or 4000),
-    }
-    
-    return overrides
-
-
-# Convenience functions for quick integration
-
-def cerebras_pre_request_hook(
-    messages: List[Any],
-    estimate_tokens_fn=None,
-) -> Tuple[List[Any], Dict[str, Any], str]:
-    """Pre-request hook for Cerebras optimization.
-    
-    Call this before sending a request to:
-    1. Auto-compact if needed
-    2. Get optimal max_tokens
-    3. Get status message for user
-    
-    Returns:
-        Tuple of (processed_messages, settings_override, status_message)
-    """
-    if estimate_tokens_fn is None:
-        def estimate_tokens_fn(msg):
-            content = ""
-            if hasattr(msg, 'parts'):
-                for part in msg.parts:
-                    if hasattr(part, 'content'):
-                        content += str(part.content)
-            return len(content) // 4
-    
-    # Check if compaction needed
-    should_compact, reason = should_auto_compact(
-        messages, "cerebras", estimate_tokens_fn
-    )
-    
-    status_parts = []
-    processed_messages = messages
-    
-    if should_compact:
-        processed_messages, result = apply_sliding_window(
-            messages,
-            estimate_tokens_fn=estimate_tokens_fn,
-        )
-        status_parts.append(
-            f"🧹 Auto-compacted: {result.original_tokens:,} → {result.compacted_tokens:,} tokens "
-            f"({result.savings_percent:.0f}% saved)"
-        )
-    
-    # Get optimal settings
-    settings_override = get_cerebras_model_settings_override(processed_messages)
-    
-    # Get budget status
-    current_tokens = sum(estimate_tokens_fn(m) for m in processed_messages)
-    budget = check_cerebras_budget(current_tokens, processed_messages)
-    
-    if not should_compact:
-        status_parts.append(budget.recommended_action)
-    
-    status_parts.append(f"📤 max_tokens: {settings_override['max_tokens']}")
-    
-    return processed_messages, settings_override, " | ".join(status_parts)
-
-
-# Export key items
 __all__ = [
     "TaskType",
     "CEREBRAS_LIMITS",
+    "PROVIDER_LIMITS",
     "CompactionResult",
     "TokenBudgetCheck",
     "SlidingWindowConfig",
     "detect_task_type",
     "get_optimal_max_tokens",
     "check_cerebras_budget",
+    "check_token_budget",
+    "get_provider_limits",
     "apply_sliding_window",
     "should_auto_compact",
+    "count_exchanges",
     "get_cerebras_model_settings_override",
     "cerebras_pre_request_hook",
 ]

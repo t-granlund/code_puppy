@@ -114,42 +114,39 @@ class RateLimitFailover:
 
     # PURPOSE-DRIVEN FAILOVER CHAINS
     # These chains respect the intended use of each model
+    # Note: ChatGPT models are OAuth-only and excluded from default chains
     WORKLOAD_CHAINS: Dict[WorkloadType, List[str]] = {
         # Pack leader, governor, planning - needs reasoning power
         WorkloadType.ORCHESTRATOR: [
-            "claude-opus-4.5",  # Claude Code OAuth
+            "claude-code-claude-opus-4-5-20251101",
             "antigravity-claude-opus-4-5-thinking-high",
             "antigravity-claude-opus-4-5-thinking-medium",
             "antigravity-claude-opus-4-5-thinking-low",
-            "claude-sonnet-4.5",  # Downgrade to Sonnet if Opus exhausted
+            "claude-code-claude-sonnet-4-5-20250929",
             "antigravity-claude-sonnet-4-5-thinking-high",
-            "gemini-3-pro",  # Last resort for reasoning
-            "chatgpt-codex-5.2",
+            "antigravity-claude-sonnet-4-5-thinking-medium",
+            "Cerebras-GLM-4.7",
         ],
         # Complex logic, security audit, design
         WorkloadType.REASONING: [
-            "claude-sonnet-4.5",
-            "antigravity-claude-sonnet-4-5",
+            "claude-code-claude-sonnet-4-5-20250929",
             "antigravity-claude-sonnet-4-5-thinking-high",
             "antigravity-claude-sonnet-4-5-thinking-medium",
-            "gemini-3-pro",
-            "chatgpt-codex-5.2",
-            "gemini-3-flash",
+            "antigravity-claude-sonnet-4-5-thinking-low",
+            "antigravity-claude-sonnet-4-5",
+            "Cerebras-GLM-4.7",
         ],
-        # Main code generation - speed matters
+        # Main code generation (high volume, fast)
         WorkloadType.CODING: [
-            "cerebras-glm-4.7",  # Primary: ultra-fast
-            "claude-haiku",  # Fast fallback
-            "gemini-3-flash",  # Reliable fallback
+            "Cerebras-GLM-4.7",
+            "claude-code-claude-haiku-4-5-20251001",
             "antigravity-gemini-3-flash",
         ],
-        # Search, docs, context - efficiency matters
+        # Search, docs, context (less intensive)
         WorkloadType.LIBRARIAN: [
-            "claude-haiku",  # Fast and cheap
-            "gpt-5.2",
-            "gemini-3-flash",
+            "claude-code-claude-haiku-4-5-20251001",
             "antigravity-gemini-3-flash",
-            "cerebras-glm-4.7",  # Can do search too
+            "Cerebras-GLM-4.7",
         ],
     }
 
@@ -309,11 +306,14 @@ class RateLimitFailover:
     def _load_fallback_models(self) -> None:
         """Load fallback models if ModelFactory fails."""
         fallbacks = [
-            # Standard models
-            ("gemini-3-flash", "gemini", 4),
-            ("gemini-3-pro", "gemini", 4),
-            ("claude-sonnet-4.5", "anthropic", 3),
-            ("cerebras-glm-4.7", "cerebras", 5),
+            # Claude Code OAuth models - use EXACT keys from models.json (with date suffix!)
+            ("claude-code-claude-opus-4-5-20251101", "anthropic", 1),
+            ("claude-code-claude-sonnet-4-5-20250929", "anthropic", 3),
+            ("claude-code-claude-haiku-4-5-20251001", "anthropic", 4),
+            # Standard models - use EXACT keys from models.json (case-sensitive!)
+            ("antigravity-gemini-3-flash", "gemini", 4),
+            ("antigravity-gemini-3-pro-low", "gemini", 4),
+            ("Cerebras-GLM-4.7", "cerebras", 5),
             # Antigravity OAuth models
             ("antigravity-gemini-3-flash", "antigravity_gemini", 4),
             ("antigravity-gemini-3-pro-low", "antigravity_gemini", 4),

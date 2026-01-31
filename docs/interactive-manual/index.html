@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Code Puppy Interactive Manual</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <aside>
+    <div class="brand">
+      <div class="brand-icon">🐶</div>
+      <div class="brand-text">
+        <h1>Code Puppy</h1>
+        <span>v2.0 Hybrid</span>
+      </div>
+    </div>
+    
+    <nav>
+      <div class="nav-item active" data-target="dashboard">
+        <span>📊</span> Mission Control
+      </div>
+      <div class="nav-item" data-target="agents">
+        <span>👥</span> The Pack (Agents)
+      </div>
+      <div class="nav-item" data-target="epistemic">
+        <span>🧠</span> Epistemic Core
+      </div>
+      <div class="nav-item" data-target="infrastructure">
+        <span>⚡</span> Infrastructure
+      </div>
+    </nav>
+    
+    <div class="system-status">
+      <h3 style="margin-top:0; margin-bottom:1rem; color: #94a3b8; font-size: 0.75rem; text-transform: uppercase;">Systems Check</h3>
+      <div class="status-row"><span>Cerebras</span> <div><span class="dot"></span>Online</div></div>
+      <div class="status-row"><span>Claude</span> <div><span class="dot"></span>Online</div></div>
+      <div class="status-row"><span>Gemini</span> <div><span class="dot"></span>Online</div></div>
+      <div class="status-row"><span>Tests</span> <div><span class="dot"></span>98 OK</div></div>
+    </div>
+  </aside>
+
+  <!-- Content -->
+  <main>
+    
+    <!-- DASHBOARD -->
+    <div id="dashboard" class="page active">
+      <h2 style="background: linear-gradient(to right, #60a5fa, #a855f7); -webkit-background-clip: text; color: transparent;">Interactive Manual & System Status</h2>
+      <p class="lead">Welcome to the neural command center of <strong>Code Puppy 2.0</strong>. Visualizing the Hybrid Inference Engine across 20+ specialized agents.</p>
+      
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="stat-commits">--</div>
+          <div class="stat-label">Commits</div>
+          <div class="stat-sub">Current Session</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-tests">--</div>
+          <div class="stat-label">Status</div>
+          <div class="stat-sub">Test Coverage</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">2,000</div>
+          <div class="stat-label">Tok/Sec</div>
+          <div class="stat-sub">Cerebras Inference</div>
+        </div>
+      </div>
+      
+      <div class="feature-grid">
+        <div class="feature-card">
+          <h3>⚡ Hybrid Inference Engine</h3>
+          <p style="color:#94a3b8; font-size: 0.9rem;">Automatically routes tasks to optimal providers.</p>
+          <div class="feature-list-item">
+            <span>Planning</span> <span class="tech-font" style="color:#a855f7">Claude Opus</span>
+          </div>
+          <div class="feature-list-item">
+            <span>Retrieval</span> <span class="tech-font" style="color:#3b82f6">Gemini 1.5</span>
+          </div>
+          <div class="feature-list-item">
+            <span>Coding</span> <span class="tech-font" style="color:#ef4444">Cerebras</span>
+          </div>
+        </div>
+        
+        <div class="feature-card">
+          <h3>🧠 Epistemic Core</h3>
+          <p style="color:#94a3b8; font-size: 0.9rem;">Cognitive architecture for belief management.</p>
+          <div class="feature-list-item"><span>EAR Runtime</span> <span>✅</span></div>
+          <div class="feature-list-item"><span>Expert Lenses</span> <span>✅</span></div>
+          <div class="feature-list-item"><span>Ralph Loop</span> <span>✅</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AGENTS -->
+    <div id="agents" class="page">
+      <h2>The Pack</h2>
+      <p class="lead">Specialized agents currently active in the registry.</p>
+      
+      <div class="filters">
+        <button class="filter-btn active" data-filter="ALL">All</button>
+        <button class="filter-btn" data-filter="ORCHESTRATOR">Orchestrators</button>
+        <button class="filter-btn" data-filter="REASONING">Reasoning</button>
+        <button class="filter-btn" data-filter="CODING">Coding</button>
+        <button class="filter-btn" data-filter="LIBRARIAN">Librarian</button>
+      </div>
+      
+      <div id="agent-grid" class="agent-grid">
+        <!-- Javascript populates this -->
+      </div>
+    </div>
+
+    <!-- EPISTEMIC -->
+    <div id="epistemic" class="page">
+      <h2>Epistemic Core Architecture</h2>
+      <p class="lead">Managing uncertainty and applying multi-disciplinary expertise through typed Lenses.</p>
+      
+      <h3>The Ralph Loop</h3>
+      <div id="loop-container" class="loop-container">
+        <!-- JS populates -->
+      </div>
+      
+      <div class="feature-grid">
+        <div class="feature-card">
+          <h3>Core Primitives</h3>
+          <div class="feature-list-item"><strong>Assumption</strong> - Explicit beliefs</div>
+          <div class="feature-list-item"><strong>Hypothesis</strong> - Falsifiable claims</div>
+          <div class="feature-list-item"><strong>Evidence</strong> - Observed data</div>
+          <div class="feature-list-item"><strong>Constraint</strong> - Hard limits</div>
+        </div>
+        <div class="feature-card">
+          <h3>Expert Lenses</h3>
+          <div id="lenses-list">
+            <!-- JS populates -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INFRASTRUCTURE -->
+    <div id="infrastructure" class="page">
+      <h2>Infrastructure & Routing</h2>
+      <p class="lead">The Hybrid Inference Engine automatically classifies prompts for cost & capability.</p>
+      
+      <h3>Model Tiers</h3>
+      <div id="infra-grid" class="infra-grid">
+        <!-- JS populates -->
+      </div>
+      
+      <div class="simulator">
+        <h3>⚡ Router Simulator</h3>
+        <p style="color:#94a3b8; margin-bottom: 2rem;">Type a task below to see how the engine routes it.</p>
+        
+        <div class="sim-input-group">
+          <input type="text" id="sim-input" class="sim-input" placeholder="e.g. 'Plan microservices', 'Write unit tests', 'Find usage of auth'">
+          <button id="sim-btn" class="sim-btn">Route Task</button>
+        </div>
+        
+        <div id="sim-result" style="display:none;" class="sim-result">
+          <div>
+            <div style="font-size:0.75rem; text-transform:uppercase; color:#94a3b8;">Detected Intent</div>
+            <div id="res-intent" style="font-weight:700;"></div>
+          </div>
+          <div style="font-size: 2rem; color: #334155;">→</div>
+          <div>
+            <div style="font-size:0.75rem; text-transform:uppercase; color:#94a3b8;">Selected Model</div>
+            <div id="res-model" style="font-size:1.5rem; font-weight:700; color:#3b82f6;"></div>
+            <div id="res-details" style="font-size:0.8rem; color:#94a3b8;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+  
+  <script src="app.js"></script>
+</body>
+</html>

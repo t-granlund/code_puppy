@@ -181,50 +181,49 @@ class TokenBudgetManager:
     FAILOVER_CHAIN: Dict[str, str] = {
         # =====================================================================
         # ARCHITECT TIER - Big reasoning, planning, orchestrator roles
-        # Claude Code Opus → Antigravity Opus → Gemini Pro → Codex
+        # Claude Code Opus → Antigravity Opus thinking → Antigravity Sonnet thinking → ChatGPT 5.2
         # =====================================================================
         "claude_opus": "antigravity-claude-opus-4-5-thinking-high",
-        "claude-opus-4.5": "antigravity-claude-opus-4-5-thinking-high",
+        "claude-code-claude-opus-4-5-20251101": "antigravity-claude-opus-4-5-thinking-high",
         "antigravity-claude-opus-4-5-thinking-high": "antigravity-claude-opus-4-5-thinking-medium",
         "antigravity-claude-opus-4-5-thinking-medium": "antigravity-claude-opus-4-5-thinking-low",
-        "antigravity-claude-opus-4-5-thinking-low": "gemini-3-pro",
+        "antigravity-claude-opus-4-5-thinking-low": "antigravity-claude-sonnet-4-5-thinking-high",
         
         # =====================================================================
         # BUILDER TIER - Complex logic, design, refactoring
-        # Claude Code Sonnet → Antigravity Sonnet → Gemini Pro → Codex
+        # Claude Code Sonnet → Antigravity Sonnet → ChatGPT 5.2
         # =====================================================================
         "claude_sonnet": "antigravity-claude-sonnet-4-5",
-        "claude-sonnet-4.5": "antigravity-claude-sonnet-4-5",
+        "claude-code-claude-sonnet-4-5-20250929": "antigravity-claude-sonnet-4-5",
         "antigravity-claude-sonnet-4-5": "antigravity-claude-sonnet-4-5-thinking-high",
         "antigravity-claude-sonnet-4-5-thinking-high": "antigravity-claude-sonnet-4-5-thinking-medium",
         "antigravity-claude-sonnet-4-5-thinking-medium": "antigravity-claude-sonnet-4-5-thinking-low",
-        "antigravity-claude-sonnet-4-5-thinking-low": "gemini-3-pro",
+        # After Sonnet thinking chain exhausts, fallback to Cerebras → Haiku → Gemini
+        "antigravity-claude-sonnet-4-5-thinking-low": "Cerebras-GLM-4.7",
         
         # =====================================================================
         # SPRINTER TIER - Main code work (high volume, fast generation)
-        # Cerebras GLM 4.7 → Claude Haiku → Gemini Flash
+        # Cerebras GLM 4.7 → Claude Haiku → Antigravity Gemini Flash → ChatGPT 5.2
         # =====================================================================
-        "cerebras": "claude-haiku",
-        "cerebras-glm-4.7": "claude-haiku",
-        "claude-haiku": "gemini-3-flash",
-        "claude_haiku": "gemini-3-flash",
+        "cerebras": "claude-code-claude-haiku-4-5-20251001",
+        "cerebras-glm-4.7": "claude-code-claude-haiku-4-5-20251001",
+        "Cerebras-GLM-4.7": "claude-code-claude-haiku-4-5-20251001",
+        "claude-haiku": "antigravity-gemini-3-flash",
+        "claude_haiku": "antigravity-gemini-3-flash",
+        "claude-code-claude-haiku-4-5-20251001": "antigravity-gemini-3-flash",
         
         # =====================================================================
         # LIBRARIAN TIER - Search, docs, context, less intensive code
-        # Haiku → GPT 5.2 → Flash, Codex → Flash, Gemini Pro → Flash
+        # Antigravity Gemini → Cerebras (always available)
         # =====================================================================
-        "gemini": "gemini-3-flash",
-        "gemini-3-pro": "gemini-3-flash",
         "antigravity-gemini-3-pro-high": "antigravity-gemini-3-pro-low",
         "antigravity-gemini-3-pro-low": "antigravity-gemini-3-flash",
-        "antigravity-gemini-3-flash": "gemini-3-flash",
-        "gemini-3-flash": "cerebras-glm-4.7",  # Flash can fall back to Cerebras for speed
-        "gemini_flash": "cerebras-glm-4.7",
+        # Gemini flash loops to Cerebras (always available)
+        "antigravity-gemini-3-flash": "Cerebras-GLM-4.7",
         
-        # ChatGPT Teams models
-        "gpt-5.2": "gemini-3-flash",
-        "chatgpt-codex-5.2": "gemini-3-flash",
-        "codex": "gemini-3-flash",
+        # NOTE: ChatGPT models are OAuth-only and dynamically added when user
+        # runs /chatgpt-auth. The failover chain entries for chatgpt models are
+        # added at runtime by the chatgpt_oauth plugin.
         
         # Cross-tier emergency fallbacks (when primary chain exhausted)
         # Architect → Builder → Librarian
@@ -266,25 +265,52 @@ class TokenBudgetManager:
         
         # Map model names to providers
         mappings = {
-            "cerebras-glm-4.7": "cerebras",
+            # Cerebras models
+            "cerebras-glm-4.7": "cerebras",  # lowercase variant
+            "Cerebras-GLM-4.7": "cerebras",  # Exact models.json key
             "glm-4.7": "cerebras",
-            "gemini-3-flash": "gemini_flash",
-            "gemini-3-pro": "gemini",
-            "gemini-flash": "gemini_flash",
-            "chatgpt-codex-5.2": "codex",
-            "codex-5.2": "codex",
-            "claude-sonnet-4.5": "claude_sonnet",
-            "sonnet-4.5": "claude_sonnet",
-            "claude-opus-4.5": "claude_opus",
-            "opus-4.5": "claude_opus",
-            # Antigravity OAuth models
-            "antigravity-gemini-3-flash": "gemini_flash",
-            "antigravity-gemini-3-pro-low": "gemini",
-            "antigravity-gemini-3-pro-high": "gemini",
+            # Claude Code models (with dates)
+            "claude-code-claude-opus-4-5-20251101": "claude_opus",
+            "claude-code-claude-sonnet-4-5-20250929": "claude_sonnet",
+            "claude-code-claude-haiku-4-5-20251001": "gemini_flash",
+            # Antigravity models
             "antigravity-claude-sonnet-4-5": "claude_sonnet",
             "antigravity-claude-sonnet-4-5-thinking-low": "claude_sonnet",
             "antigravity-claude-sonnet-4-5-thinking-medium": "claude_sonnet",
             "antigravity-claude-sonnet-4-5-thinking-high": "claude_sonnet",
+            "antigravity-gemini-3-pro-low": "gemini",
+            "antigravity-gemini-3-pro-high": "gemini",
+            "antigravity-gemini-3-flash": "gemini_flash",
+            # Gemini models - both bare and antigravity-prefixed
+            "gemini-3": "gemini",
+            "Gemini-3": "gemini",  # Exact models.json key
+            "gemini-3-flash": "gemini_flash",
+            "antigravity-gemini-3-flash": "gemini_flash",  # Exact models.json key
+            "gemini-3-pro": "gemini",
+            "gemini-flash": "gemini_flash",
+            # Provider aliases
+            "custom_openai": "codex",
+            "openai": "codex",
+            # GPT/Codex models
+            "gpt-5.1": "codex",
+            "gpt-5.1-codex-api": "codex",
+            "chatgpt-gpt-5.2": "codex",
+            "chatgpt-gpt-5.2-codex": "codex",
+            "chatgpt-codex-5.2": "codex",
+            "codex-5.2": "codex",
+            # Claude Code OAuth models (full names with date suffix)
+            "claude-code-claude-opus-4-5-20251101": "claude_opus",
+            "claude-code-claude-sonnet-4-5-20250929": "claude_sonnet",
+            "claude-code-claude-haiku-4-5-20251001": "gemini_flash",  # Haiku shares limits with flash
+            # Legacy Claude names (kept for compatibility)
+            "claude-4-5-opus": "claude_opus",
+            "claude-4-5-sonnet": "claude_sonnet",
+            "claude-4-5-haiku": "gemini_flash",
+            "claude-sonnet-4.5": "claude_sonnet",
+            "sonnet-4.5": "claude_sonnet",
+            "claude-opus-4.5": "claude_opus",
+            "opus-4.5": "claude_opus",
+            # Legacy Antigravity names
             "antigravity-claude-opus-4-5-thinking-low": "claude_opus",
             "antigravity-claude-opus-4-5-thinking-medium": "claude_opus",
             "antigravity-claude-opus-4-5-thinking-high": "claude_opus",

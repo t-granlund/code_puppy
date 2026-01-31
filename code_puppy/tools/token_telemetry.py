@@ -497,6 +497,7 @@ def get_ledger(base_dir: Optional[str] = None) -> TokenLedger:
     
     Args:
         base_dir: Base directory for ledger files.
+                  Defaults to ~/.code_puppy for persistent storage.
         
     Returns:
         TokenLedger instance.
@@ -504,6 +505,9 @@ def get_ledger(base_dir: Optional[str] = None) -> TokenLedger:
     global _global_ledger
     with _ledger_lock:
         if _global_ledger is None:
+            # Default to ~/.code_puppy for persistent storage across sessions
+            if base_dir is None:
+                base_dir = os.path.expanduser("~/.code_puppy")
             _global_ledger = TokenLedger(base_dir)
         return _global_ledger
 

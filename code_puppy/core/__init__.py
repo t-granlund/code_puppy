@@ -115,6 +115,43 @@ from .connection_pool import (
     cleanup_connections,
 )
 
+# BART System - Belief-Augmented Reasoning & Tasking (Plan → Execute → Verify)
+from .epistemic_orchestrator import (
+    EpistemicOrchestrator,
+    EpistemicStateArtifact,
+    ContextCurator,
+    RalphLoopVerifier,
+    MinimumViableContext,
+    VerificationReport,
+    VerificationResult,
+    OrchestratorPhase,
+    # Epistemic models
+    Assumption,
+    Hypothesis,
+    Constraint,
+    Gap,
+    Goal,
+    Epic,
+    Phase,
+    Milestone,
+    Checkpoint,
+    ConfidenceLevel,
+    GapSeverity,
+    PhaseStatus,
+)
+
+# Husky Execution Layer - Cerebras GLM 4.7 Optimization
+from .husky_execution import (
+    HuskyExecutionLayer,
+    CerebrasGLMSettings,
+    GLMPromptOptimizer,
+    TaskDecomposer,
+    ExecutionRequest,
+    ExecutionResult,
+    ReasoningMode,
+    ThinkingMemory,
+)
+
 __all__ = [
     # Token budget management
     "TokenBudgetManager",
@@ -207,4 +244,34 @@ __all__ = [
     "get_provider_pool",
     "streaming_completion",
     "cleanup_connections",
+    # BART Orchestration System
+    "EpistemicOrchestrator",
+    "EpistemicStateArtifact",
+    "ContextCurator",
+    "RalphLoopVerifier",
+    "MinimumViableContext",
+    "VerificationReport",
+    "VerificationResult",
+    "OrchestratorPhase",
+    "Assumption",
+    "Hypothesis",
+    "Constraint",
+    "Gap",
+    "Goal",
+    "Epic",
+    "Phase",
+    "Milestone",
+    "Checkpoint",
+    "ConfidenceLevel",
+    "GapSeverity",
+    "PhaseStatus",
+    # Husky Execution Layer
+    "HuskyExecutionLayer",
+    "CerebrasGLMSettings",
+    "GLMPromptOptimizer",
+    "TaskDecomposer",
+    "ExecutionRequest",
+    "ExecutionResult",
+    "ReasoningMode",
+    "ThinkingMemory",
 ]

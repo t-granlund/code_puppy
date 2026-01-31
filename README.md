@@ -49,7 +49,7 @@
     - If you pick the ox, better slam that back button in your browser.
 
 
-Code Puppy is an AI-powered code generation agent, designed to understand programming tasks, generate high-quality code, and explain its reasoning similar to tools like Windsurf and Cursor.
+Code Puppy implements the **BART System (Belief-Augmented Reasoning & Tasking)** - a Traycer-style architecture that separates the "Belief State" (Truth) from the "Execution State" (Code). It's an AI-powered code generation agent designed to understand programming tasks, generate high-quality code with bidirectional verification, similar to tools like Windsurf and Cursor but with transparent architecture.
 
 
 ## Quick start

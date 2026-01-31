@@ -127,13 +127,32 @@ def make_model_settings(
     effective_settings = get_effective_model_settings(model_name)
     model_settings_dict.update(effective_settings)
 
-    # Default to clear_thinking=False for GLM-4.7 models (preserved thinking)
+    # GLM 4.7 Optimization (from Cerebras Migration Guide)
+    # Rule #6: Disable reasoning for simple tasks
+    # Rule #7: Enable reasoning for complex tasks
+    # Rule #10: Use clear_thinking to control memory between calls
     if "glm-4.7" in model_name.lower():
+        # Get reasoning mode from settings (default: enabled for compatibility)
+        disable_reasoning = effective_settings.get("disable_reasoning", False)
         clear_thinking = effective_settings.get("clear_thinking", False)
+        
+        # Build thinking configuration
         model_settings_dict["thinking"] = {
-            "type": "enabled",
+            "type": "disabled" if disable_reasoning else "enabled",
             "clear_thinking": clear_thinking,
         }
+        
+        # Cerebras-specific extra_body parameters
+        model_settings_dict["extra_body"] = {
+            "disable_reasoning": disable_reasoning,
+            "clear_thinking": clear_thinking,
+        }
+        
+        # Apply recommended sampling defaults (temp=1, top_p=0.95)
+        if "temperature" not in model_settings_dict:
+            model_settings_dict["temperature"] = 1.0
+        if "top_p" not in model_settings_dict:
+            model_settings_dict["top_p"] = 0.95
 
     model_settings: ModelSettings = ModelSettings(**model_settings_dict)
 

@@ -116,56 +116,67 @@ class TestLoadAntigravityPromptFallback:
     """Tests for _load_antigravity_prompt fallback behavior."""
 
     def test_fallback_when_file_missing(self, tmp_path):
-        """Should return fallback prompt when file doesn't exist."""
-        # Reset the cache
-        model_utils._antigravity_prompt_cache = None
+        """Should return fallback prompt when both files don't exist."""
+        # Reset the caches
+        model_utils._antigravity_prompt_compact_cache = None
+        model_utils._antigravity_prompt_full_cache = None
 
-        # Create a fake non-existent path
-        fake_path = tmp_path / "non_existent_prompt.md"
+        # Create fake non-existent paths
+        fake_compact_path = tmp_path / "non_existent_compact.md"
+        fake_full_path = tmp_path / "non_existent_full.md"
 
-        # Temporarily swap the path constant
-        original_path = model_utils._ANTIGRAVITY_PROMPT_PATH
+        # Temporarily swap both path constants
+        original_compact = model_utils._ANTIGRAVITY_PROMPT_COMPACT_PATH
+        original_full = model_utils._ANTIGRAVITY_PROMPT_FULL_PATH
         try:
-            model_utils._ANTIGRAVITY_PROMPT_PATH = fake_path
-            result = model_utils._load_antigravity_prompt()
+            model_utils._ANTIGRAVITY_PROMPT_COMPACT_PATH = fake_compact_path
+            model_utils._ANTIGRAVITY_PROMPT_FULL_PATH = fake_full_path
+            # Request full prompt since compact falls back to full, then full uses fallback
+            result = model_utils._load_antigravity_prompt(use_compact=False)
 
             assert "Antigravity" in result
             assert "Google Deepmind" in result
         finally:
-            # Restore original path
-            model_utils._ANTIGRAVITY_PROMPT_PATH = original_path
-            model_utils._antigravity_prompt_cache = None
+            # Restore original paths
+            model_utils._ANTIGRAVITY_PROMPT_COMPACT_PATH = original_compact
+            model_utils._ANTIGRAVITY_PROMPT_FULL_PATH = original_full
+            model_utils._antigravity_prompt_compact_cache = None
+            model_utils._antigravity_prompt_full_cache = None
 
     def test_loads_from_file_when_exists(self):
         """Should load from file when it exists."""
-        # Reset the cache
-        model_utils._antigravity_prompt_cache = None
+        # Reset the caches
+        model_utils._antigravity_prompt_compact_cache = None
+        model_utils._antigravity_prompt_full_cache = None
 
-        # The file should exist in the codebase
-        result = model_utils._load_antigravity_prompt()
+        # The file should exist in the codebase - test compact prompt
+        result = model_utils._load_antigravity_prompt(use_compact=True)
 
         # Should have loaded something substantial
         assert isinstance(result, str)
         assert len(result) > 50  # Real file should have content
 
-        # Reset cache
-        model_utils._antigravity_prompt_cache = None
+        # Reset caches
+        model_utils._antigravity_prompt_compact_cache = None
+        model_utils._antigravity_prompt_full_cache = None
 
     def test_caching_behavior(self):
         """Should cache the prompt after first load."""
-        # Reset the cache
-        model_utils._antigravity_prompt_cache = None
+        # Reset the caches
+        model_utils._antigravity_prompt_compact_cache = None
+        model_utils._antigravity_prompt_full_cache = None
 
-        # First load
-        result1 = model_utils._load_antigravity_prompt()
+        # First load (compact by default)
+        result1 = model_utils._load_antigravity_prompt(use_compact=True)
 
         # Second load should use cache
-        result2 = model_utils._load_antigravity_prompt()
+        result2 = model_utils._load_antigravity_prompt(use_compact=True)
 
         assert result1 is result2
 
-        # Reset cache
-        model_utils._antigravity_prompt_cache = None
+        # Reset caches
+        model_utils._antigravity_prompt_compact_cache = None
+        model_utils._antigravity_prompt_full_cache = None
 
 
 class TestEdgeCases:

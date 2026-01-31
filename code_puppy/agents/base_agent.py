@@ -77,6 +77,7 @@ from code_puppy.core import (
     TaskType,
     TaskComplexity,
 )
+from code_puppy.tools.token_telemetry import get_ledger as get_token_ledger
 
 from code_puppy.error_logging import log_error
 from code_puppy.keymap import cancel_agent_uses_signal, get_cancel_agent_char_code
@@ -1206,15 +1207,85 @@ class BaseAgent(ABC):
         return pruned
 
     def _is_cerebras_model(self) -> bool:
-        """Check if current model is a Cerebras model."""
+        """Check if current model is a Cerebras model.
+        
+        Checks both the pinned model name AND the last-used model name
+        to correctly detect Cerebras even after failover from another provider.
+        """
+        # Check the actual last-used model first (handles failover correctly)
+        last_model = getattr(self, "_last_model_name", None) or ""
+        if last_model:
+            last_lower = last_model.lower()
+            if "cerebras" in last_lower or "glm-4" in last_lower or "qwen" in last_lower:
+                return True
+        
+        # Fall back to pinned/global model name
         model_name = self.get_model_name() or ""
         model_lower = model_name.lower()
         return "cerebras" in model_lower or "glm-4" in model_lower or "qwen" in model_lower
 
+    def _detect_provider(self) -> str:
+        """Detect the current provider from model name.
+        
+        Returns a provider key for use with token_slimmer.get_provider_limits().
+        Checks _last_model_name first (for failover detection), then falls back to pinned model.
+        
+        Supported model patterns:
+        - Cerebras-GLM-4.7 → 'cerebras'
+        - claude-code-claude-{opus,sonnet,haiku}-* → 'claude_code'
+        - antigravity-claude-* → 'antigravity'
+        - antigravity-gemini-* → 'antigravity'
+        - chatgpt-gpt-5.2* → 'chatgpt_teams'
+        
+        Returns:
+            Provider key: 'cerebras', 'antigravity', 'claude_code', 'chatgpt_teams', 
+                         'anthropic', 'openai', or 'default'
+        """
+        # Get the actual model name (prefer last-used for failover detection)
+        last_model = getattr(self, "_last_model_name", None) or ""
+        model_name = last_model if last_model else (self.get_model_name() or "")
+        model_lower = model_name.lower()
+        
+        # 1. Cerebras/GLM - Boot Camp mode (ultra aggressive)
+        if "cerebras" in model_lower or "glm-4" in model_lower:
+            return "cerebras"
+        
+        # 2. Claude Code OAuth (claude-code-claude-opus-4-5-20251101, etc.)
+        if model_lower.startswith("claude-code-"):
+            return "claude_code"
+        
+        # 3. Antigravity OAuth (antigravity-claude-*, antigravity-gemini-*)
+        if model_lower.startswith("antigravity-"):
+            return "antigravity"
+        
+        # 4. ChatGPT OAuth (chatgpt-gpt-5.2, chatgpt-gpt-5.2-codex)
+        if model_lower.startswith("chatgpt-"):
+            return "chatgpt_teams"
+        
+        # 5. Direct Anthropic API (fallback for unrecognized claude models)
+        if "claude" in model_lower or "opus" in model_lower or "sonnet" in model_lower or "haiku" in model_lower:
+            return "anthropic"
+        
+        # 6. Direct OpenAI API (fallback for unrecognized gpt/codex models)
+        if "gpt" in model_lower or "codex" in model_lower or "openai" in model_lower:
+            return "openai"
+        
+        # 7. Gemini direct (not through antigravity)
+        if "gemini" in model_lower:
+            return "default"
+        
+        return "default"
+
     def message_history_processor(
         self, ctx: RunContext, messages: List[ModelMessage]
     ) -> List[ModelMessage]:
-        # First, prune any interrupted/mismatched tool-call conversations
+        """Process message history with provider-aware token optimization.
+        
+        Uses token_slimmer for ALL providers (not just Cerebras) with:
+        - Provider-specific compaction thresholds
+        - Sliding window with configurable exchange limits
+        - Diet-mode themed logging (boot_camp, balanced, maintenance)
+        """
         model_max = self.get_model_context_length()
 
         message_tokens = sum(self.estimate_tokens_for_message(msg) for msg in messages)
@@ -1227,53 +1298,81 @@ class BaseAgent(ABC):
         )
         update_spinner_context(context_summary)
 
-        # CEREBRAS OPTIMIZATION: Use aggressive compaction for Cerebras models
-        if self._is_cerebras_model():
-            try:
-                from code_puppy.tools.cerebras_optimizer import (
-                    check_cerebras_budget,
-                    apply_sliding_window,
-                    SlidingWindowConfig,
-                    CEREBRAS_LIMITS,
+        # =================================================================
+        # UNIVERSAL TOKEN OPTIMIZATION (ALL PROVIDERS)
+        # =================================================================
+        # Detect current provider and apply provider-specific limits
+        provider = self._detect_provider()
+        
+        try:
+            from code_puppy.tools.token_slimmer import (
+                check_token_budget,
+                apply_sliding_window,
+                SlidingWindowConfig,
+                get_provider_limits,
+            )
+            
+            limits = get_provider_limits(provider)
+            diet_mode = limits.get("diet_mode", "balanced")
+            
+            # Diet-themed emoji
+            if diet_mode == "boot_camp":
+                emoji = "🏋️"
+                mode_name = "Boot Camp"
+            elif diet_mode == "maintenance":
+                emoji = "🍽️"
+                mode_name = "Maintenance"
+            else:
+                emoji = "🥗"
+                mode_name = "Balanced"
+            
+            emit_info(
+                f"{emoji} {mode_name} mode ({provider}): {message_tokens:,} tokens "
+                f"(limit: {limits['max_input_tokens']:,}, "
+                f"target: {limits['target_input_tokens']:,})",
+                message_group="token_context_status",
+            )
+            
+            budget_check = check_token_budget(message_tokens, provider, messages)
+            
+            if budget_check.should_compact:
+                # Apply sliding window with provider-specific settings
+                config = SlidingWindowConfig(max_exchanges=limits["max_exchanges"])
+                compacted, result = apply_sliding_window(
+                    messages,
+                    config=config,
+                    estimate_tokens_fn=self.estimate_tokens_for_message,
                 )
                 
-                budget_check = check_cerebras_budget(message_tokens, messages)
-                
-                if budget_check.should_compact:
-                    # Apply sliding window with AGGRESSIVE settings from CEREBRAS_LIMITS
-                    config = SlidingWindowConfig(max_exchanges=CEREBRAS_LIMITS["max_exchanges"])
-                    compacted, result = apply_sliding_window(
-                        messages,
-                        config=config,
-                        estimate_tokens_fn=self.estimate_tokens_for_message,
-                    )
-                    
-                    if result.savings_percent > 0:
-                        emit_info(
-                            f"🧹 Cerebras auto-compact: {result.original_tokens:,} → "
-                            f"{result.compacted_tokens:,} tokens ({result.savings_percent:.0f}% saved)",
-                            message_group="token_context_status",
-                        )
-                        
-                        final_summary = SpinnerBase.format_context_info(
-                            result.compacted_tokens, model_max, 
-                            result.compacted_tokens / model_max
-                        )
-                        update_spinner_context(final_summary)
-                        
-                        self.set_message_history(compacted)
-                        return compacted
-                    
-                elif budget_check.should_block:
-                    emit_warning(
-                        f"🚫 Cerebras context at {budget_check.usage_percent:.0%}. "
-                        f"Run `/truncate 4` to continue.",
+                if result.savings_percent > 0:
+                    emit_info(
+                        f"🧹 {provider} auto-compact: {result.original_tokens:,} → "
+                        f"{result.compacted_tokens:,} tokens ({result.savings_percent:.0f}% saved)",
                         message_group="token_context_status",
                     )
-            except ImportError:
-                pass  # Fall back to default handling
+                    
+                    final_summary = SpinnerBase.format_context_info(
+                        result.compacted_tokens, model_max, 
+                        result.compacted_tokens / model_max
+                    )
+                    update_spinner_context(final_summary)
+                    
+                    self.set_message_history(compacted)
+                    return compacted
+                
+            elif budget_check.should_block:
+                emit_warning(
+                    f"🚫 {provider} context at {budget_check.usage_percent:.0%}. "
+                    f"Run `/truncate {limits['max_exchanges']}` to continue.",
+                    message_group="token_context_status",
+                )
+        except ImportError:
+            pass  # Fall back to legacy handling below
 
-        # Get the configured compaction threshold
+        # =================================================================
+        # LEGACY FALLBACK (if token_slimmer unavailable)
+        # =================================================================
+        # Get the configured compaction threshold (old approach)
         compaction_threshold = get_compaction_threshold()
 
         # Get the configured compaction strategy
@@ -2013,6 +2112,8 @@ class BaseAgent(ABC):
             prompt_payload = prompt
 
         async def run_agent_task():
+            nonlocal pydantic_agent  # Allow reassignment in failover
+            usage_recorded = False  # Track if we recorded usage from result
             try:
                 self.set_message_history(
                     self.prune_interrupted_tool_calls(self.get_message_history())
@@ -2032,19 +2133,130 @@ class BaseAgent(ABC):
                 budget_check = budget_manager.check_budget(model_name, estimated_tokens)
                 
                 if not budget_check.can_proceed:
-                    if budget_check.wait_seconds > 0:
+                    # Check failover FIRST - if we have a failover and wait is long, use it
+                    if budget_check.failover_to and budget_check.wait_seconds >= 10:
+                        # Try failover chain - keep going until we find a working model
+                        current_failover = budget_check.failover_to
+                        failover_attempts = 0
+                        max_failover_attempts = 5  # Prevent infinite loops
+                        
+                        while current_failover and failover_attempts < max_failover_attempts:
+                            failover_attempts += 1
+                            emit_info(
+                                f"🔄 Attempting failover #{failover_attempts}: {current_failover}",
+                                message_group="token_budget",
+                            )
+                            try:
+                                models_config = ModelFactory.load_config()
+                                failover_model = ModelFactory.get_model(
+                                    current_failover, models_config
+                                )
+                                if failover_model:
+                                    # Create a new agent with the failover model
+                                    from code_puppy.model_utils import prepare_prompt_for_model
+                                    from code_puppy.tools import register_tools_for_agent
+                                    
+                                    instructions = self.get_full_system_prompt()
+                                    puppy_rules = self.load_puppy_rules()
+                                    if puppy_rules:
+                                        instructions += f"\n{puppy_rules}"
+                                    
+                                    mcp_servers = getattr(self, "_mcp_servers", []) or []
+                                    model_settings = make_model_settings(current_failover)
+                                    
+                                    prepared = prepare_prompt_for_model(
+                                        current_failover, instructions, "", prepend_system_to_user=False
+                                    )
+                                    instructions = prepared.instructions
+                                    
+                                    # Create PydanticAgent with the failover model
+                                    failover_agent = PydanticAgent(
+                                        model=failover_model,
+                                        instructions=instructions,
+                                        output_type=output_type if output_type else str,
+                                        retries=3,
+                                        toolsets=mcp_servers if not get_use_dbos() else [],
+                                        history_processors=[self.message_history_accumulator],
+                                        model_settings=model_settings,
+                                    )
+                                    agent_tools = self.get_available_tools()
+                                    register_tools_for_agent(failover_agent, agent_tools)
+                                    
+                                    if get_use_dbos():
+                                        global _reload_count
+                                        _reload_count += 1
+                                        pydantic_agent = DBOSAgent(
+                                            failover_agent,
+                                            name=f"{self.name}-failover-{_reload_count}",
+                                            event_stream_handler=event_stream_handler,
+                                        )
+                                    else:
+                                        pydantic_agent = failover_agent
+                                    
+                                    model_name = current_failover
+                                    # Update _last_model_name so Cerebras optimizer detects failover
+                                    self._last_model_name = current_failover
+                                    emit_info(
+                                        f"✅ Successfully switched to {current_failover}",
+                                        message_group="token_budget",
+                                    )
+                                    break  # Success - exit the failover loop
+                                else:
+                                    # Model not available, try next in chain
+                                    next_failover = budget_manager.FAILOVER_CHAIN.get(current_failover)
+                                    if next_failover:
+                                        emit_warning(
+                                            f"⚠️ {current_failover} not available, trying {next_failover}",
+                                            message_group="token_budget",
+                                        )
+                                        current_failover = next_failover
+                                    else:
+                                        emit_warning(
+                                            f"⚠️ {current_failover} not available, no more failovers",
+                                            message_group="token_budget",
+                                        )
+                                        await asyncio.sleep(budget_check.wait_seconds)
+                                        break
+                            except Exception as e:
+                                error_str = str(e)
+                                # Check if this is a 429 rate limit from the failover model
+                                if "429" in error_str or "RESOURCE_EXHAUSTED" in error_str or "quota" in error_str.lower():
+                                    next_failover = budget_manager.FAILOVER_CHAIN.get(current_failover)
+                                    if next_failover:
+                                        emit_warning(
+                                            f"⚠️ {current_failover} also rate limited, trying {next_failover}",
+                                            message_group="token_budget",
+                                        )
+                                        current_failover = next_failover
+                                        continue  # Try next failover
+                                    else:
+                                        emit_warning(
+                                            f"⚠️ {current_failover} rate limited, no more failovers available",
+                                            message_group="token_budget",
+                                        )
+                                        await asyncio.sleep(min(budget_check.wait_seconds, 30))
+                                        break
+                                else:
+                                    emit_warning(
+                                        f"⚠️ Failed to switch to {current_failover}: {e}",
+                                        message_group="token_budget",
+                                    )
+                                    await asyncio.sleep(budget_check.wait_seconds)
+                                    break
+                        else:
+                            # Exhausted all failover attempts
+                            emit_warning(
+                                f"⚠️ Exhausted failover chain after {failover_attempts} attempts, waiting",
+                                message_group="token_budget",
+                            )
+                            await asyncio.sleep(min(budget_check.wait_seconds, 30))
+                    elif budget_check.wait_seconds > 0:
                         emit_warning(
                             f"⏳ Rate limit: waiting {budget_check.wait_seconds:.1f}s "
                             f"({budget_check.reason})",
                             message_group="token_budget",
                         )
                         await asyncio.sleep(budget_check.wait_seconds)
-                    elif budget_check.failover_to:
-                        emit_info(
-                            f"🔄 Switching to {budget_check.failover_to}: {budget_check.reason}",
-                            message_group="token_budget",
-                        )
-                        # TODO: Implement model switching on the fly
                     else:
                         emit_warning(
                             f"⚠️ Budget exceeded: {budget_check.reason}",
@@ -2068,51 +2280,207 @@ class BaseAgent(ABC):
 
                 usage_limits = UsageLimits(request_limit=get_message_limit())
 
-                # Handle MCP servers - add them temporarily when using DBOS
-                if (
-                    get_use_dbos()
-                    and hasattr(self, "_mcp_servers")
-                    and self._mcp_servers
-                ):
-                    # Temporarily add MCP servers to the DBOS agent using internal _toolsets
-                    original_toolsets = pydantic_agent._toolsets
-                    pydantic_agent._toolsets = original_toolsets + self._mcp_servers
-                    pydantic_agent._toolsets = original_toolsets + self._mcp_servers
-
-                    try:
-                        # Set the workflow ID for DBOS context so DBOS and Code Puppy ID match
-                        with SetWorkflowID(group_id):
-                            result_ = await pydantic_agent.run(
-                                prompt_payload,
-                                message_history=self.get_message_history(),
-                                usage_limits=usage_limits,
-                                event_stream_handler=event_stream_handler,
-                                **kwargs,
-                            )
-                            return result_
-                    finally:
-                        # Always restore original toolsets
-                        pydantic_agent._toolsets = original_toolsets
-                elif get_use_dbos():
-                    with SetWorkflowID(group_id):
-                        result_ = await pydantic_agent.run(
-                            prompt_payload,
-                            message_history=self.get_message_history(),
-                            usage_limits=usage_limits,
-                            event_stream_handler=event_stream_handler,
-                            **kwargs,
-                        )
-                        return result_
-                else:
-                    # Non-DBOS path (MCP servers are already included)
-                    result_ = await pydantic_agent.run(
-                        prompt_payload,
-                        message_history=self.get_message_history(),
-                        usage_limits=usage_limits,
-                        event_stream_handler=event_stream_handler,
-                        **kwargs,
+                # Helper to create a failover agent
+                async def create_failover_agent(failover_model_name: str):
+                    """Create a new PydanticAgent with the specified failover model."""
+                    from code_puppy.model_utils import prepare_prompt_for_model
+                    from code_puppy.tools import register_tools_for_agent
+                    
+                    fo_models_config = ModelFactory.load_config()
+                    fo_model = ModelFactory.get_model(failover_model_name, fo_models_config)
+                    if not fo_model:
+                        return None
+                    
+                    fo_instructions = self.get_full_system_prompt()
+                    fo_puppy_rules = self.load_puppy_rules()
+                    if fo_puppy_rules:
+                        fo_instructions += f"\n{fo_puppy_rules}"
+                    
+                    fo_mcp_servers = getattr(self, "_mcp_servers", []) or []
+                    fo_model_settings = make_model_settings(failover_model_name)
+                    
+                    fo_prepared = prepare_prompt_for_model(
+                        failover_model_name, fo_instructions, "", prepend_system_to_user=False
                     )
-                    return result_
+                    fo_instructions = fo_prepared.instructions
+                    
+                    fo_agent = PydanticAgent(
+                        model=fo_model,
+                        instructions=fo_instructions,
+                        output_type=output_type if output_type else str,
+                        retries=3,
+                        toolsets=fo_mcp_servers if not get_use_dbos() else [],
+                        history_processors=[self.message_history_accumulator],
+                        model_settings=fo_model_settings,
+                    )
+                    fo_agent_tools = self.get_available_tools()
+                    register_tools_for_agent(fo_agent, fo_agent_tools)
+                    
+                    if get_use_dbos():
+                        global _reload_count
+                        _reload_count += 1
+                        return DBOSAgent(
+                            fo_agent,
+                            name=f"{self.name}-failover-{_reload_count}",
+                            event_stream_handler=event_stream_handler,
+                        )
+                    return fo_agent
+
+                # Helper to run agent with failover chain support
+                async def run_with_failover_chain(agent, current_model: str, max_retries: int = 5):
+                    """Run agent, following failover chain on 429 errors."""
+                    attempts = 0
+                    current_agent = agent
+                    current_model_name = current_model
+                    
+                    while attempts < max_retries:
+                        attempts += 1
+                        try:
+                            if get_use_dbos() and hasattr(self, "_mcp_servers") and self._mcp_servers:
+                                original_toolsets = current_agent._toolsets
+                                current_agent._toolsets = original_toolsets + self._mcp_servers
+                                try:
+                                    with SetWorkflowID(group_id):
+                                        return await current_agent.run(
+                                            prompt_payload,
+                                            message_history=self.get_message_history(),
+                                            usage_limits=usage_limits,
+                                            event_stream_handler=event_stream_handler,
+                                            **kwargs,
+                                        )
+                                finally:
+                                    current_agent._toolsets = original_toolsets
+                            elif get_use_dbos():
+                                with SetWorkflowID(group_id):
+                                    return await current_agent.run(
+                                        prompt_payload,
+                                        message_history=self.get_message_history(),
+                                        usage_limits=usage_limits,
+                                        event_stream_handler=event_stream_handler,
+                                        **kwargs,
+                                    )
+                            else:
+                                return await current_agent.run(
+                                    prompt_payload,
+                                    message_history=self.get_message_history(),
+                                    usage_limits=usage_limits,
+                                    event_stream_handler=event_stream_handler,
+                                    **kwargs,
+                                )
+                        except Exception as run_error:
+                            error_str = str(run_error)
+                            # Check if this is a rate limit error
+                            if "429" in error_str or "RESOURCE_EXHAUSTED" in error_str or "quota" in error_str.lower():
+                                # Check if the error indicates a model FAMILY is exhausted
+                                # (e.g., all claude-opus-4-5-thinking variants share the same quota)
+                                exhausted_family = None
+                                if "claude-opus-4-5-thinking" in error_str:
+                                    exhausted_family = "claude-opus-thinking"
+                                elif "claude-sonnet-4-5-thinking" in error_str:
+                                    exhausted_family = "claude-sonnet-thinking"
+                                
+                                # Find the next failover that's NOT in the exhausted family
+                                next_failover = budget_manager.FAILOVER_CHAIN.get(current_model_name)
+                                while next_failover and exhausted_family:
+                                    # Skip other thinking levels of the same family
+                                    if exhausted_family == "claude-opus-thinking" and "opus" in next_failover and "thinking" in next_failover:
+                                        emit_warning(
+                                            f"⏭️ Skipping {next_failover} (same exhausted quota)",
+                                            message_group="token_budget",
+                                        )
+                                        next_failover = budget_manager.FAILOVER_CHAIN.get(next_failover)
+                                    elif exhausted_family == "claude-sonnet-thinking" and "sonnet" in next_failover and "thinking" in next_failover:
+                                        emit_warning(
+                                            f"⏭️ Skipping {next_failover} (same exhausted quota)",
+                                            message_group="token_budget",
+                                        )
+                                        next_failover = budget_manager.FAILOVER_CHAIN.get(next_failover)
+                                    else:
+                                        break  # Found a model outside the exhausted family
+                                
+                                if next_failover:
+                                    emit_warning(
+                                        f"⚠️ {current_model_name} hit rate limit, trying {next_failover}",
+                                        message_group="token_budget",
+                                    )
+                                    next_agent = await create_failover_agent(next_failover)
+                                    
+                                    # If agent creation failed, keep trying the chain
+                                    while next_agent is None and next_failover:
+                                        emit_warning(
+                                            f"⚠️ Could not create {next_failover} agent, trying next in chain",
+                                            message_group="token_budget",
+                                        )
+                                        # Move to next model in chain
+                                        next_failover = budget_manager.FAILOVER_CHAIN.get(next_failover)
+                                        if next_failover:
+                                            emit_warning(
+                                                f"⚠️ Trying {next_failover}",
+                                                message_group="token_budget",
+                                            )
+                                            next_agent = await create_failover_agent(next_failover)
+                                    
+                                    if next_agent:
+                                        current_agent = next_agent
+                                        current_model_name = next_failover
+                                        # Update _last_model_name so Cerebras optimizer detects failover
+                                        self._last_model_name = next_failover
+                                        emit_info(
+                                            f"🔄 Switched to {next_failover}",
+                                            message_group="token_budget",
+                                        )
+                                        continue  # Retry with new agent
+                                    else:
+                                        emit_warning(
+                                            f"⚠️ Exhausted all failover options",
+                                            message_group="token_budget",
+                                        )
+                                        raise  # Re-raise original error after exhausting chain
+                                else:
+                                    emit_warning(
+                                        f"⚠️ {current_model_name} rate limited, no more failovers",
+                                        message_group="token_budget",
+                                    )
+                                    raise  # Re-raise original error
+                            else:
+                                raise  # Re-raise non-rate-limit errors
+                    
+                    raise RuntimeError(f"Exhausted failover chain after {max_retries} attempts")
+
+                # Run with failover support
+                result_ = await run_with_failover_chain(pydantic_agent, model_name)
+                
+                # === RECORD TOKEN USAGE FROM RESULT ===
+                # Record immediately after success using pydantic-ai's usage() method
+                try:
+                    if hasattr(result_, "usage"):
+                        run_usage = result_.usage()
+                        if run_usage:
+                            input_tokens = getattr(run_usage, "input_tokens", 0) or 0
+                            output_tokens = getattr(run_usage, "output_tokens", 0) or 0
+                            total_tokens = input_tokens + output_tokens
+                            
+                            # Record to budget manager
+                            budget_manager.record_usage(model_name, total_tokens)
+                            
+                            # Record to persistent ledger for telemetry
+                            try:
+                                ledger = get_token_ledger()
+                                ledger.record_usage(
+                                    provider=budget_manager._normalize_provider(model_name),
+                                    model=model_name,
+                                    input_tokens=input_tokens,
+                                    output_tokens=output_tokens,
+                                    session_id=group_id,
+                                )
+                                usage_recorded = True  # Mark as recorded
+                            except Exception:
+                                pass  # Telemetry is best-effort
+                except Exception:
+                    pass  # Don't let usage recording break the flow
+                
+                return result_
+
             except* UsageLimitExceeded as ule:
                 emit_info(f"Usage limit exceeded: {str(ule)}", group_id=group_id)
                 emit_info(
@@ -2168,15 +2536,34 @@ class BaseAgent(ABC):
 
                 collect_cancelled_exceptions(other_error)
             finally:
-                # === RECORD TOKEN USAGE ===
-                try:
-                    final_tokens = sum(
-                        self.estimate_tokens_for_message(msg) 
-                        for msg in self.get_message_history()
-                    )
-                    budget_manager.record_usage(model_name, final_tokens)
-                except Exception:
-                    pass  # Don't let usage recording break the flow
+                # === FALLBACK TOKEN USAGE RECORDING ===
+                # Only record here if we didn't already record from result_.usage()
+                if not usage_recorded:
+                    try:
+                        final_tokens = sum(
+                            self.estimate_tokens_for_message(msg) 
+                            for msg in self.get_message_history()
+                        )
+                        if final_tokens > 0:  # Only record if we have something
+                            budget_manager.record_usage(model_name, final_tokens)
+                            
+                            # Also record to persistent ledger for telemetry
+                            try:
+                                ledger = get_token_ledger()
+                                # Estimate input/output split (rough)
+                                input_tokens = int(final_tokens * 0.7)
+                                output_tokens = final_tokens - input_tokens
+                                ledger.record_usage(
+                                    provider=budget_manager._normalize_provider(model_name),
+                                    model=model_name,
+                                    input_tokens=input_tokens,
+                                    output_tokens=output_tokens,
+                                    session_id=group_id,
+                                )
+                            except Exception:
+                                pass  # Telemetry is best-effort
+                    except Exception:
+                        pass  # Don't let usage recording break the flow
                 
                 self.set_message_history(
                     self.prune_interrupted_tool_calls(self.get_message_history())

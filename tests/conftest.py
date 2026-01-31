@@ -14,6 +14,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from code_puppy import config as cp_config
+from code_puppy.core.token_budget import TokenBudgetManager
 
 # Integration test fixtures - only import if pexpect.spawn is available (Unix)
 # On Windows, pexpect doesn't have spawn attribute, so skip these imports
@@ -68,6 +69,8 @@ def isolate_config_between_tests(tmp_path_factory):
     cp_config.clear_model_cache()
     # Clear session-local model cache (required for /model session sticky behavior)
     cp_config.reset_session_model()
+    # Reset TokenBudgetManager singleton to prevent test pollution
+    TokenBudgetManager._instance = None
 
     yield
 
@@ -79,6 +82,8 @@ def isolate_config_between_tests(tmp_path_factory):
     cp_config.clear_model_cache()
     # Clear session-local model cache
     cp_config.reset_session_model()
+    # Reset TokenBudgetManager singleton again after test
+    TokenBudgetManager._instance = None
 
     # Clean up the temp directory
     try:

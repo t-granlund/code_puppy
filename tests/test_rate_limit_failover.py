@@ -87,8 +87,9 @@ class TestRateLimitFailover:
         """Should load fallback models when factory fails."""
         mgr = RateLimitFailover()
         mgr._load_fallback_models()
-        assert "gemini-3-flash" in mgr._available_models
-        assert "claude-sonnet-4.5" in mgr._available_models
+        # Use exact model names from models.json
+        assert "antigravity-gemini-3-flash" in mgr._available_models
+        assert "claude-code-claude-sonnet-4-5-20250929" in mgr._available_models
 
     def test_build_failover_chains(self):
         """Should build chains preferring same tier."""
@@ -244,17 +245,17 @@ class TestTokenBudgetFailoverIntegration:
         
         mgr = TokenBudgetManager()
         
-        # Architect: Opus → Antigravity Opus
+        # Architect: Opus → Antigravity Opus thinking
         assert mgr.FAILOVER_CHAIN["claude_opus"] == "antigravity-claude-opus-4-5-thinking-high"
         
         # Builder: Sonnet → Antigravity Sonnet
         assert mgr.FAILOVER_CHAIN["claude_sonnet"] == "antigravity-claude-sonnet-4-5"
         
-        # Sprinter: Cerebras → Haiku
-        assert mgr.FAILOVER_CHAIN["cerebras"] == "claude-haiku"
+        # Sprinter: Cerebras → Haiku (using correct model name)
+        assert mgr.FAILOVER_CHAIN["cerebras"] == "claude-code-claude-haiku-4-5-20251001"
         
-        # Librarian: Haiku → Flash
-        assert mgr.FAILOVER_CHAIN["claude-haiku"] == "gemini-3-flash"
+        # Librarian: Haiku → Gemini Flash (via correct Haiku key)
+        assert mgr.FAILOVER_CHAIN["claude-code-claude-haiku-4-5-20251001"] == "antigravity-gemini-3-flash"
 
     def test_get_failover_method(self):
         """TokenBudgetManager should have get_failover method."""
@@ -265,7 +266,8 @@ class TestTokenBudgetFailoverIntegration:
         mgr = TokenBudgetManager()
         
         failover = mgr.get_failover("cerebras")
-        assert failover == "claude-haiku"
+        # Cerebras fails over to Haiku (using correct model name from models.json)
+        assert failover == "claude-code-claude-haiku-4-5-20251001"
 
 
 class TestWorkloadAwareFailover:

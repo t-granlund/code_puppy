@@ -50,11 +50,11 @@ class ContextCompressor:
     3. Summary Injection: Replace verbose context with summaries
     """
     
-    # Thresholds
-    MAX_TOOL_OUTPUT_LINES = 50
-    HEAD_LINES = 20
-    TAIL_LINES = 20
-    MAX_FILE_CONTEXT_TOKENS = 2000
+    # Thresholds - ULTRA AGGRESSIVE for Cerebras (56:1 ratio observed)
+    MAX_TOOL_OUTPUT_LINES = 30  # Reduced from 50
+    HEAD_LINES = 12  # Reduced from 20
+    TAIL_LINES = 12  # Reduced from 20
+    MAX_FILE_CONTEXT_TOKENS = 1500  # Reduced from 2000
     
     # Language extensions that support AST pruning
     AST_LANGUAGES = {
@@ -65,17 +65,27 @@ class ContextCompressor:
         ".tsx": "typescript",
     }
     
-    def __init__(self, target_tokens: int = 15_000):
+    def __init__(
+        self,
+        target_tokens: int = 15_000,
+        max_tokens: Optional[int] = None,
+        estimate_tokens_fn: Optional[callable] = None,
+    ):
         """Initialize compressor.
         
         Args:
             target_tokens: Target total token count after compression
+            max_tokens: Backwards-compatible alias for target_tokens
+            estimate_tokens_fn: Optional token estimation function
         """
-        self.target_tokens = target_tokens
+        self.target_tokens = max_tokens or target_tokens
+        self._estimate_tokens_fn = estimate_tokens_fn
         self._cache: Dict[str, str] = {}  # Hash -> compressed content
     
     def _estimate_tokens(self, text: str) -> int:
-        """Rough token estimation (4 chars per token average)."""
+        """Estimate tokens (use injected estimator if available)."""
+        if self._estimate_tokens_fn:
+            return self._estimate_tokens_fn(text)
         return len(text) // 4
     
     def _content_hash(self, content: str) -> str:

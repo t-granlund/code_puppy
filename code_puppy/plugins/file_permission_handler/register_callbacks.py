@@ -451,68 +451,32 @@ def get_file_permission_prompt_additions() -> str:
     via the prompt hook system.
 
     Only returns instructions when yolo_mode is off (False).
+    Uses a compact version to minimize context overhead (~500 tokens vs ~2KB).
     """
     # Only inject permission handling instructions when yolo mode is off
     if get_yolo_mode():
         return ""  # Return empty string when yolo mode is enabled
 
+    # COMPACT version - distilled to essential instructions only (~500 tokens)
+    # The full verbose version was ~2KB and contributed to rate limit cascades
     return """
-## 💬 USER FEEDBACK SYSTEM
+## User Feedback System
 
-**How User Approval Works:**
+When file/shell operations are rejected with `user_feedback`:
+1. STOP current approach immediately
+2. READ the feedback - user is telling you what they want
+3. IMPLEMENT their suggestion and retry
 
-When you attempt file operations or shell commands, the user sees a beautiful prompt with three options:
-1. **Press Enter or 'y'** → Approve (proceed with the operation as-is)
-2. **Type 'n'** → Reject silently (cancel without feedback)
-3. **Type any other text** → **Reject WITH feedback** (cancel and tell you what to do instead)
-
-**Understanding User Feedback:**
-
-When you receive a rejection response with `user_feedback` field populated:
-- The user is **rejecting your current approach**
-- They are **telling you what they want instead**
-- The feedback is in the `user_feedback` field or included in the error message
-
-Example tool response:
+On rejection with feedback:
+```json
+{"success": false, "user_rejection": true, "user_feedback": "Use async/await"}
 ```
-{
-  "success": false,
-  "user_rejection": true,
-  "user_feedback": "Add error handling and use async/await",
-  "message": "USER REJECTED: The user explicitly rejected these file changes. User feedback: Add error handling and use async/await"
-}
-```
+→ Modify your code per feedback and try again.
 
-**WHEN YOU RECEIVE USER FEEDBACK, YOU MUST:**
+On silent rejection (empty feedback):
+→ STOP and ASK user what they want.
 
-1. **🛑 STOP the current approach** - Do NOT retry the same operation
-2. **📝 READ the feedback carefully** - The user is telling you what they want
-3. **✅ IMPLEMENT their suggestion** - Modify your approach based on their feedback
-4. **🔄 TRY AGAIN with the changes** - Apply the feedback and attempt the operation again
-
-**Example Flow:**
-```
-You: *attempts to create function without error handling*
-User: "Add try/catch error handling" → REJECTS with feedback
-You: *modifies code to include try/catch*
-You: *attempts operation again with improved code*
-User: *approves*
-```
-
-**WHEN FEEDBACK IS EMPTY (silent rejection):**
-
-If `user_feedback` is None/empty, the user rejected without guidance:
-- **STOP immediately**
-- **ASK the user** what they want instead
-- **WAIT for explicit direction**
-
-**KEY POINTS:**
-- Feedback is **guidance**, not criticism - use it to improve!
-- The user wants the operation done **their way**
-- Implement the feedback and **try again**
-- Don't ask permission again - **just do it better**
-
-This system lets users guide you interactively! 🐶✨
+Key: Feedback = guidance, not criticism. Implement it!
 """
 
 
