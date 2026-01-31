@@ -174,9 +174,30 @@ class AccountManager:
     def load_from_disk(
         cls, initial_refresh_token: Optional[str] = None
     ) -> "AccountManager":
-        """Load account manager from disk."""
+        """Load account manager from disk.
+        
+        Automatically clears expired rate limits so models aren't
+        incorrectly seen as rate-limited after restart.
+        """
         stored = load_accounts()
-        return cls(initial_refresh_token, stored)
+        manager = cls(initial_refresh_token, stored)
+        
+        # Clear any expired rate limits from stored state
+        expired_cleared = 0
+        for account in manager._accounts:
+            before_count = len(account.rate_limit_reset_times)
+            _clear_expired_rate_limits(account)
+            expired_cleared += before_count - len(account.rate_limit_reset_times)
+        
+        if expired_cleared > 0:
+            logger.info(
+                "Cleared %d expired rate limits from stored accounts",
+                expired_cleared,
+            )
+            # Persist the cleaned state
+            manager.save_to_disk()
+        
+        return manager
 
     @property
     def account_count(self) -> int:
@@ -238,10 +259,32 @@ class AccountManager:
         retry_after_ms: float,
         family: ModelFamily,
         header_style: HeaderStyle = "antigravity",
+        persist: bool = True,
     ) -> None:
-        """Mark an account as rate limited."""
+        """Mark an account as rate limited.
+        
+        Args:
+            account: The account to mark
+            retry_after_ms: How long until rate limit expires (milliseconds)
+            family: Model family (claude/gemini)
+            header_style: Header style for quota key
+            persist: Whether to persist to disk (default True)
+        """
         key = _get_quota_key(family, header_style)
-        account.rate_limit_reset_times[key] = _now_ms() + retry_after_ms
+        reset_time = _now_ms() + retry_after_ms
+        account.rate_limit_reset_times[key] = reset_time
+        account.last_switch_reason = "rate-limit"
+        
+        logger.info(
+            "Rate limited account %s for %s (resets in %.1fs)",
+            account.email or f"#{account.index}",
+            key,
+            retry_after_ms / 1000,
+        )
+        
+        # Persist to disk so rate limits survive restarts
+        if persist:
+            self.save_to_disk()
 
     def is_rate_limited_for_header_style(
         self,

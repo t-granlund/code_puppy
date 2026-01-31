@@ -757,3 +757,105 @@ class TestEdgeCases:
         # But Gemini can still use the rate-limited account if not limited for Gemini
         gemini_next = manager.get_current_or_next_for_family("gemini")
         assert gemini_next is not None
+
+    def test_mark_rate_limited_persists_to_disk(self, sample_storage, monkeypatch):
+        """Test that mark_rate_limited persists to disk by default."""
+        manager = AccountManager(initial_refresh_token="", stored=sample_storage)
+        account = manager.get_current_account_for_family("claude")
+
+        # Track if save_to_disk was called
+        save_called = False
+
+        def mock_save(storage):
+            nonlocal save_called
+            save_called = True
+
+        monkeypatch.setattr(
+            "code_puppy.plugins.antigravity_oauth.accounts.save_accounts",
+            mock_save,
+        )
+
+        # Mark rate limited - should persist
+        manager.mark_rate_limited(account, 5000, "claude", "antigravity")
+        assert save_called, "mark_rate_limited should call save_to_disk"
+
+    def test_mark_rate_limited_skip_persist(self, sample_storage, monkeypatch):
+        """Test that mark_rate_limited can skip persistence."""
+        manager = AccountManager(initial_refresh_token="", stored=sample_storage)
+        account = manager.get_current_account_for_family("claude")
+
+        save_called = False
+
+        def mock_save(storage):
+            nonlocal save_called
+            save_called = True
+
+        monkeypatch.setattr(
+            "code_puppy.plugins.antigravity_oauth.accounts.save_accounts",
+            mock_save,
+        )
+
+        # Mark rate limited with persist=False
+        manager.mark_rate_limited(account, 5000, "claude", "antigravity", persist=False)
+        assert not save_called, "mark_rate_limited with persist=False should not save"
+
+    def test_load_from_disk_clears_expired_rate_limits(self, monkeypatch):
+        """Test that load_from_disk clears expired rate limits."""
+        from code_puppy.plugins.antigravity_oauth.storage import (
+            AccountMetadata,
+            AccountStorage,
+            RateLimitState,
+        )
+        import time
+
+        # Create storage with an expired rate limit (in the past)
+        expired_time = (time.time() - 3600) * 1000  # 1 hour ago in ms
+        storage = AccountStorage(
+            version=3,
+            accounts=[
+                AccountMetadata(
+                    refresh_token="test-token-1",
+                    email="test@example.com",
+                    project_id="test-project",
+                    added_at=time.time() * 1000,
+                    last_used=0,
+                    rate_limit_reset_times=RateLimitState(
+                        claude=expired_time,  # Expired
+                        gemini_antigravity=None,
+                        gemini_cli=None,
+                    ),
+                ),
+            ],
+            active_index=0,
+            active_index_by_family={"claude": 0, "gemini": 0},
+        )
+
+        # Track what was saved
+        saved_storage = None
+
+        def mock_load():
+            return storage
+
+        def mock_save(s):
+            nonlocal saved_storage
+            saved_storage = s
+
+        monkeypatch.setattr(
+            "code_puppy.plugins.antigravity_oauth.accounts.load_accounts",
+            mock_load,
+        )
+        monkeypatch.setattr(
+            "code_puppy.plugins.antigravity_oauth.accounts.save_accounts",
+            mock_save,
+        )
+
+        # Load should clear expired rate limits
+        manager = AccountManager.load_from_disk()
+
+        # Account should no longer be rate limited
+        account = manager.get_current_account_for_family("claude")
+        assert account is not None
+        assert "claude" not in account.rate_limit_reset_times
+
+        # Should have saved the cleaned state
+        assert saved_storage is not None

@@ -356,6 +356,7 @@ class AntigravityClient(httpx.AsyncClient):
     """Custom httpx client that handles Antigravity request/response wrapping.
 
     Supports proactive token refresh to prevent expiry during long sessions.
+    Optionally integrates with AccountManager for rate-limit-aware account switching.
     """
 
     def __init__(
@@ -365,6 +366,8 @@ class AntigravityClient(httpx.AsyncClient):
         refresh_token: str = "",
         expires_at: Optional[float] = None,
         on_token_refreshed: Optional[Any] = None,
+        account_manager: Optional[Any] = None,  # AccountManager instance
+        model_family: Optional[str] = None,  # "claude" or "gemini"
         **kwargs: Any,
     ):
         super().__init__(**kwargs)
@@ -373,7 +376,17 @@ class AntigravityClient(httpx.AsyncClient):
         self._refresh_token = refresh_token
         self._expires_at = expires_at
         self._on_token_refreshed = on_token_refreshed
+        self._account_manager = account_manager
+        self._model_family = model_family or self._detect_model_family(model_name)
+        self._current_account = None  # Track current account for rate limit marking
         self._refresh_lock = None  # Lazy init for async lock
+
+    def _detect_model_family(self, model_name: str) -> str:
+        """Detect model family from model name."""
+        model_lower = model_name.lower()
+        if "claude" in model_lower or "anthropic" in model_lower:
+            return "claude"
+        return "gemini"
 
     async def _ensure_valid_token(self) -> None:
         """Proactively refresh the access token if it's expired or about to expire.
@@ -714,6 +727,10 @@ class AntigravityClient(httpx.AsyncClient):
 
                 # All endpoints/retries exhausted, return last response
                 if last_response:
+                    # Mark account as rate-limited if we have AccountManager
+                    if last_response.status_code == 429 and self._account_manager:
+                        self._mark_current_account_rate_limited(last_response)
+                    
                     # Ensure response is read for proper error handling
                     if not last_response.is_stream_consumed:
                         try:
@@ -723,6 +740,67 @@ class AntigravityClient(httpx.AsyncClient):
                     return UnwrappedResponse(last_response)
 
         return await super().send(request, **kwargs)
+
+    def _mark_current_account_rate_limited(
+        self, response: httpx.Response, default_duration_ms: float = 60000
+    ) -> None:
+        """Mark the current account as rate-limited in the AccountManager.
+        
+        Args:
+            response: The 429 response (may contain retry-after info)
+            default_duration_ms: Default rate limit duration if not in response
+        """
+        if not self._account_manager or not self._current_account:
+            return
+        
+        # Try to extract retry delay from response
+        retry_ms = default_duration_ms
+        try:
+            # Check Retry-After header first
+            retry_after = response.headers.get("retry-after")
+            if retry_after:
+                retry_ms = float(retry_after) * 1000
+            else:
+                # Try to parse from response body (already read at this point)
+                try:
+                    error_data = json.loads(response.content)
+                    details = error_data.get("error", {}).get("details", [])
+                    for detail in details:
+                        if "RetryInfo" in detail.get("@type", ""):
+                            delay_str = detail.get("retryDelay", "")
+                            if delay_str.endswith("s"):
+                                retry_ms = float(delay_str[:-1]) * 1000
+                                break
+                        if "ErrorInfo" in detail.get("@type", ""):
+                            quota_delay = detail.get("metadata", {}).get("quotaResetDelay", "")
+                            if quota_delay.endswith("ms"):
+                                retry_ms = float(quota_delay[:-2])
+                                break
+                            if quota_delay.endswith("s"):
+                                retry_ms = float(quota_delay[:-1]) * 1000
+                                break
+                except (json.JSONDecodeError, KeyError, ValueError):
+                    pass
+        except (ValueError, TypeError):
+            pass
+        
+        # Ensure minimum 60 seconds for actual quota exhaustion
+        retry_ms = max(retry_ms, 60000)
+        
+        try:
+            self._account_manager.mark_rate_limited(
+                self._current_account,
+                retry_ms,
+                self._model_family,
+                "antigravity",
+            )
+            logger.info(
+                "Marked account as rate-limited for %s (%.1fs)",
+                self._model_family,
+                retry_ms / 1000,
+            )
+        except Exception as e:
+            logger.warning("Failed to mark account rate-limited: %s", e)
 
     async def _extract_rate_limit_delay(self, response: httpx.Response) -> float | None:
         """Extract the retry delay from a 429 rate limit response.
@@ -816,6 +894,8 @@ def create_antigravity_client(
     refresh_token: str = "",
     expires_at: Optional[float] = None,
     on_token_refreshed: Optional[TokenRefreshCallback] = None,
+    account_manager: Optional[Any] = None,
+    current_account: Optional[Any] = None,
 ) -> AntigravityClient:
     """Create an httpx client configured for Antigravity API.
 
@@ -829,6 +909,8 @@ def create_antigravity_client(
         expires_at: Unix timestamp when the access token expires
         on_token_refreshed: Callback called when token is proactively refreshed,
                            receives OAuthTokens object to persist the new tokens
+        account_manager: Optional AccountManager for rate-limit-aware account switching
+        current_account: The current ManagedAccount being used (for rate limit tracking)
 
     Returns:
         An AntigravityClient configured for API requests with proactive token refresh
@@ -843,13 +925,20 @@ def create_antigravity_client(
     if headers:
         default_headers.update(headers)
 
-    return AntigravityClient(
+    client = AntigravityClient(
         project_id=project_id,
         model_name=model_name,
         refresh_token=refresh_token,
         expires_at=expires_at,
         on_token_refreshed=on_token_refreshed,
+        account_manager=account_manager,
         base_url=base_url,
         headers=default_headers,
         timeout=httpx.Timeout(180.0, connect=30.0),
     )
+    
+    # Set the current account for rate limit tracking
+    if current_account is not None:
+        client._current_account = current_account
+    
+    return client

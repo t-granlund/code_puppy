@@ -415,10 +415,11 @@ def _handle_custom_command(command: str, name: str) -> Optional[bool]:
 
 
 def _create_antigravity_model(model_name: str, model_config: Dict, config: Dict) -> Any:
-    """Create an Antigravity model instance.
+    """Create an Antigravity model instance with rate-limit-aware account selection.
 
     This handler is registered via the 'register_model_type' callback to handle
-    models with type='antigravity'.
+    models with type='antigravity'. Uses AccountManager for multi-account support
+    and tracks rate limits per-account per-model-family.
     """
     from code_puppy.gemini_model import GeminiModel
     from code_puppy.model_factory import get_custom_config
@@ -436,7 +437,28 @@ def _create_antigravity_model(model_name: str, model_config: Dict, config: Dict)
         )
         return None
 
-    # Get fresh access token (refresh if needed)
+    # Detect model family for rate limit tracking
+    model_family = "gemini"
+    model_name_lower = model_config.get("name", "").lower()
+    if "claude" in model_name_lower or "anthropic" in model_name_lower:
+        model_family = "claude"
+
+    # Load AccountManager for rate-limit-aware account selection
+    account_manager = AccountManager.load_from_disk()
+    current_account = None
+    
+    if account_manager.account_count > 0:
+        # Get account that's not rate-limited for this model family
+        current_account = account_manager.get_current_or_next_for_family(model_family)
+        if current_account is None:
+            # All accounts rate-limited for this family
+            emit_warning(
+                f"⚠️ All accounts rate-limited for {model_family} models"
+            )
+            # Fall back to first account anyway - will hit 429 but that's expected
+            current_account = account_manager.get_accounts_snapshot()[0] if account_manager.account_count > 0 else None
+
+    # Get tokens - prefer current account's tokens if available
     tokens = load_stored_tokens()
     if not tokens:
         emit_warning("Antigravity tokens not found; run /antigravity-auth first.")
@@ -486,6 +508,8 @@ def _create_antigravity_model(model_name: str, model_config: Dict, config: Dict)
         refresh_token=refresh_token,
         expires_at=expires_at,
         on_token_refreshed=on_token_refreshed,
+        account_manager=account_manager,
+        current_account=current_account,
     )
 
     # Use custom model with direct httpx client
