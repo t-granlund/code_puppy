@@ -1,0 +1,1886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Code Puppy v2.0 - Technical Architecture</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #12121a;
+      --bg-tertiary: #1a1a25;
+      --bg-card: #16161f;
+      --bg-hover: #1e1e2a;
+      --border-color: #2a2a3a;
+      --border-highlight: #3a3a4a;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --accent-blue: #3b82f6;
+      --accent-purple: #8b5cf6;
+      --accent-green: #10b981;
+      --accent-orange: #f59e0b;
+      --accent-red: #ef4444;
+      --accent-cyan: #06b6d4;
+      --accent-pink: #ec4899;
+      --gradient-1: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      --gradient-2: linear-gradient(135deg, #10b981, #06b6d4);
+      --gradient-3: linear-gradient(135deg, #f59e0b, #ef4444);
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+      --shadow-lg: 0 8px 24px rgba(0,0,0,0.5);
+      --shadow-glow: 0 0 30px rgba(59, 130, 246, 0.15);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg-secondary);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--border-highlight);
+    }
+
+    /* Layout */
+    .app-container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 280px;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border-color);
+      padding: 1.5rem;
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 1.5rem;
+    }
+
+    .brand-icon {
+      font-size: 2rem;
+      filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.5));
+    }
+
+    .brand h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      background: var(--gradient-1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .brand-version {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    /* Navigation */
+    .nav-section {
+      margin-bottom: 1.5rem;
+    }
+
+    .nav-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+      padding-left: 0.5rem;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 0.75rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      transition: all 0.15s ease;
+      margin-bottom: 2px;
+    }
+
+    .nav-item:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    .nav-item.active {
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--accent-blue);
+      font-weight: 500;
+    }
+
+    .nav-item .icon {
+      width: 18px;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      margin-left: 280px;
+      padding: 2rem 3rem;
+      max-width: 1400px;
+    }
+
+    /* Sections */
+    .section {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Headers */
+    .section-header {
+      margin-bottom: 2rem;
+    }
+
+    .section-header h2 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      background: var(--gradient-1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .section-header p {
+      color: var(--text-secondary);
+      font-size: 1rem;
+      max-width: 700px;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--text-primary);
+    }
+
+    h4 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    /* Cards */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      transition: all 0.2s ease;
+    }
+
+    .card:hover {
+      border-color: var(--border-highlight);
+      box-shadow: var(--shadow-glow);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .card-icon {
+      font-size: 1.5rem;
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    /* Grid Layouts */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+    }
+
+    @media (max-width: 1200px) {
+      .grid-3 { grid-template-columns: repeat(2, 1fr); }
+      .grid-4 { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 900px) {
+      .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+    }
+
+    /* Stats */
+    .stat-card {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 1.25rem;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      background: var(--gradient-1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .stat-label {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-top: 0.25rem;
+    }
+
+    .stat-sub {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    /* Code Blocks */
+    .code-block {
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1rem;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      line-height: 1.5;
+      margin: 1rem 0;
+    }
+
+    .code-block pre {
+      margin: 0;
+      white-space: pre;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      background: var(--bg-tertiary);
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.85em;
+      color: var(--accent-cyan);
+    }
+
+    /* Tables */
+    .table-container {
+      overflow-x: auto;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+
+    th {
+      background: var(--bg-tertiary);
+      padding: 0.75rem 1rem;
+      text-align: left;
+      font-weight: 600;
+      color: var(--text-secondary);
+      border-bottom: 1px solid var(--border-color);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    tr:hover td {
+      background: var(--bg-hover);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* Tags & Badges */
+    .tag {
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+    }
+
+    .tag-blue { background: rgba(59, 130, 246, 0.2); color: var(--accent-blue); }
+    .tag-purple { background: rgba(139, 92, 246, 0.2); color: var(--accent-purple); }
+    .tag-green { background: rgba(16, 185, 129, 0.2); color: var(--accent-green); }
+    .tag-orange { background: rgba(245, 158, 11, 0.2); color: var(--accent-orange); }
+    .tag-red { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); }
+    .tag-cyan { background: rgba(6, 182, 212, 0.2); color: var(--accent-cyan); }
+
+    .status-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 0.5rem;
+    }
+
+    .status-dot.online { background: var(--accent-green); box-shadow: 0 0 6px var(--accent-green); }
+    .status-dot.warning { background: var(--accent-orange); }
+    .status-dot.offline { background: var(--accent-red); }
+
+    /* Diagrams */
+    .diagram-container {
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 2rem;
+      overflow-x: auto;
+      margin: 1.5rem 0;
+    }
+
+    .diagram-ascii {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      line-height: 1.4;
+      color: var(--text-secondary);
+      white-space: pre;
+    }
+
+    .diagram-ascii .highlight-blue { color: var(--accent-blue); }
+    .diagram-ascii .highlight-purple { color: var(--accent-purple); }
+    .diagram-ascii .highlight-green { color: var(--accent-green); }
+    .diagram-ascii .highlight-orange { color: var(--accent-orange); }
+    .diagram-ascii .highlight-cyan { color: var(--accent-cyan); }
+
+    /* Tier Pyramid */
+    .tier-pyramid {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 2rem;
+    }
+
+    .tier-level {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: transform 0.2s ease;
+      cursor: default;
+    }
+
+    .tier-level:hover {
+      transform: scale(1.02);
+    }
+
+    .tier-1 {
+      width: 250px;
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(139, 92, 246, 0.1));
+      border: 1px solid rgba(139, 92, 246, 0.5);
+    }
+
+    .tier-2 {
+      width: 350px;
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(59, 130, 246, 0.1));
+      border: 1px solid rgba(59, 130, 246, 0.5);
+    }
+
+    .tier-3 {
+      width: 450px;
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.3), rgba(6, 182, 212, 0.1));
+      border: 1px solid rgba(6, 182, 212, 0.5);
+    }
+
+    .tier-4 {
+      width: 550px;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(16, 185, 129, 0.1));
+      border: 1px solid rgba(16, 185, 129, 0.5);
+    }
+
+    .tier-5 {
+      width: 650px;
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.3), rgba(245, 158, 11, 0.1));
+      border: 1px solid rgba(245, 158, 11, 0.5);
+    }
+
+    .tier-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-right: 1rem;
+    }
+
+    .tier-model {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+    }
+
+    /* Flow Diagrams */
+    .flow-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .flow-box {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1rem 1.5rem;
+      text-align: center;
+      min-width: 140px;
+    }
+
+    .flow-box.primary {
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+    }
+
+    .flow-box h5 {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .flow-box p {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .flow-arrow {
+      font-size: 1.5rem;
+      color: var(--text-muted);
+    }
+
+    /* Rules List */
+    .rules-list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+
+    .rule-item {
+      display: flex;
+      gap: 0.75rem;
+      padding: 1rem;
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+    }
+
+    .rule-number {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 700;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--gradient-1);
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+
+    .rule-content h5 {
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .rule-content p {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* Agent Cards */
+    .agent-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 1rem;
+    }
+
+    .agent-card {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 1.25rem;
+      text-align: center;
+      transition: all 0.2s ease;
+    }
+
+    .agent-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent-blue);
+      box-shadow: var(--shadow-glow);
+    }
+
+    .agent-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .agent-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .agent-role {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    /* Tree Structure */
+    .tree {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      line-height: 1.6;
+      color: var(--text-secondary);
+    }
+
+    .tree .folder { color: var(--accent-blue); }
+    .tree .file { color: var(--text-muted); }
+    .tree .highlight { color: var(--accent-green); font-weight: 600; }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 1.5rem;
+    }
+
+    .tab {
+      padding: 0.75rem 1.25rem;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s ease;
+    }
+
+    .tab:hover {
+      color: var(--text-primary);
+    }
+
+    .tab.active {
+      color: var(--accent-blue);
+      border-bottom-color: var(--accent-blue);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Metrics */
+    .metrics-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .metrics-row:last-child {
+      border-bottom: none;
+    }
+
+    .metric-name {
+      flex: 1;
+      font-size: 0.85rem;
+    }
+
+    .metric-bar {
+      flex: 2;
+      height: 8px;
+      background: var(--bg-tertiary);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .metric-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+
+    .metric-value {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      width: 80px;
+      text-align: right;
+      color: var(--text-muted);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+      }
+      
+      .main-content {
+        margin-left: 0;
+        padding: 1rem;
+      }
+
+      .rules-list {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Animations */
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .pulse {
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    /* Tooltips */
+    [data-tooltip] {
+      position: relative;
+      cursor: help;
+    }
+
+    [data-tooltip]:hover::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      white-space: nowrap;
+      z-index: 100;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">🐶</div>
+        <div>
+          <h1>Code Puppy</h1>
+          <div class="brand-version">v2.0 • BART System (Belief • Augmented • Reasoning • Tasking)</div>
+        </div>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-label">Overview</div>
+        <div class="nav-item active" data-section="overview">
+          <span class="icon">🏠</span> Architecture Overview
+        </div>
+        <div class="nav-item" data-section="system-diagram">
+          <span class="icon">📐</span> System Diagram
+        </div>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-label">Core Systems</div>
+        <div class="nav-item" data-section="epistemic">
+          <span class="icon">🧠</span> BART Orchestration
+        </div>
+        <div class="nav-item" data-section="model-router">
+          <span class="icon">🔀</span> Model Router
+        </div>
+        <div class="nav-item" data-section="cerebras">
+          <span class="icon">⚡</span> Cerebras GLM 4.7
+        </div>
+        <div class="nav-item" data-section="token-budget">
+          <span class="icon">💰</span> Token Budget
+        </div>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-label">Agents & Tools</div>
+        <div class="nav-item" data-section="agents">
+          <span class="icon">🐕</span> Agent System
+        </div>
+        <div class="nav-item" data-section="tools">
+          <span class="icon">🔧</span> Tools Layer
+        </div>
+        <div class="nav-item" data-section="mcp">
+          <span class="icon">🔌</span> MCP Infrastructure
+        </div>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-label">Infrastructure</div>
+        <div class="nav-item" data-section="messaging">
+          <span class="icon">📨</span> Messaging Bus
+        </div>
+        <div class="nav-item" data-section="observability">
+          <span class="icon">📊</span> Observability
+        </div>
+        <div class="nav-item" data-section="files">
+          <span class="icon">📁</span> File Structure
+        </div>
+      </div>
+
+      <div style="margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
+        <div style="font-size: 0.7rem; color: var(--text-muted);">
+          <div style="margin-bottom: 0.5rem;"><span class="status-dot online"></span>All Systems Operational</div>
+          <div>Updated: Jan 30, 2026</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+      <!-- OVERVIEW SECTION -->
+      <section id="overview" class="section active">
+        <div class="section-header">
+          <h2>🏗️ Technical Architecture</h2>
+          <p>Code Puppy v2.0 implements the BART System (Belief-Augmented Reasoning & Tasking) - a Traycer-style architecture with Plan → Execute → Verify loop, multi-tier model routing, and bidirectional verification.</p>
+        </div>
+
+        <div class="grid-4">
+          <div class="stat-card">
+            <div class="stat-value">6,026</div>
+            <div class="stat-label">Tests Passing</div>
+            <div class="stat-sub">98% coverage</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">1,500+</div>
+            <div class="stat-label">tok/sec</div>
+            <div class="stat-sub">Cerebras GLM 4.7</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">5</div>
+            <div class="stat-label">Model Tiers</div>
+            <div class="stat-sub">Smart Routing</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">20+</div>
+            <div class="stat-label">Agents</div>
+            <div class="stat-sub">Specialized Pack</div>
+          </div>
+        </div>
+
+        <div class="grid-2" style="margin-top: 2rem;">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-icon">🎯</span>
+              <span class="card-title">Core Principles</span>
+            </div>
+            <ul style="list-style: none; font-size: 0.9rem;">
+              <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);">
+                <strong style="color: var(--accent-purple);">Belief-Augmented Reasoning</strong>
+                <span style="color: var(--text-muted);"> — Separating the 'Belief State' (Truth) from the 'Execution State' (Code)</span>
+              </li>
+              <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);">
+                <strong style="color: var(--accent-blue);">Tiered Model Routing</strong>
+                <span style="color: var(--text-muted);"> — Right model for the right task</span>
+              </li>
+              <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);">
+                <strong style="color: var(--accent-green);">Bidirectional Verification</strong>
+                <span style="color: var(--text-muted);"> — The 'Ralph Loop' validates output against belief, not just syntax</span>
+              </li>
+              <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);">
+                <strong style="color: var(--accent-orange);">Token Budget Governance</strong>
+                <span style="color: var(--text-muted);"> — Prevent 429s with smart rate limiting</span>
+              </li>
+              <li style="padding: 0.5rem 0;">
+                <strong style="color: var(--accent-cyan);">Logfire Observability</strong>
+                <span style="color: var(--text-muted);"> — Full tracing of all operations</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <span class="card-icon">📦</span>
+              <span class="card-title">Core Components</span>
+            </div>
+            <div class="table-container" style="border: none;">
+              <table>
+                <tr>
+                  <td><code>BARTOrchestrator</code></td>
+                  <td><span class="tag tag-purple">Belief & Reasoning</span></td>
+                </tr>
+                <tr>
+                  <td><code>HuskyExecutionLayer</code></td>
+                  <td><span class="tag tag-orange">Tasking</span></td>
+                </tr>
+                <tr>
+                  <td><code>RalphLoopVerifier</code></td>
+                  <td><span class="tag tag-green">Bidirectional</span></td>
+                </tr>
+                <tr>
+                  <td><code>ModelRouter</code></td>
+                  <td><span class="tag tag-blue">Router</span></td>
+                </tr>
+                <tr>
+                  <td><code>TokenBudgetManager</code></td>
+                  <td><span class="tag tag-red">Governor</span></td>
+                </tr>
+                <tr>
+                  <td><code>ContextCurator</code></td>
+                  <td><span class="tag tag-cyan">Slicer</span></td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <h3 style="margin-top: 2rem;">Plan → Execute → Verify Loop</h3>
+        <div class="flow-container">
+          <div class="flow-box primary">
+            <h5>Phase 1</h5>
+            <p>🧠 PLAN</p>
+            <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.25rem;">Claude Opus 4.5</div>
+          </div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-box primary">
+            <h5>Phase 2</h5>
+            <p>🦮 EXECUTE</p>
+            <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.25rem;">Cerebras GLM 4.7</div>
+          </div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-box primary">
+            <h5>Phase 3</h5>
+            <p>👁️ VERIFY</p>
+            <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.25rem;">Ralph Loop</div>
+          </div>
+          <div class="flow-arrow" style="transform: rotate(180deg);">↩</div>
+          <div style="font-size: 0.75rem; color: var(--accent-red);">Retry if FAIL</div>
+        </div>
+      </section>
+
+      <!-- SYSTEM DIAGRAM SECTION -->
+      <section id="system-diagram" class="section">
+        <div class="section-header">
+          <h2>📐 System Architecture Diagram</h2>
+          <p>Complete visualization of the Code Puppy v2.0 BART System (Belief-Augmented Reasoning & Tasking) architecture.</p>
+        </div>
+
+        <div class="diagram-container">
+          <div class="diagram-ascii">
+<span class="highlight-blue">┌─────────────────────────────────────────────────────────────────────────────────────────┐</span>
+<span class="highlight-blue">│</span>                                    <span class="highlight-purple">CODE PUPPY v2.0</span>                                       <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>                     BART System (Belief • Augmented • Reasoning • Tasking)             <span class="highlight-blue">│</span>
+<span class="highlight-blue">├─────────────────────────────────────────────────────────────────────────────────────────┤</span>
+<span class="highlight-blue">│</span>                                                                                         <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-cyan">┌─────────────────────────────────────────────────────────────────────────────────┐</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-cyan">│</span>                           USER INTERFACE LAYER                                   <span class="highlight-cyan">│</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-cyan">│</span>  ┌────────────┐  ┌────────────┐  ┌────────────┐  ┌────────────┐                <span class="highlight-cyan">│</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-cyan">│</span>  │    CLI     │  │    API     │  │  WebSocket │  │   PTY      │                <span class="highlight-cyan">│</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-cyan">│</span>  │ (Textual)  │  │  (FastAPI) │  │  Realtime  │  │  Manager   │                <span class="highlight-cyan">│</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-cyan">│</span>  └─────┬──────┘  └─────┬──────┘  └─────┬──────┘  └─────┬──────┘                <span class="highlight-cyan">│</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-cyan">└────────┼───────────────┼───────────────┼───────────────┼────────────────────────┘</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>           │               │               │               │                            <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>           ▼               ▼               ▼               ▼                            <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-green">┌─────────────────────────────────────────────────────────────────────────────────┐</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-green">│</span>                          MESSAGING / EVENT BUS                                   <span class="highlight-green">│</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-green">│</span>  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐        <span class="highlight-green">│</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-green">│</span>  │  MessageBus  │  │  Renderers   │  │   Spinner    │  │ QueueConsole │        <span class="highlight-green">│</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-green">│</span>  │  (Bidirect)  │  │  (Rich/MD)   │  │   System     │  │              │        <span class="highlight-green">│</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-green">│</span>  └──────────────┘  └──────────────┘  └──────────────┘  └──────────────┘        <span class="highlight-green">│</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-green">└─────────────────────────────────────────────────────────────────────────────────┘</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>                                         │                                              <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>                                         ▼                                              <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-purple">┌─────────────────────────────────────────────────────────────────────────────────┐</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-purple">│</span>                   🧠 BELIEF & REASONING LAYER (The Brain)                      <span class="highlight-purple">│</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-purple">│</span>                                                                                 <span class="highlight-purple">│</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-purple">│</span>  ┌─────────────┐                                        ┌─────────────────┐    <span class="highlight-purple">│</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-purple">│</span>  │   PLAN      │                                        │     VERIFY      │    <span class="highlight-purple">│</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-purple">│</span>  │ (Opus 4.5)  │────────────────────────────────────────►│  (Ralph Loop)   │    <span class="highlight-purple">│</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-purple">│</span>  │             │                                        │                 │    <span class="highlight-purple">│</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-purple">│</span>  │ • Interview │                                        │ • Static Anal.  │    <span class="highlight-purple">│</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-purple">│</span>  │ • Decompose │                                        │ • Drift Detect  │    <span class="highlight-purple">│</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-purple">│</span>  │ • Plan Epics│                                        │ • Spec Check    │    <span class="highlight-purple">│</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-purple">│</span>  └──────┬──────┘                                        └────────▲────────┘    <span class="highlight-purple">│</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-purple">│</span>         │                                                        │              <span class="highlight-purple">│</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-purple">│</span>         │                <span class="highlight-orange">◄─────── Retry if FAIL ───────────┘</span>              <span class="highlight-purple">│</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-purple">│</span>         │                                                                         <span class="highlight-purple">│</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-purple">└─────────┼───────────────────────────────────────────────────────────────────────┘</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>            │                                                                           <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>            │  <span class="highlight-cyan">Context Filter (Curated PRDs, Specs, Constraints)</span>                   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>            ▼                                                                           <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-orange">┌─────────────────────────────────────────────────────────────────────────────────┐</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-orange">│</span>                   🦮 TASKING & EXECUTION LAYER (The Hands)                     <span class="highlight-orange">│</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-orange">│</span>                                                                                 <span class="highlight-orange">│</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-orange">│</span>  ┌─────────────────┐                                                            <span class="highlight-orange">│</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-orange">│</span>  │    EXECUTE      │                                                            <span class="highlight-orange">│</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-orange">│</span>  │  (Cerebras GLM) │  <span class="highlight-cyan">Evidence/Code ▲</span>                                        <span class="highlight-orange">│</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-orange">│</span>  │                 │                                                            <span class="highlight-orange">│</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-orange">│</span>  │ • ContextCurator│                                                            <span class="highlight-orange">│</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-orange">│</span>  │ • HuskyExecution│                                                            <span class="highlight-orange">│</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-orange">│</span>  │ • TaskDecomposer│                                                            <span class="highlight-orange">│</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-orange">│</span>  └─────────────────┘                                                            <span class="highlight-orange">│</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-orange">│</span>                                                                                 <span class="highlight-orange">│</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-orange">└─────────────────────────────────────────────────────────────────────────────────┘</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>                                         │                                              <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>                                         ▼                                              <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-orange">┌─────────────────────────────────────────────────────────────────────────────────┐</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-orange">│</span>                            🔀 MODEL ROUTER                                       <span class="highlight-orange">│</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-orange">│</span>                                                                                 <span class="highlight-orange">│</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-orange">│</span>  Tier 1 ─────► Claude Opus 4.5 ──────► Planning, Security, QA                   <span class="highlight-orange">│</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-orange">│</span>  Tier 2 ─────► Codex 5.2 ────────────► Complex Logic, Refactoring               <span class="highlight-orange">│</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-orange">│</span>  Tier 3 ─────► Claude Sonnet 4.5 ────► Class Design, API Design                 <span class="highlight-orange">│</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-orange">│</span>  Tier 4 ─────► Gemini 3 Flash/Pro ───► Context Search, Summarization            <span class="highlight-orange">│</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-orange">│</span>  Tier 5 ─────► <span class="highlight-green">Cerebras GLM 4.7</span> ─────► Code Gen, Tests, Linting                 <span class="highlight-orange">│</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-orange">│</span>                                                                                 <span class="highlight-orange">│</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  <span class="highlight-orange">└─────────────────────────────────────────────────────────────────────────────────┘</span>   <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>                                         │                                              <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>                                         ▼                                              <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  ┌────────────────┐  ┌────────────────┐  ┌────────────────┐  ┌────────────────┐        <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  │ TokenBudgetMgr │  │ CircuitBreaker │  │ ConnectionPool │  │ ResponseCache  │        <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  │   (Governor)   │  │    (Fault)     │  │   (HTTP/2)     │  │   (Cache)      │        <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>  └────────────────┘  └────────────────┘  └────────────────┘  └────────────────┘        <span class="highlight-blue">│</span>
+<span class="highlight-blue">│</span>                                                                                         <span class="highlight-blue">│</span>
+<span class="highlight-blue">└─────────────────────────────────────────────────────────────────────────────────────────┘</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- BART SECTION -->
+      <section id="epistemic" class="section">
+        <div class="section-header">
+          <h2>🧠 BART Orchestration System</h2>
+          <p>The Traycer-style architecture implementing Belief-Augmented Reasoning & Tasking with Plan → Execute → Verify loop and bidirectional verification.</p>
+        </div>
+
+        <div class="card" style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(59, 130, 246, 0.1)); border-color: var(--accent-purple);">
+          <div class="card-header">
+            <span class="card-icon">📖</span>
+            <span class="card-title">B.A.R.T. - Core Concept</span>
+          </div>
+          <div class="grid-2" style="margin-top: 1rem;">
+            <div>
+              <h4 style="color: var(--accent-purple);">🅱️ Belief</h4>
+              <p style="font-size: 0.85rem; color: var(--text-secondary);">The "Truth" state (PRDs, Specs, Constraints). Maintained by the <strong>Reasoning Layer</strong>.</p>
+            </div>
+            <div>
+              <h4 style="color: var(--accent-blue);">🅰️ Augmented</h4>
+              <p style="font-size: 0.85rem; color: var(--text-secondary);">The system uses tools (MCP, Search) to support and validate its beliefs.</p>
+            </div>
+            <div>
+              <h4 style="color: var(--accent-green);">🆁 Reasoning</h4>
+              <p style="font-size: 0.85rem; color: var(--text-secondary);">The "Brain" (Claude Opus) that plans and verifies against the belief state.</p>
+            </div>
+            <div>
+              <h4 style="color: var(--accent-orange);">🆃 Tasking</h4>
+              <p style="font-size: 0.85rem; color: var(--text-secondary);">The "Hands" (Cerebras GLM) that execute specific phases with filtered context.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-icon">📊</span>
+            <span class="card-title">EpistemicStateArtifact - Pydantic Models</span>
+          </div>
+          <div class="code-block">
+            <pre>EpistemicStateArtifact
+├── goals: List[Goal]           <span style="color: var(--text-muted)"># What we're trying to achieve</span>
+├── hypotheses: List[Hypothesis] <span style="color: var(--text-muted)"># Testable predictions</span>
+├── assumptions: List[Assumption] <span style="color: var(--text-muted)"># Things we assume true</span>
+├── constraints: List[Constraint] <span style="color: var(--text-muted)"># Hard/soft limits</span>
+├── gaps: List[Gap]             <span style="color: var(--text-muted)"># Knowledge gaps (CRITICAL, HIGH, MEDIUM, LOW)</span>
+├── epics: List[Epic]           <span style="color: var(--text-muted)"># High-level work units</span>
+│   └── phases: List[Phase]     <span style="color: var(--text-muted)"># Sequential execution phases</span>
+│       └── milestones: List[Milestone]  <span style="color: var(--text-muted)"># Atomic work items</span>
+│           └── checkpoints: List[Checkpoint]  <span style="color: var(--text-muted)"># Verification points</span>
+└── evidence: List[Evidence]    <span style="color: var(--text-muted)"># Supporting data</span></pre>
+          </div>
+        </div>
+
+        <h3>Orchestration Flow</h3>
+        <div class="grid-3">
+          <div class="card" style="border-left: 3px solid var(--accent-purple);">
+            <h4 style="color: var(--accent-purple);">1. REASONING LAYER (Plan)</h4>
+            <ul style="font-size: 0.85rem; color: var(--text-secondary); list-style: none;">
+              <li style="padding: 0.25rem 0;">• <code>conduct_planning_interview()</code></li>
+              <li style="padding: 0.25rem 0;">• Extract goals, assumptions, constraints</li>
+              <li style="padding: 0.25rem 0;">• Identify gaps and hypotheses</li>
+              <li style="padding: 0.25rem 0;">• Decompose into Epics → Phases → Milestones</li>
+              <li style="padding: 0.25rem 0;">• Create EpistemicStateArtifact</li>
+            </ul>
+          </div>
+
+          <div class="card" style="border-left: 3px solid var(--accent-orange);">
+            <h4 style="color: var(--accent-orange);">2. TASKING LAYER (Execute)</h4>
+            <ul style="font-size: 0.85rem; color: var(--text-secondary); list-style: none;">
+              <li style="padding: 0.25rem 0;">• <code>ContextCurator.slice_for_milestone()</code></li>
+              <li style="padding: 0.25rem 0;">• Create MinimumViableContext (MVC)</li>
+              <li style="padding: 0.25rem 0;">• Respect 50K token limit for Cerebras</li>
+              <li style="padding: 0.25rem 0;">• <code>HuskyExecutionLayer.execute()</code></li>
+              <li style="padding: 0.25rem 0;">• Apply GLMPromptOptimizer (Rules #1-4)</li>
+            </ul>
+          </div>
+
+          <div class="card" style="border-left: 3px solid var(--accent-green);">
+            <h4 style="color: var(--accent-green);">3. BIDIRECTIONAL LAYER (Verify)</h4>
+            <ul style="font-size: 0.85rem; color: var(--text-secondary); list-style: none;">
+              <li style="padding: 0.25rem 0;">• <strong>Phase 1:</strong> Static Analysis (Cost: $0)</li>
+              <li style="padding: 0.25rem 0;">• <strong>Phase 2:</strong> Intent Verification (Sonnet)</li>
+              <li style="padding: 0.25rem 0;">• <strong>Phase 3:</strong> Spec Compliance Check</li>
+              <li style="padding: 0.25rem 0;">• <strong>Phase 4:</strong> Checkpoint Verification</li>
+              <li style="padding: 0.25rem 0;">• Calculate drift score, retry if needed</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top: 1.5rem;">
+          <div class="card-header">
+            <span class="card-icon">🔄</span>
+            <span class="card-title">Ralph Loop Primitive (OODA)</span>
+          </div>
+          <div class="flow-container">
+            <div class="flow-box"><h5>O</h5><p>OBSERVE</p></div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-box"><h5>O</h5><p>ORIENT</p></div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-box"><h5>D</h5><p>DECIDE</p></div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-box"><h5>A</h5><p>ACT</p></div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-box primary"><h5>O</h5><p>OBSERVE</p></div>
+          </div>
+          <p style="font-size: 0.8rem; color: var(--text-muted); text-align: center;">
+            The loop continues until verification passes or max retries exhausted
+          </p>
+        </div>
+      </section>
+
+      <!-- MODEL ROUTER SECTION -->
+      <section id="model-router" class="section">
+        <div class="section-header">
+          <h2>🔀 Model Router</h2>
+          <p>Intelligent tier-based routing system that selects the optimal model based on task complexity, type, and cost.</p>
+        </div>
+
+        <h3>Model Tier Pyramid</h3>
+        <div class="tier-pyramid">
+          <div class="tier-level tier-1">
+            <span class="tier-label">Tier 1 • ARCHITECT</span>
+            <span class="tier-model">Claude Opus 4.5</span>
+          </div>
+          <div class="tier-level tier-2">
+            <span class="tier-label">Tier 2 • BUILDER-HIGH</span>
+            <span class="tier-model">Codex 5.2</span>
+          </div>
+          <div class="tier-level tier-3">
+            <span class="tier-label">Tier 3 • BUILDER-MID</span>
+            <span class="tier-model">Claude Sonnet 4.5</span>
+          </div>
+          <div class="tier-level tier-4">
+            <span class="tier-label">Tier 4 • LIBRARIAN</span>
+            <span class="tier-model">Gemini 3 Flash/Pro</span>
+          </div>
+          <div class="tier-level tier-5">
+            <span class="tier-label">Tier 5 • SPRINTER</span>
+            <span class="tier-model">Cerebras GLM 4.7 • 358B MoE • 1500+ tok/s</span>
+          </div>
+        </div>
+
+        <div class="grid-2" style="margin-top: 2rem;">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-icon">🎯</span>
+              <span class="card-title">Task Type Routing</span>
+            </div>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr><th>Task Type</th><th>Tier</th><th>Model</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Planning, Security Audit</td><td><span class="tag tag-purple">T1</span></td><td>Opus</td></tr>
+                  <tr><td>Complex Refactoring</td><td><span class="tag tag-blue">T2</span></td><td>Codex</td></tr>
+                  <tr><td>Class/API Design</td><td><span class="tag tag-cyan">T3</span></td><td>Sonnet</td></tr>
+                  <tr><td>Context Search, Docs</td><td><span class="tag tag-green">T4</span></td><td>Gemini</td></tr>
+                  <tr><td>Code Gen, Tests</td><td><span class="tag tag-orange">T5</span></td><td>GLM 4.7</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <span class="card-icon">📈</span>
+              <span class="card-title">Complexity Routing</span>
+            </div>
+            <div class="code-block">
+              <pre><span style="color: var(--accent-green)">TaskComplexity.LOW</span>       → Tier 5 (Cerebras)
+<span style="color: var(--accent-cyan)">TaskComplexity.MEDIUM</span>    → Tier 4 (Gemini) or Tier 3 (Sonnet)
+<span style="color: var(--accent-orange)">TaskComplexity.HIGH</span>      → Tier 2 (Codex) or Tier 1 (Opus)
+<span style="color: var(--accent-red)">TaskComplexity.CRITICAL</span>  → Tier 1 (Opus) <strong>always</strong></pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CEREBRAS SECTION -->
+      <section id="cerebras" class="section">
+        <div class="section-header">
+          <h2>⚡ Cerebras GLM 4.7 Optimization</h2>
+          <p>Implementation of all 10 rules from the official Cerebras GLM-4.7 Migration Guide.</p>
+        </div>
+
+        <div class="grid-4" style="margin-bottom: 2rem;">
+          <div class="stat-card">
+            <div class="stat-value">358B</div>
+            <div class="stat-label">Parameters</div>
+            <div class="stat-sub">32B active (MoE)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">131K</div>
+            <div class="stat-label">Context</div>
+            <div class="stat-sub">Input tokens</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">40K</div>
+            <div class="stat-label">Max Output</div>
+            <div class="stat-sub">Output tokens</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">1500+</div>
+            <div class="stat-label">tok/sec</div>
+            <div class="stat-sub">20x faster</div>
+          </div>
+        </div>
+
+        <h3>The 10 Rules</h3>
+        <div class="rules-list">
+          <div class="rule-item">
+            <div class="rule-number">1</div>
+            <div class="rule-content">
+              <h5>Front-load Instructions</h5>
+              <p><code>GLMPromptOptimizer.FRONT_LOADED_DIRECTIVES</code></p>
+            </div>
+          </div>
+          <div class="rule-item">
+            <div class="rule-number">2</div>
+            <div class="rule-content">
+              <h5>Use MUST/STRICTLY Language</h5>
+              <p><code>optimize_user_message()</code> replacements</p>
+            </div>
+          </div>
+          <div class="rule-item">
+            <div class="rule-number">3</div>
+            <div class="rule-content">
+              <h5>Specify Default Language</h5>
+              <p><code>LANGUAGE_DIRECTIVE</code> = "English only"</p>
+            </div>
+          </div>
+          <div class="rule-item">
+            <div class="rule-number">4</div>
+            <div class="rule-content">
+              <h5>Leverage Role-Play Personas</h5>
+              <p><code>persona</code> parameter with structured prompts</p>
+            </div>
+          </div>
+          <div class="rule-item">
+            <div class="rule-number">5</div>
+            <div class="rule-content">
+              <h5>Break Up Tasks</h5>
+              <p><code>TaskDecomposer.decompose()</code> with templates</p>
+            </div>
+          </div>
+          <div class="rule-item">
+            <div class="rule-number">6</div>
+            <div class="rule-content">
+              <h5>Disable Reasoning When Not Needed</h5>
+              <p><code>disable_reasoning: True</code> in extra_body</p>
+            </div>
+          </div>
+          <div class="rule-item">
+            <div class="rule-number">7</div>
+            <div class="rule-content">
+              <h5>Enable Reasoning for Complex</h5>
+              <p><code>disable_reasoning: False</code> (default)</p>
+            </div>
+          </div>
+          <div class="rule-item">
+            <div class="rule-number">8</div>
+            <div class="rule-content">
+              <h5>Use Critic Agents</h5>
+              <p><code>RalphLoopVerifier</code> + Shepherd/Watchdog</p>
+            </div>
+          </div>
+          <div class="rule-item">
+            <div class="rule-number">9</div>
+            <div class="rule-content">
+              <h5>Pair with Frontier Models</h5>
+              <p>Opus plans → GLM executes architecture</p>
+            </div>
+          </div>
+          <div class="rule-item">
+            <div class="rule-number">10</div>
+            <div class="rule-content">
+              <h5>Use clear_thinking</h5>
+              <p><code>clear_thinking: true/false</code> in extra_body</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top: 2rem;">
+          <div class="card-header">
+            <span class="card-icon">⚙️</span>
+            <span class="card-title">API Configuration</span>
+          </div>
+          <div class="code-block">
+            <pre><span style="color: var(--accent-purple)"># model_factory.py - GLM 4.7 settings</span>
+CerebrasGLMSettings:
+    model_id: <span style="color: var(--accent-green)">"zai-glm-4.7"</span>
+    temperature: <span style="color: var(--accent-orange)">1.0</span>           <span style="color: var(--text-muted)"># Recommended default</span>
+    top_p: <span style="color: var(--accent-orange)">0.95</span>                <span style="color: var(--text-muted)"># Recommended default</span>
+    max_context: <span style="color: var(--accent-orange)">131_000</span>       <span style="color: var(--text-muted)"># 131K input tokens</span>
+    max_output: <span style="color: var(--accent-orange)">40_000</span>         <span style="color: var(--text-muted)"># 40K output tokens</span>
+    disable_reasoning: <span style="color: var(--accent-cyan)">bool</span>    <span style="color: var(--text-muted)"># Rule #6/#7</span>
+    clear_thinking: <span style="color: var(--accent-cyan)">bool</span>       <span style="color: var(--text-muted)"># Rule #10</span>
+
+<span style="color: var(--accent-purple)"># Passed via extra_body for OpenAI-compatible SDK</span>
+extra_body = {
+    <span style="color: var(--accent-green)">"disable_reasoning"</span>: disable_reasoning,
+    <span style="color: var(--accent-green)">"clear_thinking"</span>: clear_thinking,
+    <span style="color: var(--accent-green)">"thinking"</span>: {
+        <span style="color: var(--accent-green)">"type"</span>: <span style="color: var(--accent-green)">"enabled"</span> | <span style="color: var(--accent-green)">"disabled"</span>,
+        <span style="color: var(--accent-green)">"clear_thinking"</span>: <span style="color: var(--accent-cyan)">True</span> | <span style="color: var(--accent-cyan)">False</span>
+    }
+}</pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- TOKEN BUDGET SECTION -->
+      <section id="token-budget" class="section">
+        <div class="section-header">
+          <h2>💰 Token Budget Manager</h2>
+          <p>Rate limiting and cost management across providers to prevent 429 errors and optimize spending.</p>
+        </div>
+
+        <div class="grid-4">
+          <div class="card" style="text-align: center;">
+            <h4 style="color: var(--accent-orange);">Cerebras</h4>
+            <div style="font-size: 1.5rem; font-weight: 700; font-family: var(--font-mono);">300K</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">tokens/min</div>
+            <div style="font-size: 0.9rem; margin-top: 0.5rem;">24M/day</div>
+          </div>
+          <div class="card" style="text-align: center;">
+            <h4 style="color: var(--accent-blue);">Gemini</h4>
+            <div style="font-size: 1.5rem; font-weight: 700; font-family: var(--font-mono);">~100K</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">tokens/min</div>
+            <div style="font-size: 0.9rem; margin-top: 0.5rem;">~2M/day</div>
+          </div>
+          <div class="card" style="text-align: center;">
+            <h4 style="color: var(--accent-purple);">Anthropic</h4>
+            <div style="font-size: 1.5rem; font-weight: 700; font-family: var(--font-mono);">~100K</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">tokens/min</div>
+            <div style="font-size: 0.9rem; margin-top: 0.5rem;">~1M/day</div>
+          </div>
+          <div class="card" style="text-align: center;">
+            <h4 style="color: var(--accent-green);">OpenAI</h4>
+            <div style="font-size: 1.5rem; font-weight: 700; font-family: var(--font-mono);">~100K</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">tokens/min</div>
+            <div style="font-size: 0.9rem; margin-top: 0.5rem;">~1M/day</div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top: 1.5rem;">
+          <div class="card-header">
+            <span class="card-icon">📊</span>
+            <span class="card-title">Budget Check Flow</span>
+          </div>
+          <div class="code-block">
+            <pre>┌────────────────┐
+│ Estimate Tokens │
+└────────┬───────┘
+         ▼
+┌────────────────┐     Yes    ┌─────────────────────┐
+│ Under Limit?   │───────────►│ Proceed with request│
+└────────┬───────┘            └─────────────────────┘
+         │ No
+         ▼
+┌────────────────┐     Wait    ┌─────────────────────┐
+│ Failover avail?│─────Yes────►│ Route to alt model  │
+└────────┬───────┘             └─────────────────────┘
+         │ No
+         ▼
+┌────────────────┐
+│ Wait for reset │
+└────────────────┘</pre>
+          </div>
+        </div>
+
+        <div class="grid-2" style="margin-top: 1.5rem;">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-icon">💵</span>
+              <span class="card-title">Cost Tracking (genai-prices)</span>
+            </div>
+            <div class="code-block">
+              <pre><span style="color: var(--accent-purple)">from</span> genai_prices <span style="color: var(--accent-purple)">import</span> Usage, calc_price
+
+Usage:
+    model: <span style="color: var(--accent-cyan)">str</span>
+    input_tokens: <span style="color: var(--accent-cyan)">int</span>
+    output_tokens: <span style="color: var(--accent-cyan)">int</span>
+
+calc_price(usage) → <span style="color: var(--accent-green)">Decimal</span> (USD)</pre>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <span class="card-icon">📈</span>
+              <span class="card-title">Tracked Metrics</span>
+            </div>
+            <ul style="font-size: 0.85rem; list-style: none;">
+              <li style="padding: 0.4rem 0; border-bottom: 1px solid var(--border-color);">
+                <code>total_cost_usd</code> — Session total
+              </li>
+              <li style="padding: 0.4rem 0; border-bottom: 1px solid var(--border-color);">
+                <code>cost_this_minute</code> — Rate tracking
+              </li>
+              <li style="padding: 0.4rem 0; border-bottom: 1px solid var(--border-color);">
+                <code>cost_today</code> — Daily budget
+              </li>
+              <li style="padding: 0.4rem 0;">
+                <code>tokens_used_*</code> — Per-provider tracking
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- AGENTS SECTION -->
+      <section id="agents" class="section">
+        <div class="section-header">
+          <h2>🐕 Agent System</h2>
+          <p>Specialized agents for different tasks, coordinated by the Pack Leader orchestrator.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-icon">🏗️</span>
+            <span class="card-title">BaseAgent Architecture</span>
+          </div>
+          <ul style="font-size: 0.85rem; list-style: none; color: var(--text-secondary);">
+            <li style="padding: 0.4rem 0;">• Pydantic-AI integration (<code>DBOSAgent</code> for durability)</li>
+            <li style="padding: 0.4rem 0;">• Tool registration & execution</li>
+            <li style="padding: 0.4rem 0;">• Context compression & token management</li>
+            <li style="padding: 0.4rem 0;">• Logfire tracing & callbacks</li>
+          </ul>
+        </div>
+
+        <h3 style="margin-top: 2rem;">The Pack 🐺</h3>
+        <div class="agent-grid">
+          <div class="agent-card">
+            <div class="agent-icon">🐺</div>
+            <div class="agent-name">Pack Leader</div>
+            <div class="agent-role">Orchestrator</div>
+          </div>
+          <div class="agent-card">
+            <div class="agent-icon">🐕</div>
+            <div class="agent-name">Code Puppy</div>
+            <div class="agent-role">Main Agent</div>
+          </div>
+          <div class="agent-card">
+            <div class="agent-icon">🐕‍🦺</div>
+            <div class="agent-name">Bloodhound</div>
+            <div class="agent-role">Issue Tracking</div>
+          </div>
+          <div class="agent-card">
+            <div class="agent-icon">🐕</div>
+            <div class="agent-name">Terrier</div>
+            <div class="agent-role">Worktrees</div>
+          </div>
+          <div class="agent-card">
+            <div class="agent-icon">🐺</div>
+            <div class="agent-name">Husky</div>
+            <div class="agent-role">Execution</div>
+          </div>
+          <div class="agent-card">
+            <div class="agent-icon">🐕</div>
+            <div class="agent-name">Shepherd</div>
+            <div class="agent-role">Code Review</div>
+          </div>
+          <div class="agent-card">
+            <div class="agent-icon">🐕‍🦺</div>
+            <div class="agent-name">Watchdog</div>
+            <div class="agent-role">QA/Testing</div>
+          </div>
+          <div class="agent-card">
+            <div class="agent-icon">🦮</div>
+            <div class="agent-name">Retriever</div>
+            <div class="agent-role">Merging</div>
+          </div>
+        </div>
+
+        <h3 style="margin-top: 2rem;">Specialist Agents</h3>
+        <div class="agent-grid">
+          <div class="agent-card">
+            <div class="agent-icon">🐍</div>
+            <div class="agent-name">Python Reviewer</div>
+            <div class="agent-role">Language Expert</div>
+          </div>
+          <div class="agent-card">
+            <div class="agent-icon">📘</div>
+            <div class="agent-name">TypeScript Rev.</div>
+            <div class="agent-role">Language Expert</div>
+          </div>
+          <div class="agent-card">
+            <div class="agent-icon">🔵</div>
+            <div class="agent-name">Go Reviewer</div>
+            <div class="agent-role">Language Expert</div>
+          </div>
+          <div class="agent-card">
+            <div class="agent-icon">⚡</div>
+            <div class="agent-name">C/C++ Reviewer</div>
+            <div class="agent-role">Language Expert</div>
+          </div>
+          <div class="agent-card">
+            <div class="agent-icon">🔒</div>
+            <div class="agent-name">Security Auditor</div>
+            <div class="agent-role">Security</div>
+          </div>
+          <div class="agent-card">
+            <div class="agent-icon">📋</div>
+            <div class="agent-name">QA Expert</div>
+            <div class="agent-role">Quality</div>
+          </div>
+          <div class="agent-card">
+            <div class="agent-icon">🧠</div>
+            <div class="agent-name">Epistemic Arch.</div>
+            <div class="agent-role">Planning</div>
+          </div>
+          <div class="agent-card">
+            <div class="agent-icon">☀️</div>
+            <div class="agent-name">Helios</div>
+            <div class="agent-role">Special</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TOOLS SECTION -->
+      <section id="tools" class="section">
+        <div class="section-header">
+          <h2>🔧 Tools Layer</h2>
+          <p>Comprehensive tool system for file operations, command execution, and token management.</p>
+        </div>
+
+        <div class="grid-3">
+          <div class="card">
+            <h4>📁 File Operations</h4>
+            <ul style="font-size: 0.8rem; list-style: none; color: var(--text-secondary);">
+              <li style="padding: 0.3rem 0;"><code>read_file</code></li>
+              <li style="padding: 0.3rem 0;"><code>write_file</code></li>
+              <li style="padding: 0.3rem 0;"><code>list_files</code></li>
+              <li style="padding: 0.3rem 0;"><code>grep</code></li>
+              <li style="padding: 0.3rem 0;"><code>edit_file</code></li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>💻 Command Execution</h4>
+            <ul style="font-size: 0.8rem; list-style: none; color: var(--text-secondary);">
+              <li style="padding: 0.3rem 0;"><code>agent_run_shell_command</code></li>
+              <li style="padding: 0.3rem 0;"><code>ShellGovernor</code></li>
+              <li style="padding: 0.3rem 0;"><code>CommandRunner</code></li>
+              <li style="padding: 0.3rem 0;"><code>safe_patch</code></li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>📊 Token Management</h4>
+            <ul style="font-size: 0.8rem; list-style: none; color: var(--text-secondary);">
+              <li style="padding: 0.3rem 0;"><code>TokenBudgetGuard</code></li>
+              <li style="padding: 0.3rem 0;"><code>TokenSlimmer</code></li>
+              <li style="padding: 0.3rem 0;"><code>IOBudgetEnforcer</code></li>
+              <li style="padding: 0.3rem 0;"><code>ContextLoader</code></li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>🤖 Agent Tools</h4>
+            <ul style="font-size: 0.8rem; list-style: none; color: var(--text-secondary);">
+              <li style="padding: 0.3rem 0;"><code>invoke_agent</code></li>
+              <li style="padding: 0.3rem 0;"><code>list_agents</code></li>
+              <li style="padding: 0.3rem 0;"><code>subagent_context</code></li>
+              <li style="padding: 0.3rem 0;"><code>share_reasoning</code></li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>🖥️ Display Tools</h4>
+            <ul style="font-size: 0.8rem; list-style: none; color: var(--text-secondary);">
+              <li style="padding: 0.3rem 0;"><code>agent_display</code></li>
+              <li style="padding: 0.3rem 0;"><code>router_hooks</code></li>
+              <li style="padding: 0.3rem 0;"><code>tools_content</code></li>
+            </ul>
+          </div>
+          <div class="card">
+            <h4>⚡ Cerebras Optimizer</h4>
+            <ul style="font-size: 0.8rem; list-style: none; color: var(--text-secondary);">
+              <li style="padding: 0.3rem 0;"><code>GLMPromptOptimizer</code></li>
+              <li style="padding: 0.3rem 0;"><code>TaskDecomposer</code></li>
+              <li style="padding: 0.3rem 0;"><code>CerebrasGLMSettings</code></li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- MCP SECTION -->
+      <section id="mcp" class="section">
+        <div class="section-header">
+          <h2>🔌 MCP Infrastructure</h2>
+          <p>Model Context Protocol server management with lifecycle control and health monitoring.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-icon">🔄</span>
+            <span class="card-title">MCPManager</span>
+          </div>
+          <div class="grid-2">
+            <div>
+              <h4>Capabilities</h4>
+              <ul style="font-size: 0.85rem; list-style: none; color: var(--text-secondary);">
+                <li style="padding: 0.3rem 0;">• Server lifecycle management</li>
+                <li style="padding: 0.3rem 0;">• Pydantic-AI compatibility</li>
+                <li style="padding: 0.3rem 0;">• Circuit breaker integration</li>
+                <li style="padding: 0.3rem 0;">• Health monitoring</li>
+                <li style="padding: 0.3rem 0;">• Automatic quarantine on failures</li>
+              </ul>
+            </div>
+            <div>
+              <h4>Server Types</h4>
+              <ul style="font-size: 0.85rem; list-style: none; color: var(--text-secondary);">
+                <li style="padding: 0.3rem 0;"><span class="tag tag-blue">STDIO</span> Local process</li>
+                <li style="padding: 0.3rem 0;"><span class="tag tag-green">SSE</span> Server-Sent Events</li>
+                <li style="padding: 0.3rem 0;"><span class="tag tag-purple">HTTP</span> Streamable HTTP</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top: 1.5rem;">
+          <div class="card-header">
+            <span class="card-icon">📊</span>
+            <span class="card-title">Server State Machine</span>
+          </div>
+          <div class="code-block">
+            <pre>STOPPED ──► STARTING ──► RUNNING ──► STOPPING ──► STOPPED
+    │                        │
+    │                        ▼
+    │                   QUARANTINED
+    │                        │
+    └────────────────────────┘</pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- MESSAGING SECTION -->
+      <section id="messaging" class="section">
+        <div class="section-header">
+          <h2>📨 Messaging Bus</h2>
+          <p>Bidirectional Agent ↔ UI communication with request/response correlation.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-icon">🔄</span>
+            <span class="card-title">MessageBus Architecture</span>
+          </div>
+          <div class="code-block">
+            <pre>┌─────────────────────────────────────────────────────────────┐
+│                       MessageBus                             │
+│                                                             │
+│  <span style="color: var(--accent-green)">Agent → UI (Outgoing):</span>                                      │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ TextMessage │ ConfirmationRequest │ SelectionRequest │   │
+│  │ ToolResult  │ UserInputRequest    │ ProgressUpdate   │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                                                             │
+│  <span style="color: var(--accent-blue)">UI → Agent (Incoming):</span>                                      │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ UserInputResponse │ ConfirmationResponse │ Cancel   │   │
+│  │ SelectionResponse │ Abort               │           │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                                                             │
+│  <span style="color: var(--accent-purple)">Request/Response Correlation:</span>                               │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ prompt_id → asyncio.Future                          │   │
+│  │ • request_input() waits on Future                   │   │
+│  │ • provide_response() resolves Future                │   │
+│  └─────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘</pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- OBSERVABILITY SECTION -->
+      <section id="observability" class="section">
+        <div class="section-header">
+          <h2>📊 Observability</h2>
+          <p>Logfire instrumentation for full tracing of all operations.</p>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-icon">🔍</span>
+              <span class="card-title">Logfire Spans</span>
+            </div>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr><th>Span Name</th><th>Module</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td><code>Ralph Loop</code></td><td>Orchestrator</td></tr>
+                  <tr><td><code>Ralph Iteration</code></td><td>Orchestrator</td></tr>
+                  <tr><td><code>Execute Code Generation</code></td><td>Orchestrator</td></tr>
+                  <tr><td><code>Execute Milestone</code></td><td>Orchestrator</td></tr>
+                  <tr><td><code>Slice Context</code></td><td>Curator</td></tr>
+                  <tr><td><code>Verify Code Generation</code></td><td>Verifier</td></tr>
+                  <tr><td><code>Static Analysis</code></td><td>Verifier</td></tr>
+                  <tr><td><code>Intent Verification</code></td><td>Verifier</td></tr>
+                  <tr><td><code>Husky Execute</code></td><td>Husky</td></tr>
+                  <tr><td><code>Build Prompt</code></td><td>Husky</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <span class="card-icon">📈</span>
+              <span class="card-title">Tracked Metrics</span>
+            </div>
+            <ul style="font-size: 0.85rem; list-style: none;">
+              <li style="padding: 0.4rem 0; border-bottom: 1px solid var(--border-color);">
+                Token usage (input/output per provider)
+              </li>
+              <li style="padding: 0.4rem 0; border-bottom: 1px solid var(--border-color);">
+                Cost per request (genai-prices)
+              </li>
+              <li style="padding: 0.4rem 0; border-bottom: 1px solid var(--border-color);">
+                Latency (per model, per provider)
+              </li>
+              <li style="padding: 0.4rem 0; border-bottom: 1px solid var(--border-color);">
+                Error rates (429s, timeouts, failures)
+              </li>
+              <li style="padding: 0.4rem 0; border-bottom: 1px solid var(--border-color);">
+                Drift scores (verification)
+              </li>
+              <li style="padding: 0.4rem 0;">
+                Retry counts (Ralph Loop)
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- FILES SECTION -->
+      <section id="files" class="section">
+        <div class="section-header">
+          <h2>📁 File Structure</h2>
+          <p>Complete directory layout of the Code Puppy codebase.</p>
+        </div>
+
+        <div class="card">
+          <div class="code-block">
+            <pre class="tree"><span class="folder">code_puppy/</span>
+├── <span class="file">__main__.py</span>              <span style="color: var(--text-muted)"># Entry point</span>
+├── <span class="file">main.py</span>                  <span style="color: var(--text-muted)"># Main application</span>
+├── <span class="file">cli_runner.py</span>            <span style="color: var(--text-muted)"># CLI interface</span>
+├── <span class="file">config.py</span>                <span style="color: var(--text-muted)"># Configuration management</span>
+├── <span class="file">model_factory.py</span>         <span style="color: var(--text-muted)"># Model instantiation</span>
+├── <span class="file">session_storage.py</span>       <span style="color: var(--text-muted)"># Session persistence</span>
+│
+├── <span class="folder">core/</span>                    <span style="color: var(--text-muted)"># Core infrastructure</span>
+│   ├── <span class="highlight">epistemic_orchestrator.py</span>  <span style="color: var(--text-muted)"># 🧠 Plan → Execute → Verify</span>
+│   ├── <span class="highlight">husky_execution.py</span>        <span style="color: var(--text-muted)"># 🦮 Cerebras GLM execution</span>
+│   ├── <span class="highlight">model_router.py</span>           <span style="color: var(--text-muted)"># 🔀 Tier-based routing</span>
+│   ├── <span class="file">token_budget.py</span>           <span style="color: var(--text-muted)"># 💰 Rate limiting</span>
+│   ├── <span class="file">context_compressor.py</span>     <span style="color: var(--text-muted)"># 📦 Context reduction</span>
+│   ├── <span class="file">circuit_breaker.py</span>        <span style="color: var(--text-muted)"># ⚡ Fault tolerance</span>
+│   └── <span class="file">connection_pool.py</span>        <span style="color: var(--text-muted)"># 🔌 HTTP pooling</span>
+│
+├── <span class="folder">agents/</span>                  <span style="color: var(--text-muted)"># Agent definitions</span>
+│   ├── <span class="file">base_agent.py</span>            <span style="color: var(--text-muted)"># Base class</span>
+│   ├── <span class="file">agent_code_puppy.py</span>      <span style="color: var(--text-muted)"># Main agent</span>
+│   ├── <span class="file">agent_pack_leader.py</span>     <span style="color: var(--text-muted)"># Orchestrator</span>
+│   └── <span class="folder">pack/</span>                    <span style="color: var(--text-muted)"># Pack dogs</span>
+│       ├── <span class="file">bloodhound.py</span>
+│       ├── <span class="file">husky.py</span>
+│       ├── <span class="file">shepherd.py</span>
+│       └── <span class="file">...</span>
+│
+├── <span class="folder">tools/</span>                   <span style="color: var(--text-muted)"># Tool implementations</span>
+│   ├── <span class="file">agent_tools.py</span>
+│   ├── <span class="file">file_operations.py</span>
+│   ├── <span class="file">token_slimmer.py</span>
+│   └── <span class="file">...</span>
+│
+├── <span class="folder">mcp_/</span>                    <span style="color: var(--text-muted)"># MCP infrastructure</span>
+│   ├── <span class="file">manager.py</span>
+│   ├── <span class="file">managed_server.py</span>
+│   └── <span class="file">registry.py</span>
+│
+├── <span class="folder">messaging/</span>               <span style="color: var(--text-muted)"># Event system</span>
+│   ├── <span class="file">bus.py</span>
+│   ├── <span class="file">messages.py</span>
+│   └── <span class="file">renderers.py</span>
+│
+├── <span class="folder">plugins/</span>                 <span style="color: var(--text-muted)"># Plugin system</span>
+│   ├── <span class="folder">ralph/</span>              <span style="color: var(--text-muted)"># Epistemic runtime</span>
+│   └── <span class="folder">shell_safety/</span>
+│
+└── <span class="folder">epistemic/</span>              <span style="color: var(--text-muted)"># Epistemic Agent Runtime</span>
+    └── <span class="folder">ear-runtime/</span>
+        └── <span class="folder">src/ear/core/</span>
+            ├── <span class="file">ralph_loop.py</span>
+            └── <span class="file">state.py</span></pre>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script>
+    // Navigation
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.addEventListener('click', () => {
+        // Update nav
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+        
+        // Update sections
+        const target = item.dataset.section;
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.getElementById(target).classList.add('active');
+        
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    });
+
+    // Animate stats on load
+    const animateValue = (el, start, end, duration) => {
+      const range = end - start;
+      const startTime = performance.now();
+      
+      const update = (currentTime) => {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const current = Math.floor(start + range * progress);
+        el.textContent = current.toLocaleString();
+        
+        if (progress < 1) {
+          requestAnimationFrame(update);
+        }
+      };
+      
+      requestAnimationFrame(update);
+    };
+
+    // Animate metrics bars
+    document.querySelectorAll('.metric-fill').forEach(bar => {
+      const width = bar.style.width;
+      bar.style.width = '0';
+      setTimeout(() => {
+        bar.style.width = width;
+      }, 100);
+    });
+  </script>
+</body>
+</html>
