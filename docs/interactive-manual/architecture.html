@@ -699,12 +699,68 @@
       color: var(--text-muted);
     }
 
+    /* Mobile Menu Toggle */
+    .mobile-menu-toggle {
+      display: none;
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 1000;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .mobile-menu-toggle:hover {
+      background: var(--bg-hover);
+      border-color: var(--accent-blue);
+    }
+
+    .mobile-menu-toggle svg {
+      width: 24px;
+      height: 24px;
+      fill: var(--text-primary);
+    }
+
     /* Responsive */
     @media (max-width: 768px) {
+      .mobile-menu-toggle {
+        display: block;
+      }
+
       .sidebar {
-        width: 100%;
-        height: auto;
-        position: relative;
+        width: 280px;
+        height: 100vh;
+        position: fixed;
+        left: -280px;
+        top: 0;
+        transition: left 0.3s ease;
+        border-right: 1px solid var(--border-color);
+        border-bottom: none;
+        overflow-y: auto;
+        z-index: 999;
+      }
+
+      .sidebar.active {
+        left: 0;
+      }
+
+      .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 998;
+      }
+
+      .sidebar-overlay.active {
+        display: block;
       }
       
       .main-content {
@@ -712,8 +768,122 @@
         padding: 1rem;
       }
 
+      .section-header h2 {
+        font-size: 1.75rem;
+      }
+
+      .section-header p {
+        font-size: 0.95rem;
+      }
+
+      .stat-card {
+        padding: 1rem;
+      }
+
+      .stat-value {
+        font-size: 1.5rem;
+      }
+
+      .stat-label {
+        font-size: 0.8rem;
+      }
+
       .rules-list {
         grid-template-columns: 1fr;
+      }
+
+      /* Mobile diagram optimizations */
+      .diagram-container {
+        padding: 1rem;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .diagram-ascii {
+        font-size: 0.65rem;
+        line-height: 1.3;
+      }
+
+      /* Make cards stack on mobile */
+      .card {
+        margin-bottom: 1rem;
+      }
+
+      .card-header {
+        font-size: 0.95rem;
+        padding: 0.75rem 1rem;
+      }
+
+      /* Tier pyramid mobile */
+      .tier-pyramid {
+        padding: 1rem;
+        gap: 0.3rem;
+      }
+
+      .tier-level {
+        padding: 0.75rem 1.5rem;
+        font-size: 0.8rem;
+        width: 100%;
+      }
+
+      /* Nav items mobile */
+      .nav-section {
+        margin-bottom: 1rem;
+      }
+
+      .nav-item {
+        padding: 0.75rem;
+        font-size: 0.9rem;
+      }
+
+      /* Brand mobile */
+      .brand {
+        padding-bottom: 1rem;
+        margin-bottom: 1rem;
+      }
+
+      .brand-name {
+        font-size: 1.25rem;
+      }
+
+      .brand-tagline {
+        font-size: 0.7rem;
+      }
+    }
+
+    /* Small mobile devices */
+    @media (max-width: 480px) {
+      .stat-value {
+        font-size: 1.25rem;
+      }
+
+      .diagram-ascii {
+        font-size: 0.6rem;
+        line-height: 1.2;
+      }
+
+      .section-header h2 {
+        font-size: 1.5rem;
+      }
+
+      .card-title {
+        font-size: 0.9rem;
+      }
+    }
+
+    /* Tablet landscape */
+    @media (min-width: 769px) and (max-width: 1024px) {
+      .sidebar {
+        width: 240px;
+      }
+
+      .main-content {
+        margin-left: 240px;
+        padding: 2rem;
+      }
+
+      .diagram-ascii {
+        font-size: 0.7rem;
       }
     }
 
@@ -751,6 +921,16 @@
 </head>
 <body>
   <div class="app-container">
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" aria-label="Toggle menu">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+      </svg>
+    </button>
+
+    <!-- Sidebar Overlay for Mobile -->
+    <div class="sidebar-overlay"></div>
+
     <!-- Sidebar Navigation -->
     <aside class="sidebar">
       <div class="brand">
@@ -1875,6 +2055,19 @@ calc_price(usage) → <span style="color: var(--accent-green)">Decimal</span> (U
   </div>
 
   <script>
+    // Mobile Menu Toggle
+    const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+    const sidebar = document.querySelector('.sidebar');
+    const sidebarOverlay = document.querySelector('.sidebar-overlay');
+
+    const toggleMobileMenu = () => {
+      sidebar.classList.toggle('active');
+      sidebarOverlay.classList.toggle('active');
+    };
+
+    mobileMenuToggle.addEventListener('click', toggleMobileMenu);
+    sidebarOverlay.addEventListener('click', toggleMobileMenu);
+
     // Navigation
     document.querySelectorAll('.nav-item').forEach(item => {
       item.addEventListener('click', () => {
@@ -1886,6 +2079,12 @@ calc_price(usage) → <span style="color: var(--accent-green)">Decimal</span> (U
         const target = item.dataset.section;
         document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
         document.getElementById(target).classList.add('active');
+        
+        // Close mobile menu on navigation
+        if (window.innerWidth <= 768) {
+          sidebar.classList.remove('active');
+          sidebarOverlay.classList.remove('active');
+        }
         
         // Scroll to top
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1918,6 +2117,14 @@ calc_price(usage) → <span style="color: var(--accent-green)">Decimal</span> (U
       setTimeout(() => {
         bar.style.width = width;
       }, 100);
+    });
+
+    // Handle window resize - close mobile menu when resizing to desktop
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 768) {
+        sidebar.classList.remove('active');
+        sidebarOverlay.classList.remove('active');
+      }
     });
   </script>
 </body>
