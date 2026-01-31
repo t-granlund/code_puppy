@@ -42,6 +42,12 @@ from typing import Any, Callable, Dict, Generator, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, Field, field_validator
 
+# Import centralized token budget constants
+from code_puppy.core.failover_config import (
+    CEREBRAS_TARGET_INPUT_TOKENS,
+    FORCE_SUMMARY_THRESHOLD,
+)
+
 # Logfire instrumentation for observability
 try:
     import logfire
@@ -380,7 +386,7 @@ class MinimumViableContext:
     
     # Context budget
     estimated_tokens: int = 0
-    max_tokens: int = 50_000  # Cerebras conservative limit
+    max_tokens: int = CEREBRAS_TARGET_INPUT_TOKENS  # From failover_config
     
     # Slice metadata
     slice_id: str = field(default_factory=_new_id)
@@ -425,7 +431,7 @@ class ContextCurator:
     def __init__(
         self,
         state: EpistemicStateArtifact,
-        max_tokens: int = 50_000,
+        max_tokens: int = CEREBRAS_TARGET_INPUT_TOKENS,
     ):
         self.state = state
         self.max_tokens = max_tokens
@@ -888,7 +894,7 @@ class EpistemicOrchestrator:
         self,
         drift_tolerance: float = 0.3,
         max_retries: int = 3,
-        cerebras_token_limit: int = 50_000,
+        cerebras_token_limit: int = CEREBRAS_TARGET_INPUT_TOKENS,
     ):
         self.drift_tolerance = drift_tolerance
         self.max_retries = max_retries

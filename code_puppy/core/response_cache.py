@@ -70,7 +70,21 @@ class ResponseCache:
     - LRU eviction when max size reached
     - TTL-based expiration
     - Token savings tracking
+    
+    GLM-Token-Saver Best Practices:
+    - Provider-specific TTLs (Cerebras shorter due to faster model updates)
+    - Temperature-aware caching (temp=0 cached longer)
+    - Proactive cache stats for monitoring
     """
+    
+    # Provider-specific TTLs (GLM-Token-Saver pattern)
+    PROVIDER_TTLS: Dict[str, float] = {
+        "cerebras": 1800.0,   # 30 min - faster model, more variability
+        "anthropic": 3600.0,  # 1 hour
+        "claude": 3600.0,     # 1 hour
+        "openai": 3600.0,     # 1 hour
+        "gemini": 1800.0,     # 30 min
+    }
     
     def __init__(
         self,
@@ -84,6 +98,14 @@ class ResponseCache:
         self._max_memory_bytes = max_memory_mb * 1024 * 1024
         self._stats = CacheStats()
         self._lock = asyncio.Lock()
+    
+    def _get_provider_ttl(self, model: str) -> float:
+        """Get appropriate TTL based on provider/model (GLM-Token-Saver pattern)."""
+        model_lower = model.lower()
+        for provider, ttl in self.PROVIDER_TTLS.items():
+            if provider in model_lower:
+                return ttl
+        return self._default_ttl
     
     @staticmethod
     def _hash_prompt(

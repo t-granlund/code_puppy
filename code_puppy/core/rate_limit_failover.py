@@ -4,6 +4,7 @@ Provides intelligent model switching when 429 errors occur:
 1. Dynamic failover chains built from OAuth-configured models
 2. Tier-aware failover (prefer same tier, then downgrade gracefully)
 3. Proper failover injection into API calls
+4. Proactive rate limiting via header parsing (GLM-Token-Saver best practice)
 
 DO NOT modify OAuth credentials - only reads from existing configurations.
 """
@@ -11,22 +12,50 @@ DO NOT modify OAuth credentials - only reads from existing configurations.
 import asyncio
 import logging
 from dataclasses import dataclass, field
-from enum import IntEnum
 from functools import wraps
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, TypeVar
+
+# Import unified failover configuration (single source of truth)
+from code_puppy.core.failover_config import (
+    WorkloadType,
+    FailoverPriority,
+    TIER_MAPPINGS,
+    WORKLOAD_CHAINS,
+    AGENT_WORKLOAD_REGISTRY,
+    FAILOVER_CHAIN,
+    get_failover_for_model,
+    get_chain_for_workload,
+    get_workload_for_agent,
+    get_tier_for_model,
+)
+
+# Import proactive rate limit tracking
+try:
+    from code_puppy.core.rate_limit_headers import (
+        RateLimitTracker,
+        get_rate_limit_tracker,
+    )
+    PROACTIVE_RATE_LIMITING = True
+except ImportError:
+    PROACTIVE_RATE_LIMITING = False
+    def get_rate_limit_tracker():
+        return None
 
 logger = logging.getLogger(__name__)
 
 F = TypeVar("F", bound=Callable[..., Any])
 
-
-class FailoverPriority(IntEnum):
-    """Priority order for failover (lower = prefer first)."""
-
-    SAME_TIER = 1  # Same tier, different provider
-    ONE_TIER_DOWN = 2  # One tier below
-    TWO_TIERS_DOWN = 3  # Two tiers below
-    EMERGENCY = 4  # Any working model
+# Re-export for backward compatibility
+__all__ = [
+    "WorkloadType",
+    "FailoverPriority", 
+    "FailoverTarget",
+    "FailoverResult",
+    "RateLimitFailover",
+    "TIER_MAPPINGS",
+    "WORKLOAD_CHAINS",
+    "AGENT_WORKLOAD_REGISTRY",
+]
 
 
 @dataclass
@@ -52,15 +81,6 @@ class FailoverResult:
     error: Optional[str] = None
 
 
-class WorkloadType(IntEnum):
-    """Types of workloads for smart failover routing."""
-    
-    ORCHESTRATOR = 1  # Pack leader, governor, planning - needs Opus/Sonnet
-    REASONING = 2     # Complex logic, security audit - needs Opus/Sonnet
-    CODING = 3        # Main code generation - Cerebras preferred
-    LIBRARIAN = 4     # Search, docs, context - Gemini/Haiku
-
-
 class RateLimitFailover:
     """Manages automatic failover when models hit rate limits.
 
@@ -78,135 +98,21 @@ class RateLimitFailover:
     LIBRARIAN TIER (Search, docs, context, less intensive):
       Haiku → GPT 5.2 → Gemini Flash
 
+    GLM-Token-Saver Best Practices:
+    - Proactive rate limiting via x-ratelimit-* headers
+    - 20% remaining threshold triggers failover BEFORE 429
+    - Cooldown periods after rate limit events
+    
     Reads from existing OAuth configurations to build failover chains.
     Never modifies authentication credentials.
     """
 
     _instance: Optional["RateLimitFailover"] = None
 
-    # Tier mapping for known model types
-    # This is read-only reference data, not modifying any config
-    TIER_MAPPINGS: Dict[str, int] = {
-        # Tier 1: Architect (big reasoning, planning, orchestrator)
-        "opus": 1,
-        "o3": 1,
-        "o1": 1,
-        "opus-4-5-thinking": 1,  # Antigravity Opus thinking
-        # Tier 2: Builder High (strong coding, complex logic)
-        "codex": 2,
-        "gpt-5": 2,
-        "sonnet-4-5-thinking-high": 2,  # Sonnet high thinking = Builder
-        # Tier 3: Builder Mid (capable all-rounder)
-        "sonnet": 3,
-        "gpt-4": 3,
-        "sonnet-4-5-thinking-medium": 3,
-        "sonnet-4-5-thinking-low": 3,
-        # Tier 4: Librarian (search, docs, less intensive code)
-        "gemini": 4,
-        "haiku": 4,
-        "flash": 4,
-        "gemini-3-pro": 4,
-        "gemini-3-flash": 4,
-        # Tier 5: Sprinter (main code work, ultra-fast)
-        "cerebras": 5,
-        "glm": 5,
-    }
-
-    # PURPOSE-DRIVEN FAILOVER CHAINS
-    # These chains respect the intended use of each model
-    # Note: ChatGPT models are OAuth-only and excluded from default chains
-    WORKLOAD_CHAINS: Dict[WorkloadType, List[str]] = {
-        # Pack leader, governor, planning - needs reasoning power
-        WorkloadType.ORCHESTRATOR: [
-            "claude-code-claude-opus-4-5-20251101",
-            "antigravity-claude-opus-4-5-thinking-high",
-            "antigravity-claude-opus-4-5-thinking-medium",
-            "antigravity-claude-opus-4-5-thinking-low",
-            "claude-code-claude-sonnet-4-5-20250929",
-            "antigravity-claude-sonnet-4-5-thinking-high",
-            "antigravity-claude-sonnet-4-5-thinking-medium",
-            "Cerebras-GLM-4.7",
-        ],
-        # Complex logic, security audit, design
-        WorkloadType.REASONING: [
-            "claude-code-claude-sonnet-4-5-20250929",
-            "antigravity-claude-sonnet-4-5-thinking-high",
-            "antigravity-claude-sonnet-4-5-thinking-medium",
-            "antigravity-claude-sonnet-4-5-thinking-low",
-            "antigravity-claude-sonnet-4-5",
-            "Cerebras-GLM-4.7",
-        ],
-        # Main code generation (high volume, fast)
-        WorkloadType.CODING: [
-            "Cerebras-GLM-4.7",
-            "claude-code-claude-haiku-4-5-20251001",
-            "antigravity-gemini-3-flash",
-        ],
-        # Search, docs, context (less intensive)
-        WorkloadType.LIBRARIAN: [
-            "claude-code-claude-haiku-4-5-20251001",
-            "antigravity-gemini-3-flash",
-            "Cerebras-GLM-4.7",
-        ],
-    }
-
-    # UNIFIED AGENT WORKLOAD REGISTRY
-    # Maps every agent to its appropriate workload type for automatic model selection
-    AGENT_WORKLOAD_REGISTRY: Dict[str, "WorkloadType"] = {
-        # ═══════════════════════════════════════════════════════════════════
-        # ORCHESTRATORS (Claude Opus → Antigravity Opus → Gemini Pro → Codex)
-        # These agents coordinate other agents and need strong reasoning
-        # ═══════════════════════════════════════════════════════════════════
-        "pack-leader": WorkloadType.ORCHESTRATOR,
-        "helios": WorkloadType.ORCHESTRATOR,  # Universal Constructor
-        "epistemic-architect": WorkloadType.ORCHESTRATOR,  # EAR/Ralph loops
-        "planning": WorkloadType.ORCHESTRATOR,
-        "agent-creator": WorkloadType.ORCHESTRATOR,  # Creates new agents
-        
-        # ═══════════════════════════════════════════════════════════════════
-        # REASONING (Claude Sonnet → Antigravity Sonnet → Gemini Pro → Codex)
-        # Complex analysis, code review, security audit, QA strategy
-        # ═══════════════════════════════════════════════════════════════════
-        # Pack reviewer agents
-        "shepherd": WorkloadType.REASONING,  # Code review guardian
-        "watchdog": WorkloadType.REASONING,  # Monitoring/guarding
-        
-        # Language-specific reviewers
-        "code-reviewer": WorkloadType.REASONING,
-        "python-reviewer": WorkloadType.REASONING,
-        "c-reviewer": WorkloadType.REASONING,
-        "cpp-reviewer": WorkloadType.REASONING,
-        "golang-reviewer": WorkloadType.REASONING,
-        "javascript-reviewer": WorkloadType.REASONING,
-        "typescript-reviewer": WorkloadType.REASONING,
-        "prompt-reviewer": WorkloadType.REASONING,
-        
-        # QA/Security (need deep analysis)
-        "qa-expert": WorkloadType.REASONING,
-        "security-auditor": WorkloadType.REASONING,
-        
-        # ═══════════════════════════════════════════════════════════════════
-        # CODING (Cerebras GLM 4.7 → Claude Haiku → Gemini Flash)
-        # Main code generation - speed matters for high-volume work
-        # ═══════════════════════════════════════════════════════════════════
-        # Pack coding agents
-        "husky": WorkloadType.CODING,  # Heavy lifting, task execution
-        "terrier": WorkloadType.CODING,  # Worktree management (git commands)
-        "retriever": WorkloadType.CODING,  # Code/file retrieval with modification
-        
-        # Main coding agents
-        "code-puppy": WorkloadType.CODING,  # Main agent
-        "python-programmer": WorkloadType.CODING,
-        "qa-kitten": WorkloadType.CODING,  # Lightweight QA (runs tests)
-        "terminal-qa": WorkloadType.CODING,  # Terminal-based QA
-        
-        # ═══════════════════════════════════════════════════════════════════
-        # LIBRARIAN (Haiku → GPT 5.2 → Gemini Flash)
-        # Search, docs, context gathering - efficiency over power
-        # ═══════════════════════════════════════════════════════════════════
-        "bloodhound": WorkloadType.LIBRARIAN,  # Issue tracking with bd
-        "json-agent": WorkloadType.LIBRARIAN,  # JSON parsing/generation
-    }
+    # Import from unified config for backward compatibility
+    TIER_MAPPINGS = TIER_MAPPINGS
+    WORKLOAD_CHAINS = WORKLOAD_CHAINS
+    AGENT_WORKLOAD_REGISTRY = AGENT_WORKLOAD_REGISTRY
 
     def __new__(cls) -> "RateLimitFailover":
         if cls._instance is None:
@@ -224,14 +130,12 @@ class RateLimitFailover:
         self._lock = asyncio.Lock()
         self._initialized = True
         self._loaded = False
+        # Proactive rate limiting tracker
+        self._rate_tracker = get_rate_limit_tracker() if PROACTIVE_RATE_LIMITING else None
 
     def _detect_tier(self, model_name: str) -> int:
         """Detect tier from model name patterns."""
-        model_lower = model_name.lower()
-        for pattern, tier in self.TIER_MAPPINGS.items():
-            if pattern in model_lower:
-                return tier
-        return 4  # Default to Librarian tier if unknown
+        return get_tier_for_model(model_name)
 
     def _detect_provider(self, model_name: str, config: Dict[str, Any]) -> str:
         """Detect provider from model config."""

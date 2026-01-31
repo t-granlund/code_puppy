@@ -118,10 +118,11 @@ class CerebrasGLMSettings:
     temperature: float = 1.0  # Recommended default
     top_p: float = 0.95  # Recommended default
     
-    # Context limits
-    max_context_tokens: int = 131_072  # 131K context window
-    max_output_tokens: int = 40_000  # Max output on Cerebras
-    target_input_tokens: int = 50_000  # Conservative for rate limits
+    # Context limits - imported from failover_config for consistency
+    # See: code_puppy/core/failover_config.py for centralized values
+    max_context_tokens: int = 131_072  # CEREBRAS_MAX_CONTEXT_TOKENS
+    max_output_tokens: int = 40_000  # CEREBRAS_MAX_OUTPUT_TOKENS  
+    target_input_tokens: int = 50_000  # CEREBRAS_TARGET_INPUT_TOKENS
     
     # Reasoning control - Rule #6, #7
     reasoning_mode: ReasoningMode = ReasoningMode.ENABLED

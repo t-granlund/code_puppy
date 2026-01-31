@@ -2371,25 +2371,25 @@ class BaseAgent(ABC):
                             error_str = str(run_error)
                             # Check if this is a rate limit error
                             if "429" in error_str or "RESOURCE_EXHAUSTED" in error_str or "quota" in error_str.lower():
-                                # Check if the error indicates a model FAMILY is exhausted
-                                # (e.g., all claude-opus-4-5-thinking variants share the same quota)
-                                exhausted_family = None
-                                if "claude-opus-4-5-thinking" in error_str:
-                                    exhausted_family = "claude-opus-thinking"
-                                elif "claude-sonnet-4-5-thinking" in error_str:
-                                    exhausted_family = "claude-sonnet-thinking"
+                                # Check if the error indicates a PROVIDER is exhausted
+                                # Antigravity models all share the same quota - skip ALL of them
+                                exhausted_provider = None
+                                if "antigravity" in current_model_name.lower() or "antigravity" in error_str.lower():
+                                    exhausted_provider = "antigravity"
+                                elif "claude-code" in current_model_name.lower():
+                                    exhausted_provider = "claude-code"  # Claude Code OAuth has separate quota
                                 
-                                # Find the next failover that's NOT in the exhausted family
+                                # Find the next failover that's NOT from the exhausted provider
                                 next_failover = budget_manager.FAILOVER_CHAIN.get(current_model_name)
-                                while next_failover and exhausted_family:
-                                    # Skip other thinking levels of the same family
-                                    if exhausted_family == "claude-opus-thinking" and "opus" in next_failover and "thinking" in next_failover:
+                                while next_failover and exhausted_provider:
+                                    # Skip ALL models from the same provider
+                                    if exhausted_provider == "antigravity" and "antigravity" in next_failover.lower():
                                         emit_warning(
-                                            f"⏭️ Skipping {next_failover} (same exhausted quota)",
+                                            f"⏭️ Skipping {next_failover} (same exhausted quota - all Antigravity models share quota)",
                                             message_group="token_budget",
                                         )
                                         next_failover = budget_manager.FAILOVER_CHAIN.get(next_failover)
-                                    elif exhausted_family == "claude-sonnet-thinking" and "sonnet" in next_failover and "thinking" in next_failover:
+                                    elif exhausted_provider == "claude-code" and "claude-code" in next_failover.lower():
                                         emit_warning(
                                             f"⏭️ Skipping {next_failover} (same exhausted quota)",
                                             message_group="token_budget",

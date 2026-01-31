@@ -54,9 +54,10 @@ class TestRateLimitFailover:
         assert mgr._detect_tier("cerebras-glm-4.7") == 5
 
     def test_detect_tier_unknown(self):
-        """Should default to Librarian for unknown."""
+        """Should default to Builder Mid for unknown models."""
         mgr = RateLimitFailover()
-        assert mgr._detect_tier("unknown-model") == 4
+        # Default tier 3 (Builder Mid) for unknown models - safe middle ground
+        assert mgr._detect_tier("unknown-model") == 3
 
     def test_detect_tier_antigravity_opus(self):
         """Should detect Antigravity Opus as Architect tier."""

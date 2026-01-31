@@ -2,6 +2,11 @@
 HTTP utilities module for code-puppy.
 
 This module provides functions for creating properly configured HTTP clients.
+
+Implements GLM-Token-Saver best practices:
+- Proactive rate limit detection via response headers (x-ratelimit-*)
+- 20% remaining threshold triggers fallback BEFORE 429 errors
+- Per-provider rate limit state tracking
 """
 
 import asyncio
@@ -17,6 +22,19 @@ import httpx
 if TYPE_CHECKING:
     import requests
 from code_puppy.config import get_http2
+
+# Import rate limit header tracking
+try:
+    from code_puppy.core.rate_limit_headers import (
+        RateLimitTracker,
+        get_rate_limit_tracker,
+    )
+    RATE_LIMIT_TRACKING_AVAILABLE = True
+except ImportError:
+    RATE_LIMIT_TRACKING_AVAILABLE = False
+    RateLimitTracker = None
+    def get_rate_limit_tracker():
+        return None
 
 
 @dataclass
@@ -104,6 +122,11 @@ class RetryingAsyncClient(httpx.AsyncClient):
     This replaces the Tenacity transport with a more direct subclass implementation,
     which plays nicer with proxies and custom transports (like Antigravity).
 
+    GLM-Token-Saver best practices implemented:
+    - Parse x-ratelimit-* headers from EVERY response
+    - Track remaining capacity per provider
+    - Proactive fallback at 20% remaining (before 429)
+    
     Special handling for Cerebras: Their Retry-After headers are absurdly aggressive
     (often 60s), so we ignore them and use a 3s base backoff instead.
     """
@@ -113,24 +136,61 @@ class RetryingAsyncClient(httpx.AsyncClient):
         retry_status_codes: tuple = (429, 502, 503, 504),
         max_retries: int = 5,
         model_name: str = "",
+        proactive_threshold: float = 0.2,  # Fallback at 20% remaining
         **kwargs,
     ):
         super().__init__(**kwargs)
         self.retry_status_codes = retry_status_codes
         self.max_retries = max_retries
         self.model_name = model_name.lower() if model_name else ""
+        self.proactive_threshold = proactive_threshold
         # Cerebras sends crazy aggressive Retry-After headers (60s), ignore them
         self._ignore_retry_headers = "cerebras" in self.model_name
+        # Rate limit tracker for proactive detection
+        self._rate_tracker = get_rate_limit_tracker() if RATE_LIMIT_TRACKING_AVAILABLE else None
+
+    def _extract_provider(self) -> str:
+        """Extract provider name from model name for tracking."""
+        if "cerebras" in self.model_name or "glm" in self.model_name:
+            return "cerebras"
+        elif "opus" in self.model_name:
+            return "anthropic-opus"
+        elif "sonnet" in self.model_name:
+            return "anthropic-sonnet"
+        elif "haiku" in self.model_name:
+            return "anthropic-haiku"
+        elif "claude" in self.model_name:
+            return "anthropic"
+        elif "gemini" in self.model_name:
+            return "gemini"
+        elif "gpt" in self.model_name:
+            return "openai"
+        return self.model_name or "unknown"
 
     async def send(self, request: httpx.Request, **kwargs: Any) -> httpx.Response:
-        """Send request with automatic retries for rate limits and server errors."""
+        """Send request with automatic retries for rate limits and server errors.
+        
+        Also tracks rate limit headers for proactive fallback detection.
+        """
         last_response = None
         last_exception = None
+        provider = self._extract_provider()
 
         for attempt in range(self.max_retries + 1):
             try:
                 response = await super().send(request, **kwargs)
                 last_response = response
+
+                # === GLM-Token-Saver: Track rate limit headers from EVERY response ===
+                if self._rate_tracker is not None:
+                    headers_updated = self._rate_tracker.update_from_response(
+                        provider, response.headers
+                    )
+                    if headers_updated:
+                        # Check if we're approaching limits (proactive detection)
+                        should_warn, reason = self._rate_tracker.should_fallback(provider)
+                        if should_warn and response.status_code < 400:
+                            emit_info(f"📊 Rate limit tracking: {reason}")
 
                 # Check for retryable status
                 if response.status_code not in self.retry_status_codes:

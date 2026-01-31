@@ -113,6 +113,27 @@ class BudgetCheckResult:
     total_cost_usd: Optional[Decimal] = None
 
 
+# Import unified failover configuration (single source of truth)
+from code_puppy.core.failover_config import (
+    PROVIDER_LIMITS as _UNIFIED_PROVIDER_LIMITS,
+    FAILOVER_CHAIN as _UNIFIED_FAILOVER_CHAIN,
+    get_failover_for_model,
+    get_provider_limits,
+)
+
+# Import proactive rate limit tracking
+try:
+    from code_puppy.core.rate_limit_headers import (
+        RateLimitTracker,
+        get_rate_limit_tracker,
+    )
+    PROACTIVE_RATE_LIMITING = True
+except ImportError:
+    PROACTIVE_RATE_LIMITING = False
+    def get_rate_limit_tracker():
+        return None
+
+
 class TokenBudgetManager:
     """Manages token budgets across providers to prevent rate limiting.
     
@@ -121,114 +142,16 @@ class TokenBudgetManager:
     - Daily budget tracking
     - Smart failover to cheaper providers
     - Exponential backoff with jitter on 429s
+    
+    GLM-Token-Saver Best Practices:
+    - Proactive rate limiting via x-ratelimit-* headers
+    - 20% remaining threshold triggers failover BEFORE 429
+    - Unified failover chains (imported from failover_config.py)
     """
     
-    # Provider configurations (Tier 5 → Tier 1)
-    PROVIDER_LIMITS: Dict[str, Dict[str, int]] = {
-        # Tier 5: The Sprinter
-        "cerebras": {
-            "tokens_per_minute": 300_000,
-            "tokens_per_day": 24_000_000,
-            "reset_window_seconds": 60,
-        },
-        # Tier 4: The Librarian
-        "gemini": {
-            "tokens_per_minute": 100_000,
-            "tokens_per_day": 2_000_000,
-            "reset_window_seconds": 60,
-        },
-        "gemini_flash": {
-            "tokens_per_minute": 150_000,
-            "tokens_per_day": 2_000_000,
-            "reset_window_seconds": 60,
-        },
-        # Tier 2/3: The Builders
-        "codex": {
-            "tokens_per_minute": 200_000,
-            "tokens_per_day": 10_000_000,
-            "reset_window_seconds": 60,
-        },
-        "claude_sonnet": {
-            "tokens_per_minute": 100_000,
-            "tokens_per_day": 5_000_000,
-            "reset_window_seconds": 60,
-        },
-        # Tier 1: The Architect
-        "claude_opus": {
-            "tokens_per_minute": 50_000,
-            "tokens_per_day": 1_000_000,
-            "reset_window_seconds": 60,
-        },
-    }
-    
-    # Static failover chain: when provider X hits limits, try Y
-    # PURPOSE-DRIVEN FAILOVER STRUCTURE:
-    #
-    # ARCHITECT TIER (Big reasoning, planning, orchestrator, pack-leader, governor):
-    #   Claude Code Opus → Antigravity Opus → Gemini Pro → Codex 5.2
-    #
-    # BUILDER TIER (Complex logic, design, refactoring):
-    #   Claude Code Sonnet → Antigravity Sonnet → Gemini Pro → Codex 5.2
-    #
-    # SPRINTER TIER (Main code work, high volume generation):
-    #   Cerebras GLM 4.7 → Claude Haiku → Gemini Flash
-    #
-    # LIBRARIAN TIER (Search, docs, context, less intensive):
-    #   Claude Haiku → GPT 5.2 → Gemini Flash
-    #   Gemini Pro → Gemini Flash
-    #   Codex 5.2 → Gemini Flash
-    #
-    FAILOVER_CHAIN: Dict[str, str] = {
-        # =====================================================================
-        # ARCHITECT TIER - Big reasoning, planning, orchestrator roles
-        # Claude Code Opus → Antigravity Opus thinking → Antigravity Sonnet thinking → ChatGPT 5.2
-        # =====================================================================
-        "claude_opus": "antigravity-claude-opus-4-5-thinking-high",
-        "claude-code-claude-opus-4-5-20251101": "antigravity-claude-opus-4-5-thinking-high",
-        "antigravity-claude-opus-4-5-thinking-high": "antigravity-claude-opus-4-5-thinking-medium",
-        "antigravity-claude-opus-4-5-thinking-medium": "antigravity-claude-opus-4-5-thinking-low",
-        "antigravity-claude-opus-4-5-thinking-low": "antigravity-claude-sonnet-4-5-thinking-high",
-        
-        # =====================================================================
-        # BUILDER TIER - Complex logic, design, refactoring
-        # Claude Code Sonnet → Antigravity Sonnet → ChatGPT 5.2
-        # =====================================================================
-        "claude_sonnet": "antigravity-claude-sonnet-4-5",
-        "claude-code-claude-sonnet-4-5-20250929": "antigravity-claude-sonnet-4-5",
-        "antigravity-claude-sonnet-4-5": "antigravity-claude-sonnet-4-5-thinking-high",
-        "antigravity-claude-sonnet-4-5-thinking-high": "antigravity-claude-sonnet-4-5-thinking-medium",
-        "antigravity-claude-sonnet-4-5-thinking-medium": "antigravity-claude-sonnet-4-5-thinking-low",
-        # After Sonnet thinking chain exhausts, fallback to Cerebras → Haiku → Gemini
-        "antigravity-claude-sonnet-4-5-thinking-low": "Cerebras-GLM-4.7",
-        
-        # =====================================================================
-        # SPRINTER TIER - Main code work (high volume, fast generation)
-        # Cerebras GLM 4.7 → Claude Haiku → Antigravity Gemini Flash → ChatGPT 5.2
-        # =====================================================================
-        "cerebras": "claude-code-claude-haiku-4-5-20251001",
-        "cerebras-glm-4.7": "claude-code-claude-haiku-4-5-20251001",
-        "Cerebras-GLM-4.7": "claude-code-claude-haiku-4-5-20251001",
-        "claude-haiku": "antigravity-gemini-3-flash",
-        "claude_haiku": "antigravity-gemini-3-flash",
-        "claude-code-claude-haiku-4-5-20251001": "antigravity-gemini-3-flash",
-        
-        # =====================================================================
-        # LIBRARIAN TIER - Search, docs, context, less intensive code
-        # Antigravity Gemini → Cerebras (always available)
-        # =====================================================================
-        "antigravity-gemini-3-pro-high": "antigravity-gemini-3-pro-low",
-        "antigravity-gemini-3-pro-low": "antigravity-gemini-3-flash",
-        # Gemini flash loops to Cerebras (always available)
-        "antigravity-gemini-3-flash": "Cerebras-GLM-4.7",
-        
-        # NOTE: ChatGPT models are OAuth-only and dynamically added when user
-        # runs /chatgpt-auth. The failover chain entries for chatgpt models are
-        # added at runtime by the chatgpt_oauth plugin.
-        
-        # Cross-tier emergency fallbacks (when primary chain exhausted)
-        # Architect → Builder → Librarian
-        # These kick in after tier-specific chains are exhausted
-    }
+    # Import from unified config - single source of truth
+    PROVIDER_LIMITS: Dict[str, Dict[str, int]] = _UNIFIED_PROVIDER_LIMITS
+    FAILOVER_CHAIN: Dict[str, str] = _UNIFIED_FAILOVER_CHAIN
     
     _instance: Optional["TokenBudgetManager"] = None
     

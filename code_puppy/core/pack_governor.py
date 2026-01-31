@@ -19,6 +19,7 @@ from typing import Any, Callable, Dict, List, Optional, Set
 from .model_router import ModelRouter, ModelTier, TaskType
 from .token_budget import TokenBudgetManager
 from .rate_limit_failover import RateLimitFailover, WorkloadType
+from .failover_config import FORCE_SUMMARY_THRESHOLD
 
 logger = logging.getLogger(__name__)
 
@@ -59,8 +60,8 @@ class GovernorConfig:
     max_coding_agents: int = 2
     max_reviewer_agents: int = 1
     max_searcher_agents: int = 3
-    force_summary_threshold_tokens: int = 50_000
-    summary_model: str = "gemini-3-flash"
+    force_summary_threshold_tokens: int = FORCE_SUMMARY_THRESHOLD
+    summary_model: str = "antigravity-gemini-3-flash"
     cooldown_seconds: float = 1.0  # Min time between agent starts
     deadlock_timeout_seconds: float = 60.0  # Max wait before forcing release
     stale_slot_timeout_seconds: float = 300.0  # 5 min max runtime per slot
