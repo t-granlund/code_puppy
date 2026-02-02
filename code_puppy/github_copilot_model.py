@@ -31,7 +31,6 @@ from pydantic_ai.messages import (
 )
 from pydantic_ai.models import Model, ModelRequestParameters, StreamedResponse
 from pydantic_ai.settings import ModelSettings
-from pydantic_ai.tools import ToolDefinition
 from pydantic_ai.usage import RequestUsage
 
 logger = logging.getLogger(__name__)

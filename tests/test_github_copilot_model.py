@@ -1,14 +1,13 @@
 """Tests for GitHub Copilot model integration."""
 
 import pytest
-from unittest.mock import MagicMock, patch, AsyncMock
+from unittest.mock import MagicMock, patch
 
 from code_puppy.github_copilot_model import (
     GitHubCopilotModel,
     check_copilot_cli_installed,
     check_copilot_auth,
     get_premium_request_multiplier,
-    PREMIUM_REQUEST_MULTIPLIERS,
 )
 
 
