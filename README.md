@@ -164,7 +164,9 @@ Code Puppy now supports the **GitHub Copilot SDK** (released January 2026), allo
 
 #### Configuration
 
-Add models to your `~/.code_puppy/extra_models.json`:
+Add models to your `~/.code_puppy/extra_models.json`. See [`docs/github_copilot_models_example.json`](docs/github_copilot_models_example.json) for a complete example with all available models.
+
+**Quick Start Configuration:**
 
 ```json
 {
