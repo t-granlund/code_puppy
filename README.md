@@ -134,6 +134,135 @@ These providers are automatically configured with correct OpenAI-compatible endp
 - **⚠️ Unsupported Providers** - Providers like Amazon Bedrock and Google Vertex that require special authentication are clearly marked
 - **⚠️ No Tool Calling** - Models without tool calling support show a big warning since they can't use Code Puppy's file/shell tools
 
+### GitHub Copilot SDK Integration 🆕
+
+Code Puppy now supports the **GitHub Copilot SDK** (released January 2026), allowing you to access 17+ premium models through your GitHub Copilot subscription! This includes the latest models from OpenAI, Anthropic, Google, and xAI.
+
+#### Prerequisites
+
+1. **Install GitHub CLI with Copilot extension:**
+   ```bash
+   # Install GitHub CLI if you don't have it
+   # macOS/Linux:
+   brew install gh
+   # Windows:
+   winget install GitHub.cli
+
+   # Install the Copilot extension
+   gh extension install github/gh-copilot
+   ```
+
+2. **Authenticate with GitHub:**
+   ```bash
+   gh auth login
+   ```
+
+3. **Install the GitHub Copilot SDK:**
+   ```bash
+   pip install github-copilot-sdk
+   ```
+
+#### Configuration
+
+Add models to your `~/.code_puppy/extra_models.json`:
+
+```json
+{
+  "copilot-gpt52": {
+    "type": "github-copilot",
+    "name": "gpt-5.2",
+    "context_length": 128000
+  },
+  "copilot-gpt52-codex": {
+    "type": "github-copilot",
+    "name": "gpt-5.2-codex",
+    "context_length": 128000
+  },
+  "copilot-claude-opus-45": {
+    "type": "github-copilot",
+    "name": "claude-opus-4.5",
+    "context_length": 200000
+  },
+  "copilot-claude-sonnet-45": {
+    "type": "github-copilot",
+    "name": "claude-sonnet-4.5",
+    "context_length": 200000
+  },
+  "copilot-claude-haiku-45": {
+    "type": "github-copilot",
+    "name": "claude-haiku-4.5",
+    "context_length": 200000
+  },
+  "copilot-gemini-3-pro": {
+    "type": "github-copilot",
+    "name": "gemini-3-pro",
+    "context_length": 1000000
+  },
+  "copilot-gemini-3-flash": {
+    "type": "github-copilot",
+    "name": "gemini-3-flash",
+    "context_length": 1000000
+  },
+  "copilot-grok": {
+    "type": "github-copilot",
+    "name": "grok-code-fast-1",
+    "context_length": 128000
+  }
+}
+```
+
+#### Available Models
+
+**OpenAI Models:**
+- `gpt-5.2` - Latest general model (1x multiplier)
+- `gpt-5.2-codex` - Latest code-specialized model (1x multiplier)
+- `gpt-5.1-codex-max` - Maximum performance code model (1x multiplier)
+- `gpt-5.1-codex-mini` - Efficient code model (0.33x multiplier)
+- `gpt-4.1` - FREE, no quota usage! (0x multiplier)
+- `gpt-5-mini` - FREE, no quota usage! (0x multiplier)
+
+**Anthropic Models:**
+- `claude-opus-4.5` - Flagship reasoning model (3x multiplier)
+- `claude-sonnet-4.5` - Default balanced model (1x multiplier)
+- `claude-haiku-4.5` - Fastest model (0.33x multiplier)
+
+**Google Models:**
+- `gemini-3-pro` - Advanced reasoning (1x multiplier)
+- `gemini-3-flash` - Fastest & efficient (0.33x multiplier)
+
+**xAI Models:**
+- `grok-code-fast-1` - Most efficient! (0.25x multiplier)
+
+**Fine-tuned Models:**
+- `raptor-mini` - FREE fine-tuned GPT-5 mini (0x multiplier)
+
+#### Premium Request Multipliers
+
+Each request counts toward your Copilot subscription quota based on the model's multiplier:
+
+- **3x multiplier** (Claude Opus): 300 requests = 100 actual uses
+- **1x multiplier** (GPT-5.2, Claude Sonnet, Gemini 3 Pro): Standard usage
+- **0.33x multiplier** (Claude Haiku, Gemini Flash, GPT Codex Mini): 100 requests = 300 actual uses
+- **0.25x multiplier** (Grok): 100 requests = 400 actual uses! 🚀
+- **0x multiplier** (Free models): Unlimited usage!
+
+#### Model Recommendations
+
+- **🏎️ Speed Champion**: Grok Code Fast 1 (0.25x) or Gemini 3 Flash (0.33x)
+- **💻 Code Generation**: GPT-5.2-Codex or GPT-5.1-Codex-Max
+- **🧠 Deep Reasoning**: Gemini 3 Pro or Claude Opus 4.5
+- **⚖️ Balanced**: Claude Sonnet 4.5
+- **🆓 Free Unlimited**: GPT-4.1, GPT-5 mini, Raptor mini
+
+#### Usage
+
+Simply switch to any configured Copilot model:
+```bash
+/model copilot-grok
+```
+
+The model system will automatically track your premium request usage with multiplier awareness!
+
 ### Durable Execution
 
 Code Puppy now supports **[DBOS](https://github.com/dbos-inc/dbos-transact-py)** durable execution.
@@ -176,6 +305,7 @@ Please review this code for security issues." > .claude/commands/review.md
 - Cerebras API key (for Cerebras models)
 - Anthropic key (for Claude models)
 - Ollama endpoint available
+- GitHub Copilot subscription (optional, for Copilot SDK models)
 
 ## Agent Rules
 We support AGENT.md files for defining coding standards and styles that your code should comply with. These rules can cover various aspects such as formatting, naming conventions, and even design guidelines.
