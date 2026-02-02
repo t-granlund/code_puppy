@@ -10,9 +10,10 @@ from __future__ import annotations
 
 import logging
 import subprocess
-import json
 from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from typing import Any
 
 from pydantic_ai._run_context import RunContext
@@ -153,16 +154,18 @@ class GitHubCopilotModel(Model):
     async def request(
         self,
         messages: list[ModelMessage],
-        model_settings: ModelSettings | None = None,
-    ) -> tuple[ModelResponse, RequestUsage]:
+        model_settings: ModelSettings | None,
+        model_request_parameters: ModelRequestParameters,
+    ) -> ModelResponse:
         """Make a non-streaming request to the Copilot model.
         
         Args:
             messages: List of messages in the conversation
             model_settings: Optional model settings
+            model_request_parameters: Request parameters including tools
             
         Returns:
-            Tuple of (ModelResponse, RequestUsage)
+            ModelResponse
         """
         # Convert messages to Copilot SDK format
         sdk_messages = self._convert_messages(messages)
@@ -188,36 +191,34 @@ class GitHubCopilotModel(Model):
             # Convert response to pydantic_ai format
             content = response.choices[0].message.content
             
-            # Build usage info
-            usage = RequestUsage(
-                request_tokens=response.usage.prompt_tokens if hasattr(response.usage, "prompt_tokens") else 0,
-                response_tokens=response.usage.completion_tokens if hasattr(response.usage, "completion_tokens") else 0,
-                total_tokens=response.usage.total_tokens if hasattr(response.usage, "total_tokens") else 0,
-            )
-            
             # Build response
-            parts = [TextPart(content=content)]
+            parts: list[ModelResponsePart] = [TextPart(content=content)]
             model_response = ModelResponse(parts=parts)
             
-            return model_response, usage
+            return model_response
             
         except Exception as e:
             logger.error(f"GitHub Copilot request failed: {e}")
             raise
 
+    @asynccontextmanager
     async def request_stream(
         self,
         messages: list[ModelMessage],
-        model_settings: ModelSettings | None = None,
-    ) -> AsyncIterator[ModelResponseStreamEvent]:
+        model_settings: ModelSettings | None,
+        model_request_parameters: ModelRequestParameters,
+        run_context: RunContext[Any] | None = None,
+    ) -> AsyncIterator[StreamedResponse]:
         """Make a streaming request to the Copilot model.
         
         Args:
             messages: List of messages in the conversation
             model_settings: Optional model settings
+            model_request_parameters: Request parameters including tools
+            run_context: Optional run context
             
         Yields:
-            ModelResponseStreamEvent items
+            StreamedResponse instance
         """
         # Convert messages to Copilot SDK format
         sdk_messages = self._convert_messages(messages)
@@ -241,11 +242,12 @@ class GitHubCopilotModel(Model):
         try:
             stream = await self._sdk_client.chat.completions.create(**request_params)
             
-            async for chunk in stream:
-                if chunk.choices and len(chunk.choices) > 0:
-                    delta = chunk.choices[0].delta
-                    if hasattr(delta, "content") and delta.content:
-                        yield delta.content
+            # Create and yield a streaming response
+            yield GitHubCopilotStreamingResponse(
+                model_request_parameters=model_request_parameters,
+                _stream=stream,
+                _model_name_str=self.model_name,
+            )
                         
         except Exception as e:
             logger.error(f"GitHub Copilot streaming request failed: {e}")
@@ -296,3 +298,35 @@ class GitHubCopilotModel(Model):
                         })
         
         return sdk_messages
+
+
+@dataclass
+class GitHubCopilotStreamingResponse(StreamedResponse):
+    """Streaming response handler for GitHub Copilot SDK."""
+
+    _stream: Any
+    _model_name_str: str
+    _provider_name_str: str = "github-copilot"
+    _timestamp_val: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+
+    async def _get_event_iterator(self) -> AsyncIterator[ModelResponseStreamEvent]:
+        """Process streaming chunks and yield events."""
+        async for chunk in self._stream:
+            if chunk.choices and len(chunk.choices) > 0:
+                delta = chunk.choices[0].delta
+                
+                # Handle text content
+                if hasattr(delta, "content") and delta.content:
+                    event = self._parts_manager.handle_text_delta(
+                        vendor_part_id=None,
+                        content=delta.content,
+                    )
+                    if event:
+                        yield event
+                
+                # Update usage if available
+                if hasattr(chunk, "usage") and chunk.usage:
+                    self._usage = RequestUsage(
+                        input_tokens=getattr(chunk.usage, "prompt_tokens", 0),
+                        output_tokens=getattr(chunk.usage, "completion_tokens", 0),
+                    )
