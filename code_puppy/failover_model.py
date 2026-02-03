@@ -47,6 +47,15 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+# Import messaging for terminal-visible output
+try:
+    from code_puppy.messaging import emit_info, emit_warning
+    MESSAGING_AVAILABLE = True
+except ImportError:
+    MESSAGING_AVAILABLE = False
+    def emit_info(msg, **kwargs): logger.info(msg)
+    def emit_warning(msg, **kwargs): logger.warning(msg)
+
 # Rate limit backoff configuration
 # These prevent rapid cascade failures across providers
 BACKOFF_BASE_SECONDS = 2.0  # Initial backoff delay
@@ -60,12 +69,14 @@ def _is_failover_error(exc: Exception) -> bool:
     
     Triggers failover on:
     - 429 Rate Limit errors
+    - 422 Unprocessable Entity (message format incompatibility)
+    - 400 Bad Request (model doesn't support feature)
     - 500/502/503 Server errors (model unavailable or misconfigured)
     - 401/403 Authentication errors (invalid token/model access)
     
     Handles various exception types from different providers:
     - anthropic.RateLimitError, InternalServerError, AuthenticationError
-    - openai.RateLimitError, APIError
+    - openai.RateLimitError, APIError, UnprocessableEntityError
     - httpx-based status code responses
     - Generic API errors with status codes
     """
@@ -73,26 +84,31 @@ def _is_failover_error(exc: Exception) -> bool:
     exc_str = str(exc).lower()
     
     # Check by exception type name
-    if any(err in exc_type.lower() for err in ["ratelimit", "internalserver", "authentication", "apierror"]):
+    if any(err in exc_type.lower() for err in [
+        "ratelimit", "internalserver", "authentication", "apierror",
+        "unprocessableentity", "badrequest"
+    ]):
         return True
     
     # Check by message content
     failover_indicators = [
         "429", "rate limit", "too many requests",
+        "422", "unprocessable", "wrong_api_format",  # Model format incompatibility
+        "400", "bad request", "invalid_request",      # Model doesn't support feature
         "500", "502", "503", "internal server error", "service unavailable",
         "401", "403", "authentication", "unauthorized", "forbidden"
     ]
     if any(indicator in exc_str for indicator in failover_indicators):
         return True
     
-    # Check for status_code attribute (429, 500, 502, 503, 401, 403)
+    # Check for status_code attribute (expanded list)
     if hasattr(exc, "status_code"):
-        if exc.status_code in (429, 500, 502, 503, 401, 403):
+        if exc.status_code in (400, 401, 403, 422, 429, 500, 502, 503):
             return True
     
     # Check for response with failover status codes
     if hasattr(exc, "response") and hasattr(exc.response, "status_code"):
-        if exc.response.status_code in (429, 500, 502, 503, 401, 403):
+        if exc.response.status_code in (400, 401, 403, 422, 429, 500, 502, 503):
             return True
     
     return False
@@ -352,7 +368,15 @@ class FailoverModel(Model):
             self._current_model = model
             
             try:
-                logger.debug(f"🎯 Trying {model.model_name} ({self.workload} workload)")
+                # Log current model being tried (visible in terminal)
+                if attempts == 0:
+                    logger.debug(f"🎯 Trying {model.model_name} ({self.workload} workload)")
+                else:
+                    emit_info(
+                        f"🎯 Trying {model.model_name} ({self.workload} workload)",
+                        message_group="model_failover"
+                    )
+                
                 response = await model.request(
                     messages, model_settings, model_request_parameters
                 )
@@ -360,11 +384,12 @@ class FailoverModel(Model):
                 # Record success for capacity tracking
                 self._record_success(model, response)
                 
-                # Success - log if this was a failover
+                # Success - log if this was a failover (visible in terminal)
                 if attempts > 0:
-                    logger.info(
+                    emit_info(
                         f"✅ Failover succeeded: {model.model_name} "
-                        f"(attempt {attempts + 1}/{self._max_failovers + 1})"
+                        f"(attempt {attempts + 1}/{self._max_failovers + 1})",
+                        message_group="model_failover"
                     )
                 
                 return response
@@ -382,18 +407,32 @@ class FailoverModel(Model):
                     next_model = self._get_next_model()
                     if next_model:
                         # Determine error type for better logging
-                        error_type = "Rate limit" if "429" in str(e) else "Server error" if "500" in str(e) or "502" in str(e) or "503" in str(e) else "Auth error"
-                        logger.info(
+                        err_str = str(e)
+                        if "429" in err_str or "rate limit" in err_str.lower():
+                            error_type = "Rate limit"
+                        elif "422" in err_str or "wrong_api_format" in err_str.lower():
+                            error_type = "Format error"
+                        elif "500" in err_str or "502" in err_str or "503" in err_str:
+                            error_type = "Server error"
+                        elif "400" in err_str or "bad request" in err_str.lower():
+                            error_type = "Bad request"
+                        else:
+                            error_type = "Auth error"
+                        
+                        # Visible in terminal
+                        emit_warning(
                             f"🔄 {error_type} on {model.model_name} → "
                             f"Backing off {backoff_delay:.1f}s → "
-                            f"Failing over to {next_model.model_name}"
+                            f"Failing over to {next_model.model_name}",
+                            message_group="model_failover"
                         )
                         # Apply backoff delay before trying next model
                         await asyncio.sleep(backoff_delay)
                     else:
-                        logger.warning(
+                        emit_warning(
                             f"⚠️  Error on {model.model_name}, "
-                            f"no more failover models available (all in cooldown)"
+                            f"no more failover models available (all in cooldown)",
+                            message_group="model_failover"
                         )
                     
                     attempts += 1
@@ -433,15 +472,24 @@ class FailoverModel(Model):
             self._current_model = model
             
             try:
-                logger.debug(f"🎯 Trying stream {model.model_name} ({self.workload} workload)")
+                # Log current model being tried (visible in terminal on failover)
+                if attempts == 0:
+                    logger.debug(f"🎯 Trying stream {model.model_name} ({self.workload} workload)")
+                else:
+                    emit_info(
+                        f"🎯 Trying stream {model.model_name} ({self.workload} workload)",
+                        message_group="model_failover"
+                    )
+                
                 response = await model.request_stream(
                     messages, model_settings, model_request_parameters
                 )
                 
                 if attempts > 0:
-                    logger.info(
+                    emit_info(
                         f"✅ Stream failover succeeded: {model.model_name} "
-                        f"(attempt {attempts + 1}/{self._max_failovers + 1})"
+                        f"(attempt {attempts + 1}/{self._max_failovers + 1})",
+                        message_group="model_failover"
                     )
                 
                 return response
@@ -455,15 +503,28 @@ class FailoverModel(Model):
                     next_model = self._get_next_model()
                     if next_model:
                         # Determine error type for better logging
-                        error_type = "Rate limit" if "429" in str(e) else "Server error" if "500" in str(e) or "502" in str(e) or "503" in str(e) else "Auth error"
-                        logger.info(
+                        err_str = str(e)
+                        if "429" in err_str or "rate limit" in err_str.lower():
+                            error_type = "Rate limit"
+                        elif "422" in err_str or "wrong_api_format" in err_str.lower():
+                            error_type = "Format error"
+                        elif "500" in err_str or "502" in err_str or "503" in err_str:
+                            error_type = "Server error"
+                        elif "400" in err_str or "bad request" in err_str.lower():
+                            error_type = "Bad request"
+                        else:
+                            error_type = "Auth error"
+                        
+                        emit_warning(
                             f"🔄 Stream {error_type} on {model.model_name} → "
-                            f"Failing over to {next_model.model_name}"
+                            f"Failing over to {next_model.model_name}",
+                            message_group="model_failover"
                         )
                     else:
-                        logger.warning(
+                        emit_warning(
                             f"⚠️  Stream error on {model.model_name}, "
-                            f"no more failover models available"
+                            f"no more failover models available",
+                            message_group="model_failover"
                         )
                     
                     attempts += 1
