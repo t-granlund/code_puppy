@@ -1433,8 +1433,8 @@
               <pre><span style="color: var(--accent-blue)">intelligent_router.py</span>      ~ 516 lines
 <span style="color: var(--accent-green)">model_capacity.py</span>          ~ 717 lines
 <span style="color: var(--accent-purple)">capacity_aware_round_robin.py</span> ~ 392 lines
-<span style="color: var(--accent-orange)">failover_config.py</span>         ~ 392+ lines
-<span style="color: var(--accent-cyan)">smart_selection.py</span>         ~ 107+ lines
+<span style="color: var(--accent-orange)">failover_config.py</span>         ~ 676 lines
+<span style="color: var(--accent-cyan)">smart_selection.py</span>         ~ 715 lines
 <span style="color: var(--accent-pink)">credential_availability.py</span> ~ 439 lines</pre>
             </div>
           </div>
@@ -1446,7 +1446,7 @@
             </div>
             <div class="code-block">
               <pre><span style="color: var(--accent-green)">✓</span> Work Never Stops
-<span style="color: var(--accent-cyan)">✓</span> Proactive > Reactive (80% threshold)
+<span style="color: var(--accent-cyan)">✓</span> Proactive > Reactive (50% threshold)
 <span style="color: var(--accent-orange)">✓</span> Same-Tier First (quality)
 <span style="color: var(--accent-purple)">✓</span> Credential-First (no waste)
 <span style="color: var(--accent-blue)">✓</span> Telemetry-Driven (Logfire)</pre>
@@ -1459,7 +1459,7 @@
       <section id="capacity" class="section">
         <div class="section-header">
           <h2>📊 Capacity Tracking</h2>
-          <p>Real-time monitoring of model capacity with proactive failover at 80% threshold.</p>
+          <p>Real-time monitoring of model capacity with proactive failover starting at 50% (APPROACHING) and switching at 80% (LOW).</p>
         </div>
 
         <div class="grid-2">
@@ -1469,12 +1469,12 @@
               <span class="card-title">Capacity Status Flow</span>
             </div>
             <div class="code-block">
-              <pre>AVAILABLE (0-79%)
+              <pre>AVAILABLE (0-49%)
+    ↓ usage ≥ 50%
+APPROACHING (50-79%)
     ↓ usage ≥ 80%
-APPROACHING (80-94%)
+LOW (80-94%)
     ↓ usage ≥ 95%
-LOW (95-99%)
-    ↓ usage = 100%
 EXHAUSTED → COOLDOWN → AVAILABLE</pre>
             </div>
           </div>
@@ -1490,9 +1490,9 @@ EXHAUSTED → COOLDOWN → AVAILABLE</pre>
                   <tr><th>Status</th><th>Value</th><th>Action</th></tr>
                 </thead>
                 <tbody>
-                  <tr><td><span class="tag tag-green">APPROACHING</span></td><td>80%</td><td>Proactive failover</td></tr>
-                  <tr><td><span class="tag tag-orange">LOW</span></td><td>95%</td><td>Urgent switch</td></tr>
-                  <tr><td><span class="tag tag-red">EXHAUSTED</span></td><td>100%</td><td>Enter cooldown</td></tr>
+                  <tr><td><span class="tag tag-green">APPROACHING</span></td><td>50%</td><td>Consider alternatives</td></tr>
+                  <tr><td><span class="tag tag-orange">LOW</span></td><td>80%</td><td>Should switch soon</td></tr>
+                  <tr><td><span class="tag tag-red">EXHAUSTED</span></td><td>95%</td><td>Must switch now</td></tr>
                   <tr><td><span class="tag tag-purple">COOLDOWN</span></td><td>60s</td><td>Wait before retry</td></tr>
                 </tbody>
               </table>
@@ -1555,8 +1555,8 @@ EXHAUSTED → COOLDOWN → AVAILABLE</pre>
               <span class="card-title">REASONING</span>
             </div>
             <div class="code-block">
-              <pre>sonnet-4-5-thinking-high → gpt-5.2
-  → DeepSeek-R1 → gemini-3-pro-high</pre>
+              <pre>claude-sonnet-4-5 → sonnet-thinking-high
+  → DeepSeek-R1 → Kimi-K2-Thinking</pre>
             </div>
           </div>
 
@@ -1566,8 +1566,8 @@ EXHAUSTED → COOLDOWN → AVAILABLE</pre>
               <span class="card-title">CODING</span>
             </div>
             <div class="code-block">
-              <pre>gpt-5.2-codex → sonnet-4-5
-  → GLM-4.7 → zai-glm-4.7 → synthetic</pre>
+              <pre>Cerebras-GLM-4.7 (fastest!) → synthetic-GLM
+  → gpt-5.2-codex → MiniMax-M2.1</pre>
             </div>
           </div>
 
@@ -1577,8 +1577,8 @@ EXHAUSTED → COOLDOWN → AVAILABLE</pre>
               <span class="card-title">LIBRARIAN (Context)</span>
             </div>
             <div class="code-block">
-              <pre>Gemini-3-Long (2M!) → gemini-3-flash
-  → MiniMax-M2.1 (1M) → claude-haiku</pre>
+              <pre>claude-haiku-4-5 → gemini-3-flash
+  → openrouter-free → synthetic-GLM</pre>
             </div>
           </div>
         </div>
@@ -1597,9 +1597,10 @@ EXHAUSTED → COOLDOWN → AVAILABLE</pre>
                 <tr><td>claude_code</td><td>50</td><td>40K</td><td>OAuth</td></tr>
                 <tr><td>antigravity</td><td>60</td><td>100K</td><td>OAuth</td></tr>
                 <tr><td>chatgpt</td><td>60</td><td>30K</td><td>OAuth</td></tr>
-                <tr><td>cerebras</td><td>60</td><td>1M</td><td>API Key</td></tr>
-                <tr><td>gemini</td><td>60</td><td>1M</td><td>API Key</td></tr>
-                <tr><td>synthetic</td><td>30</td><td>100K</td><td>API Key</td></tr>
+                <tr><td>cerebras</td><td>50</td><td>1M</td><td>API Key</td></tr>
+                <tr><td>gemini</td><td>30</td><td>100K</td><td>API Key</td></tr>
+                <tr><td>synthetic</td><td>60</td><td>800K</td><td>API Key</td></tr>
+                <tr><td>openrouter</td><td>20</td><td>200K</td><td>Free Tier</td></tr>
               </tbody>
             </table>
           </div>

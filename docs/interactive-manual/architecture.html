@@ -1439,10 +1439,10 @@
 <span style="color: var(--accent-purple)">capacity_aware_round_robin.py</span> ~ 392 lines
   → Enhanced round-robin with status
 
-<span style="color: var(--accent-orange)">failover_config.py</span>         ~ 392+ lines
+<span style="color: var(--accent-orange)">failover_config.py</span>         ~ 676 lines
   → Workload chains & provider limits
 
-<span style="color: var(--accent-cyan)">smart_selection.py</span>         ~ 107+ lines
+<span style="color: var(--accent-cyan)">smart_selection.py</span>         ~ 715 lines
   → Multi-factor model scoring
 
 <span style="color: var(--accent-pink)">credential_availability.py</span> ~ 439 lines
@@ -1479,7 +1479,7 @@
       <section id="capacity" class="section">
         <div class="section-header">
           <h2>📊 Capacity Tracking</h2>
-          <p>Real-time monitoring of model capacity with proactive failover at 80% threshold.</p>
+          <p>Real-time monitoring of model capacity with proactive failover starting at 50% (APPROACHING) and switching at 80% (LOW).</p>
         </div>
 
         <div class="grid-2">
@@ -1489,17 +1489,17 @@
               <span class="card-title">Capacity Status Flow</span>
             </div>
             <div class="code-block">
-              <pre>AVAILABLE (0-79%)
+              <pre>AVAILABLE (0-49%)
+    │
+    │ usage ≥ 50%
+    ▼
+APPROACHING (50-79%)
     │
     │ usage ≥ 80%
     ▼
-APPROACHING (80-94%)
+LOW (80-94%)
     │
     │ usage ≥ 95%
-    ▼
-LOW (95-99%)
-    │
-    │ usage = 100%
     ▼
 EXHAUSTED ───────────────▶ COOLDOWN
                               │
@@ -1520,9 +1520,9 @@ EXHAUSTED ───────────────▶ COOLDOWN
                   <tr><th>Threshold</th><th>Value</th><th>Action</th></tr>
                 </thead>
                 <tbody>
-                  <tr><td><span class="tag tag-green">APPROACHING</span></td><td>80%</td><td>Start proactive failover</td></tr>
-                  <tr><td><span class="tag tag-orange">LOW</span></td><td>95%</td><td>Switch urgently</td></tr>
-                  <tr><td><span class="tag tag-red">EXHAUSTED</span></td><td>100%</td><td>Enter cooldown</td></tr>
+                  <tr><td><span class="tag tag-green">APPROACHING</span></td><td>50%</td><td>Consider alternatives</td></tr>
+                  <tr><td><span class="tag tag-orange">LOW</span></td><td>80%</td><td>Should switch soon</td></tr>
+                  <tr><td><span class="tag tag-red">EXHAUSTED</span></td><td>95%</td><td>Must switch immediately</td></tr>
                   <tr><td><span class="tag tag-purple">COOLDOWN</span></td><td>60s default</td><td>Wait before retry</td></tr>
                 </tbody>
               </table>
@@ -1638,13 +1638,13 @@ EXHAUSTED ───────────────▶ COOLDOWN
               <span class="card-title">REASONING Chain</span>
             </div>
             <div class="code-block">
-              <pre><span style="color: var(--accent-purple)">antigravity-claude-sonnet-4-5-thinking-high</span>
+              <pre><span style="color: var(--accent-purple)">claude-code-claude-sonnet-4-5</span>
     ↓
-<span style="color: var(--accent-cyan)">chatgpt-gpt-5.2</span>
+<span style="color: var(--accent-cyan)">antigravity-sonnet-4-5-thinking-high</span>
     ↓
-<span style="color: var(--accent-orange)">synthetic-hf-deepseek-ai-DeepSeek-R1</span>
+<span style="color: var(--accent-orange)">synthetic-DeepSeek-R1</span>
     ↓
-<span style="color: var(--accent-green)">antigravity-gemini-3-pro-high</span></pre>
+<span style="color: var(--accent-green)">synthetic-Kimi-K2-Thinking</span></pre>
             </div>
           </div>
 
@@ -1654,15 +1654,15 @@ EXHAUSTED ───────────────▶ COOLDOWN
               <span class="card-title">CODING Chain</span>
             </div>
             <div class="code-block">
-              <pre><span style="color: var(--accent-purple)">chatgpt-gpt-5.2-codex</span>
+              <pre><span style="color: var(--accent-purple)">Cerebras-GLM-4.7</span> <span style="color: var(--text-muted)">(fastest!)</span>
     ↓
-<span style="color: var(--accent-cyan)">antigravity-claude-sonnet-4-5</span>
+<span style="color: var(--accent-cyan)">synthetic-GLM-4.7</span>
     ↓
-<span style="color: var(--accent-orange)">Cerebras-GLM-4.7</span>
+<span style="color: var(--accent-orange)">chatgpt-gpt-5.2-codex</span>
     ↓
-<span style="color: var(--accent-green)">zai-glm-4.7-coding</span>
+<span style="color: var(--accent-green)">synthetic-MiniMax-M2.1</span>
     ↓
-<span style="color: var(--accent-blue)">synthetic-GLM-4.7</span></pre>
+<span style="color: var(--accent-blue)">antigravity-claude-sonnet-4-5</span></pre>
             </div>
           </div>
 
@@ -1672,13 +1672,13 @@ EXHAUSTED ───────────────▶ COOLDOWN
               <span class="card-title">LIBRARIAN Chain (Context)</span>
             </div>
             <div class="code-block">
-              <pre><span style="color: var(--accent-purple)">Gemini-3-Long-Context</span> <span style="color: var(--text-muted)">(2M tokens!)</span>
+              <pre><span style="color: var(--accent-purple)">claude-code-claude-haiku-4-5</span> <span style="color: var(--text-muted)">(cheap, fast)</span>
     ↓
-<span style="color: var(--accent-cyan)">antigravity-gemini-3-flash</span>
+<span style="color: var(--accent-cyan)">antigravity-gemini-3-flash</span> <span style="color: var(--text-muted)">(1M context)</span>
     ↓
-<span style="color: var(--accent-orange)">synthetic-MiniMax-M2.1</span> <span style="color: var(--text-muted)">(1M tokens)</span>
+<span style="color: var(--accent-orange)">openrouter-arcee-ai-trinity-free</span>
     ↓
-<span style="color: var(--accent-green)">code-claude-claude-haiku-4-5</span></pre>
+<span style="color: var(--accent-green)">openrouter-stepfun-step-3.5-flash-free</span></pre>
             </div>
           </div>
         </div>
@@ -1697,9 +1697,10 @@ EXHAUSTED ───────────────▶ COOLDOWN
                 <tr><td><span class="tag tag-purple">claude_code</span></td><td>50</td><td>40,000</td><td>OAuth</td></tr>
                 <tr><td><span class="tag tag-blue">antigravity</span></td><td>60</td><td>100,000</td><td>OAuth</td></tr>
                 <tr><td><span class="tag tag-cyan">chatgpt</span></td><td>60</td><td>30,000</td><td>OAuth</td></tr>
-                <tr><td><span class="tag tag-orange">cerebras</span></td><td>60</td><td>1,000,000</td><td>API Key</td></tr>
-                <tr><td><span class="tag tag-green">gemini</span></td><td>60</td><td>1,000,000</td><td>API Key</td></tr>
-                <tr><td><span class="tag tag-pink">synthetic</span></td><td>30</td><td>100,000</td><td>API Key</td></tr>
+                <tr><td><span class="tag tag-orange">cerebras</span></td><td>50</td><td>1,000,000</td><td>API Key</td></tr>
+                <tr><td><span class="tag tag-green">gemini</span></td><td>30</td><td>100,000</td><td>API Key</td></tr>
+                <tr><td><span class="tag tag-pink">synthetic</span></td><td>60</td><td>800,000</td><td>API Key</td></tr>
+                <tr><td><span class="tag tag-red">openrouter</span></td><td>20</td><td>200,000</td><td>API Key (Free)</td></tr>
               </tbody>
             </table>
           </div>

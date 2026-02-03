@@ -83,29 +83,45 @@ Agents are discovered from:
 |---------------|---------|----------------|--------|
 | **ORCHESTRATOR** | Complex planning, multi-agent coordination | Opus → Kimi K2.5 → Sonnet | pack-leader, helios, epistemic-architect |
 | **REASONING** | Logic, security analysis, code review | Sonnet → DeepSeek R1 → Kimi | shepherd, watchdog, security-auditor |
-| **CODING** | Fast code generation | Cerebras → GPT-5.2-Codex → MiniMax | husky, code-puppy, python-programmer |
-| **LIBRARIAN** | Search, docs, context retrieval | Haiku → Gemini Flash → OpenRouter | bloodhound, retriever |
+| **CODING** | Fast code generation | Cerebras → GPT-5.2-Codex → MiniMax | husky, retriever, code-puppy, python-programmer |
+| **LIBRARIAN** | Search, docs, context retrieval | Haiku → Gemini Flash → OpenRouter | bloodhound, lab-rat, doc-writer |
 
 ### Agent → Workload Mapping
 
 ```python
 AGENT_WORKLOAD_REGISTRY = {
-    # ORCHESTRATORS
+    # ORCHESTRATORS (Claude Opus → Antigravity Opus → Kimi K2.5)
     "pack-leader": WorkloadType.ORCHESTRATOR,
     "helios": WorkloadType.ORCHESTRATOR,
     "epistemic-architect": WorkloadType.ORCHESTRATOR,
+    "planning": WorkloadType.ORCHESTRATOR,
+    "agent-creator": WorkloadType.ORCHESTRATOR,
     
-    # REASONING
+    # REASONING (Sonnet → DeepSeek R1 → Kimi K2)
     "shepherd": WorkloadType.REASONING,
     "watchdog": WorkloadType.REASONING,
+    "code-reviewer": WorkloadType.REASONING,
+    "python-reviewer": WorkloadType.REASONING,
+    "security-auditor": WorkloadType.REASONING,
+    "qa-expert": WorkloadType.REASONING,
+    # + typescript-reviewer, golang-reviewer, cpp-reviewer, etc.
     
-    # CODING
+    # CODING (Cerebras GLM → GPT-5.2-Codex → MiniMax)
     "husky": WorkloadType.CODING,
+    "terrier": WorkloadType.CODING,
+    "retriever": WorkloadType.CODING,
     "code-puppy": WorkloadType.CODING,
+    "python-programmer": WorkloadType.CODING,
+    "test-generator": WorkloadType.CODING,
+    # + qa-kitten, ui-programmer, rag-agent, etc.
     
-    # LIBRARIAN
+    # LIBRARIAN (Haiku → Gemini Flash → OpenRouter)
     "bloodhound": WorkloadType.LIBRARIAN,
+    "lab-rat": WorkloadType.LIBRARIAN,
+    "file-summarizer": WorkloadType.LIBRARIAN,
+    "doc-writer": WorkloadType.LIBRARIAN,
 }
+# See failover_config.py for complete list of 30+ agent mappings
 ```
 
 ---
@@ -207,9 +223,9 @@ Real-time tracking of model capacity, rate limits, and availability status.
 
 | Status | Usage % | Meaning |
 |--------|---------|---------|
-| `AVAILABLE` | 0-50% | Plenty of capacity |
-| `APPROACHING` | 50-80% | Can use, consider alternatives |
-| `LOW` | 80-95% | **Should switch soon** |
+| `AVAILABLE` | 0-49% | Plenty of capacity |
+| `APPROACHING` | 50-79% | Can use, consider alternatives |
+| `LOW` | 80-94% | **Should switch soon** |
 | `EXHAUSTED` | 95%+ | Must switch immediately |
 | `COOLDOWN` | After 429 | Exponential backoff (60s → 600s max) |
 
@@ -217,13 +233,13 @@ Real-time tracking of model capacity, rate limits, and availability status.
 
 ```
 CapacityStatus.AVAILABLE (< 50% used)
-    ↓ (usage increases)
-CapacityStatus.APPROACHING (50-80% used)
-    ↓ (proactive switch recommended)
-CapacityStatus.LOW (80-95% used)
-    ↓ (must switch)
+    ↓ (usage ≥ 50%)
+CapacityStatus.APPROACHING (50-79% used)
+    ↓ (usage ≥ 80%, proactive switch recommended)
+CapacityStatus.LOW (80-94% used)
+    ↓ (usage ≥ 95%, must switch)
 CapacityStatus.EXHAUSTED (95%+ or 429)
-    ↓ (cooldown)
+    ↓ (cooldown triggered)
 CapacityStatus.COOLDOWN (waiting for reset)
 ```
 
