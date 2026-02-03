@@ -981,6 +981,9 @@
 
       <div class="nav-section">
         <div class="nav-label">Agents & Tools</div>
+        <div class="nav-item" data-section="epistemic-architect">
+          <span class="icon">🏛️</span> Epistemic Architect
+        </div>
         <div class="nav-item" data-section="agents">
           <span class="icon">🐕</span> Agent System
         </div>
@@ -1964,6 +1967,457 @@ calc_price(usage) → <span style="color: var(--accent-green)">Decimal</span> (U
             </ul>
           </div>
         </div>
+      </section>
+
+      <!-- EPISTEMIC ARCHITECT SECTION -->
+      <section id="epistemic-architect" class="section">
+        <div class="section-header">
+          <h2>🏛️ Epistemic Architect: Structured Planning Agent</h2>
+          <p>The Epistemic Architect implements the <strong>Epistemic Agent Runtime (EAR)</strong> methodology — structured software planning through evidence-based reasoning.</p>
+        </div>
+
+        <div class="info-card" style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(59, 130, 246, 0.1)); border-left: 3px solid var(--accent-purple);">
+          <div style="font-size: 0.85rem; color: var(--text-secondary);">
+            <strong style="color: var(--text-primary);">Core Principle:</strong> Think before you code.<br>
+            Before writing code, guide users through a rigorous process that surfaces assumptions, applies expert perspectives, validates goals, and creates traceable build plans.
+          </div>
+        </div>
+
+        <!-- Workflow Diagram -->
+        <div class="card" style="margin-top: 1.5rem;">
+          <div class="card-header">
+            <span class="card-icon">🔄</span>
+            <span class="card-title">Workflow: From Prompt to Build Plan</span>
+          </div>
+          
+          <div style="padding: 1.5rem; font-family: var(--font-mono); font-size: 0.75rem; line-height: 1.8; background: var(--bg-tertiary); border-radius: 8px; overflow-x: auto;">
+            <pre style="margin: 0; color: var(--text-secondary);">
+User: "I want to build X"
+    ↓
+┌─────────────────────────────────────────────────────────────┐
+│ <span style="color: var(--accent-cyan);">STAGE 1: Epistemic State Interview</span>                         │
+│ Ask probing questions to surface:                           │
+│  • Assumptions (what do you believe?)                       │
+│  • Hypotheses (what are you testing?)                       │
+│  • Constraints (hard vs soft)                               │
+│  • Evidence (what do you already know?)                     │
+│                                                              │
+│ Output: <span style="color: var(--accent-green);">epistemic/state.json</span>                                  │
+└─────────────────────────────────────────────────────────────┘
+    ↓
+┌─────────────────────────────────────────────────────────────┐
+│ <span style="color: var(--accent-cyan);">STAGE 2-3: Apply 7 Expert Lenses + Gap Analysis</span>           │
+│                                                              │
+│ 🧠 Philosophy     📊 Data Science     🛡️ Safety/Risk        │
+│ 🔷 Topology       ∑ Math Theory       ⚙️ Systems Engineering │
+│ 👤 Product/UX                                                │
+│                                                              │
+│ Output: Gaps classified as                                   │
+│  <span style="color: var(--accent-red);">🔴 CRITICAL</span> <span style="color: var(--accent-orange);">🟠 HIGH</span> <span style="color: var(--accent-orange);">🟡 MEDIUM</span> <span style="color: var(--accent-green);">🟢 LOW</span>           │
+│                                                              │
+│ Files: <span style="color: var(--accent-green);">docs/lens-evaluation.md</span>                              │
+│        <span style="color: var(--accent-green);">docs/gap-analysis.md</span>                                 │
+└─────────────────────────────────────────────────────────────┘
+    ↓
+┌─────────────────────────────────────────────────────────────┐
+│ <span style="color: var(--accent-cyan);">STAGE 4: Goal Emergence + 6 Quality Gates</span>                 │
+│                                                              │
+│ Generate candidate goals, each must pass ALL gates:         │
+│  ✅ Observables — Measurable outcomes?                       │
+│  ✅ Testability — Success/failure criteria?                  │
+│  ✅ Reversibility — Rollback plan?                           │
+│  ✅ Confidence — Above 0.6 threshold?                        │
+│  ✅ Lens Agreement — 3+ lenses approve?                      │
+│  ✅ Evidence Grounding — Based on evidence?                  │
+│                                                              │
+│ Goals that fail gates → NOT actionable (yet)                │
+│                                                              │
+│ File: <span style="color: var(--accent-green);">docs/goals-and-gates.md</span>                                │
+└─────────────────────────────────────────────────────────────┘
+    ↓
+┌─────────────────────────────────────────────────────────────┐
+│ <span style="color: var(--accent-cyan);">STAGE 5-6: MVP Planning + Spec Generation</span>                 │
+│                                                              │
+│ Create BUILD.md with:                                        │
+│  • Phases: Foundation → Core → Polish                       │
+│  • Milestones: 1-2 hour chunks                              │
+│  • Checkpoints: Verify at each milestone                    │
+│  • Rollback plans: How to undo                              │
+│  • Spec files: entities, personas, flows, metrics           │
+│                                                              │
+│ Files: <span style="color: var(--accent-green);">BUILD.md</span>                                             │
+│        <span style="color: var(--accent-green);">specs/entities.md</span>                                     │
+│        <span style="color: var(--accent-green);">specs/personas.md</span>                                     │
+│        <span style="color: var(--accent-green);">specs/critical-flows.md</span>                               │
+└─────────────────────────────────────────────────────────────┘
+    ↓
+┌─────────────────────────────────────────────────────────────┐
+│ <span style="color: var(--accent-cyan);">STAGE 7+: Build Execution with Checkpoints</span>                │
+│                                                              │
+│ After each milestone, checkpoint:                           │
+│  ✅ Completed: What was built                                │
+│  🧪 Verified: What was tested                                │
+│  ⚠️ Issues: Any problems                                     │
+│  📋 Spec Compliance: Which specs met                         │
+│  ➡️ Next: Next milestone                                     │
+└─────────────────────────────────────────────────────────────┘
+    ↓
+┌─────────────────────────────────────────────────────────────┐
+│ <span style="color: var(--accent-cyan);">STAGE 8-12: Continuous Improvement Loop</span>                   │
+│                                                              │
+│  • <span style="color: var(--accent-purple);">Audit:</span> Evidence → Analysis → Recommendations              │
+│  • <span style="color: var(--accent-purple);">Re-inspect:</span> Find new gaps                                  │
+│  • <span style="color: var(--accent-purple);">Update:</span> Close hypotheses, track questions                 │
+│  • <span style="color: var(--accent-purple);">Verify:</span> End-to-end audit                                   │
+│  • <span style="color: var(--accent-purple);">Loop back to Stage 8</span>                                       │
+│                                                              │
+│ File: <span style="color: var(--accent-green);">docs/improvement-plan.md</span>                               │
+└─────────────────────────────────────────────────────────────┘
+            </pre>
+          </div>
+        </div>
+
+        <!-- Ralph Loops -->
+        <div class="card" style="margin-top: 1.5rem;">
+          <div class="card-header">
+            <span class="card-icon">🔄</span>
+            <span class="card-title">Ralph (Wiggum) Loops: The Core Pattern</span>
+          </div>
+          <div style="padding: 1.5rem;">
+            <div style="text-align: center; font-family: var(--font-mono); font-size: 1.1rem; padding: 1rem; background: var(--bg-tertiary); border-radius: 8px; margin-bottom: 1rem;">
+              <span style="color: var(--accent-cyan);">Observe</span> → 
+              <span style="color: var(--accent-purple);">Orient</span> → 
+              <span style="color: var(--accent-orange);">Decide</span> → 
+              <span style="color: var(--accent-green);">Act</span> → 
+              <span style="color: var(--accent-cyan);">Observe</span> 
+              <span style="color: var(--text-muted);">(repeat)</span>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">
+              <strong style="color: var(--text-primary);">Key Insight:</strong> Goals are <strong>outputs</strong>, not inputs. 
+              They emerge from evidence, not assumptions. Every iteration of the loop refines understanding.
+            </p>
+          </div>
+        </div>
+
+        <!-- 7 Expert Lenses -->
+        <h3 style="margin-top: 2rem; margin-bottom: 1rem; font-size: 1.3rem; color: var(--text-primary);">The 7 Expert Lenses</h3>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+          Each lens evaluates your project from a different expert perspective to surface blind spots:
+        </p>
+
+        <div class="lens-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem;">
+          <div class="card" style="border-left: 3px solid var(--accent-purple);">
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+              <span style="font-size: 1.5rem;">🧠</span>
+              <strong style="font-size: 1rem;">Philosophy</strong>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+              What are we assuming? Are we epistemically honest?
+            </p>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">
+              <strong style="color: var(--text-secondary);">Outputs:</strong> Hidden assumptions, Category errors, Humility checks
+            </div>
+          </div>
+
+          <div class="card" style="border-left: 3px solid var(--accent-blue);">
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+              <span style="font-size: 1.5rem;">📊</span>
+              <strong style="font-size: 1rem;">Data Science</strong>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+              Can we measure this? How do we test it?
+            </p>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">
+              <strong style="color: var(--text-secondary);">Outputs:</strong> Metrics plan, Confounding risks, Experiment design
+            </div>
+          </div>
+
+          <div class="card" style="border-left: 3px solid var(--accent-red);">
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+              <span style="font-size: 1.5rem;">🛡️</span>
+              <strong style="font-size: 1rem;">Safety/Risk</strong>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+              What could go wrong? What are the failure modes?
+            </p>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">
+              <strong style="color: var(--text-secondary);">Outputs:</strong> Risk flags, Abuse vectors, Circuit breakers
+            </div>
+          </div>
+
+          <div class="card" style="border-left: 3px solid var(--accent-cyan);">
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+              <span style="font-size: 1.5rem;">🔷</span>
+              <strong style="font-size: 1rem;">Topology</strong>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+              What's the structure? Is it stable?
+            </p>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">
+              <strong style="color: var(--text-secondary);">Outputs:</strong> Dependencies, Phase transitions, Connected components
+            </div>
+          </div>
+
+          <div class="card" style="border-left: 3px solid var(--accent-orange);">
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+              <span style="font-size: 1.5rem;">∑</span>
+              <strong style="font-size: 1rem;">Theoretical Math</strong>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+              Is this logically consistent?
+            </p>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">
+              <strong style="color: var(--text-secondary);">Outputs:</strong> Consistency checks, Minimal axioms, Counterexamples
+            </div>
+          </div>
+
+          <div class="card" style="border-left: 3px solid var(--accent-green);">
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+              <span style="font-size: 1.5rem;">⚙️</span>
+              <strong style="font-size: 1rem;">Systems Engineering</strong>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+              Can we build this? What are the interfaces?
+            </p>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">
+              <strong style="color: var(--text-secondary);">Outputs:</strong> Service boundaries, Tech stack, Failure recovery
+            </div>
+          </div>
+
+          <div class="card" style="border-left: 3px solid var(--accent-pink);">
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+              <span style="font-size: 1.5rem;">👤</span>
+              <strong style="font-size: 1rem;">Product/UX</strong>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+              Does this help users? What's the MVP?
+            </p>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">
+              <strong style="color: var(--text-secondary);">Outputs:</strong> Value hypotheses, User flows, Adoption risks
+            </div>
+          </div>
+        </div>
+
+        <!-- 6 Quality Gates -->
+        <h3 style="margin-top: 2rem; margin-bottom: 1rem; font-size: 1.3rem; color: var(--text-primary);">The 6 Quality Gates</h3>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+          Goals must pass <strong>ALL 6 gates</strong> before they become actionable:
+        </p>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+          <div style="padding: 1rem; background: var(--bg-card); border-left: 3px solid var(--accent-cyan); border-radius: 6px;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+              <span>👁️</span>
+              <strong style="font-size: 0.9rem;">Observables</strong>
+            </div>
+            <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0;">
+              Does this goal have measurable outcomes?
+            </p>
+          </div>
+
+          <div style="padding: 1rem; background: var(--bg-card); border-left: 3px solid var(--accent-green); border-radius: 6px;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+              <span>🧪</span>
+              <strong style="font-size: 0.9rem;">Testability</strong>
+            </div>
+            <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0;">
+              Does it have clear success/failure criteria?
+            </p>
+          </div>
+
+          <div style="padding: 1rem; background: var(--bg-card); border-left: 3px solid var(--accent-orange); border-radius: 6px;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+              <span>↩️</span>
+              <strong style="font-size: 0.9rem;">Reversibility</strong>
+            </div>
+            <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0;">
+              Is there a rollback plan if it fails?
+            </p>
+          </div>
+
+          <div style="padding: 1rem; background: var(--bg-card); border-left: 3px solid var(--accent-purple); border-radius: 6px;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+              <span>📈</span>
+              <strong style="font-size: 0.9rem;">Confidence</strong>
+            </div>
+            <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0;">
+              Is confidence above threshold (≥0.6)?
+            </p>
+          </div>
+
+          <div style="padding: 1rem; background: var(--bg-card); border-left: 3px solid var(--accent-blue); border-radius: 6px;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+              <span>🤝</span>
+              <strong style="font-size: 0.9rem;">Lens Agreement</strong>
+            </div>
+            <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0;">
+              Do 3+ lenses approve?
+            </p>
+          </div>
+
+          <div style="padding: 1rem; background: var(--bg-card); border-left: 3px solid var(--accent-pink); border-radius: 6px;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+              <span>📚</span>
+              <strong style="font-size: 0.9rem;">Evidence Grounding</strong>
+            </div>
+            <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0;">
+              Is it based on actual evidence?
+            </p>
+          </div>
+        </div>
+
+        <!-- Agent Coordination -->
+        <h3 style="margin-top: 2rem; margin-bottom: 1rem; font-size: 1.3rem; color: var(--text-primary);">Agent Coordination & Delegation</h3>
+        
+        <div class="card">
+          <div class="card-header">
+            <span class="card-icon">🤝</span>
+            <span class="card-title">Invoking Other Agents</span>
+          </div>
+          <div style="padding: 1.5rem;">
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
+              The Epistemic Architect can <strong>invoke other agents</strong> to delegate specialized work:
+            </p>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem; margin-top: 1rem;">
+              <div style="padding: 1rem; background: var(--bg-tertiary); border-radius: 6px; border: 1px solid var(--border-color);">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+                  <span style="font-size: 1.3rem;">☀️</span>
+                  <strong style="font-size: 0.9rem; color: var(--text-primary);">Invoke Helios</strong>
+                </div>
+                <p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
+                  The Universal Constructor creates custom tools when needed:
+                </p>
+                <pre style="font-size: 0.7rem; color: var(--accent-cyan); background: var(--bg-primary); padding: 0.75rem; border-radius: 4px; overflow-x: auto; margin: 0;">invoke_agent("helios", 
+  "Create a JWT validator tool")</pre>
+              </div>
+
+              <div style="padding: 1rem; background: var(--bg-tertiary); border-radius: 6px; border: 1px solid var(--border-color);">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+                  <span style="font-size: 1.3rem;">🏗️</span>
+                  <strong style="font-size: 0.9rem; color: var(--text-primary);">Invoke Agent Creator</strong>
+                </div>
+                <p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
+                  Creates specialized agents for the project:
+                </p>
+                <pre style="font-size: 0.7rem; color: var(--accent-green); background: var(--bg-primary); padding: 0.75rem; border-radius: 4px; overflow-x: auto; margin: 0;">invoke_agent("agent-creator", 
+  "Create a security auditor agent")</pre>
+              </div>
+            </div>
+
+            <div style="margin-top: 1.5rem; padding: 1rem; background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(59, 130, 246, 0.1)); border-radius: 6px; border-left: 3px solid var(--accent-purple);">
+              <strong style="font-size: 0.85rem; color: var(--text-primary);">Tools Available:</strong>
+              <div style="display: flex; gap: 0.75rem; margin-top: 0.5rem; flex-wrap: wrap;">
+                <code style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: var(--bg-card); border-radius: 4px;">list_agents</code>
+                <code style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: var(--bg-card); border-radius: 4px;">invoke_agent</code>
+                <code style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: var(--bg-card); border-radius: 4px;">list_files</code>
+                <code style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: var(--bg-card); border-radius: 4px;">read_file</code>
+                <code style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: var(--bg-card); border-radius: 4px;">edit_file</code>
+                <code style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: var(--bg-card); border-radius: 4px;">grep</code>
+                <code style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: var(--bg-card); border-radius: 4px;">agent_run_shell_command</code>
+                <code style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: var(--bg-card); border-radius: 4px;">agent_share_your_reasoning</code>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- When to Use -->
+        <h3 style="margin-top: 2rem; margin-bottom: 1rem; font-size: 1.3rem; color: var(--text-primary);">When to Use the Epistemic Architect</h3>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+          <div class="card" style="border-left: 3px solid var(--accent-green);">
+            <div style="margin-bottom: 1rem;">
+              <strong style="color: var(--accent-green); font-size: 0.9rem;">✅ Perfect For:</strong>
+            </div>
+            <ul style="font-size: 0.8rem; list-style: none; color: var(--text-secondary); padding-left: 0;">
+              <li style="padding: 0.4rem 0;">✅ Greenfield projects (starting from scratch)</li>
+              <li style="padding: 0.4rem 0;">✅ Complex features (need rigorous analysis)</li>
+              <li style="padding: 0.4rem 0;">✅ High-stakes work (security, payments, data)</li>
+              <li style="padding: 0.4rem 0;">✅ Unclear requirements (ambiguous asks)</li>
+              <li style="padding: 0.4rem 0;">✅ Multiple stakeholders (conflicting assumptions)</li>
+              <li style="padding: 0.4rem 0;">✅ Learning projects (understand deeply first)</li>
+            </ul>
+          </div>
+
+          <div class="card" style="border-left: 3px solid var(--accent-red);">
+            <div style="margin-bottom: 1rem;">
+              <strong style="color: var(--accent-red); font-size: 0.9rem;">❌ Not Ideal For:</strong>
+            </div>
+            <ul style="font-size: 0.8rem; list-style: none; color: var(--text-secondary); padding-left: 0;">
+              <li style="padding: 0.4rem 0;">❌ Quick bug fixes (too much process)</li>
+              <li style="padding: 0.4rem 0;">❌ Well-defined tasks (requirements crystal clear)</li>
+              <li style="padding: 0.4rem 0;">❌ Time pressure (need to ship in 30 minutes)</li>
+              <li style="padding: 0.4rem 0;">❌ Trivial changes (single-line edits)</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Example Session -->
+        <div class="card" style="margin-top: 1.5rem;">
+          <div class="card-header">
+            <span class="card-icon">💬</span>
+            <span class="card-title">Example Session</span>
+          </div>
+          <div style="padding: 1.5rem;">
+            <pre style="font-size: 0.75rem; line-height: 1.6; color: var(--text-secondary); background: var(--bg-tertiary); padding: 1rem; border-radius: 6px; overflow-x: auto;"><span style="color: var(--accent-cyan);"># Switch to epistemic architect</span>
+<span style="color: var(--accent-green);">/agent epistemic-architect</span>
+
+<span style="color: var(--accent-cyan);"># User describes project</span>
+<span style="color: var(--text-primary);">> I want to build a task management app</span>
+
+<span style="color: var(--accent-cyan);"># Epistemic Architect guides through interview</span>
+> Great! Let's start with the epistemic state interview:
+> 
+> 1. What problem are you solving? Who are your users?
+> 2. What are you assuming is true about task management?
+> 3. What would prove you wrong?
+> 4. What are your hard constraints (non-negotiable)?
+> 5. What are your soft constraints (preferences)?
+> 6. What evidence do you already have?
+
+<span style="color: var(--accent-cyan);"># After interview, applies 7 lenses</span>
+> I've applied all 7 lenses. Here's what I found:
+> 
+> <span style="color: var(--accent-red);">🔴 CRITICAL Gaps:</span>
+>   • No clear definition of "task" (Philosophy lens)
+>   • No metrics for success (Data Science lens)
+> 
+> <span style="color: var(--accent-orange);">🟠 HIGH Gaps:</span>
+>   • Missing data persistence strategy (Systems lens)
+>   • No user authentication plan (Safety lens)
+
+<span style="color: var(--accent-cyan);"># Architect creates project structure</span>
+> I've scaffolded your project:
+> 
+> task-manager/
+> ├── epistemic/          (your assumptions & hypotheses)
+> ├── docs/               (lens evaluations & gaps)
+> ├── specs/              (entities, personas, flows)
+> └── BUILD.md            (8-hour plan with checkpoints)
+> 
+> Let's start with Phase 1: Foundation...
+
+<span style="color: var(--accent-cyan);"># After each milestone, checkpoints</span>
+> <span style="color: var(--accent-purple);">🔍 CHECKPOINT:</span> SQLite persistence layer
+> ✅ Completed: Database schema, CRUD operations
+> 🧪 Verified: All tests pass (12/12)
+> ⚠️ Issues: None
+> 📋 Spec Compliance: Meets entities.md spec ✅
+> ➡️ Next: Milestone 2.2 (API endpoints)</pre>
+          </div>
+        </div>
+
+        <!-- Integration Info -->
+        <div class="info-card" style="margin-top: 1.5rem; background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1)); border-left: 3px solid var(--accent-blue);">
+          <div style="font-size: 0.85rem; color: var(--text-secondary);">
+            <strong style="color: var(--text-primary);">Integration with Code Puppy's Routing:</strong><br>
+            • Workload Type: <code style="font-size: 0.75rem; padding: 0.2rem 0.4rem; background: var(--bg-card); border-radius: 4px;">ORCHESTRATOR</code><br>
+            • Model Tier: Prefers <strong>T1 Architect</strong> models (claude-sonnet-4-5, gpt-5.2-codex)<br>
+            • Minimum Context: 32K tokens (for full epistemic state)<br>
+            • Uses ORCHESTRATOR failover chain in <code>failover_config.py</code>
+          </div>
+        </div>
+
       </section>
 
       <!-- AGENTS SECTION -->

@@ -981,6 +981,9 @@
 
       <div class="nav-section">
         <div class="nav-label">Agents & Tools</div>
+        <div class="nav-item" data-section="epistemic-architect">
+          <span class="icon">🏛️</span> Epistemic Architect
+        </div>
         <div class="nav-item" data-section="agents">
           <span class="icon">🐕</span> Agent System
         </div>
@@ -2067,470 +2070,454 @@ calc_price(usage) → <span style="color: var(--accent-green)">Decimal</span> (U
       </section>
 
       <!-- AGENTS SECTION -->
-      <section id="agents" class="section">
+      <!-- EPISTEMIC ARCHITECT SECTION -->
+      <section id="epistemic-architect" class="section">
         <div class="section-header">
-          <h2>🐕 Agent System</h2>
-          <p>Specialized agents for different tasks, coordinated by the Pack Leader orchestrator.</p>
+          <h2>🏛️ Epistemic Architect: Structured Planning Agent</h2>
+          <p>The Epistemic Architect implements the <strong>Epistemic Agent Runtime (EAR)</strong> methodology — structured software planning through evidence-based reasoning.</p>
         </div>
 
-        <div class="card">
-          <div class="card-header">
-            <span class="card-icon">🏗️</span>
-            <span class="card-title">BaseAgent Architecture</span>
-          </div>
-          <ul style="font-size: 0.85rem; list-style: none; color: var(--text-secondary);">
-            <li style="padding: 0.4rem 0;">• Pydantic-AI integration (<code>DBOSAgent</code> for durability)</li>
-            <li style="padding: 0.4rem 0;">• Tool registration & execution</li>
-            <li style="padding: 0.4rem 0;">• Context compression & token management</li>
-            <li style="padding: 0.4rem 0;">• Logfire tracing & callbacks</li>
-          </ul>
-        </div>
-
-        <h3 style="margin-top: 2rem;">The Pack 🐺</h3>
-        <div class="agent-grid">
-          <div class="agent-card">
-            <div class="agent-icon">🐺</div>
-            <div class="agent-name">Pack Leader</div>
-            <div class="agent-role">Orchestrator</div>
-          </div>
-          <div class="agent-card">
-            <div class="agent-icon">🐕</div>
-            <div class="agent-name">Code Puppy</div>
-            <div class="agent-role">Main Agent</div>
-          </div>
-          <div class="agent-card">
-            <div class="agent-icon">🐕‍🦺</div>
-            <div class="agent-name">Bloodhound</div>
-            <div class="agent-role">Issue Tracking</div>
-          </div>
-          <div class="agent-card">
-            <div class="agent-icon">🐕</div>
-            <div class="agent-name">Terrier</div>
-            <div class="agent-role">Worktrees</div>
-          </div>
-          <div class="agent-card">
-            <div class="agent-icon">🐺</div>
-            <div class="agent-name">Husky</div>
-            <div class="agent-role">Execution</div>
-          </div>
-          <div class="agent-card">
-            <div class="agent-icon">🐕</div>
-            <div class="agent-name">Shepherd</div>
-            <div class="agent-role">Code Review</div>
-          </div>
-          <div class="agent-card">
-            <div class="agent-icon">🐕‍🦺</div>
-            <div class="agent-name">Watchdog</div>
-            <div class="agent-role">QA/Testing</div>
-          </div>
-          <div class="agent-card">
-            <div class="agent-icon">🦮</div>
-            <div class="agent-name">Retriever</div>
-            <div class="agent-role">Merging</div>
+        <div class="info-card" style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(59, 130, 246, 0.1)); border-left: 3px solid var(--accent-purple);">
+          <div style="font-size: 0.85rem; color: var(--text-secondary);">
+            <strong style="color: var(--text-primary);">Core Principle:</strong> Think before you code.<br>
+            Before writing code, guide users through a rigorous process that surfaces assumptions, applies expert perspectives, validates goals, and creates traceable build plans.
           </div>
         </div>
 
-        <h3 style="margin-top: 2rem;">Specialist Agents</h3>
-        <div class="agent-grid">
-          <div class="agent-card">
-            <div class="agent-icon">🐍</div>
-            <div class="agent-name">Python Reviewer</div>
-            <div class="agent-role">Language Expert</div>
-          </div>
-          <div class="agent-card">
-            <div class="agent-icon">📘</div>
-            <div class="agent-name">TypeScript Rev.</div>
-            <div class="agent-role">Language Expert</div>
-          </div>
-          <div class="agent-card">
-            <div class="agent-icon">🔵</div>
-            <div class="agent-name">Go Reviewer</div>
-            <div class="agent-role">Language Expert</div>
-          </div>
-          <div class="agent-card">
-            <div class="agent-icon">⚡</div>
-            <div class="agent-name">C/C++ Reviewer</div>
-            <div class="agent-role">Language Expert</div>
-          </div>
-          <div class="agent-card">
-            <div class="agent-icon">🔒</div>
-            <div class="agent-name">Security Auditor</div>
-            <div class="agent-role">Security</div>
-          </div>
-          <div class="agent-card">
-            <div class="agent-icon">📋</div>
-            <div class="agent-name">QA Expert</div>
-            <div class="agent-role">Quality</div>
-          </div>
-          <div class="agent-card">
-            <div class="agent-icon">🧠</div>
-            <div class="agent-name">Epistemic Arch.</div>
-            <div class="agent-role">Planning</div>
-          </div>
-          <div class="agent-card">
-            <div class="agent-icon">☀️</div>
-            <div class="agent-name">Helios</div>
-            <div class="agent-role">Special</div>
-          </div>
-        </div>
-      </section>
-
-      <!-- TOOLS SECTION -->
-      <section id="tools" class="section">
-        <div class="section-header">
-          <h2>🔧 Tools Layer</h2>
-          <p>Comprehensive tool system for file operations, command execution, and token management.</p>
-        </div>
-
-        <div class="grid-3">
-          <div class="card">
-            <h4>📁 File Operations</h4>
-            <ul style="font-size: 0.8rem; list-style: none; color: var(--text-secondary);">
-              <li style="padding: 0.3rem 0;"><code>read_file</code></li>
-              <li style="padding: 0.3rem 0;"><code>write_file</code></li>
-              <li style="padding: 0.3rem 0;"><code>list_files</code></li>
-              <li style="padding: 0.3rem 0;"><code>grep</code></li>
-              <li style="padding: 0.3rem 0;"><code>edit_file</code></li>
-            </ul>
-          </div>
-          <div class="card">
-            <h4>💻 Command Execution</h4>
-            <ul style="font-size: 0.8rem; list-style: none; color: var(--text-secondary);">
-              <li style="padding: 0.3rem 0;"><code>agent_run_shell_command</code></li>
-              <li style="padding: 0.3rem 0;"><code>ShellGovernor</code></li>
-              <li style="padding: 0.3rem 0;"><code>CommandRunner</code></li>
-              <li style="padding: 0.3rem 0;"><code>safe_patch</code></li>
-            </ul>
-          </div>
-          <div class="card">
-            <h4>📊 Token Management</h4>
-            <ul style="font-size: 0.8rem; list-style: none; color: var(--text-secondary);">
-              <li style="padding: 0.3rem 0;"><code>TokenBudgetGuard</code></li>
-              <li style="padding: 0.3rem 0;"><code>TokenSlimmer</code></li>
-              <li style="padding: 0.3rem 0;"><code>IOBudgetEnforcer</code></li>
-              <li style="padding: 0.3rem 0;"><code>ContextLoader</code></li>
-            </ul>
-          </div>
-          <div class="card">
-            <h4>🤖 Agent Tools</h4>
-            <ul style="font-size: 0.8rem; list-style: none; color: var(--text-secondary);">
-              <li style="padding: 0.3rem 0;"><code>invoke_agent</code></li>
-              <li style="padding: 0.3rem 0;"><code>list_agents</code></li>
-              <li style="padding: 0.3rem 0;"><code>subagent_context</code></li>
-              <li style="padding: 0.3rem 0;"><code>share_reasoning</code></li>
-            </ul>
-          </div>
-          <div class="card">
-            <h4>🖥️ Display Tools</h4>
-            <ul style="font-size: 0.8rem; list-style: none; color: var(--text-secondary);">
-              <li style="padding: 0.3rem 0;"><code>agent_display</code></li>
-              <li style="padding: 0.3rem 0;"><code>router_hooks</code></li>
-              <li style="padding: 0.3rem 0;"><code>tools_content</code></li>
-            </ul>
-          </div>
-          <div class="card">
-            <h4>⚡ Cerebras Optimizer</h4>
-            <ul style="font-size: 0.8rem; list-style: none; color: var(--text-secondary);">
-              <li style="padding: 0.3rem 0;"><code>GLMPromptOptimizer</code></li>
-              <li style="padding: 0.3rem 0;"><code>TaskDecomposer</code></li>
-              <li style="padding: 0.3rem 0;"><code>CerebrasGLMSettings</code></li>
-            </ul>
-          </div>
-        </div>
-      </section>
-
-      <!-- MCP SECTION -->
-      <section id="mcp" class="section">
-        <div class="section-header">
-          <h2>🔌 MCP Infrastructure</h2>
-          <p>Model Context Protocol server management with lifecycle control and health monitoring.</p>
-        </div>
-
-        <div class="card">
-          <div class="card-header">
-            <span class="card-icon">🔄</span>
-            <span class="card-title">MCPManager</span>
-          </div>
-          <div class="grid-2">
-            <div>
-              <h4>Capabilities</h4>
-              <ul style="font-size: 0.85rem; list-style: none; color: var(--text-secondary);">
-                <li style="padding: 0.3rem 0;">• Server lifecycle management</li>
-                <li style="padding: 0.3rem 0;">• Pydantic-AI compatibility</li>
-                <li style="padding: 0.3rem 0;">• Circuit breaker integration</li>
-                <li style="padding: 0.3rem 0;">• Health monitoring</li>
-                <li style="padding: 0.3rem 0;">• Automatic quarantine on failures</li>
-              </ul>
-            </div>
-            <div>
-              <h4>Server Types</h4>
-              <ul style="font-size: 0.85rem; list-style: none; color: var(--text-secondary);">
-                <li style="padding: 0.3rem 0;"><span class="tag tag-blue">STDIO</span> Local process</li>
-                <li style="padding: 0.3rem 0;"><span class="tag tag-green">SSE</span> Server-Sent Events</li>
-                <li style="padding: 0.3rem 0;"><span class="tag tag-purple">HTTP</span> Streamable HTTP</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
+        <!-- Workflow Diagram -->
         <div class="card" style="margin-top: 1.5rem;">
           <div class="card-header">
-            <span class="card-icon">📊</span>
-            <span class="card-title">Server State Machine</span>
+            <span class="card-icon">🔄</span>
+            <span class="card-title">Workflow: From Prompt to Build Plan</span>
           </div>
-          <div class="code-block">
-            <pre>STOPPED ──► STARTING ──► RUNNING ──► STOPPING ──► STOPPED
-    │                        │
-    │                        ▼
-    │                   QUARANTINED
-    │                        │
-    └────────────────────────┘</pre>
+          
+          <div style="padding: 1.5rem; font-family: var(--font-mono); font-size: 0.75rem; line-height: 1.8; background: var(--bg-tertiary); border-radius: 8px; overflow-x: auto;">
+            <pre style="margin: 0; color: var(--text-secondary);">
+User: "I want to build X"
+    ↓
+┌─────────────────────────────────────────────────────────────┐
+│ <span style="color: var(--accent-cyan);">STAGE 1: Epistemic State Interview</span>                         │
+│ Ask probing questions to surface:                           │
+│  • Assumptions (what do you believe?)                       │
+│  • Hypotheses (what are you testing?)                       │
+│  • Constraints (hard vs soft)                               │
+│  • Evidence (what do you already know?)                     │
+│                                                              │
+│ Output: <span style="color: var(--accent-green);">epistemic/state.json</span>                                  │
+└─────────────────────────────────────────────────────────────┘
+    ↓
+┌─────────────────────────────────────────────────────────────┐
+│ <span style="color: var(--accent-cyan);">STAGE 2-3: Apply 7 Expert Lenses + Gap Analysis</span>           │
+│                                                              │
+│ 🧠 Philosophy     📊 Data Science     🛡️ Safety/Risk        │
+│ 🔷 Topology       ∑ Math Theory       ⚙️ Systems Engineering │
+│ 👤 Product/UX                                                │
+│                                                              │
+│ Output: Gaps classified as                                   │
+│  <span style="color: var(--accent-red);">🔴 CRITICAL</span> <span style="color: var(--accent-orange);">🟠 HIGH</span> <span style="color: var(--accent-orange);">🟡 MEDIUM</span> <span style="color: var(--accent-green);">🟢 LOW</span>           │
+│                                                              │
+│ Files: <span style="color: var(--accent-green);">docs/lens-evaluation.md</span>                              │
+│        <span style="color: var(--accent-green);">docs/gap-analysis.md</span>                                 │
+└─────────────────────────────────────────────────────────────┘
+    ↓
+┌─────────────────────────────────────────────────────────────┐
+│ <span style="color: var(--accent-cyan);">STAGE 4: Goal Emergence + 6 Quality Gates</span>                 │
+│                                                              │
+│ Generate candidate goals, each must pass ALL gates:         │
+│  ✅ Observables — Measurable outcomes?                       │
+│  ✅ Testability — Success/failure criteria?                  │
+│  ✅ Reversibility — Rollback plan?                           │
+│  ✅ Confidence — Above 0.6 threshold?                        │
+│  ✅ Lens Agreement — 3+ lenses approve?                      │
+│  ✅ Evidence Grounding — Based on evidence?                  │
+│                                                              │
+│ Goals that fail gates → NOT actionable (yet)                │
+│                                                              │
+│ File: <span style="color: var(--accent-green);">docs/goals-and-gates.md</span>                                │
+└─────────────────────────────────────────────────────────────┘
+    ↓
+┌─────────────────────────────────────────────────────────────┐
+│ <span style="color: var(--accent-cyan);">STAGE 5-6: MVP Planning + Spec Generation</span>                 │
+│                                                              │
+│ Create BUILD.md with:                                        │
+│  • Phases: Foundation → Core → Polish                       │
+│  • Milestones: 1-2 hour chunks                              │
+│  • Checkpoints: Verify at each milestone                    │
+│  • Rollback plans: How to undo                              │
+│  • Spec files: entities, personas, flows, metrics           │
+│                                                              │
+│ Files: <span style="color: var(--accent-green);">BUILD.md</span>                                             │
+│        <span style="color: var(--accent-green);">specs/entities.md</span>                                     │
+│        <span style="color: var(--accent-green);">specs/personas.md</span>                                     │
+│        <span style="color: var(--accent-green);">specs/critical-flows.md</span>                               │
+└─────────────────────────────────────────────────────────────┘
+    ↓
+┌─────────────────────────────────────────────────────────────┐
+│ <span style="color: var(--accent-cyan);">STAGE 7+: Build Execution with Checkpoints</span>                │
+│                                                              │
+│ After each milestone, checkpoint:                           │
+│  ✅ Completed: What was built                                │
+│  🧪 Verified: What was tested                                │
+│  ⚠️ Issues: Any problems                                     │
+│  📋 Spec Compliance: Which specs met                         │
+│  ➡️ Next: Next milestone                                     │
+└─────────────────────────────────────────────────────────────┘
+    ↓
+┌─────────────────────────────────────────────────────────────┐
+│ <span style="color: var(--accent-cyan);">STAGE 8-12: Continuous Improvement Loop</span>                   │
+│                                                              │
+│  • <span style="color: var(--accent-purple);">Audit:</span> Evidence → Analysis → Recommendations              │
+│  • <span style="color: var(--accent-purple);">Re-inspect:</span> Find new gaps                                  │
+│  • <span style="color: var(--accent-purple);">Update:</span> Close hypotheses, track questions                 │
+│  • <span style="color: var(--accent-purple);">Verify:</span> End-to-end audit                                   │
+│  • <span style="color: var(--accent-purple);">Loop back to Stage 8</span>                                       │
+│                                                              │
+│ File: <span style="color: var(--accent-green);">docs/improvement-plan.md</span>                               │
+└─────────────────────────────────────────────────────────────┘
+            </pre>
           </div>
         </div>
-      </section>
 
-      <!-- MESSAGING SECTION -->
-      <section id="messaging" class="section">
-        <div class="section-header">
-          <h2>📨 Messaging Bus</h2>
-          <p>Bidirectional Agent ↔ UI communication with request/response correlation.</p>
-        </div>
-
-        <div class="card">
+        <!-- Ralph Loops -->
+        <div class="card" style="margin-top: 1.5rem;">
           <div class="card-header">
             <span class="card-icon">🔄</span>
-            <span class="card-title">MessageBus Architecture</span>
+            <span class="card-title">Ralph (Wiggum) Loops: The Core Pattern</span>
           </div>
-          <div class="code-block">
-            <pre>┌─────────────────────────────────────────────────────────────┐
-│                       MessageBus                             │
-│                                                             │
-│  <span style="color: var(--accent-green)">Agent → UI (Outgoing):</span>                                      │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │ TextMessage │ ConfirmationRequest │ SelectionRequest │   │
-│  │ ToolResult  │ UserInputRequest    │ ProgressUpdate   │   │
-│  └─────────────────────────────────────────────────────┘   │
-│                                                             │
-│  <span style="color: var(--accent-blue)">UI → Agent (Incoming):</span>                                      │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │ UserInputResponse │ ConfirmationResponse │ Cancel   │   │
-│  │ SelectionResponse │ Abort               │           │   │
-│  └─────────────────────────────────────────────────────┘   │
-│                                                             │
-│  <span style="color: var(--accent-purple)">Request/Response Correlation:</span>                               │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │ prompt_id → asyncio.Future                          │   │
-│  │ • request_input() waits on Future                   │   │
-│  │ • provide_response() resolves Future                │   │
-│  └─────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────┘</pre>
+          <div style="padding: 1.5rem;">
+            <div style="text-align: center; font-family: var(--font-mono); font-size: 1.1rem; padding: 1rem; background: var(--bg-tertiary); border-radius: 8px; margin-bottom: 1rem;">
+              <span style="color: var(--accent-cyan);">Observe</span> → 
+              <span style="color: var(--accent-purple);">Orient</span> → 
+              <span style="color: var(--accent-orange);">Decide</span> → 
+              <span style="color: var(--accent-green);">Act</span> → 
+              <span style="color: var(--accent-cyan);">Observe</span> 
+              <span style="color: var(--text-muted);">(repeat)</span>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">
+              <strong style="color: var(--text-primary);">Key Insight:</strong> Goals are <strong>outputs</strong>, not inputs. 
+              They emerge from evidence, not assumptions. Every iteration of the loop refines understanding.
+            </p>
           </div>
         </div>
-      </section>
 
-      <!-- OBSERVABILITY SECTION -->
-      <section id="observability" class="section">
-        <div class="section-header">
-          <h2>📊 Observability</h2>
-          <p>Logfire instrumentation for full tracing of all operations.</p>
-        </div>
+        <!-- 7 Expert Lenses -->
+        <h3 style="margin-top: 2rem; margin-bottom: 1rem; font-size: 1.3rem; color: var(--text-primary);">The 7 Expert Lenses</h3>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+          Each lens evaluates your project from a different expert perspective to surface blind spots:
+        </p>
 
-        <div class="grid-2">
-          <div class="card">
-            <div class="card-header">
-              <span class="card-icon">🔍</span>
-              <span class="card-title">Logfire Spans</span>
+        <div class="lens-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem;">
+          <div class="card" style="border-left: 3px solid var(--accent-purple);">
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+              <span style="font-size: 1.5rem;">🧠</span>
+              <strong style="font-size: 1rem;">Philosophy</strong>
             </div>
-            <div class="table-container">
-              <table>
-                <thead>
-                  <tr><th>Span Name</th><th>Module</th></tr>
-                </thead>
-                <tbody>
-                  <tr><td><code>Ralph Loop</code></td><td>Orchestrator</td></tr>
-                  <tr><td><code>Ralph Iteration</code></td><td>Orchestrator</td></tr>
-                  <tr><td><code>Execute Code Generation</code></td><td>Orchestrator</td></tr>
-                  <tr><td><code>Execute Milestone</code></td><td>Orchestrator</td></tr>
-                  <tr><td><code>Slice Context</code></td><td>Curator</td></tr>
-                  <tr><td><code>Verify Code Generation</code></td><td>Verifier</td></tr>
-                  <tr><td><code>Static Analysis</code></td><td>Verifier</td></tr>
-                  <tr><td><code>Intent Verification</code></td><td>Verifier</td></tr>
-                  <tr><td><code>Husky Execute</code></td><td>Husky</td></tr>
-                  <tr><td><code>Build Prompt</code></td><td>Husky</td></tr>
-                </tbody>
-              </table>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+              What are we assuming? Are we epistemically honest?
+            </p>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">
+              <strong style="color: var(--text-secondary);">Outputs:</strong> Hidden assumptions, Category errors, Humility checks
             </div>
           </div>
 
-          <div class="card">
-            <div class="card-header">
-              <span class="card-icon">📈</span>
-              <span class="card-title">Tracked Metrics</span>
+          <div class="card" style="border-left: 3px solid var(--accent-blue);">
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+              <span style="font-size: 1.5rem;">📊</span>
+              <strong style="font-size: 1rem;">Data Science</strong>
             </div>
-            <ul style="font-size: 0.85rem; list-style: none;">
-              <li style="padding: 0.4rem 0; border-bottom: 1px solid var(--border-color);">
-                Token usage (input/output per provider)
-              </li>
-              <li style="padding: 0.4rem 0; border-bottom: 1px solid var(--border-color);">
-                Cost per request (genai-prices)
-              </li>
-              <li style="padding: 0.4rem 0; border-bottom: 1px solid var(--border-color);">
-                Latency (per model, per provider)
-              </li>
-              <li style="padding: 0.4rem 0; border-bottom: 1px solid var(--border-color);">
-                Error rates (429s, timeouts, failures)
-              </li>
-              <li style="padding: 0.4rem 0; border-bottom: 1px solid var(--border-color);">
-                Drift scores (verification)
-              </li>
-              <li style="padding: 0.4rem 0;">
-                Retry counts (Ralph Loop)
-              </li>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+              Can we measure this? How do we test it?
+            </p>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">
+              <strong style="color: var(--text-secondary);">Outputs:</strong> Metrics plan, Confounding risks, Experiment design
+            </div>
+          </div>
+
+          <div class="card" style="border-left: 3px solid var(--accent-red);">
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+              <span style="font-size: 1.5rem;">🛡️</span>
+              <strong style="font-size: 1rem;">Safety/Risk</strong>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+              What could go wrong? What are the failure modes?
+            </p>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">
+              <strong style="color: var(--text-secondary);">Outputs:</strong> Risk flags, Abuse vectors, Circuit breakers
+            </div>
+          </div>
+
+          <div class="card" style="border-left: 3px solid var(--accent-cyan);">
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+              <span style="font-size: 1.5rem;">🔷</span>
+              <strong style="font-size: 1rem;">Topology</strong>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+              What's the structure? Is it stable?
+            </p>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">
+              <strong style="color: var(--text-secondary);">Outputs:</strong> Dependencies, Phase transitions, Connected components
+            </div>
+          </div>
+
+          <div class="card" style="border-left: 3px solid var(--accent-orange);">
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+              <span style="font-size: 1.5rem;">∑</span>
+              <strong style="font-size: 1rem;">Theoretical Math</strong>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+              Is this logically consistent?
+            </p>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">
+              <strong style="color: var(--text-secondary);">Outputs:</strong> Consistency checks, Minimal axioms, Counterexamples
+            </div>
+          </div>
+
+          <div class="card" style="border-left: 3px solid var(--accent-green);">
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+              <span style="font-size: 1.5rem;">⚙️</span>
+              <strong style="font-size: 1rem;">Systems Engineering</strong>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+              Can we build this? What are the interfaces?
+            </p>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">
+              <strong style="color: var(--text-secondary);">Outputs:</strong> Service boundaries, Tech stack, Failure recovery
+            </div>
+          </div>
+
+          <div class="card" style="border-left: 3px solid var(--accent-pink);">
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+              <span style="font-size: 1.5rem;">👤</span>
+              <strong style="font-size: 1rem;">Product/UX</strong>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+              Does this help users? What's the MVP?
+            </p>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">
+              <strong style="color: var(--text-secondary);">Outputs:</strong> Value hypotheses, User flows, Adoption risks
+            </div>
+          </div>
+        </div>
+
+        <!-- 6 Quality Gates -->
+        <h3 style="margin-top: 2rem; margin-bottom: 1rem; font-size: 1.3rem; color: var(--text-primary);">The 6 Quality Gates</h3>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+          Goals must pass <strong>ALL 6 gates</strong> before they become actionable:
+        </p>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+          <div style="padding: 1rem; background: var(--bg-card); border-left: 3px solid var(--accent-cyan); border-radius: 6px;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+              <span>👁️</span>
+              <strong style="font-size: 0.9rem;">Observables</strong>
+            </div>
+            <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0;">
+              Does this goal have measurable outcomes?
+            </p>
+          </div>
+
+          <div style="padding: 1rem; background: var(--bg-card); border-left: 3px solid var(--accent-green); border-radius: 6px;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+              <span>🧪</span>
+              <strong style="font-size: 0.9rem;">Testability</strong>
+            </div>
+            <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0;">
+              Does it have clear success/failure criteria?
+            </p>
+          </div>
+
+          <div style="padding: 1rem; background: var(--bg-card); border-left: 3px solid var(--accent-orange); border-radius: 6px;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+              <span>↩️</span>
+              <strong style="font-size: 0.9rem;">Reversibility</strong>
+            </div>
+            <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0;">
+              Is there a rollback plan if it fails?
+            </p>
+          </div>
+
+          <div style="padding: 1rem; background: var(--bg-card); border-left: 3px solid var(--accent-purple); border-radius: 6px;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+              <span>📈</span>
+              <strong style="font-size: 0.9rem;">Confidence</strong>
+            </div>
+            <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0;">
+              Is confidence above threshold (≥0.6)?
+            </p>
+          </div>
+
+          <div style="padding: 1rem; background: var(--bg-card); border-left: 3px solid var(--accent-blue); border-radius: 6px;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+              <span>🤝</span>
+              <strong style="font-size: 0.9rem;">Lens Agreement</strong>
+            </div>
+            <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0;">
+              Do 3+ lenses approve?
+            </p>
+          </div>
+
+          <div style="padding: 1rem; background: var(--bg-card); border-left: 3px solid var(--accent-pink); border-radius: 6px;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+              <span>📚</span>
+              <strong style="font-size: 0.9rem;">Evidence Grounding</strong>
+            </div>
+            <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0;">
+              Is it based on actual evidence?
+            </p>
+          </div>
+        </div>
+
+        <!-- Agent Coordination -->
+        <h3 style="margin-top: 2rem; margin-bottom: 1rem; font-size: 1.3rem; color: var(--text-primary);">Agent Coordination & Delegation</h3>
+        
+        <div class="card">
+          <div class="card-header">
+            <span class="card-icon">🤝</span>
+            <span class="card-title">Invoking Other Agents</span>
+          </div>
+          <div style="padding: 1.5rem;">
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
+              The Epistemic Architect can <strong>invoke other agents</strong> to delegate specialized work:
+            </p>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem; margin-top: 1rem;">
+              <div style="padding: 1rem; background: var(--bg-tertiary); border-radius: 6px; border: 1px solid var(--border-color);">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+                  <span style="font-size: 1.3rem;">☀️</span>
+                  <strong style="font-size: 0.9rem; color: var(--text-primary);">Invoke Helios</strong>
+                </div>
+                <p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
+                  The Universal Constructor creates custom tools when needed:
+                </p>
+                <pre style="font-size: 0.7rem; color: var(--accent-cyan); background: var(--bg-primary); padding: 0.75rem; border-radius: 4px; overflow-x: auto; margin: 0;">invoke_agent("helios", 
+  "Create a JWT validator tool")</pre>
+              </div>
+
+              <div style="padding: 1rem; background: var(--bg-tertiary); border-radius: 6px; border: 1px solid var(--border-color);">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+                  <span style="font-size: 1.3rem;">🏗️</span>
+                  <strong style="font-size: 0.9rem; color: var(--text-primary);">Invoke Agent Creator</strong>
+                </div>
+                <p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
+                  Creates specialized agents for the project:
+                </p>
+                <pre style="font-size: 0.7rem; color: var(--accent-green); background: var(--bg-primary); padding: 0.75rem; border-radius: 4px; overflow-x: auto; margin: 0;">invoke_agent("agent-creator", 
+  "Create a security auditor agent")</pre>
+              </div>
+            </div>
+
+            <div style="margin-top: 1.5rem; padding: 1rem; background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(59, 130, 246, 0.1)); border-radius: 6px; border-left: 3px solid var(--accent-purple);">
+              <strong style="font-size: 0.85rem; color: var(--text-primary);">Tools Available:</strong>
+              <div style="display: flex; gap: 0.75rem; margin-top: 0.5rem; flex-wrap: wrap;">
+                <code style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: var(--bg-card); border-radius: 4px;">list_agents</code>
+                <code style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: var(--bg-card); border-radius: 4px;">invoke_agent</code>
+                <code style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: var(--bg-card); border-radius: 4px;">list_files</code>
+                <code style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: var(--bg-card); border-radius: 4px;">read_file</code>
+                <code style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: var(--bg-card); border-radius: 4px;">edit_file</code>
+                <code style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: var(--bg-card); border-radius: 4px;">grep</code>
+                <code style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: var(--bg-card); border-radius: 4px;">agent_run_shell_command</code>
+                <code style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: var(--bg-card); border-radius: 4px;">agent_share_your_reasoning</code>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- When to Use -->
+        <h3 style="margin-top: 2rem; margin-bottom: 1rem; font-size: 1.3rem; color: var(--text-primary);">When to Use the Epistemic Architect</h3>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+          <div class="card" style="border-left: 3px solid var(--accent-green);">
+            <div style="margin-bottom: 1rem;">
+              <strong style="color: var(--accent-green); font-size: 0.9rem;">✅ Perfect For:</strong>
+            </div>
+            <ul style="font-size: 0.8rem; list-style: none; color: var(--text-secondary); padding-left: 0;">
+              <li style="padding: 0.4rem 0;">✅ Greenfield projects (starting from scratch)</li>
+              <li style="padding: 0.4rem 0;">✅ Complex features (need rigorous analysis)</li>
+              <li style="padding: 0.4rem 0;">✅ High-stakes work (security, payments, data)</li>
+              <li style="padding: 0.4rem 0;">✅ Unclear requirements (ambiguous asks)</li>
+              <li style="padding: 0.4rem 0;">✅ Multiple stakeholders (conflicting assumptions)</li>
+              <li style="padding: 0.4rem 0;">✅ Learning projects (understand deeply first)</li>
+            </ul>
+          </div>
+
+          <div class="card" style="border-left: 3px solid var(--accent-red);">
+            <div style="margin-bottom: 1rem;">
+              <strong style="color: var(--accent-red); font-size: 0.9rem;">❌ Not Ideal For:</strong>
+            </div>
+            <ul style="font-size: 0.8rem; list-style: none; color: var(--text-secondary); padding-left: 0;">
+              <li style="padding: 0.4rem 0;">❌ Quick bug fixes (too much process)</li>
+              <li style="padding: 0.4rem 0;">❌ Well-defined tasks (requirements crystal clear)</li>
+              <li style="padding: 0.4rem 0;">❌ Time pressure (need to ship in 30 minutes)</li>
+              <li style="padding: 0.4rem 0;">❌ Trivial changes (single-line edits)</li>
             </ul>
           </div>
         </div>
-      </section>
 
-      <!-- FILES SECTION -->
-      <section id="files" class="section">
-        <div class="section-header">
-          <h2>📁 File Structure</h2>
-          <p>Complete directory layout of the Code Puppy codebase.</p>
-        </div>
+        <!-- Example Session -->
+        <div class="card" style="margin-top: 1.5rem;">
+          <div class="card-header">
+            <span class="card-icon">💬</span>
+            <span class="card-title">Example Session</span>
+          </div>
+          <div style="padding: 1.5rem;">
+            <pre style="font-size: 0.75rem; line-height: 1.6; color: var(--text-secondary); background: var(--bg-tertiary); padding: 1rem; border-radius: 6px; overflow-x: auto;"><span style="color: var(--accent-cyan);"># Switch to epistemic architect</span>
+<span style="color: var(--accent-green);">/agent epistemic-architect</span>
 
-        <div class="card">
-          <div class="code-block">
-            <pre class="tree"><span class="folder">code_puppy/</span>
-├── <span class="file">__main__.py</span>              <span style="color: var(--text-muted)"># Entry point</span>
-├── <span class="file">main.py</span>                  <span style="color: var(--text-muted)"># Main application</span>
-├── <span class="file">cli_runner.py</span>            <span style="color: var(--text-muted)"># CLI interface</span>
-├── <span class="file">config.py</span>                <span style="color: var(--text-muted)"># Configuration management</span>
-├── <span class="file">model_factory.py</span>         <span style="color: var(--text-muted)"># Model instantiation</span>
-├── <span class="file">session_storage.py</span>       <span style="color: var(--text-muted)"># Session persistence</span>
-│
-├── <span class="folder">core/</span>                    <span style="color: var(--text-muted)"># Core infrastructure</span>
-│   ├── <span class="highlight">epistemic_orchestrator.py</span>  <span style="color: var(--text-muted)"># 🧠 Plan → Execute → Verify</span>
-│   ├── <span class="highlight">husky_execution.py</span>        <span style="color: var(--text-muted)"># 🦮 Cerebras GLM execution</span>
-│   ├── <span class="highlight">model_router.py</span>           <span style="color: var(--text-muted)"># 🔀 Tier-based routing</span>
-│   ├── <span class="file">token_budget.py</span>           <span style="color: var(--text-muted)"># 💰 Rate limiting</span>
-│   ├── <span class="file">context_compressor.py</span>     <span style="color: var(--text-muted)"># 📦 Context reduction</span>
-│   ├── <span class="file">circuit_breaker.py</span>        <span style="color: var(--text-muted)"># ⚡ Fault tolerance</span>
-│   └── <span class="file">connection_pool.py</span>        <span style="color: var(--text-muted)"># 🔌 HTTP pooling</span>
-│
-├── <span class="folder">agents/</span>                  <span style="color: var(--text-muted)"># Agent definitions</span>
-│   ├── <span class="file">base_agent.py</span>            <span style="color: var(--text-muted)"># Base class</span>
-│   ├── <span class="file">agent_code_puppy.py</span>      <span style="color: var(--text-muted)"># Main agent</span>
-│   ├── <span class="file">agent_pack_leader.py</span>     <span style="color: var(--text-muted)"># Orchestrator</span>
-│   └── <span class="folder">pack/</span>                    <span style="color: var(--text-muted)"># Pack dogs</span>
-│       ├── <span class="file">bloodhound.py</span>
-│       ├── <span class="file">husky.py</span>
-│       ├── <span class="file">shepherd.py</span>
-│       └── <span class="file">...</span>
-│
-├── <span class="folder">tools/</span>                   <span style="color: var(--text-muted)"># Tool implementations</span>
-│   ├── <span class="file">agent_tools.py</span>
-│   ├── <span class="file">file_operations.py</span>
-│   ├── <span class="file">token_slimmer.py</span>
-│   └── <span class="file">...</span>
-│
-├── <span class="folder">mcp_/</span>                    <span style="color: var(--text-muted)"># MCP infrastructure</span>
-│   ├── <span class="file">manager.py</span>
-│   ├── <span class="file">managed_server.py</span>
-│   └── <span class="file">registry.py</span>
-│
-├── <span class="folder">messaging/</span>               <span style="color: var(--text-muted)"># Event system</span>
-│   ├── <span class="file">bus.py</span>
-│   ├── <span class="file">messages.py</span>
-│   └── <span class="file">renderers.py</span>
-│
-├── <span class="folder">plugins/</span>                 <span style="color: var(--text-muted)"># Plugin system</span>
-│   ├── <span class="folder">ralph/</span>              <span style="color: var(--text-muted)"># Epistemic runtime</span>
-│   └── <span class="folder">shell_safety/</span>
-│
-└── <span class="folder">epistemic/</span>              <span style="color: var(--text-muted)"># Epistemic Agent Runtime</span>
-    └── <span class="folder">ear-runtime/</span>
-        └── <span class="folder">src/ear/core/</span>
-            ├── <span class="file">ralph_loop.py</span>
-            └── <span class="file">state.py</span></pre>
+<span style="color: var(--accent-cyan);"># User describes project</span>
+<span style="color: var(--text-primary);">> I want to build a task management app</span>
+
+<span style="color: var(--accent-cyan);"># Epistemic Architect guides through interview</span>
+> Great! Let's start with the epistemic state interview:
+> 
+> 1. What problem are you solving? Who are your users?
+> 2. What are you assuming is true about task management?
+> 3. What would prove you wrong?
+> 4. What are your hard constraints (non-negotiable)?
+> 5. What are your soft constraints (preferences)?
+> 6. What evidence do you already have?
+
+<span style="color: var(--accent-cyan);"># After interview, applies 7 lenses</span>
+> I've applied all 7 lenses. Here's what I found:
+> 
+> <span style="color: var(--accent-red);">🔴 CRITICAL Gaps:</span>
+>   • No clear definition of "task" (Philosophy lens)
+>   • No metrics for success (Data Science lens)
+> 
+> <span style="color: var(--accent-orange);">🟠 HIGH Gaps:</span>
+>   • Missing data persistence strategy (Systems lens)
+>   • No user authentication plan (Safety lens)
+
+<span style="color: var(--accent-cyan);"># Architect creates project structure</span>
+> I've scaffolded your project:
+> 
+> task-manager/
+> ├── epistemic/          (your assumptions & hypotheses)
+> ├── docs/               (lens evaluations & gaps)
+> ├── specs/              (entities, personas, flows)
+> └── BUILD.md            (8-hour plan with checkpoints)
+> 
+> Let's start with Phase 1: Foundation...
+
+<span style="color: var(--accent-cyan);"># After each milestone, checkpoints</span>
+> <span style="color: var(--accent-purple);">🔍 CHECKPOINT:</span> SQLite persistence layer
+> ✅ Completed: Database schema, CRUD operations
+> 🧪 Verified: All tests pass (12/12)
+> ⚠️ Issues: None
+> 📋 Spec Compliance: Meets entities.md spec ✅
+> ➡️ Next: Milestone 2.2 (API endpoints)</pre>
           </div>
         </div>
+
+        <!-- Integration Info -->
+        <div class="info-card" style="margin-top: 1.5rem; background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1)); border-left: 3px solid var(--accent-blue);">
+          <div style="font-size: 0.85rem; color: var(--text-secondary);">
+            <strong style="color: var(--text-primary);">Integration with Code Puppy's Routing:</strong><br>
+            • Workload Type: <code style="font-size: 0.75rem; padding: 0.2rem 0.4rem; background: var(--bg-card); border-radius: 4px;">ORCHESTRATOR</code><br>
+            • Model Tier: Prefers <strong>T1 Architect</strong> models (claude-sonnet-4-5, gpt-5.2-codex)<br>
+            • Minimum Context: 32K tokens (for full epistemic state)<br>
+            • Uses ORCHESTRATOR failover chain in <code>failover_config.py</code>
+          </div>
+        </div>
+
       </section>
 
-    </main>
-  </div>
-
-  <script>
-    // Mobile Menu Toggle
-    const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
-    const sidebar = document.querySelector('.sidebar');
-    const sidebarOverlay = document.querySelector('.sidebar-overlay');
-
-    const toggleMobileMenu = () => {
-      sidebar.classList.toggle('active');
-      sidebarOverlay.classList.toggle('active');
-    };
-
-    mobileMenuToggle.addEventListener('click', toggleMobileMenu);
-    sidebarOverlay.addEventListener('click', toggleMobileMenu);
-
-    // Navigation
-    document.querySelectorAll('.nav-item').forEach(item => {
-      item.addEventListener('click', () => {
-        // Update nav
-        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-        item.classList.add('active');
-        
-        // Update sections
-        const target = item.dataset.section;
-        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-        document.getElementById(target).classList.add('active');
-        
-        // Close mobile menu on navigation
-        if (window.innerWidth <= 768) {
-          sidebar.classList.remove('active');
-          sidebarOverlay.classList.remove('active');
-        }
-        
-        // Scroll to top
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      });
-    });
-
-    // Animate stats on load
-    const animateValue = (el, start, end, duration) => {
-      const range = end - start;
-      const startTime = performance.now();
-      
-      const update = (currentTime) => {
-        const elapsed = currentTime - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        const current = Math.floor(start + range * progress);
-        el.textContent = current.toLocaleString();
-        
-        if (progress < 1) {
-          requestAnimationFrame(update);
-        }
-      };
-      
-      requestAnimationFrame(update);
-    };
-
-    // Animate metrics bars
-    document.querySelectorAll('.metric-fill').forEach(bar => {
-      const width = bar.style.width;
-      bar.style.width = '0';
-      setTimeout(() => {
-        bar.style.width = width;
-      }, 100);
-    });
-
-    // Handle window resize - close mobile menu when resizing to desktop
-    window.addEventListener('resize', () => {
-      if (window.innerWidth > 768) {
-        sidebar.classList.remove('active');
-        sidebarOverlay.classList.remove('active');
-      }
-    });
-  </script>
-</body>
-</html>
