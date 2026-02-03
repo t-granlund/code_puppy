@@ -2085,119 +2085,307 @@ calc_price(usage) → <span style="color: var(--accent-green)">Decimal</span> (U
         </div>
 
         <!-- Workflow Diagram -->
+        <style>
+          .timeline {
+            position: relative;
+            padding-left: 2rem;
+            margin: 2rem 0;
+          }
+          .timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--border-color);
+          }
+          .timeline-item {
+            position: relative;
+            margin-bottom: 2rem;
+          }
+          .timeline-item:last-child {
+            margin-bottom: 0;
+          }
+          .timeline-marker {
+            position: absolute;
+            left: -2.4rem;
+            top: 0;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            border: 2px solid var(--accent-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.85rem;
+            z-index: 2;
+          }
+          .timeline-marker.purple { border-color: var(--accent-purple); color: var(--accent-purple); }
+          .timeline-marker.blue { border-color: var(--accent-blue); color: var(--accent-blue); }
+          .timeline-marker.green { border-color: var(--accent-green); color: var(--accent-green); }
+          .timeline-marker.orange { border-color: var(--accent-orange); color: var(--accent-orange); }
+          .timeline-marker.cyan { border-color: var(--accent-cyan); color: var(--accent-cyan); }
+          
+          .timeline-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.25rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+          }
+          .timeline-card:hover {
+            transform: translateX(4px);
+            border-color: var(--border-highlight);
+            box-shadow: var(--shadow-md);
+          }
+          .timeline-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          }
+          .tag-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+          }
+          .file-tag {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--accent-green);
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+          }
+          
+          /* Cycle Visualization */
+          .cycle-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            padding: 2rem;
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            position: relative;
+            margin-bottom: 1rem;
+          }
+          .cycle-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+          }
+          .cycle-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            border: 2px solid var(--accent-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 0.75rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transition: transform 0.2s ease;
+          }
+          .cycle-step:hover .cycle-icon {
+            transform: scale(1.1);
+          }
+          
+          /* Connecting lines for cycle */
+          .cycle-step:not(:last-child)::after {
+            content: '→';
+            position: absolute;
+            right: -20px;
+            top: 15px;
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            font-weight: bold;
+          }
+          
+          @media (max-width: 768px) {
+            .cycle-container {
+              grid-template-columns: 1fr;
+              gap: 2rem;
+            }
+            .cycle-step:not(:last-child)::after {
+              content: '↓';
+              right: auto;
+              top: auto;
+              bottom: -25px;
+            }
+          }
+        </style>
+
         <div class="card" style="margin-top: 1.5rem;">
           <div class="card-header">
-            <span class="card-icon">🔄</span>
+            <span class="card-icon">🚀</span>
             <span class="card-title">Workflow: From Prompt to Build Plan</span>
           </div>
           
-          <div style="padding: 1.5rem; font-family: var(--font-mono); font-size: 0.75rem; line-height: 1.8; background: var(--bg-tertiary); border-radius: 8px; overflow-x: auto;">
-            <pre style="margin: 0; color: var(--text-secondary);">
-User: "I want to build X"
-    ↓
-┌─────────────────────────────────────────────────────────────┐
-│ <span style="color: var(--accent-cyan);">STAGE 1: Epistemic State Interview</span>                         │
-│ Ask probing questions to surface:                           │
-│  • Assumptions (what do you believe?)                       │
-│  • Hypotheses (what are you testing?)                       │
-│  • Constraints (hard vs soft)                               │
-│  • Evidence (what do you already know?)                     │
-│                                                              │
-│ Output: <span style="color: var(--accent-green);">epistemic/state.json</span>                                  │
-└─────────────────────────────────────────────────────────────┘
-    ↓
-┌─────────────────────────────────────────────────────────────┐
-│ <span style="color: var(--accent-cyan);">STAGE 2-3: Apply 7 Expert Lenses + Gap Analysis</span>           │
-│                                                              │
-│ 🧠 Philosophy     📊 Data Science     🛡️ Safety/Risk        │
-│ 🔷 Topology       ∑ Math Theory       ⚙️ Systems Engineering │
-│ 👤 Product/UX                                                │
-│                                                              │
-│ Output: Gaps classified as                                   │
-│  <span style="color: var(--accent-red);">🔴 CRITICAL</span> <span style="color: var(--accent-orange);">🟠 HIGH</span> <span style="color: var(--accent-orange);">🟡 MEDIUM</span> <span style="color: var(--accent-green);">🟢 LOW</span>           │
-│                                                              │
-│ Files: <span style="color: var(--accent-green);">docs/lens-evaluation.md</span>                              │
-│        <span style="color: var(--accent-green);">docs/gap-analysis.md</span>                                 │
-└─────────────────────────────────────────────────────────────┘
-    ↓
-┌─────────────────────────────────────────────────────────────┐
-│ <span style="color: var(--accent-cyan);">STAGE 4: Goal Emergence + 6 Quality Gates</span>                 │
-│                                                              │
-│ Generate candidate goals, each must pass ALL gates:         │
-│  ✅ Observables — Measurable outcomes?                       │
-│  ✅ Testability — Success/failure criteria?                  │
-│  ✅ Reversibility — Rollback plan?                           │
-│  ✅ Confidence — Above 0.6 threshold?                        │
-│  ✅ Lens Agreement — 3+ lenses approve?                      │
-│  ✅ Evidence Grounding — Based on evidence?                  │
-│                                                              │
-│ Goals that fail gates → NOT actionable (yet)                │
-│                                                              │
-│ File: <span style="color: var(--accent-green);">docs/goals-and-gates.md</span>                                │
-└─────────────────────────────────────────────────────────────┘
-    ↓
-┌─────────────────────────────────────────────────────────────┐
-│ <span style="color: var(--accent-cyan);">STAGE 5-6: MVP Planning + Spec Generation</span>                 │
-│                                                              │
-│ Create BUILD.md with:                                        │
-│  • Phases: Foundation → Core → Polish                       │
-│  • Milestones: 1-2 hour chunks                              │
-│  • Checkpoints: Verify at each milestone                    │
-│  • Rollback plans: How to undo                              │
-│  • Spec files: entities, personas, flows, metrics           │
-│                                                              │
-│ Files: <span style="color: var(--accent-green);">BUILD.md</span>                                             │
-│        <span style="color: var(--accent-green);">specs/entities.md</span>                                     │
-│        <span style="color: var(--accent-green);">specs/personas.md</span>                                     │
-│        <span style="color: var(--accent-green);">specs/critical-flows.md</span>                               │
-└─────────────────────────────────────────────────────────────┘
-    ↓
-┌─────────────────────────────────────────────────────────────┐
-│ <span style="color: var(--accent-cyan);">STAGE 7+: Build Execution with Checkpoints</span>                │
-│                                                              │
-│ After each milestone, checkpoint:                           │
-│  ✅ Completed: What was built                                │
-│  🧪 Verified: What was tested                                │
-│  ⚠️ Issues: Any problems                                     │
-│  📋 Spec Compliance: Which specs met                         │
-│  ➡️ Next: Next milestone                                     │
-└─────────────────────────────────────────────────────────────┘
-    ↓
-┌─────────────────────────────────────────────────────────────┐
-│ <span style="color: var(--accent-cyan);">STAGE 8-12: Continuous Improvement Loop</span>                   │
-│                                                              │
-│  • <span style="color: var(--accent-purple);">Audit:</span> Evidence → Analysis → Recommendations              │
-│  • <span style="color: var(--accent-purple);">Re-inspect:</span> Find new gaps                                  │
-│  • <span style="color: var(--accent-purple);">Update:</span> Close hypotheses, track questions                 │
-│  • <span style="color: var(--accent-purple);">Verify:</span> End-to-end audit                                   │
-│  • <span style="color: var(--accent-purple);">Loop back to Stage 8</span>                                       │
-│                                                              │
-│ File: <span style="color: var(--accent-green);">docs/improvement-plan.md</span>                               │
-└─────────────────────────────────────────────────────────────┘
-            </pre>
+          <div style="padding: 1.5rem;">
+            <div class="timeline">
+              
+              <!-- Step 1 -->
+              <div class="timeline-item">
+                <div class="timeline-marker purple">1</div>
+                <div class="timeline-card">
+                  <div class="timeline-title">
+                    <span>Epistemic State Interview</span>
+                    <span style="font-size:0.75rem; background: rgba(139, 92, 246, 0.15); color: var(--accent-purple); padding: 2px 8px; border-radius: 12px;">Intake</span>
+                  </div>
+                  <p style="font-size: 0.85rem; color: var(--text-secondary);">
+                    Ask probing questions to surface assumptions, hypotheses, constraints, and evidence.
+                  </p>
+                  <div class="tag-list">
+                    <span class="file-tag">output: epistemic/state.json</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Step 2-3 -->
+              <div class="timeline-item">
+                <div class="timeline-marker blue">2</div>
+                <div class="timeline-card">
+                  <div class="timeline-title">
+                    <span>Expert Lenses + Gap Analysis</span>
+                    <span style="font-size:0.75rem; background: rgba(59, 130, 246, 0.15); color: var(--accent-blue); padding: 2px 8px; border-radius: 12px;">Evaluation</span>
+                  </div>
+                  <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+                    Apply 7 lenses (Philosophy, Data Science, Safety, etc.) to find blind spots.
+                  </p>
+                  <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                    <span style="font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; background: rgba(239, 68, 68, 0.2); color: var(--accent-red);">🔴 CRITICAL</span>
+                    <span style="font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; background: rgba(245, 158, 11, 0.2); color: var(--accent-orange);">🟠 HIGH</span>
+                  </div>
+                  <div class="tag-list">
+                    <span class="file-tag">docs/lens-evaluation.md</span>
+                    <span class="file-tag">docs/gap-analysis.md</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Step 4 -->
+              <div class="timeline-item">
+                <div class="timeline-marker green">3</div>
+                <div class="timeline-card">
+                  <div class="timeline-title">
+                    <span>Goal Emergence & Quality Gates</span>
+                    <span style="font-size:0.75rem; background: rgba(16, 185, 129, 0.15); color: var(--accent-green); padding: 2px 8px; border-radius: 12px;">Refinement</span>
+                  </div>
+                  <p style="font-size: 0.85rem; color: var(--text-secondary);">
+                    Generate candidate goals. Each must pass <strong>all 6 quality gates</strong> (Observables, Testability, etc.) to proceed.
+                  </p>
+                  <div class="tag-list">
+                    <span class="file-tag">docs/goals-and-gates.md</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Step 5-6 -->
+              <div class="timeline-item">
+                <div class="timeline-marker orange">4</div>
+                <div class="timeline-card">
+                  <div class="timeline-title">
+                    <span>MVP Planning & Spec Generation</span>
+                    <span style="font-size:0.75rem; background: rgba(245, 158, 11, 0.15); color: var(--accent-orange); padding: 2px 8px; border-radius: 12px;">Architecture</span>
+                  </div>
+                  <p style="font-size: 0.85rem; color: var(--text-secondary);">
+                    Create phased build plan with 1-2 hour milestones, rollback plans, and technical specifications.
+                  </p>
+                  <div class="tag-list">
+                    <span class="file-tag">BUILD.md</span>
+                    <span class="file-tag">specs/*.md</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Step 7+ -->
+              <div class="timeline-item">
+                <div class="timeline-marker cyan">5</div>
+                <div class="timeline-card">
+                  <div class="timeline-title">
+                    <span>Build Execution & Checkpoints</span>
+                    <span style="font-size:0.75rem; background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); padding: 2px 8px; border-radius: 12px;">Action</span>
+                  </div>
+                  <p style="font-size: 0.85rem; color: var(--text-secondary);">
+                    Execute milestones. Verify specs, run tests, and confirm completion before moving next.
+                  </p>
+                </div>
+              </div>
+
+              <!-- Step 8-12 -->
+              <div class="timeline-item">
+                <div class="timeline-marker purple">6</div>
+                <div class="timeline-card">
+                  <div class="timeline-title">
+                    <span>Continuous Improvement Loop</span>
+                    <span style="font-size:0.75rem; background: rgba(139, 92, 246, 0.15); color: var(--accent-purple); padding: 2px 8px; border-radius: 12px;">Optimization</span>
+                  </div>
+                  <p style="font-size: 0.85rem; color: var(--text-secondary);">
+                    Audit -> Re-inspect -> Update -> Verify. The process loops back to refinement.
+                  </p>
+                  <div class="tag-list">
+                     <span class="file-tag">docs/improvement-plan.md</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
           </div>
         </div>
 
-        <!-- Ralph Loops -->
+        <!-- Ralph Loops Interactive -->
         <div class="card" style="margin-top: 1.5rem;">
           <div class="card-header">
             <span class="card-icon">🔄</span>
             <span class="card-title">Ralph (Wiggum) Loops: The Core Pattern</span>
           </div>
           <div style="padding: 1.5rem;">
-            <div style="text-align: center; font-family: var(--font-mono); font-size: 1.1rem; padding: 1rem; background: var(--bg-tertiary); border-radius: 8px; margin-bottom: 1rem;">
-              <span style="color: var(--accent-cyan);">Observe</span> → 
-              <span style="color: var(--accent-purple);">Orient</span> → 
-              <span style="color: var(--accent-orange);">Decide</span> → 
-              <span style="color: var(--accent-green);">Act</span> → 
-              <span style="color: var(--accent-cyan);">Observe</span> 
-              <span style="color: var(--text-muted);">(repeat)</span>
+            
+            <div class="cycle-container">
+              <div class="cycle-step">
+                <div class="cycle-icon" style="border-color: var(--accent-cyan); color: var(--accent-cyan);">👁️</div>
+                <strong style="font-size: 0.9rem;">Observe</strong>
+                <span style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">Collect Evidence</span>
+              </div>
+              
+              <div class="cycle-step">
+                <div class="cycle-icon" style="border-color: var(--accent-purple); color: var(--accent-purple);">🧭</div>
+                <strong style="font-size: 0.9rem;">Orient</strong>
+                <span style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">Contextualize</span>
+              </div>
+
+              <div class="cycle-step">
+                <div class="cycle-icon" style="border-color: var(--accent-orange); color: var(--accent-orange);">⚖️</div>
+                <strong style="font-size: 0.9rem;">Decide</strong>
+                <span style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">Select Goal</span>
+              </div>
+
+              <div class="cycle-step">
+                <div class="cycle-icon" style="border-color: var(--accent-green); color: var(--accent-green);">⚡</div>
+                <strong style="font-size: 0.9rem;">Act</strong>
+                <span style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">Execute & Change</span>
+              </div>
             </div>
-            <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">
+
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 1rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
               <strong style="color: var(--text-primary);">Key Insight:</strong> Goals are <strong>outputs</strong>, not inputs. 
               They emerge from evidence, not assumptions. Every iteration of the loop refines understanding.
             </p>
           </div>
+        </div>
         </div>
 
         <!-- 7 Expert Lenses -->
