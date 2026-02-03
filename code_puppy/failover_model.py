@@ -55,33 +55,44 @@ BACKOFF_MAX_SECONDS = 30.0  # Cap on backoff delay
 COOLDOWN_SECONDS = 60.0     # How long a model stays in cooldown after 429
 
 
-def _is_rate_limit_error(exc: Exception) -> bool:
-    """Check if an exception is a rate limit error (429).
+def _is_failover_error(exc: Exception) -> bool:
+    """Check if an exception should trigger failover to next model.
+    
+    Triggers failover on:
+    - 429 Rate Limit errors
+    - 500/502/503 Server errors (model unavailable or misconfigured)
+    - 401/403 Authentication errors (invalid token/model access)
     
     Handles various exception types from different providers:
-    - anthropic.RateLimitError
-    - openai.RateLimitError  
-    - httpx-based 429 responses
-    - Generic API errors with 429 status
+    - anthropic.RateLimitError, InternalServerError, AuthenticationError
+    - openai.RateLimitError, APIError
+    - httpx-based status code responses
+    - Generic API errors with status codes
     """
     exc_type = type(exc).__name__
     exc_str = str(exc).lower()
     
     # Check by exception type name
-    if "ratelimit" in exc_type.lower():
+    if any(err in exc_type.lower() for err in ["ratelimit", "internalserver", "authentication", "apierror"]):
         return True
     
     # Check by message content
-    if "429" in exc_str or "rate limit" in exc_str or "too many requests" in exc_str:
+    failover_indicators = [
+        "429", "rate limit", "too many requests",
+        "500", "502", "503", "internal server error", "service unavailable",
+        "401", "403", "authentication", "unauthorized", "forbidden"
+    ]
+    if any(indicator in exc_str for indicator in failover_indicators):
         return True
     
-    # Check for status_code attribute
-    if hasattr(exc, "status_code") and exc.status_code == 429:
-        return True
+    # Check for status_code attribute (429, 500, 502, 503, 401, 403)
+    if hasattr(exc, "status_code"):
+        if exc.status_code in (429, 500, 502, 503, 401, 403):
+            return True
     
-    # Check for response with 429 status
+    # Check for response with failover status codes
     if hasattr(exc, "response") and hasattr(exc.response, "status_code"):
-        if exc.response.status_code == 429:
+        if exc.response.status_code in (429, 500, 502, 503, 401, 403):
             return True
     
     return False
@@ -361,7 +372,7 @@ class FailoverModel(Model):
             except Exception as e:
                 last_error = e
                 
-                if _is_rate_limit_error(e):
+                if _is_failover_error(e):
                     self._mark_model_failed(model)
                     
                     # Calculate backoff delay to prevent rapid cascade failures
@@ -370,8 +381,10 @@ class FailoverModel(Model):
                     # Get next model for log message
                     next_model = self._get_next_model()
                     if next_model:
+                        # Determine error type for better logging
+                        error_type = "Rate limit" if "429" in str(e) else "Server error" if "500" in str(e) or "502" in str(e) or "503" in str(e) else "Auth error"
                         logger.info(
-                            f"🔄 Rate limit on {model.model_name} → "
+                            f"🔄 {error_type} on {model.model_name} → "
                             f"Backing off {backoff_delay:.1f}s → "
                             f"Failing over to {next_model.model_name}"
                         )
@@ -379,7 +392,7 @@ class FailoverModel(Model):
                         await asyncio.sleep(backoff_delay)
                     else:
                         logger.warning(
-                            f"⚠️  Rate limit on {model.model_name}, "
+                            f"⚠️  Error on {model.model_name}, "
                             f"no more failover models available (all in cooldown)"
                         )
                     
@@ -436,18 +449,20 @@ class FailoverModel(Model):
             except Exception as e:
                 last_error = e
                 
-                if _is_rate_limit_error(e):
+                if _is_failover_error(e):
                     self._mark_model_failed(model)
                     
                     next_model = self._get_next_model()
                     if next_model:
+                        # Determine error type for better logging
+                        error_type = "Rate limit" if "429" in str(e) else "Server error" if "500" in str(e) or "502" in str(e) or "503" in str(e) else "Auth error"
                         logger.info(
-                            f"🔄 Stream rate limit on {model.model_name} → "
+                            f"🔄 Stream {error_type} on {model.model_name} → "
                             f"Failing over to {next_model.model_name}"
                         )
                     else:
                         logger.warning(
-                            f"⚠️  Stream rate limit on {model.model_name}, "
+                            f"⚠️  Stream error on {model.model_name}, "
                             f"no more failover models available"
                         )
                     
