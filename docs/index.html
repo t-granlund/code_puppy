@@ -957,10 +957,19 @@
           <span class="icon">🧠</span> BART Orchestration
         </div>
         <div class="nav-item" data-section="model-router">
-          <span class="icon">🔀</span> Model Router
+          <span class="icon">🔀</span> Intelligent Router
+        </div>
+        <div class="nav-item" data-section="capacity">
+          <span class="icon">📊</span> Capacity Tracking
+        </div>
+        <div class="nav-item" data-section="smart-selection">
+          <span class="icon">🎯</span> Smart Selection
         </div>
         <div class="nav-item" data-section="credentials">
           <span class="icon">🔐</span> Credential Availability
+        </div>
+        <div class="nav-item" data-section="workload-chains">
+          <span class="icon">⛓️</span> Workload Chains
         </div>
         <div class="nav-item" data-section="cerebras">
           <span class="icon">⚡</span> Cerebras GLM 4.7
@@ -1362,30 +1371,51 @@
         </div>
       </section>
 
-      <!-- MODEL ROUTER SECTION -->
+      <!-- INTELLIGENT ROUTER SECTION -->
       <section id="model-router" class="section">
         <div class="section-header">
-          <h2>🔀 Model Router</h2>
-          <p>Intelligent tier-based routing system that selects the optimal model based on task complexity, type, and cost.</p>
+          <h2>🔀 Intelligent Router</h2>
+          <p>Central orchestration layer that coordinates capacity tracking, smart selection, credential filtering, and workload chains to ensure work never stops.</p>
         </div>
 
-        <h3>Model Tier Pyramid</h3>
+        <h3>Core Architecture Flow</h3>
+        <div class="code-block">
+          <pre>┌─────────────────────────────────────────────────────────────────────┐
+│                        INTELLIGENT ROUTER                            │
+│                     (intelligent_router.py)                          │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│   ┌─────────────┐    ┌─────────────────┐    ┌─────────────────┐    │
+│   │  Capacity   │───▶│ Smart Selection │───▶│  Workload Chain │    │
+│   │  Tracker    │    │   (5 strategies)│    │  (4 workloads)  │    │
+│   └─────────────┘    └─────────────────┘    └─────────────────┘    │
+│         │                    │                       │              │
+│         ▼                    ▼                       ▼              │
+│   ┌─────────────┐    ┌─────────────────┐    ┌─────────────────┐    │
+│   │ Credential  │───▶│   Round Robin   │───▶│   Rate Limit    │    │
+│   │ Availability│    │ Capacity-Aware  │    │    Failover     │    │
+│   └─────────────┘    └─────────────────┘    └─────────────────┘    │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘</pre>
+        </div>
+
+        <h3>Model Tier Pyramid (5 Tiers)</h3>
         <div class="tier-pyramid">
           <div class="tier-level tier-1">
             <span class="tier-label">Tier 1 • ARCHITECT</span>
-            <span class="tier-model">Claude Opus 4.5</span>
+            <span class="tier-model">Claude Opus 4.5, Kimi K2.5 Thinking, Qwen3-235B</span>
           </div>
           <div class="tier-level tier-2">
             <span class="tier-label">Tier 2 • BUILDER-HIGH</span>
-            <span class="tier-model">Codex 5.2</span>
+            <span class="tier-model">Sonnet 4.5 Thinking, Codex 5.2, DeepSeek R1</span>
           </div>
           <div class="tier-level tier-3">
             <span class="tier-label">Tier 3 • BUILDER-MID</span>
-            <span class="tier-model">Claude Sonnet 4.5</span>
+            <span class="tier-model">Claude Sonnet 4.5, Gemini 3 Pro, MiniMax M2.1</span>
           </div>
           <div class="tier-level tier-4">
             <span class="tier-label">Tier 4 • LIBRARIAN</span>
-            <span class="tier-model">Gemini 3 Flash/Pro</span>
+            <span class="tier-model">Claude Haiku 4.5, Gemini 3 Flash, OpenRouter Free</span>
           </div>
           <div class="tier-level tier-5">
             <span class="tier-label">Tier 5 • SPRINTER</span>
@@ -1396,36 +1426,182 @@
         <div class="grid-2" style="margin-top: 2rem;">
           <div class="card">
             <div class="card-header">
-              <span class="card-icon">🎯</span>
-              <span class="card-title">Task Type Routing</span>
+              <span class="card-icon">📁</span>
+              <span class="card-title">6 Core Routing Files</span>
             </div>
-            <div class="table-container">
-              <table>
-                <thead>
-                  <tr><th>Task Type</th><th>Tier</th><th>Model</th></tr>
-                </thead>
-                <tbody>
-                  <tr><td>Planning, Security Audit</td><td><span class="tag tag-purple">T1</span></td><td>Opus</td></tr>
-                  <tr><td>Complex Refactoring</td><td><span class="tag tag-blue">T2</span></td><td>Codex</td></tr>
-                  <tr><td>Class/API Design</td><td><span class="tag tag-cyan">T3</span></td><td>Sonnet</td></tr>
-                  <tr><td>Context Search, Docs</td><td><span class="tag tag-green">T4</span></td><td>Gemini</td></tr>
-                  <tr><td>Code Gen, Tests</td><td><span class="tag tag-orange">T5</span></td><td>GLM 4.7</td></tr>
-                </tbody>
-              </table>
+            <div class="code-block">
+              <pre><span style="color: var(--accent-blue)">intelligent_router.py</span>      ~ 516 lines
+<span style="color: var(--accent-green)">model_capacity.py</span>          ~ 717 lines
+<span style="color: var(--accent-purple)">capacity_aware_round_robin.py</span> ~ 392 lines
+<span style="color: var(--accent-orange)">failover_config.py</span>         ~ 392+ lines
+<span style="color: var(--accent-cyan)">smart_selection.py</span>         ~ 107+ lines
+<span style="color: var(--accent-pink)">credential_availability.py</span> ~ 439 lines</pre>
             </div>
           </div>
 
           <div class="card">
             <div class="card-header">
-              <span class="card-icon">📈</span>
-              <span class="card-title">Complexity Routing</span>
+              <span class="card-icon">🎯</span>
+              <span class="card-title">Design Philosophy</span>
             </div>
             <div class="code-block">
-              <pre><span style="color: var(--accent-green)">TaskComplexity.LOW</span>       → Tier 5 (Cerebras)
-<span style="color: var(--accent-cyan)">TaskComplexity.MEDIUM</span>    → Tier 4 (Gemini) or Tier 3 (Sonnet)
-<span style="color: var(--accent-orange)">TaskComplexity.HIGH</span>      → Tier 2 (Codex) or Tier 1 (Opus)
-<span style="color: var(--accent-red)">TaskComplexity.CRITICAL</span>  → Tier 1 (Opus) <strong>always</strong></pre>
+              <pre><span style="color: var(--accent-green)">✓</span> Work Never Stops
+<span style="color: var(--accent-cyan)">✓</span> Proactive > Reactive (80% threshold)
+<span style="color: var(--accent-orange)">✓</span> Same-Tier First (quality)
+<span style="color: var(--accent-purple)">✓</span> Credential-First (no waste)
+<span style="color: var(--accent-blue)">✓</span> Telemetry-Driven (Logfire)</pre>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CAPACITY TRACKING SECTION -->
+      <section id="capacity" class="section">
+        <div class="section-header">
+          <h2>📊 Capacity Tracking</h2>
+          <p>Real-time monitoring of model capacity with proactive failover at 80% threshold.</p>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-icon">📈</span>
+              <span class="card-title">Capacity Status Flow</span>
+            </div>
+            <div class="code-block">
+              <pre>AVAILABLE (0-79%)
+    ↓ usage ≥ 80%
+APPROACHING (80-94%)
+    ↓ usage ≥ 95%
+LOW (95-99%)
+    ↓ usage = 100%
+EXHAUSTED → COOLDOWN → AVAILABLE</pre>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <span class="card-icon">⚙️</span>
+              <span class="card-title">Key Thresholds</span>
+            </div>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr><th>Status</th><th>Value</th><th>Action</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td><span class="tag tag-green">APPROACHING</span></td><td>80%</td><td>Proactive failover</td></tr>
+                  <tr><td><span class="tag tag-orange">LOW</span></td><td>95%</td><td>Urgent switch</td></tr>
+                  <tr><td><span class="tag tag-red">EXHAUSTED</span></td><td>100%</td><td>Enter cooldown</td></tr>
+                  <tr><td><span class="tag tag-purple">COOLDOWN</span></td><td>60s</td><td>Wait before retry</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SMART SELECTION SECTION -->
+      <section id="smart-selection" class="section">
+        <div class="section-header">
+          <h2>🎯 Smart Model Selection</h2>
+          <p>Multi-factor scoring system with 5 strategies and weighted selection criteria.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-icon">📊</span>
+            <span class="card-title">5 Selection Strategies</span>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr><th>Strategy</th><th>Cost</th><th>Speed</th><th>Reliability</th><th>Capability</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><span class="tag tag-green">COST</span></td><td>60%</td><td>20%</td><td>20%</td><td>-</td></tr>
+                <tr><td><span class="tag tag-orange">SPEED</span></td><td>20%</td><td>60%</td><td>20%</td><td>-</td></tr>
+                <tr><td><span class="tag tag-blue">RELIABILITY</span></td><td>20%</td><td>20%</td><td>60%</td><td>-</td></tr>
+                <tr><td><span class="tag tag-purple">BALANCED</span></td><td>33%</td><td>33%</td><td>33%</td><td>-</td></tr>
+                <tr><td><span class="tag tag-cyan">CAPABILITY</span></td><td>20%</td><td>-</td><td>30%</td><td>50%</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- WORKLOAD CHAINS SECTION -->
+      <section id="workload-chains" class="section">
+        <div class="section-header">
+          <h2>⛓️ Workload Chains</h2>
+          <p>4 specialized failover chains optimized for different task types with 35+ models across 8 providers.</p>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-icon">🏗️</span>
+              <span class="card-title">ORCHESTRATOR (Planning)</span>
+            </div>
+            <div class="code-block">
+              <pre>claude-opus-4-5 → opus-thinking-high
+  → Kimi-K2.5 → Kimi-K2 → Qwen3-235B</pre>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <span class="card-icon">🧠</span>
+              <span class="card-title">REASONING</span>
+            </div>
+            <div class="code-block">
+              <pre>sonnet-4-5-thinking-high → gpt-5.2
+  → DeepSeek-R1 → gemini-3-pro-high</pre>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <span class="card-icon">💻</span>
+              <span class="card-title">CODING</span>
+            </div>
+            <div class="code-block">
+              <pre>gpt-5.2-codex → sonnet-4-5
+  → GLM-4.7 → zai-glm-4.7 → synthetic</pre>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <span class="card-icon">📚</span>
+              <span class="card-title">LIBRARIAN (Context)</span>
+            </div>
+            <div class="code-block">
+              <pre>Gemini-3-Long (2M!) → gemini-3-flash
+  → MiniMax-M2.1 (1M) → claude-haiku</pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top: 1.5rem;">
+          <div class="card-header">
+            <span class="card-icon">🏢</span>
+            <span class="card-title">Provider Rate Limits</span>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr><th>Provider</th><th>RPM</th><th>TPM</th><th>Auth</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>claude_code</td><td>50</td><td>40K</td><td>OAuth</td></tr>
+                <tr><td>antigravity</td><td>60</td><td>100K</td><td>OAuth</td></tr>
+                <tr><td>chatgpt</td><td>60</td><td>30K</td><td>OAuth</td></tr>
+                <tr><td>cerebras</td><td>60</td><td>1M</td><td>API Key</td></tr>
+                <tr><td>gemini</td><td>60</td><td>1M</td><td>API Key</td></tr>
+                <tr><td>synthetic</td><td>30</td><td>100K</td><td>API Key</td></tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </section>

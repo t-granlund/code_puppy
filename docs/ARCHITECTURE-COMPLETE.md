@@ -110,32 +110,110 @@ AGENT_WORKLOAD_REGISTRY = {
 
 ---
 
-## 3. Intelligent Model Routing
+## 3. Intelligent Model Routing System
 
-### Capacity-Aware Selection (`intelligent_router.py`)
+The routing system is a **comprehensive capacity-aware, workload-based intelligent model routing system** that ensures work **never stops due to rate limits**. It consists of 5 interconnected modules.
 
-The router ensures **work never stops due to rate limits**:
+### 3.1 Core Architecture
 
-1. **Track capacity** from API response headers (x-ratelimit-remaining-*)
-2. **Proactive switch** at 80% capacity (before hitting 429)
-3. **Round-robin** among same-tier models
-4. **Emit telemetry** for learning patterns
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        User Request                              │
+└─────────────────────────┬───────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  1. Agent Name → Workload Type (AGENT_WORKLOAD_REGISTRY)        │
+│     e.g., "code-puppy" → CODING                                 │
+└─────────────────────────┬───────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  2. Get Failover Chain (WORKLOAD_CHAINS)                        │
+│     CODING → [Cerebras, Synthetic-GLM, Codex, MiniMax, ...]     │
+└─────────────────────────┬───────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  3. Filter by Credentials (CredentialChecker)                   │
+│     Remove models without API key or OAuth token                │
+└─────────────────────────┬───────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  4. Filter by Capacity (CapacityRegistry)                       │
+│     Remove EXHAUSTED/COOLDOWN, sort by availability             │
+└─────────────────────────┬───────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  5. Smart Selection (SmartModelSelector)                        │
+│     Score by cost/speed/reliability/capability                  │
+└─────────────────────────┬───────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  6. Return RoutingDecision                                      │
+│     model_name, reason, tier, capacity_status                   │
+└─────────────────────────┬───────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  7. After Request: Update Capacity                              │
+│     record_success() → update from headers                      │
+│     record_rate_limit() → enter cooldown, select new model      │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### 3.2 Intelligent Router (`intelligent_router.py`)
+
+Central routing layer that orchestrates all model selection decisions with capacity awareness.
+
+**Key Classes:**
+
+| Class | Purpose |
+|-------|---------|
+| `RoutingDecision` | Selected model, workload, reason, capacity status, available tokens, tier |
+| `RoutingStats` | Total requests, successful routes, proactive/reactive switches, rate limits |
+| `IntelligentModelRouter` | **Singleton** implementing routing logic |
+
+**Key Features:**
+- **Proactive switching at 80% capacity** (before hitting 429)
+- **Same-tier failover preference** to maintain quality
+- **Per-workload round-robin** to distribute load
+- **Logfire telemetry integration** for self-learning
+- **Never-block design** - always finds an available model
 
 ```python
 class IntelligentModelRouter:
     def select_model(self, workload: str, estimated_tokens: int) -> RoutingDecision:
         # 1. Get workload chain from WORKLOAD_CHAINS
-        # 2. Check capacity for each model
-        # 3. Return first available with capacity
+        # 2. Filter by credentials
+        # 3. Check capacity for each model
+        # 4. Return best available with capacity
         
     def record_success(self, model, input_tokens, output_tokens, headers):
-        # Update capacity from headers
+        # Update capacity from rate limit headers
         
     def record_rate_limit(self, model) -> RoutingDecision:
-        # Trigger cooldown, return next model
+        # Trigger cooldown, return next model in chain
 ```
 
-### Capacity Status Flow
+### 3.3 Model Capacity Tracking (`model_capacity.py`)
+
+Real-time tracking of model capacity, rate limits, and availability status.
+
+**Capacity Status Thresholds:**
+
+| Status | Usage % | Meaning |
+|--------|---------|---------|
+| `AVAILABLE` | 0-50% | Plenty of capacity |
+| `APPROACHING` | 50-80% | Can use, consider alternatives |
+| `LOW` | 80-95% | **Should switch soon** |
+| `EXHAUSTED` | 95%+ | Must switch immediately |
+| `COOLDOWN` | After 429 | Exponential backoff (60s → 600s max) |
+
+**Capacity Status Flow:**
 
 ```
 CapacityStatus.AVAILABLE (< 50% used)
@@ -149,9 +227,137 @@ CapacityStatus.EXHAUSTED (95%+ or 429)
 CapacityStatus.COOLDOWN (waiting for reset)
 ```
 
+**Rate Limit Header Parsing:**
+
+Supports multiple header formats from different providers:
+- `x-ratelimit-remaining-tokens`
+- `x-ratelimit-remaining-requests`
+- `anthropic-ratelimit-tokens-remaining`
+- Daily and minute variants
+
+### 3.4 Smart Model Selection (`smart_selection.py`)
+
+Multi-factor scoring system for optimal model selection.
+
+**Selection Strategies:**
+
+| Strategy | Description |
+|----------|-------------|
+| `COST_OPTIMIZED` | Minimize cost |
+| `SPEED_OPTIMIZED` | Minimize latency |
+| `RELIABILITY_OPTIMIZED` | Maximize success rate |
+| `BALANCED` | Balance all factors (default) |
+| `CAPABILITY_FIRST` | Most capable regardless of cost |
+
+**Balanced Scoring Weights:**
+
+```python
+BALANCED_WEIGHTS = {
+    "cost": 0.30,
+    "speed": 0.30,
+    "reliability": 0.25,
+    "capability": 0.15,
+}
+```
+
+**Scoring Components:**
+
+| Score | Calculation | Range |
+|-------|-------------|-------|
+| **Cost** | Tokens per dollar (100 = >1M tokens/$) | 0-100 |
+| **Speed** | P50 latency (100 = <100ms, 0 = >10s) | 0-100 |
+| **Reliability** | Success rate | 0-100 |
+| **Capability** | From tier (Tier 1 = 100, Tier 5 = 20) | 20-100 |
+
+### 3.5 Model Tier System
+
+**5-Tier Architecture:**
+
+| Tier | Name | Purpose | Example Models |
+|------|------|---------|----------------|
+| **1** | Architect | Planning, reasoning, orchestration | Opus, Kimi K2.5, Qwen3-235B |
+| **2** | Builder High | Complex coding, refactoring | GPT-5.2-Codex, DeepSeek R1, Sonnet-thinking |
+| **3** | Builder Mid | Standard development | Sonnet, Gemini Pro, MiniMax M2.1 |
+| **4** | Librarian | Context, search, docs | Haiku, Gemini Flash, OpenRouter Free |
+| **5** | Sprinter | High-volume, fast code | Cerebras GLM-4.7, Synthetic GLM |
+
+### 3.6 Workload Chains (`failover_config.py`)
+
+**ORCHESTRATOR Chain** (needs max reasoning):
+```python
+[
+    "claude-code-claude-opus-4-5-20251101",      # Tier 1
+    "antigravity-claude-opus-4-5-thinking-high", # Tier 1
+    "synthetic-Kimi-K2.5-Thinking",              # Tier 1
+    "synthetic-hf-Qwen-Qwen3-235B-A22B-Thinking-2507", # Tier 1
+    "claude-code-claude-sonnet-4-5-20250929",    # Tier 3 fallback
+    "chatgpt-gpt-5.2-codex",                     # Tier 2 fallback
+]
+```
+
+**REASONING Chain** (deep reasoning):
+```python
+[
+    "claude-code-claude-sonnet-4-5-20250929",         # Tier 3
+    "antigravity-claude-sonnet-4-5-thinking-high",    # Tier 2
+    "synthetic-hf-deepseek-ai-DeepSeek-R1-0528",      # Tier 2
+    "synthetic-Kimi-K2-Thinking",                      # Tier 1
+    "synthetic-MiniMax-M2.1",                          # Tier 3 fallback
+]
+```
+
+**CODING Chain** (speed + quality):
+```python
+[
+    "Cerebras-GLM-4.7",                           # Tier 5 - 1500 tok/s!
+    "synthetic-GLM-4.7",                          # Tier 5 backup
+    "chatgpt-gpt-5.2-codex",                      # Tier 2
+    "synthetic-MiniMax-M2.1",                     # Tier 3
+    "synthetic-hf-MiniMaxAI-MiniMax-M2.1",        # Tier 3
+    "claude-code-claude-haiku-4-5-20251001",      # Tier 4
+    "antigravity-gemini-3-flash",                 # Tier 4
+]
+```
+
+**LIBRARIAN Chain** (cost efficiency):
+```python
+[
+    "claude-code-claude-haiku-4-5-20251001",      # Tier 4
+    "antigravity-gemini-3-flash",                 # Tier 4
+    "openrouter-arcee-ai-trinity-large-preview-free", # Tier 4 FREE
+    "openrouter-stepfun-step-3.5-flash-free",     # Tier 4 FREE
+]
+```
+
+### 3.7 Provider Rate Limits
+
+| Provider | TPM | RPM | Daily | Context | Plan |
+|----------|-----|-----|-------|---------|------|
+| **Cerebras** | 1M | 50 | 24M | 131K | Code Pro $50/mo |
+| **Synthetic GLM** | 800K | 60 | 50M | 200K | Pro $60/mo |
+| **Gemini Flash** | 150K | 50 | 2M | 1M | Free |
+| **OpenRouter Free** | 50K | 20 | 500K | 128K | Free |
+| **Claude Code** | 200K | 50 | 20M | 200K | Max $100/mo |
+| **Antigravity** | 200K | 30 | 10M | 200K | Pro $20/mo |
+| **ChatGPT Teams** | 150K | 40 | 10M | 128K | Teams $35/mo |
+
+### 3.8 Token Budget Constants
+
+```python
+# Cerebras optimization
+CEREBRAS_TARGET_INPUT_TOKENS = 50_000
+CEREBRAS_MAX_CONTEXT_TOKENS = 131_072
+CEREBRAS_MAX_OUTPUT_TOKENS = 40_000
+FORCE_SUMMARY_THRESHOLD = 50_000
+
+# Antigravity compaction
+ANTIGRAVITY_MAX_INPUT_TOKENS = 100_000
+ANTIGRAVITY_COMPACTION_THRESHOLD = 0.50
+```
+
 ---
 
-## 3.5 Credential Availability System
+## 3.9 Credential Availability System
 
 ### Automatic Model Filtering (`credential_availability.py`)
 
@@ -669,11 +875,11 @@ schema_reference()
 | **Agent Management** | agents/agent_manager.py, agents/base_agent.py |
 | **Pack System** | agents/agent_pack_leader.py, agents/pack/*.py |
 | **Epistemic Architect** | agents/agent_epistemic_architect.py, epistemic/ |
-| **Model Routing** | core/intelligent_router.py, core/model_capacity.py |
+| **Model Routing** | core/intelligent_router.py, core/model_capacity.py, core/capacity_aware_round_robin.py |
 | **Credential Availability** | core/credential_availability.py |
 | **Failover Config** | core/failover_config.py, core/rate_limit_failover.py |
-| **Pack Governor** | core/pack_governor.py, core/agent_orchestration.py |
 | **Smart Selection** | core/smart_selection.py |
+| **Pack Governor** | core/pack_governor.py, core/agent_orchestration.py |
 | **Tool Registry** | tools/__init__.py, tools/agent_tools.py |
 | **Universal Constructor** | tools/universal_constructor.py, plugins/universal_constructor/ |
 | **OAuth Plugins** | plugins/claude_code_oauth/, plugins/antigravity_oauth/, plugins/chatgpt_oauth/ |
@@ -746,19 +952,100 @@ schema_reference()
 
 ---
 
+## 12. All Supported Models (35+)
+
+### Claude Code (OAuth)
+| Model | Tier | Context |
+|-------|------|---------|
+| `claude-code-claude-opus-4-5-20251101` | 1 | 200K |
+| `claude-code-claude-sonnet-4-5-20250929` | 3 | 200K |
+| `claude-code-claude-haiku-4-5-20251001` | 4 | 200K |
+
+### Antigravity (OAuth)
+| Model | Tier | Context |
+|-------|------|---------|
+| `antigravity-claude-opus-4-5-thinking-low` | 1 | 200K |
+| `antigravity-claude-opus-4-5-thinking-medium` | 1 | 200K |
+| `antigravity-claude-opus-4-5-thinking-high` | 1 | 200K |
+| `antigravity-claude-sonnet-4-5` | 3 | 200K |
+| `antigravity-claude-sonnet-4-5-thinking-low` | 2 | 200K |
+| `antigravity-claude-sonnet-4-5-thinking-medium` | 2 | 200K |
+| `antigravity-claude-sonnet-4-5-thinking-high` | 2 | 200K |
+| `antigravity-gemini-3-pro-low` | 3 | 1M |
+| `antigravity-gemini-3-pro-high` | 3 | 1M |
+| `antigravity-gemini-3-flash` | 4 | 1M |
+
+### ChatGPT (OAuth)
+| Model | Tier | Context |
+|-------|------|---------|
+| `chatgpt-gpt-5.2` | 2 | 128K |
+| `chatgpt-gpt-5.2-codex` | 2 | 128K |
+
+### Cerebras (API Key)
+| Model | Tier | Context | Speed |
+|-------|------|---------|-------|
+| `Cerebras-GLM-4.7` | 5 | 131K | **1500+ tok/s** |
+
+### Synthetic (API Key)
+| Model | Tier | Context |
+|-------|------|---------|
+| `synthetic-GLM-4.7` | 5 | 200K |
+| `synthetic-MiniMax-M2.1` | 3 | 1M |
+| `synthetic-Kimi-K2-Thinking` | 1 | 200K |
+| `synthetic-Kimi-K2.5-Thinking` | 1 | 200K |
+| `synthetic-hf-moonshotai-Kimi-K2.5` | 1 | 200K |
+| `synthetic-hf-moonshotai-Kimi-K2-Thinking` | 1 | 200K |
+| `synthetic-hf-deepseek-ai-DeepSeek-R1-0528` | 2 | 128K |
+| `synthetic-hf-MiniMaxAI-MiniMax-M2.1` | 3 | 1M |
+| `synthetic-hf-Qwen-Qwen3-235B-A22B-Thinking-2507` | 1 | 131K |
+| `synthetic-hf-zai-org-GLM-4.7` | 5 | 200K |
+
+### OpenRouter (API Key - Free Tier)
+| Model | Tier | Context |
+|-------|------|---------|
+| `openrouter-stepfun-step-3.5-flash-free` | 4 | 128K |
+| `openrouter-arcee-ai-trinity-large-preview-free` | 4 | 128K |
+
+### Gemini (API Key)
+| Model | Tier | Context |
+|-------|------|---------|
+| `Gemini-3` | 4 | 1M |
+| `Gemini-3-Long-Context` | 4 | 2M |
+
+### ZAI (API Key)
+| Model | Tier | Context |
+|-------|------|---------|
+| `zai-glm-4.6-coding` | 5 | 200K |
+| `zai-glm-4.6-api` | 5 | 200K |
+| `zai-glm-4.7-coding` | 5 | 200K |
+| `zai-glm-4.7-api` | 5 | 200K |
+
+---
+
 ## Summary
 
 The Code Puppy architecture is designed for **continuous self-improvement**:
 
 1. **Epistemic Architect** creates rigorous plans through 7 lenses
 2. **Pack Leader** orchestrates execution with capacity-aware routing
-3. **Credential Availability** ensures only configured models are used
-4. **Intelligent Router** ensures work never stops due to rate limits
-5. **Logfire** captures all telemetry for analysis
-6. **Improvement Audit** (Stage 8-12) creates a feedback loop
-7. **Helios** can create new tools dynamically
-8. **Agent Creator** can spawn new specialized agents
-9. **The cycle repeats** with each iteration improving the next
+3. **Intelligent Router** with **5-tier model hierarchy** ensures work never stops
+4. **Capacity Tracking** monitors usage and triggers proactive failover at 80%
+5. **Smart Selection** scores models by cost, speed, reliability, capability
+6. **Credential Availability** ensures only configured models are used
+7. **35+ models** across 8 providers with automatic failover chains
+8. **Logfire** captures all telemetry for self-learning optimization
+9. **Improvement Audit** (Stage 8-12) creates a feedback loop
+10. **The cycle repeats** with each iteration improving the next
+
+### Design Principles
+
+| Principle | Description |
+|-----------|-------------|
+| **Work Never Stops** | Always find an available model |
+| **Proactive > Reactive** | Switch at 80% capacity, not at 429 |
+| **Same-Tier First** | Maintain quality during failover |
+| **Credential-First** | Never route to unconfigured models |
+| **Telemetry-Driven** | Logfire integration for optimization |
 
 ### Quick Start: Configuring Credentials
 
