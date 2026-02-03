@@ -179,8 +179,11 @@ class TokenBudgetManager:
         self._initialized = True
         
         # Initialize budgets for all providers
+        # Filter out extra fields that ProviderBudget doesn't accept
+        valid_fields = {'tokens_per_minute', 'tokens_per_day', 'reset_window_seconds', 'daily_reset_hour'}
         for provider, limits in self.PROVIDER_LIMITS.items():
-            self._budgets[provider] = ProviderBudget(**limits)
+            budget_kwargs = {k: v for k, v in limits.items() if k in valid_fields}
+            self._budgets[provider] = ProviderBudget(**budget_kwargs)
     
     def _normalize_provider(self, provider: str) -> str:
         """Normalize provider name to canonical form."""
@@ -237,6 +240,23 @@ class TokenBudgetManager:
             "antigravity-claude-opus-4-5-thinking-low": "claude_opus",
             "antigravity-claude-opus-4-5-thinking-medium": "claude_opus",
             "antigravity-claude-opus-4-5-thinking-high": "claude_opus",
+            # Synthetic HuggingFace models (February 2026)
+            "synthetic-hf-deepseek-ai-deepseek-r1-0528": "deepseek",
+            "synthetic-hf-moonshotai-kimi-k2.5": "kimi",
+            "synthetic-hf-qwen-qwen3-235b-a22b-thinking-2507": "qwen",
+            "synthetic-hf-zai-org-glm-4.7": "synthetic_glm",
+            "synthetic-hf-minimax-ai-minimax-m2.1": "minimax",
+            # Synthetic provider models
+            "synthetic-glm-4.7": "synthetic_glm",
+            "synthetic-minimax-m2.1": "minimax",
+            "synthetic-kimi-k2-thinking": "kimi",
+            "synthetic-kimi-k2.5-thinking": "kimi",
+            # OpenRouter free tier
+            "openrouter-stepfun-step-3.5-flash-free": "openrouter_free",
+            "openrouter-arcee-ai-trinity-large-preview-free": "openrouter_free",
+            # ChatGPT GPT-5.2 models
+            "chatgpt-gpt-5.2": "chatgpt",
+            "chatgpt-gpt-5.2-codex": "chatgpt",
         }
         
         # Check direct mapping first
@@ -253,6 +273,22 @@ class TokenBudgetManager:
                 return "claude_opus"
             elif "sonnet" in provider or "claude" in provider:
                 return "claude_sonnet"
+        
+        # New providers (February 2026)
+        if "deepseek" in provider:
+            return "deepseek"
+        if "kimi" in provider:
+            return "kimi"
+        if "qwen" in provider:
+            return "qwen"
+        if "minimax" in provider:
+            return "minimax"
+        if "openrouter" in provider:
+            return "openrouter_free"
+        if "synthetic" in provider and "glm" in provider:
+            return "synthetic_glm"
+        if "synthetic" in provider:
+            return "synthetic"
         
         return provider
     
@@ -536,7 +572,10 @@ class TokenBudgetManager:
         provider = self._normalize_provider(provider)
         if provider in self._budgets:
             limits = self.PROVIDER_LIMITS[provider]
-            self._budgets[provider] = ProviderBudget(**limits)
+            # Filter out extra fields that ProviderBudget doesn't accept
+            valid_fields = {'tokens_per_minute', 'tokens_per_day', 'reset_window_seconds', 'daily_reset_hour'}
+            budget_kwargs = {k: v for k, v in limits.items() if k in valid_fields}
+            self._budgets[provider] = ProviderBudget(**budget_kwargs)
 
     def get_failover(self, provider: str) -> Optional[str]:
         """Get failover provider for a given provider.

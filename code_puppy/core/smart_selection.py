@@ -96,23 +96,108 @@ class SmartModelSelector:
     """
     
     # Model capability tiers (1 = highest capability) - Use EXACT keys from models.json
+    # Tier 1: ARCHITECT - Complex planning & reasoning (Opus, Kimi K2.5, Qwen3-235B)
+    # Tier 2: BUILDER_HIGH - Complex coding (Sonnet-thinking-high, GPT-5.2-Codex, DeepSeek R1)
+    # Tier 3: BUILDER_MID - Standard development (Sonnet, Gemini Pro, MiniMax M2.1)
+    # Tier 4: LIBRARIAN - Context, search (Haiku, Gemini Flash, OpenRouter Free)
+    # Tier 5: SPRINTER - High-volume code (Cerebras GLM-4.7, GLM-4.7 Synthetic)
     CAPABILITY_TIERS: Dict[str, int] = {
+        # Tier 1 - ARCHITECT (Opus, Kimi K2.5, Qwen3-235B)
         "claude-code-claude-opus-4-5-20251101": 1,
+        "antigravity-claude-opus-4-5-thinking-low": 1,
+        "antigravity-claude-opus-4-5-thinking-medium": 1,
+        "antigravity-claude-opus-4-5-thinking-high": 1,
+        "synthetic-Kimi-K2.5-Thinking": 1,
+        "synthetic-hf-moonshotai-Kimi-K2.5": 1,
+        "synthetic-hf-Qwen-Qwen3-235B-A22B-Thinking-2507": 1,
+        
+        # Tier 2 - BUILDER_HIGH (Sonnet-thinking-high, GPT-5.2-Codex, DeepSeek R1, Kimi K2)
+        "chatgpt-gpt-5.2": 2,
         "chatgpt-gpt-5.2-codex": 2,
+        "antigravity-claude-sonnet-4-5-thinking-high": 2,
+        "synthetic-Kimi-K2-Thinking": 2,
+        "synthetic-hf-moonshotai-Kimi-K2-Thinking": 2,
+        "synthetic-hf-deepseek-ai-DeepSeek-R1-0528": 2,
+        
+        # Tier 3 - BUILDER_MID (Sonnet, Gemini Pro, MiniMax M2.1)
         "claude-code-claude-sonnet-4-5-20250929": 3,
-        "antigravity-gemini-3-pro-low": 4,
-        "antigravity-gemini-3-flash": 5,
+        "antigravity-claude-sonnet-4-5": 3,
+        "antigravity-claude-sonnet-4-5-thinking-low": 3,
+        "antigravity-claude-sonnet-4-5-thinking-medium": 3,
+        "antigravity-gemini-3-pro-low": 3,
+        "antigravity-gemini-3-pro-high": 3,
+        "Gemini-3": 3,
+        "Gemini-3-Long-Context": 3,
+        "synthetic-MiniMax-M2.1": 3,
+        "synthetic-hf-MiniMaxAI-MiniMax-M2.1": 3,
+        
+        # Tier 4 - LIBRARIAN (Haiku, Gemini Flash, OpenRouter Free)
+        "claude-code-claude-haiku-4-5-20251001": 4,
+        "antigravity-gemini-3-flash": 4,
+        "openrouter-stepfun-step-3.5-flash-free": 4,
+        "openrouter-arcee-ai-trinity-large-preview-free": 4,
+        
+        # Tier 5 - SPRINTER (Cerebras, Synthetic GLM-4.7, ZAI)
         "Cerebras-GLM-4.7": 5,
+        "synthetic-GLM-4.7": 5,
+        "synthetic-hf-zai-org-GLM-4.7": 5,
+        "zai-glm-4.6-coding": 5,
+        "zai-glm-4.6-api": 5,
+        "zai-glm-4.7-coding": 5,
+        "zai-glm-4.7-api": 5,
     }
     
     # Model to provider mapping - Use EXACT keys from models.json
     MODEL_PROVIDERS: Dict[str, str] = {
-        "claude-code-claude-opus-4-5-20251101": "claude_opus",
-        "claude-code-claude-sonnet-4-5-20250929": "claude_sonnet",
-        "chatgpt-gpt-5.2-codex": "codex",
-        "antigravity-gemini-3-pro-low": "gemini",
-        "antigravity-gemini-3-flash": "gemini_flash",
+        # Claude Code (OAuth)
+        "claude-code-claude-opus-4-5-20251101": "claude_code",
+        "claude-code-claude-sonnet-4-5-20250929": "claude_code",
+        "claude-code-claude-haiku-4-5-20251001": "claude_code",
+        
+        # Antigravity (OAuth proxy)
+        "antigravity-claude-opus-4-5-thinking-low": "antigravity",
+        "antigravity-claude-opus-4-5-thinking-medium": "antigravity",
+        "antigravity-claude-opus-4-5-thinking-high": "antigravity",
+        "antigravity-claude-sonnet-4-5": "antigravity",
+        "antigravity-claude-sonnet-4-5-thinking-low": "antigravity",
+        "antigravity-claude-sonnet-4-5-thinking-medium": "antigravity",
+        "antigravity-claude-sonnet-4-5-thinking-high": "antigravity",
+        "antigravity-gemini-3-pro-low": "antigravity",
+        "antigravity-gemini-3-pro-high": "antigravity",
+        "antigravity-gemini-3-flash": "antigravity",
+        
+        # ChatGPT (OAuth)
+        "chatgpt-gpt-5.2": "chatgpt",
+        "chatgpt-gpt-5.2-codex": "chatgpt",
+        
+        # Gemini (API key)
+        "Gemini-3": "gemini",
+        "Gemini-3-Long-Context": "gemini",
+        
+        # Cerebras (API key)
         "Cerebras-GLM-4.7": "cerebras",
+        
+        # Synthetic (API key)
+        "synthetic-GLM-4.7": "synthetic",
+        "synthetic-MiniMax-M2.1": "synthetic",
+        "synthetic-Kimi-K2-Thinking": "synthetic",
+        "synthetic-Kimi-K2.5-Thinking": "synthetic",
+        "synthetic-hf-moonshotai-Kimi-K2.5": "synthetic",
+        "synthetic-hf-moonshotai-Kimi-K2-Thinking": "synthetic",
+        "synthetic-hf-deepseek-ai-DeepSeek-R1-0528": "synthetic",
+        "synthetic-hf-MiniMaxAI-MiniMax-M2.1": "synthetic",
+        "synthetic-hf-Qwen-Qwen3-235B-A22B-Thinking-2507": "synthetic",
+        "synthetic-hf-zai-org-GLM-4.7": "synthetic",
+        
+        # OpenRouter (API key - free tier)
+        "openrouter-stepfun-step-3.5-flash-free": "openrouter",
+        "openrouter-arcee-ai-trinity-large-preview-free": "openrouter",
+        
+        # ZAI (API key)
+        "zai-glm-4.6-coding": "zai",
+        "zai-glm-4.6-api": "zai",
+        "zai-glm-4.7-coding": "zai",
+        "zai-glm-4.7-api": "zai",
     }
     
     # Weight factors for balanced scoring
@@ -187,7 +272,10 @@ class SmartModelSelector:
         estimated_tokens: int,
     ) -> List[ModelScore]:
         """Score all candidate models."""
+        from code_puppy.core.credential_availability import get_credential_checker
+        
         scores = []
+        cred_checker = get_credential_checker()
         
         for model in models:
             provider = self.MODEL_PROVIDERS.get(model, model)
@@ -195,6 +283,11 @@ class SmartModelSelector:
             
             # Check capability requirement
             if capability_tier > min_capability_tier:
+                continue
+            
+            # Check credentials FIRST - skip if no valid credentials
+            if not cred_checker.has_credentials(model):
+                logger.debug(f"Skipping {model} - no valid credentials")
                 continue
             
             # Check circuit breaker

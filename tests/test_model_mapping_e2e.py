@@ -146,14 +146,15 @@ class TestProviderNormalization:
         mgr = TokenBudgetManager()
         assert mgr._normalize_provider("custom_openai") == "codex"
 
-    def test_chatgpt_models_normalize_to_codex(self):
-        """ChatGPT models should normalize to codex."""
+    def test_chatgpt_models_normalize_correctly(self):
+        """ChatGPT models should normalize to chatgpt provider."""
         from code_puppy.core.token_budget import TokenBudgetManager
         
         mgr = TokenBudgetManager()
         
-        assert mgr._normalize_provider("chatgpt-gpt-5.2-codex") == "codex"
-        assert mgr._normalize_provider("chatgpt-codex-5.2") == "codex"
+        # ChatGPT OAuth models normalize to chatgpt provider
+        assert mgr._normalize_provider("chatgpt-gpt-5.2-codex") == "chatgpt"
+        assert mgr._normalize_provider("chatgpt-gpt-5.2") == "chatgpt"
 
     def test_legacy_claude_names_still_work(self):
         """Legacy Claude names should still normalize correctly."""
@@ -711,24 +712,25 @@ class TestCrossTierFailoverChain:
         
         assert reached_cerebras, "Sonnet chain should reach Cerebras as cross-tier fallback"
 
-    def test_chatgpt_is_oauth_only(self):
-        """ChatGPT models are OAuth-only and not in static failover chain."""
+    def test_chatgpt_in_failover_chain(self):
+        """ChatGPT OAuth models are now included in failover chains."""
         from code_puppy.core.token_budget import TokenBudgetManager
         
         chain = TokenBudgetManager.FAILOVER_CHAIN
         
-        # ChatGPT models are OAuth-only - not in static failover chain
-        chatgpt_in_chain = any("chatgpt" in key.lower() for key in chain.keys())
-        assert not chatgpt_in_chain, "ChatGPT models should not be in static failover chain (OAuth-only)"
+        # ChatGPT models are now in failover chains as values (targets)
+        # They serve as fallback from Antigravity Sonnet thinking models
+        chatgpt_as_fallback = any("chatgpt" in val.lower() for val in chain.values())
+        assert chatgpt_as_fallback, "ChatGPT models should be in failover chain as fallback targets"
         
-        # Verify Cerebras is the terminal node (loops to itself via Haiku -> Gemini)
+        # Verify Cerebras chain works
         current = "Cerebras-GLM-4.7"
         visited = set()
         while current and current not in visited:
             visited.add(current)
             current = chain.get(current)
-        # Chain loops back to Cerebras instead of going to ChatGPT
-        assert "Cerebras-GLM-4.7" in visited
+        # Chain should include Cerebras pathway
+        assert "synthetic-GLM-4.7" in visited or "Cerebras-GLM-4.7" in visited
 
     def test_cerebras_chain_reaches_haiku_and_gemini(self):
         """Cerebras chain should reach Haiku and Gemini Flash."""

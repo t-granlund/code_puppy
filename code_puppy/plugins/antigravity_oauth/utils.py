@@ -35,6 +35,14 @@ def save_tokens(tokens: Dict[str, Any]) -> bool:
         with open(token_path, "w", encoding="utf-8") as f:
             json.dump(tokens, f, indent=2)
         token_path.chmod(0o600)
+        
+        # Invalidate credential cache so new tokens are recognized
+        try:
+            from code_puppy.core.credential_availability import invalidate_credential_cache
+            invalidate_credential_cache()
+        except ImportError:
+            pass
+        
         return True
     except Exception as e:
         logger.error("Failed to save tokens: %s", e)

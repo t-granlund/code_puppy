@@ -12,11 +12,13 @@
 [![Tests](https://img.shields.io/badge/Tests-Passing-success?style=for-the-badge&logo=pytest)](https://github.com/mpfaffenberger/code_puppy/tests)
 
 [![OpenAI](https://img.shields.io/badge/OpenAI-GPT--5.2--Codex-orange?style=flat-square&logo=openai)](https://openai.com)
-[![Gemini](https://img.shields.io/badge/Google-Gemini-blue?style=flat-square&logo=google)](https://ai.google.dev/)
-[![Anthropic](https://img.shields.io/badge/Anthropic-Claude-orange?style=flat-square&logo=anthropic)](https://anthropic.com)
+[![Gemini](https://img.shields.io/badge/Google-Gemini%203-blue?style=flat-square&logo=google)](https://ai.google.dev/)
+[![Anthropic](https://img.shields.io/badge/Anthropic-Claude%204.5-orange?style=flat-square&logo=anthropic)](https://anthropic.com)
 [![Cerebras](https://img.shields.io/badge/Cerebras-GLM%204.7-red?style=flat-square)](https://cerebras.ai)
 [![Z.AI](https://img.shields.io/badge/Z.AI-GLM%204.7-purple?style=flat-square)](https://z.ai/)
-[![Synthetic](https://img.shields.io/badge/Synthetic-MINIMAX_M2.1-green?style=flat-square)](https://synthetic.new)
+[![Synthetic](https://img.shields.io/badge/Synthetic-Kimi%20K2.5-green?style=flat-square)](https://synthetic.new)
+[![DeepSeek](https://img.shields.io/badge/DeepSeek-R1--0528-teal?style=flat-square)](https://deepseek.com)
+[![MiniMax](https://img.shields.io/badge/MiniMax-M2.1-cyan?style=flat-square)](https://minimax.chat)
 
 [![100% Open Source](https://img.shields.io/badge/100%25-Open%20Source-blue?style=for-the-badge)](https://github.com/mpfaffenberger/code_puppy)
 [![Pydantic AI](https://img.shields.io/badge/Pydantic-AI-success?style=for-the-badge)](https://github.com/pydantic/pydantic-ai)

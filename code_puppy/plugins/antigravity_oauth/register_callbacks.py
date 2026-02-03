@@ -420,9 +420,14 @@ def _create_antigravity_model(model_name: str, model_config: Dict, config: Dict)
     This handler is registered via the 'register_model_type' callback to handle
     models with type='antigravity'. Uses AccountManager for multi-account support
     and tracks rate limits per-account per-model-family.
+    
+    For static models (from models.json without custom_endpoint), we use stored
+    OAuth tokens. For dynamic models (with custom_endpoint), we use the provided
+    configuration.
     """
     from code_puppy.gemini_model import GeminiModel
     from code_puppy.model_factory import get_custom_config
+    from .constants import ANTIGRAVITY_ENDPOINT, ANTIGRAVITY_HEADERS
 
     # Try to import custom model for thinking signatures
     try:
@@ -430,7 +435,28 @@ def _create_antigravity_model(model_name: str, model_config: Dict, config: Dict)
     except ImportError:
         AntigravityModel = None  # type: ignore
 
-    url, headers, verify, api_key = get_custom_config(model_config)
+    # Check if this is a static model (no custom_endpoint) or dynamic model
+    has_custom_endpoint = model_config.get("custom_endpoint") is not None
+    
+    if has_custom_endpoint:
+        url, headers, verify, api_key = get_custom_config(model_config)
+    else:
+        # Static model (from models.json) - use OAuth tokens if available
+        tokens = load_stored_tokens()
+        if not tokens or not tokens.get("access_token"):
+            # Antigravity OAuth not authenticated - skip this model silently
+            logger.debug(
+                f"Antigravity OAuth not authenticated; skipping model '{model_name}'. "
+                "Run /antigravity-auth to authenticate."
+            )
+            return None
+        
+        # Use Antigravity API defaults
+        url = ANTIGRAVITY_ENDPOINT
+        headers = dict(ANTIGRAVITY_HEADERS)
+        verify = None
+        api_key = tokens.get("access_token", "")
+    
     if not api_key:
         emit_warning(
             f"API key is not set for Antigravity endpoint; skipping model '{model_config.get('name')}'."

@@ -73,10 +73,12 @@ class TestRateLimitFailover:
         assert mgr._detect_tier("antigravity-claude-sonnet-4-5") == 3
 
     def test_detect_tier_antigravity_gemini(self):
-        """Should detect Antigravity Gemini as Librarian tier."""
+        """Should detect Antigravity Gemini tiers correctly."""
         mgr = RateLimitFailover()
+        # gemini-3-flash = Librarian (tier 4)
         assert mgr._detect_tier("antigravity-gemini-3-flash") == 4
-        assert mgr._detect_tier("antigravity-gemini-3-pro-high") == 4
+        # gemini-3-pro-high = Builder Mid (tier 3) because "gemini-3-pro" maps to 3
+        assert mgr._detect_tier("antigravity-gemini-3-pro-high") == 3
 
     def test_detect_provider_antigravity(self):
         """Should detect Antigravity provider correctly."""
@@ -252,8 +254,8 @@ class TestTokenBudgetFailoverIntegration:
         # Builder: Sonnet → Antigravity Sonnet
         assert mgr.FAILOVER_CHAIN["claude_sonnet"] == "antigravity-claude-sonnet-4-5"
         
-        # Sprinter: Cerebras → Haiku (using correct model name)
-        assert mgr.FAILOVER_CHAIN["cerebras"] == "claude-code-claude-haiku-4-5-20251001"
+        # Sprinter: Cerebras → Synthetic GLM (high-volume backup)
+        assert mgr.FAILOVER_CHAIN["cerebras"] == "synthetic-GLM-4.7"
         
         # Librarian: Haiku → Gemini Flash (via correct Haiku key)
         assert mgr.FAILOVER_CHAIN["claude-code-claude-haiku-4-5-20251001"] == "antigravity-gemini-3-flash"
@@ -267,8 +269,8 @@ class TestTokenBudgetFailoverIntegration:
         mgr = TokenBudgetManager()
         
         failover = mgr.get_failover("cerebras")
-        # Cerebras fails over to Haiku (using correct model name from models.json)
-        assert failover == "claude-code-claude-haiku-4-5-20251001"
+        # Cerebras fails over to Synthetic GLM first
+        assert failover == "synthetic-GLM-4.7"
 
 
 class TestWorkloadAwareFailover:

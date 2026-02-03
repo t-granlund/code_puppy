@@ -851,3 +851,56 @@ def handle_wiggum_stop_command(command: str) -> bool:
         emit_info("Wiggum mode is not active.")
 
     return True
+
+
+@register_command(
+    name="credentials",
+    description="Show credential status for all model providers",
+    usage="/credentials",
+    aliases=["creds", "auth"],
+    category="core",
+)
+def handle_credentials_command(command: str) -> bool:
+    """Show credential status for all model providers."""
+    from code_puppy.core.credential_availability import (
+        get_credential_status,
+        get_models_by_availability,
+    )
+    from code_puppy.messaging import emit_info
+
+    status = get_credential_status()
+    available, unavailable = get_models_by_availability()
+
+    lines = ["## 🔐 Credential Status\n"]
+    lines.append("### Providers\n")
+    
+    for provider, info in sorted(status.items()):
+        symbol = "✅" if info["available"] else "❌"
+        if info["type"] == "api_key":
+            lines.append(f"  {symbol} **{provider}**: `{info['key']}`")
+        else:
+            lines.append(f"  {symbol} **{provider}**: OAuth (`{info['plugin']}`)")
+    
+    lines.append(f"\n### Models Available: {len(available)}/{len(available)+len(unavailable)}")
+    
+    if available:
+        lines.append("\n**Ready to use:**")
+        # Group by first prefix
+        prefixes = {}
+        for m in available:
+            prefix = m.split("-")[0]
+            prefixes.setdefault(prefix, []).append(m)
+        for prefix, models in sorted(prefixes.items()):
+            lines.append(f"  • `{prefix}-*`: {len(models)} models")
+    
+    if unavailable:
+        lines.append("\n**Missing credentials:**")
+        prefixes = {}
+        for m in unavailable:
+            prefix = m.split("-")[0]
+            prefixes.setdefault(prefix, []).append(m)
+        for prefix, models in sorted(prefixes.items()):
+            lines.append(f"  • `{prefix}-*`: {len(models)} models")
+
+    emit_info("\n".join(lines))
+    return True

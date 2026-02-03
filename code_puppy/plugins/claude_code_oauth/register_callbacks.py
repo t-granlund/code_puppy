@@ -285,6 +285,10 @@ def _create_claude_code_model(model_name: str, model_config: Dict, config: Dict)
 
     This handler is registered via the 'register_model_type' callback to handle
     models with type='claude_code'.
+    
+    For static models (from models.json without custom_endpoint), we use OAuth tokens
+    from the stored credentials. For dynamic models (with oauth_source), we refresh
+    the token and use the provided custom_endpoint.
     """
     from anthropic import AsyncAnthropic
     from pydantic_ai.models.anthropic import AnthropicModel
@@ -298,16 +302,41 @@ def _create_claude_code_model(model_name: str, model_config: Dict, config: Dict)
     from code_puppy.http_utils import get_cert_bundle_path, get_http2
     from code_puppy.model_factory import get_custom_config
 
-    url, headers, verify, api_key = get_custom_config(model_config)
+    # Check if this is a static model (no custom_endpoint) or dynamic model
+    has_custom_endpoint = model_config.get("custom_endpoint") is not None
+    
+    if has_custom_endpoint:
+        # Dynamic model with custom_endpoint configuration
+        url, headers, verify, api_key = get_custom_config(model_config)
 
-    # Refresh token if this is from the plugin
-    if model_config.get("oauth_source") == "claude-code-plugin":
-        refreshed_token = get_valid_access_token()
-        if refreshed_token:
-            api_key = refreshed_token
-            custom_endpoint = model_config.get("custom_endpoint")
-            if isinstance(custom_endpoint, dict):
-                custom_endpoint["api_key"] = refreshed_token
+        # Refresh token if this is from the plugin
+        if model_config.get("oauth_source") == "claude-code-plugin":
+            refreshed_token = get_valid_access_token()
+            if refreshed_token:
+                api_key = refreshed_token
+                custom_endpoint = model_config.get("custom_endpoint")
+                if isinstance(custom_endpoint, dict):
+                    custom_endpoint["api_key"] = refreshed_token
+    else:
+        # Static model (from models.json) - use OAuth tokens if available
+        api_key = get_valid_access_token()
+        if not api_key:
+            # Claude Code OAuth not authenticated - skip this model silently
+            # This allows failover to continue to next model in chain
+            logger.debug(
+                f"Claude Code OAuth not authenticated; skipping model '{model_name}'. "
+                "Run /login claude-code to authenticate."
+            )
+            return None
+        
+        # Use Claude Code API defaults
+        url = CLAUDE_CODE_OAUTH_CONFIG["api_base_url"]
+        headers = {
+            "anthropic-beta": "oauth-2025-04-20,interleaved-thinking-2025-05-14",
+            "x-app": "cli",
+            "User-Agent": "claude-cli/2.0.61 (external, cli)",
+        }
+        verify = None
 
     if not api_key:
         emit_warning(

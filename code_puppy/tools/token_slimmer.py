@@ -56,19 +56,31 @@ def _scale_output_limits(scale: float) -> Dict[TaskType, int]:
 
 # Provider-specific configurations
 PROVIDER_LIMITS = {
-    # 🏋️ BOOT CAMP: Cerebras free tier - ultra aggressive
+    # 🏋️ BOOT CAMP: Cerebras Code Pro ($50/month) - aggressive but not free tier
     "cerebras": {
-        "compaction_threshold": 0.20,  # Compact early at 20%
-        "hard_limit_threshold": 0.40,  # Block at 40%
-        "max_input_tokens": 50_000,
-        "target_input_tokens": 8_000,
-        "max_exchanges": 3,
-        "max_output_by_task": _scale_output_limits(0.65),  # 65% of base
-        "default_max_output": 1000,
+        "compaction_threshold": 0.30,  # Compact at 30% (was 20%)
+        "hard_limit_threshold": 0.50,  # Block at 50% (was 40%)
+        "max_input_tokens": 80_000,    # Increased from 50K
+        "target_input_tokens": 15_000, # Increased from 8K
+        "max_exchanges": 5,            # Increased from 3
+        "max_output_by_task": _scale_output_limits(0.75),  # 75% of base
+        "default_max_output": 1500,
         "diet_mode": "boot_camp",  # 🏋️
     },
     
-    # 🥗 BALANCED: OAuth Antigravity (uses various backends)
+    # 🚀 HIGH VOLUME: Synthetic.new Pro ($60/month) - Z.ai GLM 4.7
+    "synthetic_glm": {
+        "compaction_threshold": 0.60,
+        "hard_limit_threshold": 0.85,
+        "max_input_tokens": 180_000,   # High context
+        "target_input_tokens": 60_000,
+        "max_exchanges": 10,
+        "max_output_by_task": _scale_output_limits(1.0),
+        "default_max_output": 3000,
+        "diet_mode": "relaxed",  # 🚀
+    },
+    
+    # 🥗 BALANCED: Antigravity Pro ($20/month)
     "antigravity": {
         "compaction_threshold": 0.50,
         "hard_limit_threshold": 0.80,
@@ -80,7 +92,7 @@ PROVIDER_LIMITS = {
         "diet_mode": "balanced",  # 🥗
     },
     
-    # 🥗 BALANCED: Claude Code OAuth
+    # 🥗 BALANCED: Claude Max ($100/month) via OAuth
     "claude_code": {
         "compaction_threshold": 0.60,
         "hard_limit_threshold": 0.85,
@@ -92,7 +104,7 @@ PROVIDER_LIMITS = {
         "diet_mode": "balanced",  # 🥗
     },
     
-    # 🥗 BALANCED: ChatGPT Teams OAuth  
+    # 🥗 BALANCED: ChatGPT Teams ($35/month) via OAuth  
     "chatgpt_teams": {
         "compaction_threshold": 0.55,
         "hard_limit_threshold": 0.85,
@@ -102,6 +114,18 @@ PROVIDER_LIMITS = {
         "max_output_by_task": _scale_output_limits(1.0),
         "default_max_output": 2500,
         "diet_mode": "balanced",  # 🥗
+    },
+    
+    # 🎁 FREE: OpenRouter free tier models
+    "openrouter_free": {
+        "compaction_threshold": 0.25,  # Very aggressive
+        "hard_limit_threshold": 0.40,
+        "max_input_tokens": 40_000,
+        "target_input_tokens": 10_000,
+        "max_exchanges": 4,
+        "max_output_by_task": _scale_output_limits(0.5),  # 50% of base
+        "default_max_output": 800,
+        "diet_mode": "boot_camp",  # 🏋️
     },
     
     # 🍽️ MAINTENANCE: Anthropic API (paid, high limits)
@@ -152,6 +176,7 @@ def get_provider_limits(provider: str) -> Dict[str, Any]:
     - "cerebras/glm-4" -> cerebras
     - "anthropic/claude-3" -> anthropic
     - "antigravity-oauth" -> antigravity
+    - "synthetic-Kimi-K2.5" -> synthetic_glm
     """
     provider_lower = provider.lower()
     
@@ -168,8 +193,13 @@ def get_provider_limits(provider: str) -> Dict[str, Any]:
         return PROVIDER_LIMITS["chatgpt_teams"]
     
     # Pattern matching for API providers
-    if "cerebras" in provider_lower or "glm-4" in provider_lower:
+    # Synthetic.new models (Z.ai GLM, Kimi, Qwen, etc.)
+    if "synthetic" in provider_lower or "z.ai" in provider_lower:
+        return PROVIDER_LIMITS["synthetic_glm"]
+    if "cerebras" in provider_lower:
         return PROVIDER_LIMITS["cerebras"]
+    if "openrouter" in provider_lower:
+        return PROVIDER_LIMITS["openrouter_free"]
     if "anthropic" in provider_lower or "claude" in provider_lower:
         return PROVIDER_LIMITS["anthropic"]
     if "openai" in provider_lower or "gpt" in provider_lower:

@@ -5,6 +5,12 @@ switches to failover models when rate limit (429) errors occur.
 
 Works with the AGENT_WORKLOAD_REGISTRY to select appropriate failover models
 based on the agent's workload type (ORCHESTRATOR, REASONING, CODING, LIBRARIAN).
+
+Enhanced with IntelligentModelRouter integration for:
+- Proactive switching BEFORE hitting limits (80% capacity threshold)
+- Capacity tracking from API response headers
+- Round-robin among models with available capacity
+- Logfire telemetry for self-learning optimization
 """
 
 from __future__ import annotations
@@ -13,7 +19,7 @@ import asyncio
 import logging
 import time
 from dataclasses import dataclass, field
-from typing import Any, List
+from typing import Any, List, Mapping, Optional
 
 from pydantic_ai.models import (
     Model,
@@ -23,6 +29,21 @@ from pydantic_ai.models import (
     ModelSettings,
     StreamedResponse,
 )
+
+# Import intelligent routing (optional - graceful fallback if not available)
+try:
+    from code_puppy.core.model_capacity import (
+        get_capacity_registry,
+        CapacityStatus,
+    )
+    from code_puppy.core.intelligent_router import get_router
+    INTELLIGENT_ROUTING_AVAILABLE = True
+except ImportError:
+    INTELLIGENT_ROUTING_AVAILABLE = False
+    def get_capacity_registry():
+        return None
+    def get_router():
+        return None
 
 logger = logging.getLogger(__name__)
 
@@ -152,10 +173,49 @@ class FailoverModel(Model):
     def _get_next_model(self) -> Model | None:
         """Get the next available model that hasn't failed and isn't in cooldown.
         
+        Enhanced with intelligent routing:
+        1. First check proactive capacity limits
+        2. Then check cooldowns and failures
+        3. Use IntelligentModelRouter if available for smarter selection
+        
         Returns:
             Next available model, or None if all models have failed/cooling down.
         """
         now = time.time()
+        
+        # Try intelligent routing first (proactive capacity checking)
+        if INTELLIGENT_ROUTING_AVAILABLE:
+            registry = get_capacity_registry()
+            if registry:
+                for model in self._get_all_models():
+                    model_name = model.model_name
+                    
+                    # Skip permanently failed or cooling down
+                    if model_name in self._failed_models:
+                        continue
+                    cooldown_until = self._model_cooldowns.get(model_name, 0.0)
+                    if now < cooldown_until:
+                        continue
+                    
+                    # Check capacity proactively
+                    capacity = registry.get_capacity(model_name)
+                    if capacity:
+                        status = capacity.get_status()
+                        if status == CapacityStatus.EXHAUSTED:
+                            logger.debug(f"⚠️ {model_name} capacity exhausted, skipping")
+                            continue
+                        if status == CapacityStatus.COOLDOWN:
+                            logger.debug(f"⏳ {model_name} in capacity cooldown, skipping")
+                            continue
+                        # LOW capacity: log warning but can still use
+                        if status == CapacityStatus.LOW:
+                            logger.debug(
+                                f"⚡ {model_name} low capacity ({capacity.get_available_tokens():,} tokens), using cautiously"
+                            )
+                    
+                    return model
+        
+        # Fallback to traditional checking
         for model in self._get_all_models():
             model_name = model.model_name
             # Skip permanently failed models
@@ -189,7 +249,7 @@ class FailoverModel(Model):
         """Mark a model as failed (rate limited) with cooldown.
         
         Sets a cooldown period during which this model won't be tried.
-        Also notifies RateLimitFailover to track the failure.
+        Also notifies RateLimitFailover and CapacityRegistry to track the failure.
         """
         model_name = model.model_name
         now = time.time()
@@ -201,7 +261,16 @@ class FailoverModel(Model):
         self._consecutive_429s += 1
         self._last_failover_time = now
         
-        # Notify the global failover manager
+        # Notify the capacity registry (intelligent routing)
+        if INTELLIGENT_ROUTING_AVAILABLE:
+            try:
+                registry = get_capacity_registry()
+                if registry:
+                    registry.record_rate_limit(model_name)
+            except Exception as e:
+                logger.debug(f"Failed to record rate limit in CapacityRegistry: {e}")
+        
+        # Notify the global failover manager (legacy)
         try:
             from code_puppy.core.rate_limit_failover import RateLimitFailover
             failover = RateLimitFailover()
@@ -214,6 +283,33 @@ class FailoverModel(Model):
             f"- cooldown {COOLDOWN_SECONDS}s, consecutive 429s: {self._consecutive_429s}"
         )
     
+    def _record_success(
+        self, 
+        model: Model, 
+        response: ModelResponse,
+        headers: Optional[Mapping[str, str]] = None
+    ) -> None:
+        """Record a successful request for capacity tracking.
+        
+        Updates the capacity registry with usage data from the response.
+        """
+        if not INTELLIGENT_ROUTING_AVAILABLE:
+            return
+        
+        try:
+            registry = get_capacity_registry()
+            if registry and hasattr(response, "usage") and response.usage:
+                registry.record_request(
+                    model.model_name,
+                    response.usage.input_tokens or 0,
+                    response.usage.output_tokens or 0,
+                    headers,
+                )
+                # Clear consecutive 429s on success
+                self._consecutive_429s = 0
+        except Exception as e:
+            logger.debug(f"Failed to record success in CapacityRegistry: {e}")
+    
     async def request(
         self,
         messages: list[ModelMessage],
@@ -224,6 +320,9 @@ class FailoverModel(Model):
         
         Tries the current model first. If it fails with a rate limit error,
         marks it as failed and tries the next model in the failover chain.
+        
+        Enhanced with proactive capacity tracking - will check capacity
+        before attempting request and update capacity after success.
         """
         attempts = 0
         last_error: Exception | None = None
@@ -246,6 +345,9 @@ class FailoverModel(Model):
                 response = await model.request(
                     messages, model_settings, model_request_parameters
                 )
+                
+                # Record success for capacity tracking
+                self._record_success(model, response)
                 
                 # Success - log if this was a failover
                 if attempts > 0:

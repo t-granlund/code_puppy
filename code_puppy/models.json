@@ -1,4 +1,15 @@
 {
+  "_MODEL_CATALOG_NOTES": {
+    "description": "Model categorization based on capabilities",
+    "tiers": {
+      "ARCHITECT (Tier 1)": "Opus, Kimi K2.5, Qwen3-235B-Thinking - Complex planning & reasoning",
+      "BUILDER_HIGH (Tier 2)": "Sonnet-thinking-high, GPT-5.2-Codex, DeepSeek R1 - Complex coding",
+      "BUILDER_MID (Tier 3)": "Sonnet, Gemini Pro, MiniMax M2.1 - Standard development",
+      "LIBRARIAN (Tier 4)": "Haiku, Gemini Flash, OpenRouter Free - Context, search",
+      "SPRINTER (Tier 5)": "Cerebras GLM-4.7, GLM-4.7 Synthetic - High-volume code"
+    }
+  },
+  
   "synthetic-GLM-4.7": {
     "type": "custom_openai",
     "name": "hf:zai-org/GLM-4.7",
@@ -7,6 +18,10 @@
       "api_key": "$SYN_API_KEY"
     },
     "context_length": 200000,
+    "max_output": 16000,
+    "tier": 5,
+    "workload": ["coding", "sprinter"],
+    "capabilities": ["agentic_coding", "tool_use", "reasoning"],
     "supported_settings": ["temperature", "seed", "top_p"]
   },
   "synthetic-MiniMax-M2.1": {
@@ -16,7 +31,11 @@
       "url": "https://api.synthetic.new/openai/v1/",
       "api_key": "$SYN_API_KEY"
     },
-    "context_length": 195000,
+    "context_length": 1000000,
+    "max_output": 1000000,
+    "tier": 3,
+    "workload": ["coding", "builder"],
+    "capabilities": ["multilang_coding", "tool_use", "agent_frameworks"],
     "supported_settings": ["temperature", "seed", "top_p"]
   },
   "synthetic-Kimi-K2-Thinking": {
@@ -26,7 +45,11 @@
       "url": "https://api.synthetic.new/openai/v1/",
       "api_key": "$SYN_API_KEY"
     },
-    "context_length": 262144,
+    "context_length": 256000,
+    "max_output": 32000,
+    "tier": 2,
+    "workload": ["reasoning", "builder_high"],
+    "capabilities": ["thinking", "moe", "agent_swarms"],
     "supported_settings": ["temperature", "seed", "top_p"]
   },
   "synthetic-Kimi-K2.5-Thinking": {
@@ -36,8 +59,136 @@
       "url": "https://api.synthetic.new/openai/v1/",
       "api_key": "$SYN_API_KEY"
     },
-    "context_length": 262144,
+    "context_length": 256000,
+    "max_output": 32000,
+    "tier": 1,
+    "workload": ["orchestrator", "reasoning", "architect"],
+    "capabilities": ["thinking", "moe", "agent_swarms", "vision"],
     "supported_settings": ["temperature", "seed", "top_p"]
+  },
+  "synthetic-hf-moonshotai-Kimi-K2.5": {
+    "type": "custom_openai",
+    "name": "hf:moonshotai/Kimi-K2.5",
+    "custom_endpoint": {
+      "url": "https://api.synthetic.new/openai/v1/",
+      "api_key": "$SYN_API_KEY"
+    },
+    "context_length": 256000,
+    "max_output": 32000,
+    "tier": 1,
+    "workload": ["orchestrator", "architect"],
+    "capabilities": ["thinking", "moe", "agent_swarms", "vision"],
+    "supported_settings": ["temperature", "seed", "top_p"]
+  },
+  "synthetic-hf-moonshotai-Kimi-K2-Thinking": {
+    "type": "custom_openai",
+    "name": "hf:moonshotai/Kimi-K2-Thinking",
+    "custom_endpoint": {
+      "url": "https://api.synthetic.new/openai/v1/",
+      "api_key": "$SYN_API_KEY"
+    },
+    "context_length": 256000,
+    "max_output": 32000,
+    "tier": 2,
+    "workload": ["reasoning", "builder_high"],
+    "capabilities": ["thinking", "moe"],
+    "supported_settings": ["temperature", "seed", "top_p"]
+  },
+  "synthetic-hf-deepseek-ai-DeepSeek-R1-0528": {
+    "type": "custom_openai",
+    "name": "hf:deepseek-ai/DeepSeek-R1-0528",
+    "custom_endpoint": {
+      "url": "https://api.synthetic.new/openai/v1/",
+      "api_key": "$SYN_API_KEY"
+    },
+    "context_length": 131072,
+    "max_output": 131072,
+    "tier": 2,
+    "workload": ["reasoning", "builder_high"],
+    "capabilities": ["thinking", "reasoning", "math", "moe"],
+    "supported_settings": ["temperature", "seed", "top_p"]
+  },
+  "synthetic-hf-MiniMaxAI-MiniMax-M2.1": {
+    "type": "custom_openai",
+    "name": "hf:MiniMaxAI/MiniMax-M2.1",
+    "custom_endpoint": {
+      "url": "https://api.synthetic.new/openai/v1/",
+      "api_key": "$SYN_API_KEY"
+    },
+    "context_length": 1000000,
+    "max_output": 1000000,
+    "tier": 3,
+    "workload": ["coding", "builder"],
+    "capabilities": ["multilang_coding", "tool_use", "agent_frameworks"],
+    "supported_settings": ["temperature", "seed", "top_p"]
+  },
+  "synthetic-hf-Qwen-Qwen3-235B-A22B-Thinking-2507": {
+    "type": "custom_openai",
+    "name": "hf:Qwen/Qwen3-235B-A22B-Thinking-2507",
+    "custom_endpoint": {
+      "url": "https://api.synthetic.new/openai/v1/",
+      "api_key": "$SYN_API_KEY"
+    },
+    "context_length": 262144,
+    "max_output": 16384,
+    "tier": 1,
+    "workload": ["orchestrator", "reasoning", "architect"],
+    "capabilities": ["thinking", "moe", "math", "multilingual"],
+    "supported_settings": ["temperature", "seed", "top_p"]
+  },
+  "synthetic-hf-zai-org-GLM-4.7": {
+    "type": "custom_openai",
+    "name": "hf:zai-org/GLM-4.7",
+    "custom_endpoint": {
+      "url": "https://api.synthetic.new/openai/v1/",
+      "api_key": "$SYN_API_KEY"
+    },
+    "context_length": 200000,
+    "max_output": 16000,
+    "tier": 5,
+    "workload": ["coding", "sprinter"],
+    "capabilities": ["agentic_coding", "tool_use", "deep_thinking"],
+    "supported_settings": ["temperature", "seed", "top_p"]
+  },
+  "chatgpt-gpt-5.2": {
+    "type": "chatgpt",
+    "name": "gpt-5.2",
+    "context_length": 400000,
+    "max_output": 32000,
+    "tier": 2,
+    "workload": ["reasoning", "coding", "builder_high"],
+    "capabilities": ["reasoning", "long_context", "multimodal"],
+    "supported_settings": ["temperature", "top_p", "reasoning_effort"]
+  },
+  "chatgpt-gpt-5.2-codex": {
+    "type": "chatgpt",
+    "name": "gpt-5.2-codex",
+    "context_length": 400000,
+    "max_output": 32000,
+    "tier": 2,
+    "workload": ["coding", "builder_high"],
+    "capabilities": ["agentic_coding", "migrations", "refactoring", "cybersecurity"],
+    "supported_settings": ["temperature", "top_p", "reasoning_effort"]
+  },
+  "openrouter-stepfun-step-3.5-flash-free": {
+    "type": "openrouter",
+    "name": "stepfun/step-3.5-flash-free",
+    "context_length": 128000,
+    "max_output": 8000,
+    "tier": 4,
+    "workload": ["librarian"],
+    "capabilities": ["fast", "free"],
+    "supported_settings": ["temperature", "top_p"]
+  },
+  "openrouter-arcee-ai-trinity-large-preview-free": {
+    "type": "openrouter",
+    "name": "arcee-ai/trinity-large-preview-free",
+    "context_length": 128000,
+    "max_output": 8000,
+    "tier": 4,
+    "workload": ["librarian"],
+    "capabilities": ["fast", "free"],
+    "supported_settings": ["temperature", "top_p"]
   },
   "Gemini-3": {
     "type": "gemini",
@@ -62,80 +213,80 @@
     "supported_settings": ["temperature", "seed", "top_p"]
   },
   "claude-code-claude-haiku-4-5-20251001": {
-    "type": "anthropic",
-    "name": "claude-haiku-4-5",
+    "type": "claude_code",
+    "name": "claude-haiku-4-5-20251001",
     "context_length": 200000,
     "supported_settings": ["temperature", "extended_thinking", "budget_tokens"]
   },
   "claude-code-claude-sonnet-4-5-20250929": {
-    "type": "anthropic",
-    "name": "claude-sonnet-4-5",
+    "type": "claude_code",
+    "name": "claude-sonnet-4-5-20250929",
     "context_length": 200000,
     "supported_settings": ["temperature", "extended_thinking", "budget_tokens"]
   },
   "claude-code-claude-opus-4-5-20251101": {
-    "type": "anthropic",
-    "name": "claude-opus-4-5",
+    "type": "claude_code",
+    "name": "claude-opus-4-5-20251101",
     "context_length": 200000,
     "supported_settings": ["temperature", "extended_thinking", "budget_tokens", "interleaved_thinking"]
   },
   "antigravity-claude-opus-4-5-thinking-low": {
-    "type": "anthropic",
-    "name": "claude-opus-4-5",
+    "type": "antigravity",
+    "name": "claude-opus-4-5-20251101",
     "context_length": 200000,
     "supported_settings": ["temperature", "extended_thinking", "budget_tokens", "interleaved_thinking"]
   },
   "antigravity-claude-opus-4-5-thinking-medium": {
-    "type": "anthropic",
-    "name": "claude-opus-4-5",
+    "type": "antigravity",
+    "name": "claude-opus-4-5-20251101",
     "context_length": 200000,
     "supported_settings": ["temperature", "extended_thinking", "budget_tokens", "interleaved_thinking"]
   },
   "antigravity-claude-opus-4-5-thinking-high": {
-    "type": "anthropic",
-    "name": "claude-opus-4-5",
+    "type": "antigravity",
+    "name": "claude-opus-4-5-20251101",
     "context_length": 200000,
     "supported_settings": ["temperature", "extended_thinking", "budget_tokens", "interleaved_thinking"]
   },
   "antigravity-gemini-3-pro-low": {
-    "type": "gemini",
+    "type": "antigravity",
     "name": "gemini-3-pro-preview",
     "context_length": 200000,
     "supported_settings": ["temperature", "top_p"]
   },
   "antigravity-gemini-3-pro-high": {
-    "type": "gemini",
+    "type": "antigravity",
     "name": "gemini-3-pro-preview",
     "context_length": 200000,
     "supported_settings": ["temperature", "top_p"]
   },
   "antigravity-gemini-3-flash": {
-    "type": "gemini",
+    "type": "antigravity",
     "name": "gemini-3-flash-preview",
     "context_length": 200000,
     "supported_settings": ["temperature", "top_p"]
   },
   "antigravity-claude-sonnet-4-5": {
-    "type": "anthropic",
-    "name": "claude-sonnet-4-5",
+    "type": "antigravity",
+    "name": "claude-sonnet-4-5-20250929",
     "context_length": 200000,
     "supported_settings": ["temperature", "extended_thinking", "budget_tokens"]
   },
   "antigravity-claude-sonnet-4-5-thinking-low": {
-    "type": "anthropic",
-    "name": "claude-sonnet-4-5",
+    "type": "antigravity",
+    "name": "claude-sonnet-4-5-20250929",
     "context_length": 200000,
     "supported_settings": ["temperature", "extended_thinking", "budget_tokens"]
   },
   "antigravity-claude-sonnet-4-5-thinking-medium": {
-    "type": "anthropic",
-    "name": "claude-sonnet-4-5",
+    "type": "antigravity",
+    "name": "claude-sonnet-4-5-20250929",
     "context_length": 200000,
     "supported_settings": ["temperature", "extended_thinking", "budget_tokens"]
   },
   "antigravity-claude-sonnet-4-5-thinking-high": {
-    "type": "anthropic",
-    "name": "claude-sonnet-4-5",
+    "type": "antigravity",
+    "name": "claude-sonnet-4-5-20250929",
     "context_length": 200000,
     "supported_settings": ["temperature", "extended_thinking", "budget_tokens"]
   },

@@ -239,16 +239,29 @@ See [AUDIT-1.1-SAFEGUARDS.md](AUDIT-1.1-SAFEGUARDS.md) for full documentation.
 
 ---
 
-## Multi-Provider Strategy
+## Multi-Provider Strategy (February 2026)
 
-For complex projects, consider this division of labor:
+Code Puppy now supports a diverse set of providers for optimal task routing:
 
-| Provider | Best For | Notes |
-|----------|----------|-------|
-| **Cerebras Code Pro** | Primary coding, fast iteration | Minimize input tokens per request |
-| **Claude Max** | Architecture, deep debugging | 200K context, but pace usage |
-| **ChatGPT Teams** | Planning, copywriting, research | Good for non-code tasks |
-| **Google AI Pro** | Multimodal, UX review | Images and diagrams |
+| Provider | Best For | Key Models | Context/Output |
+|----------|----------|------------|----------------|
+| **Cerebras** | Primary coding, fast iteration | GLM 4.7 | 200K/40K, 1500+ tok/s |
+| **Claude** | Architecture, deep reasoning | Opus 4.5, Sonnet 4.5 | 200K/64K |
+| **ChatGPT** | Agentic coding | GPT-5.2-Codex | 400K/32K |
+| **Gemini** | Context-heavy, 1M docs | Gemini 3 Pro/Flash | 1M/64K |
+| **Synthetic** | Alternative reasoning | Kimi K2.5, Qwen3-235B | 256K/64K |
+| **DeepSeek** | Complex reasoning | R1-0528 (671B) | 131K/64K |
+| **MiniMax** | Large context coding | M2.1 | 1M/? |
+| **OpenRouter** | Free tier fallback | Step 3.5 Flash, Arcee | Limited |
+
+### Workload-Based Failover Chains
+
+| Workload | Primary → Fallback Chain |
+|----------|--------------------------|
+| **ORCHESTRATOR** | Opus → Kimi K2.5 → Qwen3 → Sonnet → Cerebras |
+| **REASONING** | Sonnet → DeepSeek R1 → Kimi K2 → GPT-5.2-Codex |
+| **CODING** | Cerebras GLM → GPT-5.2-Codex → MiniMax → Haiku |
+| **LIBRARIAN** | Haiku → Gemini Flash → OpenRouter Free → Cerebras |
 
 ### Pinning Models to Agents
 

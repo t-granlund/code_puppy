@@ -74,13 +74,13 @@ class TestTokenOptimizationE2E:
         provider = agent._detect_provider()
         assert provider == "cerebras", f"Expected 'cerebras', got '{provider}'"
         
-        # Test limits retrieval
+        # Test limits retrieval (updated for Code Pro tier)
         limits = get_provider_limits(provider)
         assert limits["diet_mode"] == "boot_camp"
-        assert limits["compaction_threshold"] == 0.20
-        assert limits["max_input_tokens"] == 50_000
-        assert limits["target_input_tokens"] == 8_000
-        assert limits["max_exchanges"] == 3
+        assert limits["compaction_threshold"] == 0.30  # Code Pro: $50/month
+        assert limits["max_input_tokens"] == 80_000    # Increased for paid tier
+        assert limits["target_input_tokens"] == 15_000
+        assert limits["max_exchanges"] == 5
 
     def test_claude_code_detection_and_limits(self):
         """Test Claude Code model detection and balanced limits."""
@@ -259,9 +259,9 @@ class TestTokenOptimizationE2E:
         """Test that budget checking works with provider detection."""
         from code_puppy.tools.token_slimmer import check_token_budget
         
-        # Test Cerebras (boot camp - aggressive)
-        result = check_token_budget(15_000, "cerebras", [])
-        assert result.should_compact is True  # 15K > 20% of 50K (10K)
+        # Test Cerebras (boot camp - Code Pro tier)
+        result = check_token_budget(25_000, "cerebras", [])
+        assert result.should_compact is True  # 25K > 30% of 80K (24K)
         assert "🏋️" in result.recommended_action  # Boot camp emoji
         
         # Test Claude Code (balanced - relaxed)
@@ -376,10 +376,10 @@ class TestBackwardCompatibility:
             CEREBRAS_LIMITS,
         )
         
-        # Old code should still work
-        result = check_cerebras_budget(15_000, [])
+        # Old code should still work (updated for Code Pro tier)
+        result = check_cerebras_budget(25_000, [])  # 25K > 30% of 80K (24K)
         assert result.should_compact is True
-        assert CEREBRAS_LIMITS["max_input_tokens"] == 50_000
+        assert CEREBRAS_LIMITS["max_input_tokens"] == 80_000  # Updated for Code Pro
 
     def test_is_cerebras_model_still_works(self):
         """Verify _is_cerebras_model() method still works."""

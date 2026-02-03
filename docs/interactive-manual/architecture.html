@@ -959,6 +959,9 @@
         <div class="nav-item" data-section="model-router">
           <span class="icon">🔀</span> Model Router
         </div>
+        <div class="nav-item" data-section="credentials">
+          <span class="icon">🔐</span> Credential Availability
+        </div>
         <div class="nav-item" data-section="cerebras">
           <span class="icon">⚡</span> Cerebras GLM 4.7
         </div>
@@ -1424,6 +1427,131 @@
 <span style="color: var(--accent-red)">TaskComplexity.CRITICAL</span>  → Tier 1 (Opus) <strong>always</strong></pre>
             </div>
           </div>
+        </div>
+      </section>
+
+      <!-- CREDENTIAL AVAILABILITY SECTION -->
+      <section id="credentials" class="section">
+        <div class="section-header">
+          <h2>🔐 Credential Availability</h2>
+          <p>Models are automatically excluded from routing if they lack valid credentials — no wasted API calls, clean failover chains.</p>
+        </div>
+
+        <div class="grid-4" style="margin-bottom: 2rem;">
+          <div class="stat-card">
+            <div class="stat-value">8</div>
+            <div class="stat-label">Providers</div>
+            <div class="stat-sub">OAuth + API Keys</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">34</div>
+            <div class="stat-label">Models</div>
+            <div class="stat-sub">Tracked</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">3</div>
+            <div class="stat-label">OAuth</div>
+            <div class="stat-sub">Claude, ChatGPT, Antigravity</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">Auto</div>
+            <div class="stat-label">Cache</div>
+            <div class="stat-sub">Invalidation</div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-icon">🔑</span>
+              <span class="card-title">Provider Credentials</span>
+            </div>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr><th>Provider</th><th>Type</th><th>Configuration</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><span class="tag tag-purple">claude_code</span></td>
+                    <td>OAuth</td>
+                    <td><code>/login claude</code></td>
+                  </tr>
+                  <tr>
+                    <td><span class="tag tag-blue">antigravity</span></td>
+                    <td>OAuth</td>
+                    <td><code>/login antigravity</code></td>
+                  </tr>
+                  <tr>
+                    <td><span class="tag tag-green">chatgpt</span></td>
+                    <td>OAuth</td>
+                    <td><code>/login chatgpt</code></td>
+                  </tr>
+                  <tr>
+                    <td><span class="tag tag-orange">cerebras</span></td>
+                    <td>API Key</td>
+                    <td><code>/set cerebras_api_key = ...</code></td>
+                  </tr>
+                  <tr>
+                    <td><span class="tag tag-cyan">synthetic</span></td>
+                    <td>API Key</td>
+                    <td><code>/set synthetic_api_key = ...</code></td>
+                  </tr>
+                  <tr>
+                    <td><span class="tag tag-pink">openrouter</span></td>
+                    <td>API Key</td>
+                    <td><code>/set openrouter_api_key = ...</code></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <span class="card-icon">🔄</span>
+              <span class="card-title">Credential Check Flow</span>
+            </div>
+            <div class="code-block">
+              <pre><span style="color: var(--accent-blue)">get_chain_for_workload</span>(CODING, <span style="color: var(--accent-green)">filter_by_credentials=True</span>)
+    │
+    ▼
+<span style="color: var(--accent-purple)">For each model in chain:</span>
+    │
+    ├─ OAuth Provider? → Check tokens.json
+    │                    └─ Valid access_token?
+    │
+    └─ API Key Provider? → Check config + env
+                           └─ Try multiple key formats:
+                              • SYN_API_KEY
+                              • synthetic_api_key
+                              • syn_api_key
+    │
+    ▼
+<span style="color: var(--accent-green)">Return filtered chain with credentialed models only</span></pre>
+            </div>
+          </div>
+        </div>
+
+        <h3 style="margin-top: 2rem;">Integration Points</h3>
+        <div class="code-block">
+          <pre style="color: var(--text-secondary);">
+┌─────────────────────────────────────────────────────────────────────────────────────┐
+│                          CREDENTIAL INTEGRATION POINTS                                │
+├─────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                      │
+│  <span style="color: var(--accent-blue)">intelligent_router.py</span>    → Pre-filters models before selection                    │
+│  <span style="color: var(--accent-green)">failover_config.py</span>       → get_chain_for_workload(filter_by_credentials=True)     │
+│  <span style="color: var(--accent-orange)">rate_limit_failover.py</span>   → Filters failover chains and available models           │
+│  <span style="color: var(--accent-cyan)">model_capacity.py</span>        → Checks credentials before capacity check               │
+│  <span style="color: var(--accent-purple)">smart_selection.py</span>       → Skips uncredentialed models in scoring                 │
+│                                                                                      │
+│  Cache auto-invalidated on:                                                          │
+│    • OAuth login success                                                             │
+│    • API key set via /set                                                            │
+│    • OAuth logout                                                                    │
+│                                                                                      │
+└─────────────────────────────────────────────────────────────────────────────────────┘</pre>
         </div>
       </section>
 

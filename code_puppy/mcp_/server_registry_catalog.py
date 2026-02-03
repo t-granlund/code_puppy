@@ -984,6 +984,31 @@ MCP_SERVER_REGISTRY: List[MCPServerTemplate] = [
             system_requirements=["Grafana server with API access"],
         ),
     ),
+    MCPServerTemplate(
+        id="logfire",
+        name="logfire",
+        display_name="Pydantic Logfire",
+        description="Query AI telemetry, traces, and logs from Logfire. Enables code_puppy to learn from its own execution traces, analyze performance patterns, and debug issues using AI-powered observability.",
+        category="Monitoring",
+        tags=["monitoring", "observability", "telemetry", "tracing", "pydantic", "ai", "opentelemetry"],
+        type="stdio",
+        config={
+            "command": "uvx",
+            "args": ["logfire-mcp"],
+            "env": {"LOGFIRE_READ_TOKEN": "$LOGFIRE_TOKEN"},
+            "timeout": 60,
+        },
+        author="Pydantic",
+        verified=True,
+        popular=True,
+        example_usage="Query your AI agent traces: 'Show me the slowest API calls in the last hour' or 'Find all errors with rate limiting'",
+        requires=MCPServerRequirements(
+            environment_vars=["LOGFIRE_TOKEN"],
+            required_tools=["uvx"],
+            package_dependencies=["logfire-mcp"],
+            system_requirements=["Logfire account with API access (https://logfire.pydantic.dev/)"],
+        ),
+    ),
     # ========== Package Management ==========
     MCPServerTemplate(
         id="npm",

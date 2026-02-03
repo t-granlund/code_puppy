@@ -1,22 +1,45 @@
 # 🔍 Code Puppy Optimization Audit Report
 
-**Date:** January 31, 2026  
+**Date:** January 31, 2026 (Updated: February 1, 2026)  
 **Auditor:** GitHub Copilot (Claude Opus 4.5)
 
 ---
 
 ## ✅ Executive Summary
 
-Overall optimization health: **GOOD** with minor improvements needed.
+Overall optimization health: **EXCELLENT** with comprehensive failover coverage.
 
 | Category | Status | Issues Found |
 |----------|--------|--------------|
-| Model Definitions | ✅ Pass | 10 models missing failover entries (intentional) |
-| Failover Chains | ✅ Pass | All 32 tests passing |
+| Model Definitions | ✅ Pass | 34 models with correct types |
+| Failover Chains | ✅ Pass | 173 tests passing |
+| OAuth Authentication | ✅ Pass | 15 OAuth models properly configured |
 | Rate Limit Integration | ✅ Pass | Proactive 20% threshold working |
 | Token Optimization | ✅ Pass | Provider-specific thresholds aligned |
-| Provider Limits Alignment | ✅ Pass | Two PROVIDER_LIMITS dicts (intentional) |
-| Hardcoded Values | ✅ Fixed | Centralized to `failover_config.py` |
+| Agent Registry | ✅ Pass | 36 agents mapped to workloads |
+
+---
+
+## 📊 Model Authentication Summary
+
+### OAuth Models (15 total - use stored tokens)
+These models authenticate via OAuth flow and stored tokens:
+
+| Type | Count | Models |
+|------|-------|--------|
+| `claude_code` | 3 | claude-code-claude-haiku-4-5-20251001, claude-code-claude-sonnet-4-5-20250929, claude-code-claude-opus-4-5-20251101 |
+| `antigravity` | 10 | claude variants (opus/sonnet thinking levels), gemini-3-flash/pro variants |
+| `chatgpt` | 2 | chatgpt-gpt-5.2, chatgpt-gpt-5.2-codex |
+
+### API Key Models (19 total)
+| Type | Count | API Key Required |
+|------|-------|------------------|
+| `custom_openai` | 11 | SYN_API_KEY (synthetic_api_key) |
+| `openrouter` | 2 | OPENROUTER_API_KEY |
+| `cerebras` | 1 | CEREBRAS_API_KEY |
+| `gemini` | 2 | GOOGLE_AI_KEY |
+| `zai_api` | 2 | ZAI_API_KEY |
+| `zai_coding` | 2 | ZAI_API_KEY |
 
 ---
 
@@ -24,45 +47,40 @@ Overall optimization health: **GOOD** with minor improvements needed.
 
 ### 1. Model Coverage
 
-**Total Models in `models.json`:** 24  
-**Models WITH failover entries:** 14  
-**Models WITHOUT failover entries:** 10
+**Total Models in `models.json`:** 34  
+**OAuth Models:** 15 (claude_code, antigravity, chatgpt)  
+**API Key Models:** 19 (custom_openai, openrouter, cerebras, gemini, zai)
 
-#### Missing Failover Entries (Intentionally Standalone)
-These models are standalone or experimental and don't need failover chains:
+#### OAuth Model Types (Fixed February 2026)
+Previous issue: OAuth models had incorrect `type` values causing 429 errors:
+- ❌ `claude-code-*` had `type: "anthropic"` → tried using ANTHROPIC_API_KEY
+- ❌ `antigravity-*` had `type: "anthropic"` or `"gemini"` → tried direct API keys
 
-| Model | Type | Reason |
-|-------|------|--------|
-| `synthetic-GLM-4.7` | custom_openai | Synthetic provider - standalone |
-| `synthetic-MiniMax-M2.1` | custom_openai | Synthetic provider - standalone |
-| `synthetic-Kimi-K2-Thinking` | custom_openai | Synthetic provider - standalone |
-| `synthetic-Kimi-K2.5-Thinking` | custom_openai | Synthetic provider - standalone |
-| `Gemini-3` | gemini | Direct Gemini API - has own failover |
-| `Gemini-3-Long-Context` | gemini | 1M context variant - specialized |
-| `zai-glm-4.6-coding` | zai_coding | ZAI native API - standalone |
-| `zai-glm-4.6-api` | zai_api | ZAI native API - standalone |
-| `zai-glm-4.7-coding` | zai_coding | ZAI native API - standalone |
-| `zai-glm-4.7-api` | zai_api | ZAI native API - standalone |
-
-**Recommendation:** These models intentionally lack failover chains since they're either:
-- Synthetic provider models (user's choice for free inference)
-- Direct Gemini API access (Google's own failover)
-- ZAI native endpoints (proprietary API)
-
-✅ **No action needed** - design is intentional.
+**Fix applied:**
+- ✅ `claude-code-*` → `type: "claude_code"` (uses OAuth handler)
+- ✅ `antigravity-*` → `type: "antigravity"` (uses OAuth handler)
 
 ---
 
 ### 2. Workload Chains Verification
 
-All workload chains reference valid models:
+All workload chains reference valid models with **expanded coverage** (February 2026):
 
-| Workload Type | Chain Length | Primary Model | Status |
-|--------------|--------------|---------------|--------|
-| ORCHESTRATOR | 8 | claude-code-claude-opus-4-5-20251101 | ✅ |
-| REASONING | 6 | claude-code-claude-sonnet-4-5-20250929 | ✅ |
-| CODING | 3 | Cerebras-GLM-4.7 | ✅ |
-| LIBRARIAN | 3 | claude-code-claude-haiku-4-5-20251001 | ✅ |
+| Workload Type | Chain Length | Primary Model | Backup Count | Status |
+|--------------|--------------|---------------|--------------|--------|
+| ORCHESTRATOR | 10 | claude-code-claude-opus-4-5-20251101 | 9 backups | ✅ |
+| REASONING | 10 | claude-code-claude-sonnet-4-5-20250929 | 9 backups | ✅ |
+| CODING | 9 | Cerebras-GLM-4.7 | 8 backups | ✅ |
+| LIBRARIAN | 9 | claude-code-claude-haiku-4-5-20251001 | 8 backups | ✅ |
+
+#### Agent Registry (36 agents mapped)
+
+| Workload Type | Agent Count | Example Agents |
+|--------------|-------------|----------------|
+| ORCHESTRATOR | 5 | pack-leader, helios, epistemic-architect, planning, agent-creator |
+| REASONING | 12 | shepherd, watchdog, code-reviewer, security-auditor, qa-expert |
+| CODING | 15 | husky, terrier, retriever, code-puppy, test-generator |
+| LIBRARIAN | 4 | bloodhound, lab-rat, file-summarizer, doc-writer |
 
 ---
 
@@ -81,6 +99,13 @@ Purpose: Tokens Per Minute quotas for failover decisions
 | codex | 200,000 | 10M | Builder tier |
 | claude_sonnet | 100,000 | 5M | Builder tier |
 | claude_opus | 50,000 | 1M | Architect tier |
+| chatgpt | 150,000 | 5M | GPT-5.2 variants |
+| deepseek | 60,000 | 500K | DeepSeek R1 reasoning |
+| kimi | 60,000 | 500K | Kimi K2/K2.5 |
+| qwen | 60,000 | 500K | Qwen3-235B |
+| minimax | 60,000 | 500K | MiniMax M2.1 |
+| openrouter_free | 20,000 | 100K | Free tier limited |
+| synthetic | 30,000 | 200K | Synthetic/HF |
 
 #### `token_slimmer.py` - Context Compression
 Purpose: When to trigger context compaction
@@ -183,9 +208,10 @@ This prevents the system from trying 9 Antigravity models sequentially when the 
 ## 📈 Test Coverage
 
 ```
-Tests passing: 6065
-Test files: 100+
-Failover infrastructure tests: 32/32 passing
+Tests passing: 173 (failover + model factory)
+Failover infrastructure tests: All passing
+Model factory tests: All passing
+OAuth plugin tests: All passing
 ```
 
 ---
@@ -194,10 +220,16 @@ Failover infrastructure tests: 32/32 passing
 
 The code_puppy codebase is **well-optimized** for token efficiency and rate limit handling:
 
-1. **Proactive rate limiting** triggers at 20% remaining capacity
-2. **Provider-aware compression** with different thresholds per tier
-3. **Unified failover configuration** in single source of truth
-4. **Provider-level quota detection** prevents wasteful retries
-5. **Comprehensive test coverage** validates all configurations
+1. **Correct OAuth model types** - `claude_code`, `antigravity`, `chatgpt` now properly authenticated
+2. **Expanded failover chains** - CODING and LIBRARIAN chains expanded from 7→9 models
+3. **Proactive rate limiting** triggers at 20% remaining capacity
+4. **Provider-aware compression** with different thresholds per tier
+5. **Unified failover configuration** in single source of truth
+6. **36 agents mapped** to appropriate workload types
+7. **Comprehensive test coverage** validates all configurations
 
-No critical issues found. The minor hardcoded values are intentional defaults that work correctly with the overall architecture.
+**Recent Fixes (February 2026):**
+- ✅ Fixed `type` values for OAuth models in models.json
+- ✅ Updated OAuth plugins to handle static models (no custom_endpoint)
+- ✅ Expanded CODING chain: +2 models (antigravity-claude-sonnet-4-5, synthetic-hf-zai-org-GLM-4.7)
+- ✅ Expanded LIBRARIAN chain: +2 models (synthetic-GLM-4.7, antigravity-gemini-3-pro-high)

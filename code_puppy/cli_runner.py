@@ -21,16 +21,51 @@ from rich.console import Console
 
 # Configure logfire for AI observability
 try:
+    import os
     import logfire
+    
+    # Auto-enable cloud telemetry when LOGFIRE_TOKEN is set
+    logfire_token = os.environ.get("LOGFIRE_TOKEN")
+    send_to_cloud = "if-token-present" if logfire_token else False
+    
     logfire.configure(
         service_name="code-puppy",
-        ignore_no_config=True,  # Don't fail if no config file
-        send_to_logfire=False,  # Local-only by default (user can enable)
+        ignore_no_config=True,
+        send_to_logfire=send_to_cloud,
+        token=logfire_token if logfire_token else None,
+        inspect_arguments=False,  # Avoid introspection warnings
     )
-    # Instrument pydantic-ai agents and MCP
-    logfire.instrument_pydantic_ai()
-    logfire.instrument_mcp()
-except Exception as e:
+    
+    # Instrument all the things for full observability
+    try:
+        logfire.instrument_pydantic_ai()  # PydanticAI agents
+    except Exception:
+        pass
+    try:
+        logfire.instrument_mcp()          # MCP tool calls
+    except Exception:
+        pass
+    try:
+        logfire.instrument_httpx()        # HTTP requests (API calls)
+    except Exception:
+        pass
+    try:
+        logfire.instrument_openai()       # OpenAI API calls
+    except Exception:
+        pass
+    try:
+        logfire.instrument_anthropic()    # Anthropic API calls
+    except Exception:
+        pass
+    try:
+        logfire.instrument_asyncpg()      # Database queries
+    except Exception:
+        pass
+    
+    if logfire_token:
+        logfire.info("🔥 Logfire telemetry enabled", 
+                     instrumented=["pydantic_ai", "mcp", "httpx", "openai", "anthropic"])
+except Exception:
     # Fail gracefully if logfire isn't available
     pass
 

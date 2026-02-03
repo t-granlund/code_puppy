@@ -28,9 +28,9 @@ WORKFLOW_DIAGRAM = """
 ║  │ STEP 2: PACK LEADER ORCHESTRATION                                                  │  ║
 ║  │ ═══════════════════════════════════                                                │  ║
 ║  │                                                                                    │  ║
-║  │  🐺 Pack Leader (Tier 1: Claude Opus 4.5)                                          │  ║
+║  │  🐺 Pack Leader (Tier 1: Claude Opus 4.5 / Kimi K2.5 / Qwen3)                       │  ║
 ║  │  └── Workload: ORCHESTRATOR                                                        │  ║
-║  │  └── Failover Chain: Opus → Antigravity Opus → Gemini Pro → Codex                  │  ║
+║  │  └── Failover Chain: Opus → Kimi K2.5 → Qwen3 → Sonnet → Codex → Cerebras          │  ║
 ║  │                                                                                    │  ║
 ║  │  Actions:                                                                          │  ║
 ║  │  ├── 1. Parse user intent → "Azure dashboard creation"                             │  ║
@@ -54,10 +54,10 @@ WORKFLOW_DIAGRAM = """
 ║  │  ┌─────────────────┬─────────────────┬─────────────────┬───────────────────────┐   │  ║
 ║  │  │ Agent           │ Workload        │ Tier            │ Model Chain           │   │  ║
 ║  │  ├─────────────────┼─────────────────┼─────────────────┼───────────────────────┤   │  ║
-║  │  │ pack-leader     │ ORCHESTRATOR    │ 1 (Architect)   │ Claude Opus 4.5       │   │  ║
-║  │  │ bloodhound      │ LIBRARIAN       │ 4 (Librarian)   │ Haiku → Flash → GLM   │   │  ║
-║  │  │ husky           │ CODING          │ 5 (Sprinter)    │ Cerebras GLM 4.7      │   │  ║
-║  │  │ shepherd        │ REASONING       │ 2 (Builder-Hi)  │ Sonnet → Antigravity  │   │  ║
+║  │  │ pack-leader     │ ORCHESTRATOR    │ 1 (Architect)   │ Opus→Kimi K2.5→Qwen3  │   │  ║
+║  │  │ bloodhound      │ LIBRARIAN       │ 4 (Librarian)   │ Haiku→Flash→OpenRouter│   │  ║
+║  │  │ husky           │ CODING          │ 5 (Sprinter)    │ GLM 4.7→Codex→MiniMax │   │  ║
+║  │  │ shepherd        │ REASONING       │ 2 (Builder-Hi)  │ Sonnet→DeepSeek→Kimi  │   │  ║
 ║  │  └─────────────────┴─────────────────┴─────────────────┴───────────────────────┘   │  ║
 ║  │                                                                                    │  ║
 ║  │  Rate Limit Check (PROACTIVE - GLM-Token-Saver pattern):                           │  ║
@@ -106,9 +106,9 @@ WORKFLOW_DIAGRAM = """
 ║  │ STEP 5: VERIFICATION (Ralph Loop)                                                  │  ║
 ║  │ ═══════════════════════════════════                                                │  ║
 ║  │                                                                                    │  ║
-║  │  🐕 Shepherd (REASONING tier - Claude Sonnet 4.5)                                  │  ║
+║  │  🐕 Shepherd (REASONING tier - Claude Sonnet 4.5 / DeepSeek R1)                    │  ║
 ║  │  └── Workload: REASONING                                                           │  ║
-║  │  └── Failover: Sonnet → Antigravity Sonnet → Gemini Pro → GLM                      │  ║
+║  │  └── Failover: Sonnet → DeepSeek R1 → Kimi K2 → GPT-5.2-Codex → MiniMax            │  ║
 ║  │                                                                                    │  ║
 ║  │  Verification Steps:                                                               │  ║
 ║  │  ├── 1. Static Analysis: Check Bicep syntax, Python types                          │  ║
@@ -147,7 +147,7 @@ WORKFLOW_DIAGRAM = """
 ║  │                                                                                    │  ║
 ║  │  Telemetry Emitted (Logfire):                                                      │  ║
 ║  │  ├── task_completed: duration=12.3s, tokens_used=45000, cost=$0.12                 │  ║
-║  │  ├── models_used: [opus, haiku, glm-4.7, sonnet]                                   │  ║
+║  │  ├── models_used: [opus, kimi-k2.5, glm-4.7, sonnet, deepseek-r1]                  │  ║
 ║  │  ├── rate_limit_state: cerebras=93% remaining, healthy                             │  ║
 ║  │  └── verification_result: PASS, drift_score=0.0                                    │  ║
 ║  └────────────────────────────────────────────────────────────────────────────────────┘  ║

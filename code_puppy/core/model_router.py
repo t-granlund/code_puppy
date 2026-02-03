@@ -112,21 +112,58 @@ class ModelRouter:
     2. Assess complexity
     3. Check budget availability
     4. Route to appropriate tier with fallback
+    
+    Model Capabilities Reference (researched from official docs):
+    - Claude Opus 4.5: 200K context, 64K output, effort parameter, best reasoning
+    - Claude Sonnet 4.5: 200K context, 64K output, agentic coding leader
+    - Gemini 3 Pro: 1M context, 64K output, thinking levels
+    - Gemini 3 Flash: 1M context, 8K output, fast, cheap
+    - GPT-5.2: 400K context, 32K output, reasoning, long context
+    - GPT-5.2-Codex: 400K context, 32K output, agentic coding optimized
+    - DeepSeek R1-0528: 131K context, 131K output, reasoning model
+    - Kimi K2.5: 256K context, 1T MoE, agent swarms, thinking
+    - Kimi K2-Thinking: 256K context, 1T MoE, reasoning
+    - Qwen3-235B-Thinking: 262K context, 16K output, math leader
+    - MiniMax M2.1: 1M context, 1M output, multilang coding
+    - GLM-4.7: 200K context, 358B MoE, agentic coding, tool use
     """
     
     # Default model configurations - use EXACT keys from models.json
     DEFAULT_MODELS: Dict[str, ModelConfig] = {
-        # Tier 5: Sprinter - NOTE: models.json uses "Cerebras-GLM-4.7" (capital C)
+        # =====================================================================
+        # Tier 5: Sprinter - High volume, fast generation
+        # =====================================================================
         "Cerebras-GLM-4.7": ModelConfig(
             name="Cerebras-GLM-4.7",
             provider="cerebras",
             tier=ModelTier.SPRINTER,
-            max_context=50_000,
-            max_output=4_000,
+            max_context=131_072,
+            max_output=40_000,
             cost_per_1k_input=0.0,  # Free tier
             cost_per_1k_output=0.0,
         ),
-        # Tier 4: Librarian - NOTE: models.json uses "antigravity-gemini-3-flash"
+        "synthetic-GLM-4.7": ModelConfig(
+            name="synthetic-GLM-4.7",
+            provider="synthetic",
+            tier=ModelTier.SPRINTER,
+            max_context=200_000,
+            max_output=16_000,
+            cost_per_1k_input=0.0,
+            cost_per_1k_output=0.0,
+        ),
+        "synthetic-hf-zai-org-GLM-4.7": ModelConfig(
+            name="synthetic-hf-zai-org-GLM-4.7",
+            provider="synthetic",
+            tier=ModelTier.SPRINTER,
+            max_context=200_000,
+            max_output=16_000,
+            cost_per_1k_input=0.0,
+            cost_per_1k_output=0.0,
+        ),
+        
+        # =====================================================================
+        # Tier 4: Librarian - Context, search, docs
+        # =====================================================================
         "antigravity-gemini-3-flash": ModelConfig(
             name="antigravity-gemini-3-flash",
             provider="gemini_flash",
@@ -142,41 +179,231 @@ class ModelRouter:
             name="antigravity-gemini-3-pro-low",
             provider="gemini",
             tier=ModelTier.LIBRARIAN,
-            max_context=2_000_000,
-            max_output=8_000,
+            max_context=1_000_000,
+            max_output=64_000,
             cost_per_1k_input=0.00025,
             cost_per_1k_output=0.001,
             supports_context_caching=True,
             context_cache_threshold=30_000,
         ),
-        # Tier 2/3: Builders - NOTE: models.json uses "chatgpt-gpt-5.2-codex"
-        "chatgpt-gpt-5.2-codex": ModelConfig(
-            name="chatgpt-gpt-5.2-codex",
-            provider="codex",
-            tier=ModelTier.BUILDER_HIGH,
+        "openrouter-arcee-ai-trinity-large-preview-free": ModelConfig(
+            name="openrouter-arcee-ai-trinity-large-preview-free",
+            provider="openrouter",
+            tier=ModelTier.LIBRARIAN,
             max_context=128_000,
+            max_output=8_000,
+            cost_per_1k_input=0.0,
+            cost_per_1k_output=0.0,
+        ),
+        "openrouter-stepfun-step-3.5-flash-free": ModelConfig(
+            name="openrouter-stepfun-step-3.5-flash-free",
+            provider="openrouter",
+            tier=ModelTier.LIBRARIAN,
+            max_context=128_000,
+            max_output=8_000,
+            cost_per_1k_input=0.0,
+            cost_per_1k_output=0.0,
+        ),
+        "claude-code-claude-haiku-4-5-20251001": ModelConfig(
+            name="claude-code-claude-haiku-4-5-20251001",
+            provider="claude_haiku",
+            tier=ModelTier.LIBRARIAN,
+            max_context=200_000,
             max_output=16_000,
-            cost_per_1k_input=0.003,
-            cost_per_1k_output=0.015,
+            cost_per_1k_input=0.001,
+            cost_per_1k_output=0.005,
+        ),
+        
+        # =====================================================================
+        # Tier 3: Builder Mid - Standard development
+        # =====================================================================
+        "synthetic-MiniMax-M2.1": ModelConfig(
+            name="synthetic-MiniMax-M2.1",
+            provider="minimax",
+            tier=ModelTier.BUILDER_MID,
+            max_context=1_000_000,
+            max_output=1_000_000,
+            cost_per_1k_input=0.0003,
+            cost_per_1k_output=0.0012,
+        ),
+        "synthetic-hf-MiniMaxAI-MiniMax-M2.1": ModelConfig(
+            name="synthetic-hf-MiniMaxAI-MiniMax-M2.1",
+            provider="minimax",
+            tier=ModelTier.BUILDER_MID,
+            max_context=1_000_000,
+            max_output=1_000_000,
+            cost_per_1k_input=0.0003,
+            cost_per_1k_output=0.0012,
+        ),
+        "antigravity-gemini-3-pro-high": ModelConfig(
+            name="antigravity-gemini-3-pro-high",
+            provider="gemini",
+            tier=ModelTier.BUILDER_MID,
+            max_context=1_000_000,
+            max_output=64_000,
+            cost_per_1k_input=0.004,
+            cost_per_1k_output=0.004,
         ),
         "claude-code-claude-sonnet-4-5-20250929": ModelConfig(
             name="claude-code-claude-sonnet-4-5-20250929",
             provider="claude_sonnet",
             tier=ModelTier.BUILDER_MID,
             max_context=200_000,
-            max_output=16_000,
+            max_output=64_000,
             cost_per_1k_input=0.003,
             cost_per_1k_output=0.015,
         ),
-        # Tier 1: Architect
+        "antigravity-claude-sonnet-4-5": ModelConfig(
+            name="antigravity-claude-sonnet-4-5",
+            provider="claude_sonnet",
+            tier=ModelTier.BUILDER_MID,
+            max_context=200_000,
+            max_output=64_000,
+            cost_per_1k_input=0.003,
+            cost_per_1k_output=0.015,
+        ),
+        
+        # =====================================================================
+        # Tier 2: Builder High - Complex coding, reasoning
+        # =====================================================================
+        "chatgpt-gpt-5.2-codex": ModelConfig(
+            name="chatgpt-gpt-5.2-codex",
+            provider="codex",
+            tier=ModelTier.BUILDER_HIGH,
+            max_context=400_000,
+            max_output=32_000,
+            cost_per_1k_input=0.003,
+            cost_per_1k_output=0.015,
+        ),
+        "chatgpt-gpt-5.2": ModelConfig(
+            name="chatgpt-gpt-5.2",
+            provider="gpt",
+            tier=ModelTier.BUILDER_HIGH,
+            max_context=400_000,
+            max_output=32_000,
+            cost_per_1k_input=0.003,
+            cost_per_1k_output=0.015,
+        ),
+        "synthetic-hf-deepseek-ai-DeepSeek-R1-0528": ModelConfig(
+            name="synthetic-hf-deepseek-ai-DeepSeek-R1-0528",
+            provider="deepseek",
+            tier=ModelTier.BUILDER_HIGH,
+            max_context=131_072,
+            max_output=131_072,
+            cost_per_1k_input=0.00055,
+            cost_per_1k_output=0.00219,
+        ),
+        "synthetic-Kimi-K2-Thinking": ModelConfig(
+            name="synthetic-Kimi-K2-Thinking",
+            provider="kimi",
+            tier=ModelTier.BUILDER_HIGH,
+            max_context=256_000,
+            max_output=32_000,
+            cost_per_1k_input=0.001,
+            cost_per_1k_output=0.003,
+        ),
+        "synthetic-hf-moonshotai-Kimi-K2-Thinking": ModelConfig(
+            name="synthetic-hf-moonshotai-Kimi-K2-Thinking",
+            provider="kimi",
+            tier=ModelTier.BUILDER_HIGH,
+            max_context=256_000,
+            max_output=32_000,
+            cost_per_1k_input=0.001,
+            cost_per_1k_output=0.003,
+        ),
+        "antigravity-claude-sonnet-4-5-thinking-high": ModelConfig(
+            name="antigravity-claude-sonnet-4-5-thinking-high",
+            provider="claude_sonnet",
+            tier=ModelTier.BUILDER_HIGH,
+            max_context=200_000,
+            max_output=64_000,
+            cost_per_1k_input=0.003,
+            cost_per_1k_output=0.015,
+        ),
+        "antigravity-claude-sonnet-4-5-thinking-medium": ModelConfig(
+            name="antigravity-claude-sonnet-4-5-thinking-medium",
+            provider="claude_sonnet",
+            tier=ModelTier.BUILDER_MID,
+            max_context=200_000,
+            max_output=64_000,
+            cost_per_1k_input=0.003,
+            cost_per_1k_output=0.015,
+        ),
+        "antigravity-claude-sonnet-4-5-thinking-low": ModelConfig(
+            name="antigravity-claude-sonnet-4-5-thinking-low",
+            provider="claude_sonnet",
+            tier=ModelTier.BUILDER_MID,
+            max_context=200_000,
+            max_output=64_000,
+            cost_per_1k_input=0.003,
+            cost_per_1k_output=0.015,
+        ),
+        
+        # =====================================================================
+        # Tier 1: Architect - Planning, reasoning, orchestration
+        # =====================================================================
         "claude-code-claude-opus-4-5-20251101": ModelConfig(
             name="claude-code-claude-opus-4-5-20251101",
             provider="claude_opus",
             tier=ModelTier.ARCHITECT,
             max_context=200_000,
-            max_output=16_000,
-            cost_per_1k_input=0.015,
-            cost_per_1k_output=0.075,
+            max_output=64_000,
+            cost_per_1k_input=0.005,
+            cost_per_1k_output=0.025,
+        ),
+        "antigravity-claude-opus-4-5-thinking-high": ModelConfig(
+            name="antigravity-claude-opus-4-5-thinking-high",
+            provider="claude_opus",
+            tier=ModelTier.ARCHITECT,
+            max_context=200_000,
+            max_output=64_000,
+            cost_per_1k_input=0.005,
+            cost_per_1k_output=0.025,
+        ),
+        "antigravity-claude-opus-4-5-thinking-medium": ModelConfig(
+            name="antigravity-claude-opus-4-5-thinking-medium",
+            provider="claude_opus",
+            tier=ModelTier.ARCHITECT,
+            max_context=200_000,
+            max_output=64_000,
+            cost_per_1k_input=0.005,
+            cost_per_1k_output=0.025,
+        ),
+        "antigravity-claude-opus-4-5-thinking-low": ModelConfig(
+            name="antigravity-claude-opus-4-5-thinking-low",
+            provider="claude_opus",
+            tier=ModelTier.ARCHITECT,
+            max_context=200_000,
+            max_output=64_000,
+            cost_per_1k_input=0.005,
+            cost_per_1k_output=0.025,
+        ),
+        "synthetic-Kimi-K2.5-Thinking": ModelConfig(
+            name="synthetic-Kimi-K2.5-Thinking",
+            provider="kimi",
+            tier=ModelTier.ARCHITECT,
+            max_context=256_000,
+            max_output=32_000,
+            cost_per_1k_input=0.001,
+            cost_per_1k_output=0.003,
+        ),
+        "synthetic-hf-moonshotai-Kimi-K2.5": ModelConfig(
+            name="synthetic-hf-moonshotai-Kimi-K2.5",
+            provider="kimi",
+            tier=ModelTier.ARCHITECT,
+            max_context=256_000,
+            max_output=32_000,
+            cost_per_1k_input=0.001,
+            cost_per_1k_output=0.003,
+        ),
+        "synthetic-hf-Qwen-Qwen3-235B-A22B-Thinking-2507": ModelConfig(
+            name="synthetic-hf-Qwen-Qwen3-235B-A22B-Thinking-2507",
+            provider="qwen",
+            tier=ModelTier.ARCHITECT,
+            max_context=262_144,
+            max_output=16_384,
+            cost_per_1k_input=0.00086,
+            cost_per_1k_output=0.00344,
         ),
     }
     
@@ -380,9 +607,14 @@ class ModelRouter:
         """
         # Check for explicit tier setting
         if "tier" in config:
+            tier_val = config["tier"]
             try:
-                return ModelTier[config["tier"].upper()]
-            except KeyError:
+                # Handle numeric tier values (1-5 matching ModelTier enum values)
+                if isinstance(tier_val, int):
+                    return ModelTier(tier_val)
+                # Handle string tier names (e.g., "ARCHITECT", "BUILDER_HIGH")
+                return ModelTier[str(tier_val).upper()]
+            except (KeyError, ValueError):
                 pass
         
         model_type = config.get("type", "")
@@ -419,6 +651,27 @@ class ModelRouter:
         """Get all models for a specific tier."""
         return [m for m in self._models.values() if m.tier == tier]
 
+    def _parse_tier_value(self, tier_val: Any, default: ModelTier = ModelTier.BUILDER_MID) -> ModelTier:
+        """Parse tier value from config (int or string) to ModelTier enum.
+        
+        Args:
+            tier_val: Tier value from config (int like 1-5 or string like "ARCHITECT")
+            default: Default tier if parsing fails
+            
+        Returns:
+            ModelTier enum value
+        """
+        if tier_val is None:
+            return default
+        try:
+            # Handle numeric tier values (1-5 matching ModelTier enum values)
+            if isinstance(tier_val, int):
+                return ModelTier(tier_val)
+            # Handle string tier names (e.g., "ARCHITECT", "BUILDER_HIGH")
+            return ModelTier[str(tier_val).upper()]
+        except (KeyError, ValueError):
+            return default
+
     def _load_extra_models(self, path: Path) -> None:
         """Load additional model configurations from JSON file."""
         try:
@@ -429,7 +682,7 @@ class ModelRouter:
                 self._models[name] = ModelConfig(
                     name=name,
                     provider=config.get("provider", name),
-                    tier=ModelTier[config.get("tier", "BUILDER_MID").upper()],
+                    tier=self._parse_tier_value(config.get("tier")),
                     max_context=config.get("max_context", 100_000),
                     max_output=config.get("max_output", 4_000),
                     cost_per_1k_input=config.get("cost_per_1k_input", 0.001),

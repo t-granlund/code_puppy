@@ -132,13 +132,13 @@ class TestOptimalMaxTokens:
         """Tool calls should get low max_tokens."""
         messages = [MockMessage(parts=[MockPart("read file config.py")])]
         max_tokens = get_optimal_max_tokens(messages, "cerebras")
-        assert max_tokens == 195  # Scaled: 300 * 0.65 (boot_camp diet)
+        assert max_tokens == 225  # Scaled: 300 * 0.75 (standard diet for Code Pro plan)
     
     def test_code_gen_gets_high_limit(self):
         """Code generation should get higher max_tokens."""
         messages = [MockMessage(parts=[MockPart("build a new module for auth")])]
         max_tokens = get_optimal_max_tokens(messages, "cerebras")
-        assert max_tokens == 2600  # Scaled: 4000 * 0.65 (boot_camp diet)
+        assert max_tokens == 3000  # Scaled: 4000 * 0.75 (standard diet for Code Pro plan)
     
     def test_non_cerebras_gets_provider_limit(self):
         """Non-Cerebras providers get their own limits (OpenAI uses 1.0 scale)."""
@@ -152,31 +152,32 @@ class TestBudgetCheck:
     """Tests for check_cerebras_budget function."""
     
     def test_healthy_budget(self):
-        """Should report healthy when under 20% (ultra-aggressive)."""
-        result = check_cerebras_budget(5_000)  # Under 20% of 50K = 10K
+        """Should report healthy when well under 30% (Code Pro tier)."""
+        result = check_cerebras_budget(10_000)  # ~12.5% of 80K - well under threshold
         assert not result.should_compact
         assert not result.should_block
-        assert "healthy" in result.recommended_action.lower() or "✅" in result.recommended_action
+        # At low usage, should not trigger hard limits
+        assert "🚫" not in result.recommended_action
     
     def test_should_compact_at_30_percent(self):
-        """Should trigger compaction at 30% usage (aggressive)."""
-        # 30% of 50K = 15K
-        result = check_cerebras_budget(15_001)
+        """Should trigger compaction at 30% usage (Code Pro tier)."""
+        # 30% of 80K = 24K
+        result = check_cerebras_budget(24_001)
         assert result.should_compact
         assert not result.should_block
     
     def test_should_block_at_50_percent(self):
-        """Should block at 50% usage (aggressive)."""
-        # 50% of 50K = 25K
-        result = check_cerebras_budget(25_001)
+        """Should block at 50% usage (Code Pro tier)."""
+        # 50% of 80K = 40K
+        result = check_cerebras_budget(40_001)
         assert result.should_compact
         assert result.should_block
         assert "🚫" in result.recommended_action or "HARD LIMIT" in result.recommended_action
     
     def test_usage_percent_calculated_correctly(self):
         """Usage percent should be relative to max tokens."""
-        result = check_cerebras_budget(15_000)
-        assert result.usage_percent == 0.3  # 15K / 50K = 30%
+        result = check_cerebras_budget(24_000)
+        assert result.usage_percent == 0.3  # 24K / 80K = 30%
 
 
 class TestCountExchanges:
@@ -385,27 +386,27 @@ class TestPreRequestHook:
 
 
 class TestCerebrasLimits:
-    """Tests for CEREBRAS_LIMITS constants (AGGRESSIVE settings)."""
+    """Tests for CEREBRAS_LIMITS constants (Code Pro tier - relaxed from free tier)."""
     
-    def test_compaction_threshold_is_20_percent(self):
-        """Compaction threshold should be 20% (ultra-aggressive for 56:1 ratio fix)."""
-        assert CEREBRAS_LIMITS["compaction_threshold"] == 0.20
+    def test_compaction_threshold_is_30_percent(self):
+        """Compaction threshold should be 30% (Code Pro: $50/month tier)."""
+        assert CEREBRAS_LIMITS["compaction_threshold"] == 0.30
     
-    def test_hard_limit_is_40_percent(self):
-        """Hard limit should be 40% (ultra-aggressive for 56:1 ratio fix)."""
-        assert CEREBRAS_LIMITS["hard_limit_threshold"] == 0.40
+    def test_hard_limit_is_50_percent(self):
+        """Hard limit should be 50% (Code Pro: $50/month tier)."""
+        assert CEREBRAS_LIMITS["hard_limit_threshold"] == 0.50
     
-    def test_max_exchanges_is_3(self):
-        """Max exchanges should be 3 (ultra-aggressive for 56:1 ratio fix)."""
-        assert CEREBRAS_LIMITS["max_exchanges"] == 3
+    def test_max_exchanges_is_5(self):
+        """Max exchanges should be 5 (Code Pro: $50/month tier)."""
+        assert CEREBRAS_LIMITS["max_exchanges"] == 5
     
-    def test_target_input_is_8k(self):
-        """Target input tokens should be 8K (ultra-aggressive for 56:1 ratio fix)."""
-        assert CEREBRAS_LIMITS["target_input_tokens"] == 8_000
+    def test_target_input_is_15k(self):
+        """Target input tokens should be 15K (Code Pro: $50/month tier)."""
+        assert CEREBRAS_LIMITS["target_input_tokens"] == 15_000
     
-    def test_max_input_is_50k(self):
-        """Max input tokens should be 50K."""
-        assert CEREBRAS_LIMITS["max_input_tokens"] == 50_000
+    def test_max_input_is_80k(self):
+        """Max input tokens should be 80K (Code Pro: $50/month tier)."""
+        assert CEREBRAS_LIMITS["max_input_tokens"] == 80_000
 
 
 class TestCompactionResult:

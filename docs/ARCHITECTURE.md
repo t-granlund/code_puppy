@@ -8,18 +8,41 @@
 
 ## 📋 Table of Contents
 
-1. [High-Level Overview](#high-level-overview)
-2. [System Architecture Diagram](#system-architecture-diagram)
-3. [Core Components](#core-components)
-4. [Model Tier Hierarchy](#model-tier-hierarchy)
-5. [BART Orchestration System (NEW)](#bart-orchestration-system)
-6. [Cerebras GLM 4.7 Optimization](#cerebras-glm-47-optimization)
-7. [Agent System](#agent-system)
-8. [MCP Infrastructure](#mcp-infrastructure)
-9. [Token Budget & Cost Management](#token-budget--cost-management)
-10. [Messaging & Event System](#messaging--event-system)
-11. [Plugin Architecture](#plugin-architecture)
-12. [Data Flow Diagrams](#data-flow-diagrams)
+- [🏗️ Code Puppy - Technical Architecture](#️-code-puppy---technical-architecture)
+  - [📋 Table of Contents](#-table-of-contents)
+  - [High-Level Overview](#high-level-overview)
+    - [Key Principles](#key-principles)
+  - [System Architecture Diagram](#system-architecture-diagram)
+  - [Core Components](#core-components)
+    - [Component Registry](#component-registry)
+  - [Model Tier Hierarchy](#model-tier-hierarchy)
+    - [Routing Logic](#routing-logic)
+  - [BART Orchestration System](#bart-orchestration-system)
+    - [The Reasoning \& Tasking Architecture](#the-reasoning--tasking-architecture)
+    - [Pydantic Models](#pydantic-models)
+  - [Cerebras GLM 4.7 Optimization](#cerebras-glm-47-optimization)
+    - [The 10 Rules Implementation](#the-10-rules-implementation)
+    - [API Parameters](#api-parameters)
+  - [Agent System](#agent-system)
+    - [Agent Hierarchy](#agent-hierarchy)
+    - [Agent Tools](#agent-tools)
+  - [MCP Infrastructure](#mcp-infrastructure)
+    - [Server Lifecycle](#server-lifecycle)
+  - [Token Budget \& Cost Management](#token-budget--cost-management)
+    - [Rate Limiting Architecture](#rate-limiting-architecture)
+    - [Cost Tracking](#cost-tracking)
+  - [Messaging \& Event System](#messaging--event-system)
+    - [Bidirectional Communication](#bidirectional-communication)
+  - [Plugin Architecture](#plugin-architecture)
+    - [Hook System](#hook-system)
+    - [Available Plugins](#available-plugins)
+  - [Data Flow Diagrams](#data-flow-diagrams)
+    - [User Request → Response](#user-request--response)
+  - [File Structure Summary](#file-structure-summary)
+  - [Observability](#observability)
+    - [Logfire Integration](#logfire-integration)
+    - [Metrics Tracked](#metrics-tracked)
+  - [Version History](#version-history)
 
 ---
 
@@ -109,19 +132,23 @@ Code Puppy implements the **BART System (Belief-Augmented Reasoning & Tasking)**
 │  │                            🔀 MODEL ROUTER                                       │   │
 │  │                                                                                 │   │
 │  │  ┌─────────────────────────────────────────────────────────────────────────┐   │   │
-│  │  │                      Tier Hierarchy                                      │   │   │
+│  │  │                      Tier Hierarchy (February 2026)                      │   │   │
 │  │  │                                                                         │   │   │
 │  │  │  Tier 1 ─────► Claude Opus 4.5 ──────► Planning, Security, QA           │   │   │
-│  │  │  (Architect)   (Most Capable)          Conflict Resolution              │   │   │
+│  │  │  (Architect)   Kimi K2.5 (1T MoE)      Conflict Resolution              │   │   │
+│  │  │               Qwen3-235B-Thinking      Complex Orchestration            │   │   │
 │  │  │                                                                         │   │   │
-│  │  │  Tier 2 ─────► Codex 5.2 ────────────► Complex Logic, Refactoring       │   │   │
-│  │  │  (Builder-Hi)  (OpenAI)                Algorithm Implementation          │   │   │
+│  │  │  Tier 2 ─────► GPT-5.2-Codex ────────► Complex Logic, Refactoring       │   │   │
+│  │  │  (Builder-Hi)  DeepSeek R1-0528        Agentic Coding (400K ctx)        │   │   │
+│  │  │               Kimi K2-Thinking         Algorithm Implementation          │   │   │
 │  │  │                                                                         │   │   │
 │  │  │  Tier 3 ─────► Claude Sonnet 4.5 ────► Class Design, API Design         │   │   │
-│  │  │  (Builder-Mid) (Anthropic)             Code Review                       │   │   │
+│  │  │  (Builder-Mid) MiniMax M2.1 (1M ctx)   Code Review, Standard Dev        │   │   │
+│  │  │               Gemini 3 Pro             All-rounder Development          │   │   │
 │  │  │                                                                         │   │   │
-│  │  │  Tier 4 ─────► Gemini 3 Flash/Pro ───► Context Search, Summarization    │   │   │
-│  │  │  (Librarian)   (Google)                Log Analysis, Documentation       │   │   │
+│  │  │  Tier 4 ─────► Gemini 3 Flash ───────► Context Search, Summarization    │   │   │
+│  │  │  (Librarian)   Claude Haiku 4.5        Log Analysis, Documentation       │   │   │
+│  │  │               OpenRouter Free Models   Cost-effective Context           │   │   │
 │  │  │                                                                         │   │   │
 │  │  │  Tier 5 ─────► Cerebras GLM 4.7 ─────► Code Gen, Tests, Linting         │   │   │
 │  │  │  (Sprinter)    (358B MoE, 1500+ t/s)   Boilerplate, Syntax Fixing        │   │   │
@@ -145,6 +172,12 @@ Code Puppy implements the **BART System (Belief-Augmented Reasoning & Tasking)**
 │  │  │  Cerebras   │  │   Gemini    │  │  Anthropic  │  │   OpenAI    │            │   │
 │  │  │ 300K/min    │  │ ~100K/min   │  │ ~100K/min   │  │ ~100K/min   │            │   │
 │  │  │ 24M/day     │  │ ~2M/day     │  │ ~1M/day     │  │ ~1M/day     │            │   │
+│  │  └─────────────┘  └─────────────┘  └─────────────┘  └─────────────┘            │   │
+│  │                                                                                 │   │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐            │   │
+│  │  │  Synthetic  │  │   Kimi      │  │  DeepSeek   │  │  OpenRouter │            │   │
+│  │  │  30/min     │  │ 60K/min     │  │ 60K/min     │  │ Free tier   │            │   │
+│  │  │  (HF tier)  │  │ ~500K/day   │  │ ~500K/day   │  │ Limited     │            │   │
 │  │  └─────────────┘  └─────────────┘  └─────────────┘  └─────────────┘            │   │
 │  │                                                                                 │   │
 │  │  ┌──────────────────────────────────────────────────────────────────────────┐  │   │
@@ -295,29 +328,29 @@ Code Puppy implements the **BART System (Belief-Augmented Reasoning & Tasking)**
                              /│\
                             / │ \
                            /  │  \    Tier 1: ARCHITECT
-                          /   │   \   Claude Opus 4.5
-                         / Planning\  • Security audits
-                        /    QA     \ • Conflict resolution
+                          / Opus  \   Claude Opus 4.5, Kimi K2.5, Qwen3-235B
+                         / K2.5    \  • Security audits
+                        / Qwen3     \ • Conflict resolution, Planning
                        /─────────────\ • Final QA reviews
                       /       │       \
                      /        │        \   Tier 2: BUILDER-HIGH
-                    /    Codex 5.2     \   • Complex refactoring
-                   /   Complex Logic    \  • Algorithm design
-                  /─────────────────────\
+                    /  GPT-5.2-Codex   \   • Complex refactoring
+                   / DeepSeek R1-0528   \  • Algorithm design
+                  / Kimi K2-Thinking────\  • Agentic coding
                  /          │            \
                 /           │             \  Tier 3: BUILDER-MID
-               /    Sonnet 4.5            \  • Class design
-              /    Refactoring, Design     \ • API design
+               /   Sonnet 4.5, MiniMax    \  • Class design
+              /   Gemini 3 Pro (1M ctx)    \ • API design
              /─────────────────────────────\
             /             │                 \
            /              │                  \ Tier 4: LIBRARIAN
-          /        Gemini 3 Flash/Pro         \ • Context search
-         /      Summarization, Log Analysis    \ • Documentation
+          /  Haiku, Gemini 3 Flash, OpenRouter\ • Context search
+         /       (1M context, cost-effective)  \ • Documentation
         /───────────────────────────────────────\
        /                  │                      \
       /                   │                       \ Tier 5: SPRINTER
      /          Cerebras GLM 4.7                   \ • Code generation
-    /    1500+ tok/s | 358B MoE | 131K context      \ • Unit tests
+    /    1500+ tok/s | 358B MoE | 200K context      \ • Unit tests
    /─────────────────────────────────────────────────\ • Boilerplate
   ▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔
 ```
@@ -325,10 +358,10 @@ Code Puppy implements the **BART System (Belief-Augmented Reasoning & Tasking)**
 ### Routing Logic
 
 ```python
-TaskComplexity.LOW       → Tier 5 (Cerebras)
-TaskComplexity.MEDIUM    → Tier 4 (Gemini) or Tier 3 (Sonnet)
-TaskComplexity.HIGH      → Tier 2 (Codex) or Tier 1 (Opus)
-TaskComplexity.CRITICAL  → Tier 1 (Opus) always
+TaskComplexity.LOW       → Tier 5 (Cerebras GLM 4.7)
+TaskComplexity.MEDIUM    → Tier 4 (Gemini Flash) or Tier 3 (Sonnet/MiniMax)
+TaskComplexity.HIGH      → Tier 2 (GPT-5.2-Codex/DeepSeek R1) or Tier 1 (Opus)
+TaskComplexity.CRITICAL  → Tier 1 (Opus/Kimi K2.5/Qwen3) always
 ```
 
 ---
@@ -344,7 +377,7 @@ The EpistemicOrchestrator implements the BART Plan → Execute → Verify loop:
 │                      BART ORCHESTRATION SYSTEM                          │
 ├─────────────────────────────────────────────────────────────────────────┤
 │                                                                         │
-│  1. REASONING LAYER (Claude Opus 4.5)                                   │
+│  1. REASONING LAYER (Claude Opus 4.5 / Kimi K2.5 / Qwen3-235B)               │     │
 │     ┌────────────────────────────────────────────────────────────┐     │
 │     │ conduct_planning_interview()                               │     │
 │     │   • Extract goals, assumptions, constraints                │     │
@@ -354,7 +387,7 @@ The EpistemicOrchestrator implements the BART Plan → Execute → Verify loop:
 │     └────────────────────────────────────────────────────────────┘     │
 │                              │                                          │
 │                              ▼                                          │
-│  2. EXECUTE (Cerebras GLM 4.7)                                          │
+│  2. EXECUTE (Cerebras GLM 4.7 / GPT-5.2-Codex / MiniMax M2.1)               │
 │     ┌────────────────────────────────────────────────────────────┐     │
 │     │ ContextCurator.slice_for_milestone()                       │     │
 │     │   • Create MinimumViableContext (MVC)                      │     │

@@ -203,12 +203,12 @@ class TestProviderLimitsIntegration:
             assert "diet_mode" in limits
     
     def test_cerebras_is_boot_camp(self):
-        """Cerebras should be in boot_camp mode (most aggressive)."""
+        """Cerebras Code Pro should still be in boot_camp mode (but less aggressive)."""
         from code_puppy.tools.token_slimmer import get_provider_limits
         
         limits = get_provider_limits("cerebras")
         assert limits["diet_mode"] == "boot_camp"
-        assert limits["compaction_threshold"] == 0.20
+        assert limits["compaction_threshold"] == 0.30  # Updated for Code Pro tier
     
     def test_claude_code_is_balanced(self):
         """Claude Code should be in balanced mode."""

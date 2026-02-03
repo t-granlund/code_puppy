@@ -1585,17 +1585,61 @@ def set_suppress_informational_messages(enabled: bool):
     set_config_value("suppress_informational_messages", "true" if enabled else "false")
 
 
+# API Key name mappings - maps environment variable names to config file key names
+# This allows models.json to use $SYN_API_KEY while puppy.cfg uses synthetic_api_key
+API_KEY_ALIASES = {
+    "SYN_API_KEY": ["synthetic_api_key", "syn_api_key"],
+    "SYNTHETIC_API_KEY": ["synthetic_api_key", "syn_api_key"],
+    "OPENROUTER_API_KEY": ["openrouter_api_key"],
+    "CEREBRAS_API_KEY": ["cerebras_api_key"],
+    "XAI_API_KEY": ["xai_api_key"],
+    "OPENAI_API_KEY": ["openai_api_key"],
+    "ANTHROPIC_API_KEY": ["anthropic_api_key"],
+    "GEMINI_API_KEY": ["gemini_api_key"],
+    "AZURE_OPENAI_API_KEY": ["azure_openai_api_key"],
+    "ZAI_API_KEY": ["zai_api_key"],
+}
+
+
 # API Key management functions
 def get_api_key(key_name: str) -> str:
-    """Get an API key from puppy.cfg.
+    """Get an API key from puppy.cfg or environment.
+
+    Supports multiple key name formats:
+    - Environment variable style: SYN_API_KEY, OPENROUTER_API_KEY
+    - Config file style: synthetic_api_key, openrouter_api_key
 
     Args:
-        key_name: The name of the API key (e.g., 'OPENAI_API_KEY')
+        key_name: The name of the API key (e.g., 'SYN_API_KEY' or 'synthetic_api_key')
 
     Returns:
         The API key value, or empty string if not set
     """
-    return get_value(key_name) or ""
+    # First check environment variable
+    env_value = os.environ.get(key_name)
+    if env_value:
+        return env_value
+
+    # Try the exact key name in config
+    value = get_value(key_name)
+    if value:
+        return value
+
+    # Try alias mappings (e.g., SYN_API_KEY -> synthetic_api_key)
+    aliases = API_KEY_ALIASES.get(key_name.upper(), [])
+    for alias in aliases:
+        value = get_value(alias)
+        if value:
+            return value
+
+    # Also check lowercase version of the key
+    lower_key = key_name.lower()
+    if lower_key != key_name:
+        value = get_value(lower_key)
+        if value:
+            return value
+
+    return ""
 
 
 def set_api_key(key_name: str, value: str):

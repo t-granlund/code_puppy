@@ -94,6 +94,47 @@ class TestModelsJsonIntegrity:
                     "ChatGPT models should come from OAuth plugin, not API keys"
                 )
 
+    def test_synthetic_hf_models_exist(self, models_config):
+        """Verify Synthetic HuggingFace models are defined (February 2026)."""
+        required = [
+            "synthetic-hf-deepseek-ai-DeepSeek-R1-0528",
+            "synthetic-hf-moonshotai-Kimi-K2.5",
+            "synthetic-hf-Qwen-Qwen3-235B-A22B-Thinking-2507",
+            "synthetic-hf-zai-org-GLM-4.7",
+            "synthetic-hf-MiniMaxAI-MiniMax-M2.1",
+        ]
+        for model in required:
+            assert model in models_config, f"Missing Synthetic HF model: {model}"
+
+    def test_synthetic_models_exist(self, models_config):
+        """Verify Synthetic provider models are defined."""
+        required = [
+            "synthetic-GLM-4.7",
+            "synthetic-MiniMax-M2.1",
+            "synthetic-Kimi-K2-Thinking",
+            "synthetic-Kimi-K2.5-Thinking",
+        ]
+        for model in required:
+            assert model in models_config, f"Missing Synthetic model: {model}"
+
+    def test_chatgpt_gpt5_models_exist(self, models_config):
+        """Verify ChatGPT GPT-5.2 models are defined."""
+        required = [
+            "chatgpt-gpt-5.2",
+            "chatgpt-gpt-5.2-codex",
+        ]
+        for model in required:
+            assert model in models_config, f"Missing ChatGPT GPT-5.2 model: {model}"
+
+    def test_openrouter_free_models_exist(self, models_config):
+        """Verify OpenRouter free tier models are defined."""
+        required = [
+            "openrouter-stepfun-step-3.5-flash-free",
+            "openrouter-arcee-ai-trinity-large-preview-free",
+        ]
+        for model in required:
+            assert model in models_config, f"Missing OpenRouter free model: {model}"
+
     def test_cerebras_model_exists(self, models_config):
         """Verify Cerebras model is defined."""
         assert "Cerebras-GLM-4.7" in models_config, "Missing Cerebras model"
@@ -119,47 +160,52 @@ class TestFailoverChainMappings:
         assert not invalid, f"Invalid failover targets: {invalid}"
 
     def test_opus_chain_complete(self):
-        """Opus should chain through thinking levels to Sonnet then ChatGPT."""
+        """Opus should chain through thinking levels to new Tier 1 models then Sonnet."""
         mgr = TokenBudgetManager()
         chain = mgr.FAILOVER_CHAIN
         
-        # Opus -> thinking-high -> thinking-medium -> thinking-low -> Sonnet thinking
+        # Opus -> thinking-high -> Kimi K2.5 -> thinking-medium -> Qwen3 -> thinking-low -> Sonnet
         assert chain.get("claude-code-claude-opus-4-5-20251101") == "antigravity-claude-opus-4-5-thinking-high"
-        assert chain.get("antigravity-claude-opus-4-5-thinking-high") == "antigravity-claude-opus-4-5-thinking-medium"
-        assert chain.get("antigravity-claude-opus-4-5-thinking-medium") == "antigravity-claude-opus-4-5-thinking-low"
+        assert chain.get("antigravity-claude-opus-4-5-thinking-high") == "synthetic-Kimi-K2.5-Thinking"
+        assert chain.get("synthetic-Kimi-K2.5-Thinking") == "antigravity-claude-opus-4-5-thinking-medium"
+        assert chain.get("antigravity-claude-opus-4-5-thinking-medium") == "synthetic-hf-Qwen-Qwen3-235B-A22B-Thinking-2507"
         assert chain.get("antigravity-claude-opus-4-5-thinking-low") == "antigravity-claude-sonnet-4-5-thinking-high"
 
-    def test_sonnet_chain_complete(self):
-        """Sonnet should chain through thinking levels to Cerebras."""
+    def test_sonnet_chain_includes_deepseek_and_kimi(self):
+        """Sonnet should chain to DeepSeek R1 and Kimi K2-Thinking."""
         mgr = TokenBudgetManager()
         chain = mgr.FAILOVER_CHAIN
         
-        # Sonnet -> regular -> thinking-high -> ... -> Cerebras
+        # Sonnet -> regular -> DeepSeek R1 -> Kimi K2-Thinking
         assert chain.get("claude-code-claude-sonnet-4-5-20250929") == "antigravity-claude-sonnet-4-5"
-        assert chain.get("antigravity-claude-sonnet-4-5") == "antigravity-claude-sonnet-4-5-thinking-high"
-        assert chain.get("antigravity-claude-sonnet-4-5-thinking-low") == "Cerebras-GLM-4.7"
+        assert chain.get("antigravity-claude-sonnet-4-5") == "synthetic-hf-deepseek-ai-DeepSeek-R1-0528"
+        assert chain.get("synthetic-hf-deepseek-ai-DeepSeek-R1-0528") == "synthetic-Kimi-K2-Thinking"
 
     def test_cerebras_chain_complete(self):
-        """Cerebras should chain to Haiku then Gemini then loop back to Cerebras."""
+        """Cerebras should chain to Synthetic GLM then Haiku then Gemini."""
         mgr = TokenBudgetManager()
         chain = mgr.FAILOVER_CHAIN
         
-        assert chain.get("Cerebras-GLM-4.7") == "claude-code-claude-haiku-4-5-20251001"
+        # Cerebras -> Synthetic GLM -> Haiku -> Gemini Flash -> OpenRouter
+        assert chain.get("Cerebras-GLM-4.7") == "synthetic-GLM-4.7"
+        assert chain.get("synthetic-GLM-4.7") == "claude-code-claude-haiku-4-5-20251001"
         assert chain.get("claude-code-claude-haiku-4-5-20251001") == "antigravity-gemini-3-flash"
-        assert chain.get("antigravity-gemini-3-flash") == "Cerebras-GLM-4.7"
 
     def test_chatgpt_chain_complete(self):
-        """ChatGPT models are OAuth-only, so no static chain entries.
+        """ChatGPT GPT-5.2-Codex models are now part of static failover chain.
         
-        The chatgpt_oauth plugin dynamically adds failover entries when
-        the user authenticates with /chatgpt-auth.
+        GPT-5.2-Codex was added as Tier 2 model for complex coding tasks.
+        OAuth plugin can still dynamically add additional entries.
         """
         mgr = TokenBudgetManager()
         chain = mgr.FAILOVER_CHAIN
         
-        # ChatGPT models should NOT be in the static chain (OAuth-only)
-        assert "chatgpt-gpt-5.2" not in chain
-        assert "chatgpt-gpt-5.2-codex" not in chain
+        # ChatGPT GPT-5.2-Codex is now in static chain (Tier 2 BUILDER_HIGH)
+        chatgpt_models = [k for k in chain.keys() if k.startswith("chatgpt-")]
+        assert len(chatgpt_models) > 0, "ChatGPT GPT-5.2 should be in static chain"
+        # Verify they have valid failover targets
+        for model in chatgpt_models:
+            assert chain[model] is not None, f"{model} should have a failover target"
 
 
 class TestWorkloadChainMappings:
@@ -194,18 +240,33 @@ class TestWorkloadChainMappings:
         ChatGPT models are OAuth-only and not in default chains.
         """
         chain = RateLimitFailover.WORKLOAD_CHAINS[WorkloadType.ORCHESTRATOR]
-        assert "Cerebras-GLM-4.7" in chain
+        assert chain[-1] == "Cerebras-GLM-4.7"
+        # Also verify Tier 1 models are included
+        assert "synthetic-Kimi-K2.5-Thinking" in chain
+        assert "synthetic-hf-Qwen-Qwen3-235B-A22B-Thinking-2507" in chain
 
     def test_coding_chain_starts_with_cerebras(self):
-        """Coding workload should start with Cerebras."""
+        """Coding workload should start with Cerebras and include GPT-5.2-Codex and MiniMax."""
         chain = RateLimitFailover.WORKLOAD_CHAINS[WorkloadType.CODING]
         assert chain[0] == "Cerebras-GLM-4.7"
+        # Verify Tier 2/3 coding models are included
+        assert "chatgpt-gpt-5.2-codex" in chain
+        assert "synthetic-MiniMax-M2.1" in chain
+
+    def test_reasoning_chain_includes_deepseek_kimi(self):
+        """Reasoning workload should include DeepSeek R1 and Kimi K2-Thinking."""
+        chain = RateLimitFailover.WORKLOAD_CHAINS[WorkloadType.REASONING]
+        assert "synthetic-hf-deepseek-ai-DeepSeek-R1-0528" in chain
+        assert "synthetic-Kimi-K2-Thinking" in chain
 
     def test_librarian_chain_has_fast_models(self):
-        """Librarian workload should have Haiku and Flash."""
+        """Librarian workload should have Haiku, Flash, and OpenRouter free models."""
         chain = RateLimitFailover.WORKLOAD_CHAINS[WorkloadType.LIBRARIAN]
         assert "claude-code-claude-haiku-4-5-20251001" in chain
         assert "antigravity-gemini-3-flash" in chain
+        # Verify OpenRouter free tier models are in Librarian chain
+        assert "openrouter-arcee-ai-trinity-large-preview-free" in chain or \
+               "openrouter-stepfun-step-3.5-flash-free" in chain
 
 
 class TestProviderNormalization:
@@ -229,12 +290,28 @@ class TestProviderNormalization:
         assert mgr._normalize_provider("antigravity-gemini-3-flash") == "gemini_flash"
 
     def test_normalize_chatgpt_models(self):
-        """ChatGPT models should normalize to codex provider."""
+        """ChatGPT models should normalize to chatgpt or codex provider."""
         mgr = TokenBudgetManager()
         
-        assert mgr._normalize_provider("chatgpt-gpt-5.2") == "codex"
-        assert mgr._normalize_provider("chatgpt-gpt-5.2-codex") == "codex"
+        # ChatGPT GPT-5.2 models map to chatgpt
+        assert mgr._normalize_provider("chatgpt-gpt-5.2") == "chatgpt"
+        assert mgr._normalize_provider("chatgpt-gpt-5.2-codex") == "chatgpt"
+        # Legacy codex models map to codex
         assert mgr._normalize_provider("gpt-5.1-codex-api") == "codex"
+
+
+    def test_normalize_new_provider_models(self):
+        """New provider models should normalize correctly (February 2026)."""
+        mgr = TokenBudgetManager()
+        
+        # DeepSeek, Kimi, Qwen, MiniMax
+        assert mgr._normalize_provider("synthetic-hf-deepseek-ai-DeepSeek-R1-0528") == "deepseek"
+        assert mgr._normalize_provider("synthetic-Kimi-K2.5-Thinking") == "kimi"
+        assert mgr._normalize_provider("synthetic-hf-Qwen-Qwen3-235B-A22B-Thinking-2507") == "qwen"
+        assert mgr._normalize_provider("synthetic-MiniMax-M2.1") == "minimax"
+        # OpenRouter free models
+        assert mgr._normalize_provider("openrouter-stepfun-step-3.5-flash-free") == "openrouter_free"
+        assert mgr._normalize_provider("openrouter-arcee-ai-trinity-large-preview-free") == "openrouter_free"
 
 
 class TestBudgetCheckWithFailover:
@@ -298,6 +375,9 @@ class TestModelFactoryIntegration:
     def test_model_configs_have_required_fields(self, models_config):
         """All models should have type and name fields."""
         for model_key, config in models_config.items():
+            # Skip metadata entries (keys starting with _)
+            if model_key.startswith("_"):
+                continue
             assert "type" in config, f"{model_key} missing 'type'"
             assert "name" in config, f"{model_key} missing 'name'"
 
@@ -309,10 +389,10 @@ class TestModelFactoryIntegration:
 
     def test_chatgpt_models_have_correct_type(self, models_config):
         """ChatGPT models should have correct types."""
-        # ChatGPT models using OAuth flow use 'chatgpt_oauth' type
+        # ChatGPT models using OAuth flow use 'chatgpt' type
         for model_key in ["chatgpt-gpt-5.2", "chatgpt-gpt-5.2-codex"]:
             if model_key in models_config:
-                assert models_config[model_key]["type"] == "chatgpt_oauth", f"{model_key} should be type 'chatgpt_oauth'"
+                assert models_config[model_key]["type"] == "chatgpt", f"{model_key} should be type 'chatgpt'"
         
         # GPT 5.1 API models use openai type
         for model_key in ["gpt-5.1", "gpt-5.1-codex-api"]:

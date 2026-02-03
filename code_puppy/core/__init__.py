@@ -83,6 +83,15 @@ from .model_metrics import (
     get_metrics_tracker,
     track_request,
 )
+from .credential_availability import (
+    CredentialChecker,
+    get_credential_checker,
+    has_valid_credentials,
+    get_available_models_with_credentials,
+    filter_workload_chain,
+    get_credential_status,
+    invalidate_credential_cache,
+)
 from .smart_selection import (
     SmartModelSelector,
     RequestPriorityQueue,

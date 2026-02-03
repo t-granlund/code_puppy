@@ -408,21 +408,35 @@ class RateLimitFailover:
         logger.debug(f"Agent '{agent_name}' not in registry, defaulting to CODING workload")
         return WorkloadType.CODING
 
-    def get_failover_chain_for_agent(self, agent_name: str) -> List[str]:
+    def get_failover_chain_for_agent(self, agent_name: str, filter_by_credentials: bool = True) -> List[str]:
         """Get the appropriate failover chain for a specific agent.
         
         This is the main entry point for agent-aware model selection:
         1. Looks up agent's workload type from AGENT_WORKLOAD_REGISTRY
         2. Returns the appropriate WORKLOAD_CHAINS for that type
+        3. Filters to only models with valid credentials (unless disabled)
         
         Args:
             agent_name: Name of the agent requesting models
+            filter_by_credentials: If True, exclude models without valid API keys/OAuth
             
         Returns:
             List of model names in failover priority order
         """
         workload = self.get_workload_for_agent(agent_name)
-        return self.WORKLOAD_CHAINS.get(workload, self.WORKLOAD_CHAINS[WorkloadType.CODING])
+        chain = self.WORKLOAD_CHAINS.get(workload, self.WORKLOAD_CHAINS[WorkloadType.CODING])
+        
+        if filter_by_credentials:
+            try:
+                from code_puppy.core.credential_availability import filter_workload_chain
+                filtered = filter_workload_chain(chain)
+                if filtered:
+                    return filtered
+                logger.warning(f"No credentialed models for {agent_name}, using unfiltered chain")
+            except ImportError:
+                pass
+        
+        return chain
 
     def get_primary_model_for_agent(self, agent_name: str) -> str:
         """Get the primary (first choice) model for an agent.
@@ -431,9 +445,9 @@ class RateLimitFailover:
             agent_name: Name of the agent
             
         Returns:
-            Primary model name for this agent's workload
+            Primary model name for this agent's workload (with valid credentials)
         """
-        chain = self.get_failover_chain_for_agent(agent_name)
+        chain = self.get_failover_chain_for_agent(agent_name, filter_by_credentials=True)
         
         # Filter out rate-limited models
         for model in chain:
@@ -502,12 +516,34 @@ class RateLimitFailover:
         """Check if a model is currently rate-limited."""
         return model_name in self._rate_limited
 
-    def get_available_models(self, exclude_rate_limited: bool = True) -> List[str]:
-        """Get list of available models."""
+    def get_available_models(
+        self, 
+        exclude_rate_limited: bool = True,
+        filter_by_credentials: bool = True,
+    ) -> List[str]:
+        """Get list of available models.
+        
+        Args:
+            exclude_rate_limited: Exclude models currently rate-limited
+            filter_by_credentials: Exclude models without valid API keys/OAuth tokens
+            
+        Returns:
+            List of available model names
+        """
         self.load_from_model_factory()
+        models = list(self._available_models.keys())
+        
         if exclude_rate_limited:
-            return [m for m in self._available_models.keys() if m not in self._rate_limited]
-        return list(self._available_models.keys())
+            models = [m for m in models if m not in self._rate_limited]
+        
+        if filter_by_credentials:
+            try:
+                from code_puppy.core.credential_availability import get_available_models_with_credentials
+                models = get_available_models_with_credentials(models)
+            except ImportError:
+                pass
+        
+        return models
 
 
 # Global singleton accessor

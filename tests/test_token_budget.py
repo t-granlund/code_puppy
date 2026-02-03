@@ -91,8 +91,8 @@ class TestTokenBudgetManager:
         mgr = TokenBudgetManager()
         mgr.reset_provider("cerebras")
         
-        # Use up most of the budget
-        mgr._budgets["cerebras"].tokens_used_this_minute = 290_000
+        # Use up most of the budget (Cerebras Code Pro: 1M TPM)
+        mgr._budgets["cerebras"].tokens_used_this_minute = 990_000
         
         result = mgr.check_budget("cerebras", 20_000)
         
@@ -130,8 +130,8 @@ class TestTokenBudgetManager:
         assert wait2 > wait1
         assert wait3 > wait2
         # Should suggest failover after 3 429s
-        # Updated: Cerebras chain now goes to Haiku with dated name
-        assert failover == "claude-code-claude-haiku-4-5-20251001"
+        # Updated: Cerebras chain now goes to Synthetic GLM first
+        assert failover == "synthetic-GLM-4.7"
     
     def test_failover_chain(self):
         """Should suggest failover when budget exceeded."""
@@ -144,8 +144,8 @@ class TestTokenBudgetManager:
         result = mgr.check_budget("cerebras", 10_000, allow_failover=True)
         
         assert not result.can_proceed
-        # Updated: Cerebras chain now goes to Haiku with dated name
-        assert result.failover_to == "claude-code-claude-haiku-4-5-20251001"
+        # Updated: Cerebras chain now goes to Synthetic GLM first
+        assert result.failover_to == "synthetic-GLM-4.7"
 
 
 class TestSmartRetry:
