@@ -111,9 +111,9 @@ TIER_MAPPINGS: Dict[str, int] = {
 WORKLOAD_CHAINS: Dict[WorkloadType, List[str]] = {
     # Pack leader, governor, planning - needs maximum reasoning power
     WorkloadType.ORCHESTRATOR: [
-        "claude-code-claude-opus-4-5-20251101",      # Tier 1: Best reasoning
-        "antigravity-claude-opus-4-5-thinking-high",
+        "antigravity-claude-opus-4-5-thinking-high",  # Tier 1: Most stable Opus
         "antigravity-claude-opus-4-5-thinking-medium",
+        "claude-code-claude-opus-4-5-20251101",      # Tier 1: Best reasoning (may have 500 errors)
         "synthetic-Kimi-K2.5-Thinking",               # Tier 1: 1T MoE, agent swarms
         "synthetic-hf-Qwen-Qwen3-235B-A22B-Thinking-2507",  # Tier 1: Math leader
         "antigravity-claude-opus-4-5-thinking-low",
