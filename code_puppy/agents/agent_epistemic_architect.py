@@ -169,9 +169,8 @@ class EpistemicArchitectAgent(BaseAgent):
             "list_files",
             "read_file",
             "grep",
-            # For creating epistemic artifacts
+            # For creating/editing epistemic artifacts (edit_file handles both create and modify)
             "edit_file",
-            "create_file",
             # Shell for project scaffolding
             "agent_run_shell_command",
             # Reasoning transparency (critical for epistemic work)
