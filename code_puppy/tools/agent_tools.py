@@ -551,7 +551,18 @@ def register_invoke_agent(agent):
                 elif model_name not in models_config:
                     raise ValueError(f"Model '{model_name}' not found in configuration")
 
-            model = ModelFactory.get_model(model_name, models_config)
+            # Get the raw model first
+            raw_model = ModelFactory.get_model(model_name, models_config)
+            
+            # Wrap in FailoverModel for automatic rate limit and error failover
+            # This ensures sub-agents (husky, etc.) get the same failover behavior as main agents
+            from code_puppy.failover_model import create_failover_model_for_agent as create_failover
+            
+            model = create_failover(
+                agent_name,
+                primary_model=raw_model,
+                model_factory_func=lambda name: ModelFactory.get_model(name, models_config),
+            )
 
             # Create a temporary agent instance to avoid interfering with current agent state
             instructions = agent_config.get_full_system_prompt()
