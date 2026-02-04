@@ -111,6 +111,25 @@ print(status["claude_opus"]["cost_today"])      # "$0.032000"
    - "What agents are using the most tokens?"
    - "Find all 429 rate limit errors"
 
+## Real-Time Telemetry Events (NEW - Feb 2026)
+
+Code Puppy now emits **structured telemetry events** for key system operations:
+
+| Event | Level | Source | Purpose |
+|-------|-------|--------|---------|
+| `workload_routing` | INFO | `base_agent.py` | Verifies agent→workload→model assignments |
+| `failover.triggered` | WARN | `failover_model.py` | Circuit breaker opens, switching models |
+| `failover.success` | INFO | `failover_model.py` | Circuit recovered, back to primary |
+| `rate_limit` | WARN | `failover_model.py` | 429 errors with `consecutive_429s` counter |
+| `capacity_warning` | WARN | `model_capacity.py` | Model ≥80% usage, proactive failover trigger |
+| `ear_phase` | INFO | `ralph_loop.py` | EAR loop phases with confidence scores |
+
+**Health Checks:** See [LOGFIRE-OBSERVABILITY.md](LOGFIRE-OBSERVABILITY.md) for SQL queries to verify:
+- ✅ CODING workload uses GLM-4.7 (not Kimi-K2.5)
+- ✅ Failover recoveries ≈ failover triggers
+- ✅ Capacity warnings precede rate limits
+- ✅ EAR loops >90% complete, <10% error rate
+
 ## Setup Checklist
 
 - [x] logfire library added to dependencies

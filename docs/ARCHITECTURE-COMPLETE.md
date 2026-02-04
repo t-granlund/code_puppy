@@ -731,7 +731,28 @@ Creates **JSON-based agents** through conversation:
 
 ## 8. Logfire Telemetry & Self-Improvement
 
-### Telemetry Points
+### Real-Time Telemetry Events (NEW - Feb 2026)
+
+**Purpose:** Verify system is "sticking to the plan" by tracking critical decision points.
+
+| Event | Source | Log Level | Purpose | Key Fields |
+|-------|--------|-----------|---------|------------|
+| `Workload routing` | base_agent.py | INFO | Verify correct model for workload | agent, workload, orchestrated_model |
+| `Failover triggered` | failover_model.py | WARN | Track model switches on 429s | from_model, to_model, error_type |
+| `Failover success` | failover_model.py | INFO | Confirm recovery | model, workload, attempts |
+| `Rate limit` | failover_model.py | WARN | Track cooldown periods | model, cooldown, consecutive_429s |
+| `Capacity warning` | model_capacity.py | WARN | Alert at 80%+ usage | model, pct, limit_type, used, limit |
+| `EAR phase` | ralph_loop.py | INFO | Track reasoning stages | loop_id, from_phase, to_phase, confidence |
+
+**Health Checks:**
+- ✅ CODING workload → GLM-4.7 (not Kimi-K2.5)
+- ✅ Failover recoveries ≈ failover triggers  
+- ✅ EAR loops >90% complete, <10% error
+- ✅ Capacity warnings precede rate limits
+
+See [docs/LOGFIRE-OBSERVABILITY.md](LOGFIRE-OBSERVABILITY.md) for complete query reference.
+
+### Legacy Telemetry Points
 
 | Event | Location | Data Captured |
 |-------|----------|---------------|

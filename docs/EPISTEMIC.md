@@ -318,7 +318,20 @@ Example workflow:
 5. /agent epistemic-architect  → Run improvement audit (Stage 8)
 ```
 
-## 📚 Further Reading
+## � Logfire Telemetry for EAR Loops
+
+All EAR loop phases emit **real-time telemetry** to track confidence and completion:
+
+| Event | Source | Purpose |
+|-------|--------|---------|
+| `ear_phase` | `ralph_loop.py` | Tracks OBSERVE→ORIENT→DECIDE→ACT with confidence scores |
+
+**Health Check Queries:** See [LOGFIRE-OBSERVABILITY.md](LOGFIRE-OBSERVABILITY.md) for SQL to verify:
+- ✅ EAR loops complete >90% of the time
+- ✅ Error rate <10%
+- ✅ Average confidence scores by phase
+
+## �📚 Further Reading
 
 - [EAR Philosophy Documentation](code_puppy/epistemic/philosophy/project-plan.md)
 - [Build Methodology](code_puppy/epistemic/process/build-methodology.md)

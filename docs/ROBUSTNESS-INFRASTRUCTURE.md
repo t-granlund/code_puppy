@@ -358,6 +358,29 @@ All modules support runtime configuration. Default values are sensible for most 
 - `CODE_PUPPY_DAILY_BUDGET`: Daily cost limit in USD (default: 50.00)
 - `CODE_PUPPY_MONTHLY_BUDGET`: Monthly cost limit in USD (default: 500.00)
 
+## Observability with Logfire
+
+All robustness features are instrumented with **Logfire telemetry** for real-time monitoring:
+
+### Circuit Breaker Events
+- `failover.triggered` (WARN) - Circuit breaker opens, switching models
+- `failover.success` (INFO) - Circuit recovered, back to primary model
+- `rate_limit` (WARN) - Rate limit detected with `consecutive_429s` counter
+
+### Capacity Tracking Events  
+- `capacity_warning` (WARN) - Model approaching limits (≥80% usage)
+- Triggers proactive failover before hitting hard limits
+
+### Workload Routing Events
+- `workload_routing` (INFO) - Records agent→workload→model assignments
+- Health check: CODING workload should use GLM-4.7, not Kimi-K2.5
+
+### EAR Loop Events
+- `ear_phase` (INFO) - Tracks OBSERVE→ORIENT→DECIDE→ACT stages
+- Health check: >90% completion rate, <10% error rate
+
+See [LOGFIRE-OBSERVABILITY.md](LOGFIRE-OBSERVABILITY.md) for SQL queries and health checks.
+
 ## Best Practices
 
 1. **Use circuit breakers** for all external API calls
@@ -367,3 +390,4 @@ All modules support runtime configuration. Default values are sensible for most 
 5. **Review metrics** to optimize model selection
 6. **Compress prompts** for long inputs
 7. **Use priority queues** for batch workloads
+8. **Monitor Logfire** for capacity warnings and failover patterns

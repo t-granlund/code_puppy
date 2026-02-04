@@ -164,10 +164,29 @@ CEREBRAS_LIMITS = {
 
 ---
 
-## 10. Recommendations for Further Optimization
+## 10. Logfire Telemetry for Capacity Management
+
+All token optimization features emit **real-time telemetry** via Pydantic Logfire:
+
+| Event | Level | Purpose |
+|-------|-------|---------|
+| `capacity_warning` | WARN | Emitted at ≥80% usage, enables proactive failover |
+| `rate_limit` | WARN | Tracks 429 errors with `consecutive_429s` counter |
+| `workload_routing` | INFO | Verifies correct model assignment (CODING→GLM-4.7) |
+
+### Health Check Queries
+See [LOGFIRE-OBSERVABILITY.md](LOGFIRE-OBSERVABILITY.md) for SQL queries to verify:
+- ✅ CODING workload uses GLM-4.7 (not Kimi-K2.5)
+- ✅ Capacity warnings precede rate limits
+- ✅ Failover triggers when capacity warnings accumulate
+
+---
+
+## 11. Recommendations for Further Optimization
 
 1. **Monitor live usage** after aggressive limits deployed
 2. **Tune task detection** if wrong max_tokens assigned frequently
 3. **Consider model switching** for simple tasks (use smaller model)
 4. **Implement token caching** for repeated tool calls
 5. **Add metrics dashboard** to track efficiency over time
+6. **Use Logfire** to correlate capacity warnings with failover patterns

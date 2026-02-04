@@ -216,6 +216,12 @@ Code Puppy includes comprehensive safeguards for token-efficient, safe operation
 - **Burn rate alerts:** 70% warning, 90% critical, 95% fallback
 - **Daily budgets:** Enforces 24M/day for Cerebras
 
+**Logfire Integration:** Real-time monitoring via Pydantic Logfire:
+- `capacity_warning` (WARN) - Emitted at 80%+ usage for proactive failover
+- `rate_limit` (WARN) - Tracks 429 errors with `consecutive_429s` counter
+- `workload_routing` (INFO) - Verifies CODING workload uses GLM-4.7
+- Health check queries available in [LOGFIRE-OBSERVABILITY.md](LOGFIRE-OBSERVABILITY.md)
+
 ### Safe Patch
 
 `code_puppy/tools/safe_patch.py` — Prevents file corruption:
