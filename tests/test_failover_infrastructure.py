@@ -230,9 +230,16 @@ class TestWorkloadChainMappings:
         assert not invalid, f"Invalid workload chain models: {invalid}"
 
     def test_orchestrator_chain_starts_with_opus(self):
-        """Orchestrator workload should start with Opus."""
+        """Orchestrator workload should start with stable Opus variant.
+        
+        We prefer antigravity-claude-opus-4-5-thinking-high first because
+        claude-code-claude-opus-4-5-20251101 was returning 500 errors.
+        """
         chain = RateLimitFailover.WORKLOAD_CHAINS[WorkloadType.ORCHESTRATOR]
-        assert chain[0] == "claude-code-claude-opus-4-5-20251101"
+        # First model should be a stable Opus variant
+        assert "opus" in chain[0].lower() or "opus-4-5" in chain[0]
+        # antigravity thinking high is preferred for stability
+        assert chain[0] == "antigravity-claude-opus-4-5-thinking-high"
 
     def test_orchestrator_chain_ends_with_cerebras(self):
         """Orchestrator workload should end with Cerebras as final fallback.
