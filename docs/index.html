@@ -1001,7 +1001,7 @@
           <span class="icon">📨</span> Messaging Bus
         </div>
         <div class="nav-item" data-section="observability">
-          <span class="icon">📊</span> Observability
+          <span class="icon">📊</span> Logfire Telemetry
         </div>
         <div class="nav-item" data-section="files">
           <span class="icon">📁</span> File Structure
@@ -1011,7 +1011,7 @@
       <div style="margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
         <div style="font-size: 0.7rem; color: var(--text-muted);">
           <div style="margin-bottom: 0.5rem;"><span class="status-dot online"></span>All Systems Operational</div>
-          <div>Updated: Jan 30, 2026</div>
+          <div>Updated: Feb 4, 2026</div>
         </div>
       </div>
     </aside>
@@ -2872,15 +2872,81 @@ calc_price(usage) → <span style="color: var(--accent-green)">Decimal</span> (U
       <!-- OBSERVABILITY SECTION -->
       <section id="observability" class="section">
         <div class="section-header">
-          <h2>📊 Observability</h2>
-          <p>Logfire instrumentation for full tracing of all operations.</p>
+          <h2>📊 Logfire Observability</h2>
+          <p>Real-time telemetry to verify Code Puppy is "sticking to the plan" via <a href="https://logfire.pydantic.dev/" style="color: var(--accent-cyan);">Pydantic Logfire</a>.</p>
         </div>
 
+        <!-- New Telemetry Events -->
+        <h3 style="margin-bottom: 1rem;">Key Telemetry Events</h3>
+        <div class="grid-2">
+          <div class="card" style="border-left: 3px solid var(--accent-blue);">
+            <div class="card-header">
+              <span class="card-icon">🔀</span>
+              <span class="card-title">Workload Routing</span>
+            </div>
+            <div style="padding: 1rem; font-size: 0.85rem;">
+              <p><strong>Source:</strong> <code>base_agent.py</code></p>
+              <p style="margin-top: 0.5rem;">Verifies agents use correct models:</p>
+              <div style="margin-top: 0.5rem; padding: 0.5rem; background: var(--bg-tertiary); border-radius: 4px;">
+                <code style="font-size: 0.7rem; color: var(--accent-green);">husky → CODING → GLM-4.7</code><br>
+                <code style="font-size: 0.7rem; color: var(--accent-purple);">pack-leader → ORCHESTRATOR → Claude</code>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="border-left: 3px solid var(--accent-orange);">
+            <div class="card-header">
+              <span class="card-icon">🔄</span>
+              <span class="card-title">Failover Events</span>
+            </div>
+            <div style="padding: 1rem; font-size: 0.85rem;">
+              <p><strong>Source:</strong> <code>failover_model.py</code></p>
+              <p style="margin-top: 0.5rem;">Tracks model switches on 429s:</p>
+              <div style="margin-top: 0.5rem; padding: 0.5rem; background: var(--bg-tertiary); border-radius: 4px;">
+                <code style="font-size: 0.7rem; color: var(--accent-orange);">Failover: GLM-4.7 → Kimi-K2.5</code><br>
+                <code style="font-size: 0.7rem; color: var(--accent-red);">Rate limit: cooldown 30s</code>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="border-left: 3px solid var(--accent-red);">
+            <div class="card-header">
+              <span class="card-icon">⚠️</span>
+              <span class="card-title">Capacity Warnings</span>
+            </div>
+            <div style="padding: 1rem; font-size: 0.85rem;">
+              <p><strong>Source:</strong> <code>model_capacity.py</code></p>
+              <p style="margin-top: 0.5rem;">Alerts at 80%+ token usage:</p>
+              <div style="margin-top: 0.5rem; padding: 0.5rem; background: var(--bg-tertiary); border-radius: 4px;">
+                <code style="font-size: 0.7rem; color: var(--accent-orange);">GLM-4.7: 85% window used</code><br>
+                <code style="font-size: 0.7rem; color: var(--accent-red);">Proactive failover triggered</code>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="border-left: 3px solid var(--accent-purple);">
+            <div class="card-header">
+              <span class="card-icon">🧠</span>
+              <span class="card-title">EAR Stage Tracking</span>
+            </div>
+            <div style="padding: 1rem; font-size: 0.85rem;">
+              <p><strong>Source:</strong> <code>ralph_loop.py</code></p>
+              <p style="margin-top: 0.5rem;">Tracks reasoning phases:</p>
+              <div style="margin-top: 0.5rem; padding: 0.5rem; background: var(--bg-tertiary); border-radius: 4px;">
+                <code style="font-size: 0.7rem; color: var(--accent-cyan);">OBSERVE → ORIENT → DECIDE → ACT</code><br>
+                <code style="font-size: 0.7rem; color: var(--accent-green);">confidence: 0.85</code>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Original Spans Table -->
+        <h3 style="margin-top: 2rem; margin-bottom: 1rem;">Logfire Spans</h3>
         <div class="grid-2">
           <div class="card">
             <div class="card-header">
               <span class="card-icon">🔍</span>
-              <span class="card-title">Logfire Spans</span>
+              <span class="card-title">Span Types</span>
             </div>
             <div class="table-container">
               <table>
@@ -2928,6 +2994,21 @@ calc_price(usage) → <span style="color: var(--accent-green)">Decimal</span> (U
                 Retry counts (Ralph Loop)
               </li>
             </ul>
+          </div>
+        </div>
+
+        <!-- Health Check Info -->
+        <div class="info-card" style="margin-top: 1.5rem; background: linear-gradient(135deg, rgba(6, 182, 212, 0.1), rgba(16, 185, 129, 0.1)); border-left: 3px solid var(--accent-cyan);">
+          <div style="font-size: 0.85rem; color: var(--text-secondary);">
+            <strong style="color: var(--text-primary);">Health Check Queries:</strong><br><br>
+            <strong style="color: var(--accent-green);">✅ Workload Routing:</strong> CODING → GLM-4.7 (not Kimi)<br>
+            <strong style="color: var(--accent-green);">✅ Failover Chain:</strong> recoveries ≈ failovers<br>
+            <strong style="color: var(--accent-green);">✅ EAR Loops:</strong> >90% complete, <10% error<br>
+            <strong style="color: var(--accent-green);">✅ Capacity:</strong> Warnings before rate limits<br><br>
+            See <a href="LOGFIRE-OBSERVABILITY.md" style="color: var(--accent-cyan);">docs/LOGFIRE-OBSERVABILITY.md</a> for complete query reference.
+          </div>
+        </div>
+      </section>
           </div>
         </div>
       </section>

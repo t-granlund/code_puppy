@@ -134,6 +134,95 @@ class TestModelUsage:
         assert usage.requests_used_minute == 1
         # Daily should still accumulate
         assert usage.tokens_used_day == 16500
+    
+    def test_rolling_window_tracking(self):
+        """Should track tokens in rolling window."""
+        usage = ModelUsage()
+        usage.record_request(10000, 5000)  # 15K
+        usage.record_request(20000, 10000)  # +30K = 45K
+        
+        assert usage.tokens_used_window == 45000
+        assert usage.requests_used_window == 2
+    
+    def test_rolling_window_reset_on_window_expiry(self):
+        """Should reset rolling window counters when window expires (e.g., 5-hour)."""
+        usage = ModelUsage()
+        usage.record_request(10000, 5000)
+        assert usage.tokens_used_window == 15000
+        
+        # Simulate 5-hour window expiry (synthetic.new uses 5-hour windows)
+        usage.window_start = time.time() - (5 * 3600 + 1)  # 5 hours + 1 second ago
+        
+        # Pass rolling_window_hours to trigger reset check
+        usage.record_request(1000, 500, rolling_window_hours=5)
+        
+        # Should have reset and only have new request
+        assert usage.tokens_used_window == 1500
+        assert usage.requests_used_window == 1
+    
+    def test_rolling_window_no_reset_within_window(self):
+        """Should NOT reset rolling window if still within window."""
+        usage = ModelUsage()
+        usage.record_request(10000, 5000)
+        
+        # Simulate only 2 hours have passed (within 5-hour window)
+        usage.window_start = time.time() - (2 * 3600)
+        
+        usage.record_request(1000, 500, rolling_window_hours=5)
+        
+        # Should accumulate, not reset
+        assert usage.tokens_used_window == 16500
+        assert usage.requests_used_window == 2
+
+
+class TestRollingWindowCapacity:
+    """Tests for rolling window capacity tracking (e.g., Synthetic.new 5-hour windows)."""
+    
+    def test_status_exhausted_on_rolling_window_limit(self):
+        """Should report EXHAUSTED when rolling window limit reached."""
+        from code_puppy.core.model_capacity import ModelCapacity, ModelLimits, ModelUsage, CapacityStatus
+        
+        capacity = ModelCapacity(
+            model_name="synthetic-GLM-4.7",
+            limits=ModelLimits(
+                tokens_per_window=10_000_000,  # 10M per 5-hour window
+                requests_per_window=5_000,     # 5K requests per window
+                rolling_window_hours=5,
+            ),
+        )
+        # Simulate 96% of window tokens used
+        capacity.usage.tokens_used_window = 9_600_000
+        assert capacity.get_status() == CapacityStatus.EXHAUSTED
+    
+    def test_status_low_on_rolling_window(self):
+        """Should report LOW when approaching rolling window limit."""
+        from code_puppy.core.model_capacity import ModelCapacity, ModelLimits, CapacityStatus
+        
+        capacity = ModelCapacity(
+            model_name="synthetic-GLM-4.7",
+            limits=ModelLimits(
+                tokens_per_window=10_000_000,
+                rolling_window_hours=5,
+            ),
+        )
+        # Simulate 85% of window tokens used
+        capacity.usage.tokens_used_window = 8_500_000
+        assert capacity.get_status() == CapacityStatus.LOW
+    
+    def test_request_counting_by_window(self):
+        """Should check requests_per_window limit."""
+        from code_puppy.core.model_capacity import ModelCapacity, ModelLimits, CapacityStatus
+        
+        capacity = ModelCapacity(
+            model_name="synthetic-GLM-4.7",
+            limits=ModelLimits(
+                requests_per_window=5_000,
+                rolling_window_hours=5,
+            ),
+        )
+        # Simulate 96% of window requests used
+        capacity.usage.requests_used_window = 4_800
+        assert capacity.get_status() == CapacityStatus.EXHAUSTED
 
 
 class TestModelCapacity:

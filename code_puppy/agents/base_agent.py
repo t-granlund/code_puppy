@@ -300,15 +300,47 @@ class BaseAgent(ABC):
         self._compacted_message_hashes.add(message_hash)
 
     def get_model_name(self) -> Optional[str]:
-        """Get pinned model name for this agent, if specified.
+        """Get model name for this agent using workload-aware routing.
+
+        Priority order:
+        1. Agent-specific pinned model (from config)
+        2. Workload-based model from AgentOrchestrator
+        3. Global default model
 
         Returns:
-            Model name to use for this agent, or global default if none pinned.
+            Model name to use for this agent.
         """
+        # 1. Check for agent-specific pinned model
         pinned = get_agent_pinned_model(self.name)
-        if pinned == "" or pinned is None:
-            return get_global_model_name()
-        return pinned
+        if pinned and pinned != "":
+            return pinned
+        
+        # 2. Use workload-aware routing via AgentOrchestrator
+        try:
+            from code_puppy.core.agent_orchestration import AgentOrchestrator
+            orchestrator = AgentOrchestrator()
+            workload_model = orchestrator.get_model_for_agent(self.name)
+            if workload_model:
+                # Log the workload routing for observability
+                try:
+                    import logfire
+                    workload = orchestrator.get_workload_for_agent(self.name)
+                    logfire.info(
+                        "Workload routing: {agent} → {workload} → {model}",
+                        agent=self.name,
+                        workload=workload.name,
+                        model=workload_model,
+                    )
+                except Exception:
+                    pass  # Don't let logging break model selection
+                return workload_model
+        except ImportError:
+            pass  # AgentOrchestrator not available, fall back
+        except Exception:
+            pass  # Any error, fall back to global
+
+        # 3. Fall back to global default
+        return get_global_model_name()
 
     def get_model_router(self) -> ModelRouter:
         """Get or create the ModelRouter instance for this agent.
@@ -1205,6 +1237,81 @@ class BaseAgent(ABC):
                 continue
             pruned.append(msg)
         return pruned
+
+    def sanitize_tool_calls_for_cerebras(
+        self, messages: List[ModelMessage]
+    ) -> List[ModelMessage]:
+        """Sanitize message history for Cerebras API compatibility.
+        
+        Cerebras requires:
+        1. Every tool return must immediately follow its corresponding tool call
+        2. Tool calls must be in ModelResponse, tool returns in ModelRequest
+        3. No orphaned tool returns or calls
+        
+        This method aggressively removes any messages with tool-related content
+        when switching to Cerebras mid-conversation to prevent 422 errors.
+        
+        Args:
+            messages: Message history to sanitize
+            
+        Returns:
+            Sanitized message history safe for Cerebras
+        """
+        if not messages:
+            return messages
+        
+        # For Cerebras, we need to be very conservative about tool calls
+        # If we detect ANY tool call patterns that might be problematic,
+        # strip them out entirely to avoid 422 errors
+        
+        sanitized: List[ModelMessage] = []
+        
+        for msg in messages:
+            parts = getattr(msg, "parts", []) or []
+            
+            # Check if this message has any tool-related content
+            has_tool_content = False
+            for part in parts:
+                part_kind = getattr(part, "part_kind", "") or ""
+                if part_kind in ("tool-call", "tool-return", "tool-result"):
+                    has_tool_content = True
+                    break
+                if getattr(part, "tool_call_id", None) is not None:
+                    has_tool_content = True
+                    break
+                if getattr(part, "tool_name", None) is not None:
+                    has_tool_content = True
+                    break
+            
+            if has_tool_content:
+                # Filter out tool-related parts, keep text/thinking parts
+                filtered_parts = []
+                for part in parts:
+                    part_kind = getattr(part, "part_kind", "") or ""
+                    if part_kind in ("tool-call", "tool-return", "tool-result"):
+                        continue
+                    if getattr(part, "tool_call_id", None) is not None:
+                        continue
+                    if getattr(part, "tool_name", None) is not None:
+                        continue
+                    filtered_parts.append(part)
+                
+                # Only keep message if it has remaining content
+                if filtered_parts:
+                    # Create a new message with filtered parts
+                    try:
+                        if hasattr(msg, "parts"):
+                            # ModelRequest or ModelResponse
+                            new_msg = msg.__class__(parts=filtered_parts)
+                            sanitized.append(new_msg)
+                    except Exception:
+                        # If we can't reconstruct, just skip the message
+                        pass
+            else:
+                # No tool content, keep as-is
+                sanitized.append(msg)
+        
+        return sanitized
 
     def _is_cerebras_model(self) -> bool:
         """Check if current model is a Cerebras model.
@@ -2115,13 +2222,19 @@ class BaseAgent(ABC):
             nonlocal pydantic_agent  # Allow reassignment in failover
             usage_recorded = False  # Track if we recorded usage from result
             try:
-                self.set_message_history(
-                    self.prune_interrupted_tool_calls(self.get_message_history())
-                )
+                # Prune interrupted tool calls first
+                history = self.prune_interrupted_tool_calls(self.get_message_history())
+                
+                # If targeting a Cerebras model, apply aggressive tool sanitization
+                # to prevent 422 errors from incompatible tool call formats
+                model_name = self.get_model_name() or "unknown"
+                if self._is_cerebras_model():
+                    history = self.sanitize_tool_calls_for_cerebras(history)
+                
+                self.set_message_history(history)
 
                 # === TOKEN BUDGET CHECK ===
                 # Check if we have budget for this request
-                model_name = self.get_model_name() or "unknown"
                 budget_manager = TokenBudgetManager.get_instance()
                 
                 # Estimate input tokens

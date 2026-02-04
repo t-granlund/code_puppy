@@ -125,8 +125,25 @@ class ModelUsage:
         self.requests_used_day = 0
         self.day_window_start = time.time()
     
-    def record_request(self, input_tokens: int, output_tokens: int) -> None:
-        """Record a completed request's token usage."""
+    def reset_rolling_window(self) -> None:
+        """Reset rolling window counters (e.g., Synthetic.new's 5-hour window)."""
+        self.tokens_used_window = 0
+        self.requests_used_window = 0
+        self.window_start = time.time()
+    
+    def record_request(
+        self, 
+        input_tokens: int, 
+        output_tokens: int,
+        rolling_window_hours: Optional[int] = None
+    ) -> None:
+        """Record a completed request's token usage.
+        
+        Args:
+            input_tokens: Number of input tokens used
+            output_tokens: Number of output tokens used
+            rolling_window_hours: Rolling window size in hours (e.g., 5 for Synthetic.new)
+        """
         total_tokens = input_tokens + output_tokens
         
         # Check if windows need reset
@@ -135,6 +152,12 @@ class ModelUsage:
             self.reset_minute_window()
         if now - self.day_window_start >= 86_400:
             self.reset_day_window()
+        
+        # Rolling window reset (e.g., Synthetic.new uses 5-hour windows)
+        if rolling_window_hours is not None:
+            window_seconds = rolling_window_hours * 3600
+            if now - self.window_start >= window_seconds:
+                self.reset_rolling_window()
         
         # Update counters
         self.tokens_used_minute += total_tokens
@@ -242,6 +265,13 @@ class ModelCapacity:
                 usage_pcts.append(1 - remaining_pct)
             else:
                 usage_pcts.append(self.usage.requests_used_day / self.limits.requests_per_day)
+        
+        # Rolling window limits (e.g., Synthetic.new's 5-hour window)
+        if self.limits.tokens_per_window and self.limits.tokens_per_window > 0:
+            usage_pcts.append(self.usage.tokens_used_window / self.limits.tokens_per_window)
+        
+        if self.limits.requests_per_window and self.limits.requests_per_window > 0:
+            usage_pcts.append(self.usage.requests_used_window / self.limits.requests_per_window)
         
         # Get highest usage percentage
         if not usage_pcts:
@@ -356,10 +386,22 @@ class ModelCapacity:
             "requests_limit_minute": self.limits.requests_per_minute,
             "tokens_used_day": self.usage.tokens_used_day,
             "tokens_limit_day": self.limits.tokens_per_day,
+            "tokens_used_window": self.usage.tokens_used_window,
+            "tokens_limit_window": self.limits.tokens_per_window,
             "available_tokens": self.get_available_tokens(),
             "in_cooldown": self.usage.is_in_cooldown(),
             "consecutive_429s": self.usage.consecutive_429s,
         }
+
+
+# Import terminal-visible messaging (optional)
+try:
+    from code_puppy.messaging.bus import emit_info, emit_warning
+    MESSAGING_AVAILABLE = True
+except ImportError:
+    MESSAGING_AVAILABLE = False
+    def emit_info(msg, **kwargs): pass
+    def emit_warning(msg, **kwargs): pass
 
 
 def _emit_capacity_telemetry(
@@ -367,7 +409,7 @@ def _emit_capacity_telemetry(
     model_name: str,
     **kwargs
 ) -> None:
-    """Emit capacity telemetry to Logfire."""
+    """Emit capacity telemetry to Logfire and terminal."""
     if LOGFIRE_AVAILABLE and logfire is not None:
         logfire.info(
             f"model_capacity.{event}",
@@ -376,6 +418,48 @@ def _emit_capacity_telemetry(
         )
     else:
         logger.debug(f"Capacity {event}: {model_name} - {kwargs}")
+
+
+def _emit_capacity_warning(
+    model_name: str,
+    limit_type: str,
+    used: int,
+    limit: int,
+    provider: str = "",
+) -> None:
+    """Emit terminal-visible capacity warning and log to Logfire."""
+    pct = (used / limit * 100) if limit > 0 else 0
+    
+    # Format based on limit type
+    if "window" in limit_type:
+        window_desc = "5-hour" if "synthetic" in provider.lower() else "rolling"
+        msg = f"⚠️ {model_name}: {window_desc} window {pct:.0f}% used ({used:,}/{limit:,} {limit_type.replace('_', ' ')})"
+    elif "day" in limit_type:
+        msg = f"⚠️ {model_name}: Daily limit {pct:.0f}% used ({used:,}/{limit:,} {limit_type.replace('_', ' ')})"
+    elif "minute" in limit_type:
+        msg = f"⚠️ {model_name}: Minute limit {pct:.0f}% used ({used:,}/{limit:,} {limit_type.replace('_', ' ')})"
+    else:
+        msg = f"⚠️ {model_name}: {limit_type} {pct:.0f}% used ({used:,}/{limit:,})"
+    
+    if MESSAGING_AVAILABLE:
+        emit_warning(msg)
+    else:
+        logger.warning(msg)
+    
+    # Log to Logfire for observability
+    try:
+        import logfire
+        logfire.warn(
+            "Capacity warning: {model} at {pct}% ({limit_type})",
+            model=model_name,
+            pct=round(pct, 1),
+            limit_type=limit_type,
+            used=used,
+            limit=limit,
+            provider=provider,
+        )
+    except Exception:
+        pass  # Don't let logging break capacity tracking
 
 
 class CapacityRegistry:
@@ -588,9 +672,57 @@ class CapacityRegistry:
         """Record a completed request."""
         capacity = self.get_capacity(model_name)
         if capacity:
-            capacity.usage.record_request(input_tokens, output_tokens)
+            # Pass rolling window hours for proper window reset tracking
+            rolling_window_hours = capacity.limits.rolling_window_hours
+            capacity.usage.record_request(
+                input_tokens, 
+                output_tokens, 
+                rolling_window_hours=rolling_window_hours
+            )
             if headers:
                 capacity.update_from_headers(headers)
+            
+            # Check status and emit warnings if approaching limits
+            status = capacity.get_status()
+            if status in (CapacityStatus.LOW, CapacityStatus.APPROACHING):
+                # Emit terminal-visible warnings for approaching limits
+                provider = capacity.limits.provider
+                
+                # Check rolling window (e.g., synthetic.new's 5-hour window)
+                if capacity.limits.tokens_per_window and capacity.limits.tokens_per_window > 0:
+                    pct = capacity.usage.tokens_used_window / capacity.limits.tokens_per_window
+                    if pct >= 0.8:  # 80%+ used
+                        _emit_capacity_warning(
+                            model_name,
+                            "tokens_per_window",
+                            capacity.usage.tokens_used_window,
+                            capacity.limits.tokens_per_window,
+                            provider,
+                        )
+                
+                # Check daily limit
+                if capacity.limits.tokens_per_day > 0:
+                    pct = capacity.usage.tokens_used_day / capacity.limits.tokens_per_day
+                    if pct >= 0.8:
+                        _emit_capacity_warning(
+                            model_name,
+                            "tokens_per_day",
+                            capacity.usage.tokens_used_day,
+                            capacity.limits.tokens_per_day,
+                            provider,
+                        )
+                
+                # Check minute RPM limit
+                if capacity.limits.requests_per_minute > 0:
+                    pct = capacity.usage.requests_used_minute / capacity.limits.requests_per_minute
+                    if pct >= 0.8:
+                        _emit_capacity_warning(
+                            model_name,
+                            "requests_per_minute",
+                            capacity.usage.requests_used_minute,
+                            capacity.limits.requests_per_minute,
+                            provider,
+                        )
             
             # Emit telemetry
             _emit_capacity_telemetry(
@@ -598,8 +730,10 @@ class CapacityRegistry:
                 model_name,
                 input_tokens=input_tokens,
                 output_tokens=output_tokens,
-                status=capacity.get_status().name,
+                status=status.name,
                 available_tokens=capacity.get_available_tokens(),
+                tokens_used_window=capacity.usage.tokens_used_window,
+                rolling_window_hours=rolling_window_hours,
             )
     
     def record_rate_limit(self, model_name: str) -> None:

@@ -22,19 +22,69 @@ from rich.console import Console
 # Configure logfire for AI observability
 try:
     import os
+    import json
+    from pathlib import Path
     import logfire
     
-    # Auto-enable cloud telemetry when LOGFIRE_TOKEN is set
-    logfire_token = os.environ.get("LOGFIRE_TOKEN")
-    send_to_cloud = "if-token-present" if logfire_token else False
+    # Check for credentials in multiple locations:
+    # 1. Current working directory (project-specific)
+    # 2. code_puppy package directory (global for code_puppy)
+    # 3. User's home directory ~/.logfire/
+    package_dir = Path(__file__).parent.parent  # code_puppy repo root
+    credentials_locations = [
+        Path(".logfire/logfire_credentials.json"),  # CWD (project-specific)
+        package_dir / ".logfire/logfire_credentials.json",  # code_puppy repo
+        Path.home() / ".logfire/default.toml",  # Global auth (~/.logfire/)
+    ]
     
-    logfire.configure(
-        service_name="code-puppy",
-        ignore_no_config=True,
-        send_to_logfire=send_to_cloud,
-        token=logfire_token if logfire_token else None,
-        inspect_arguments=False,  # Avoid introspection warnings
-    )
+    credentials_file = None
+    for loc in credentials_locations:
+        if loc.exists():
+            credentials_file = loc
+            break
+    
+    # Fall back to LOGFIRE_TOKEN env var if no local credentials file
+    logfire_token = os.environ.get("LOGFIRE_TOKEN") if not credentials_file else None
+    
+    # Configure: prefer local credentials, then token, then local-only
+    if credentials_file and str(credentials_file).endswith(".json"):
+        # Load token explicitly from credentials file to avoid env var conflicts
+        try:
+            with open(credentials_file) as f:
+                creds = json.load(f)
+            logfire.configure(
+                service_name="code-puppy",
+                inspect_arguments=False,
+                token=creds.get("token"),  # Explicit token from file
+            )
+        except Exception:
+            # Fallback to data_dir method
+            logfire.configure(
+                service_name="code-puppy",
+                inspect_arguments=False,
+                data_dir=credentials_file.parent.parent,
+            )
+    elif credentials_file and "default.toml" in str(credentials_file):
+        # Global auth - logfire will find ~/.logfire/default.toml
+        logfire.configure(
+            service_name="code-puppy",
+            inspect_arguments=False,
+        )
+    elif logfire_token:
+        # Use explicit token from environment
+        logfire.configure(
+            service_name="code-puppy",
+            send_to_logfire="if-token-present",
+            token=logfire_token,
+            inspect_arguments=False,
+        )
+    else:
+        # Local-only mode (no cloud sync)
+        logfire.configure(
+            service_name="code-puppy",
+            send_to_logfire=False,
+            inspect_arguments=False,
+        )
     
     # Instrument all the things for full observability
     try:

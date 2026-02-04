@@ -277,6 +277,7 @@ class FailoverModel(Model):
         
         Sets a cooldown period during which this model won't be tried.
         Also notifies RateLimitFailover and CapacityRegistry to track the failure.
+        Logs the failure to Logfire for observability.
         """
         model_name = model.model_name
         now = time.time()
@@ -287,6 +288,19 @@ class FailoverModel(Model):
         # Track consecutive 429s for backoff calculation
         self._consecutive_429s += 1
         self._last_failover_time = now
+        
+        # Log to Logfire for observability
+        try:
+            import logfire
+            logfire.warn(
+                "Model rate limited: {model} ({workload} workload) - cooldown {cooldown}s",
+                model=model_name,
+                workload=self.workload,
+                cooldown=COOLDOWN_SECONDS,
+                consecutive_429s=self._consecutive_429s,
+            )
+        except Exception:
+            pass  # Don't let logging break failover
         
         # Notify the capacity registry (intelligent routing)
         if INTELLIGENT_ROUTING_AVAILABLE:
@@ -391,6 +405,18 @@ class FailoverModel(Model):
                         f"(attempt {attempts + 1}/{self._max_failovers + 1})",
                         message_group="model_failover"
                     )
+                    # Log to Logfire for observability
+                    try:
+                        import logfire
+                        logfire.info(
+                            "Failover succeeded: {model} ({workload} workload) - attempt {attempt}",
+                            model=model.model_name,
+                            workload=self.workload,
+                            attempt=attempts + 1,
+                            max_attempts=self._max_failovers + 1,
+                        )
+                    except Exception:
+                        pass
                 
                 return response
                 
@@ -426,6 +452,20 @@ class FailoverModel(Model):
                             f"Failing over to {next_model.model_name}",
                             message_group="model_failover"
                         )
+                        # Log to Logfire for observability
+                        try:
+                            import logfire
+                            logfire.warn(
+                                "Failover triggered: {from_model} → {to_model} ({error_type})",
+                                from_model=model.model_name,
+                                to_model=next_model.model_name,
+                                error_type=error_type,
+                                workload=self.workload,
+                                backoff_delay=backoff_delay,
+                                attempt=attempts + 1,
+                            )
+                        except Exception:
+                            pass
                         # Apply backoff delay before trying next model
                         await asyncio.sleep(backoff_delay)
                     else:
