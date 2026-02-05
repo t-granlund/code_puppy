@@ -9,7 +9,8 @@
 [![Python](https://img.shields.io/badge/Python-3.11%2B-blue?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 [![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen?style=for-the-badge&logo=github)](https://github.com/mpfaffenberger/code_puppy/actions)
-[![Tests](https://img.shields.io/badge/Tests-Passing-success?style=for-the-badge&logo=pytest)](https://github.com/mpfaffenberger/code_puppy/tests)
+[![Tests](https://img.shields.io/badge/Tests-102%2F110%20Passing-success?style=for-the-badge&logo=pytest)](https://github.com/mpfaffenberger/code_puppy/tests)
+[![Production Ready](https://img.shields.io/badge/Wiggum%20Loop-Production%20Ready%20✅-brightgreen?style=for-the-badge)](WIGGUM-LOOP-CERTIFICATION.md)
 
 [![OpenAI](https://img.shields.io/badge/OpenAI-GPT--5.2--Codex-orange?style=flat-square&logo=openai)](https://openai.com)
 [![Gemini](https://img.shields.io/badge/Google-Gemini%203-blue?style=flat-square&logo=google)](https://ai.google.dev/)

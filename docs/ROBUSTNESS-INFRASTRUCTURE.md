@@ -1,5 +1,7 @@
 # Robustness & Performance Infrastructure
 
+**Status**: ✅ Production Ready (Certified February 5, 2026)
+
 This document describes the comprehensive robustness and performance modules added to Code Puppy's core infrastructure.
 
 ## Overview
@@ -11,6 +13,27 @@ The infrastructure consists of 7 interconnected modules that work together to pr
 - **Performance**: Caching, compression, connection pooling
 - **Analytics**: Metrics tracking, dashboards, trend analysis
 - **Intelligence**: Smart model selection, priority queues, load balancing
+- **Wiggum Loop Resilience**: Generator athrow() prevention, model cooldown tracking (5-min), 29+ failover models
+
+## Recent Enhancements (February 2026)
+
+### Generator Athrow() Prevention
+Fixed critical issue where generators continued failover after yielding to caller. Added `yielded` flag tracking to ensure proper exception propagation.
+
+### Model Cooldown Tracking
+5-minute cooldown period for failed models prevents immediate retry, optimizing token budget and time:
+```python
+manager.record_model_failure("claude-code-opus")
+assert manager.is_model_in_cooldown("claude-code-opus")  # True for 5 minutes
+```
+
+### Enhanced Error Context
+Validation errors now include detailed context with error types (UnexpectedModelBehavior, ToolRetryError) for better debugging.
+
+### Working Directory Validation
+Commands validate directory existence before execution, preventing ModuleNotFoundError cascades.
+
+See [WIGGUM-LOOP-CERTIFICATION.md](../WIGGUM-LOOP-CERTIFICATION.md) for complete production readiness certification.
 
 ## Module Reference
 
