@@ -180,6 +180,94 @@ Please review this code for security issues." > .claude/commands/review.md
 - Anthropic key (for Claude models)
 - Ollama endpoint available
 
+## Advanced Features (February 2026)
+
+### Context Compaction (pydantic-ai #4137 Compatible)
+
+Automatic context compaction when token usage exceeds thresholds:
+
+```python
+from code_puppy.core import AdvancedCompactionSettings, MessageCompactor
+
+settings = AdvancedCompactionSettings(
+    token_threshold=80_000,
+    protected_tokens=30_000,  # Keep last N tokens uncompacted
+    summarization_model="anthropic:claude-haiku-4-5",
+    strategy="hybrid",  # summarization, truncation, or hybrid
+)
+
+compactor = MessageCompactor(settings)
+compacted_messages = await compactor.compact(messages, context)
+```
+
+**Features**: Tool call pairing, protected tokens, pre/post hooks, ThinkingPart preservation.
+
+### Human-in-the-Loop (HITL) Tool Approval
+
+Require human approval for sensitive operations:
+
+```python
+from code_puppy.core import requires_approval, RiskLevel
+
+@requires_approval(risk_level=RiskLevel.HIGH, reason="Deletes files permanently")
+async def delete_file(path: str) -> str:
+    """Delete a file (requires human approval)."""
+    ...
+```
+
+Pre-configured dangerous tools: `delete_file` (HIGH), `run_command` (MEDIUM), `modify_system_config` (CRITICAL).
+
+### Skills Metadata (YAML Frontmatter)
+
+Define skills with structured metadata:
+
+```markdown
+---
+name: code-review
+description: Python code quality review
+triggers:
+  - "review"
+  - "check code"
+tags: ["python", "quality"]
+priority: 10
+---
+
+# Code Review Skill
+...
+```
+
+```python
+from code_puppy.core import get_skill_registry
+
+registry = get_skill_registry()
+skill = registry.find_by_trigger("review")
+```
+
+### GitMCP Documentation Access
+
+Access GitHub repository documentation via MCP:
+
+```python
+from code_puppy.mcp_ import GitMCPClient
+
+client = GitMCPClient(owner="pydantic", repo="pydantic-ai")
+docs = await client.fetch_documentation()  # llms.txt or README.md
+results = await client.search_documentation("agent")
+```
+
+### GitHub API Client (Python Octokit)
+
+Full GitHub REST and GraphQL API support:
+
+```python
+from code_puppy.api import create_github_client
+
+async with create_github_client(token="ghp_...") as client:
+    user = await client.rest.users.get_authenticated()
+    repos = await client.rest.repos.list_for_user("octocat")
+    result = await client.graphql("{ viewer { login } }")
+```
+
 ## Agent Rules
 We support AGENT.md files for defining coding standards and styles that your code should comply with. These rules can cover various aspects such as formatting, naming conventions, and even design guidelines.
 

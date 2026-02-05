@@ -1008,14 +1008,81 @@ All major components are instrumented with Logfire spans:
 
 ---
 
+## Advanced Integrations (February 2026)
+
+### Context Compaction (`code_puppy/core/compaction_settings.py`)
+
+Implements [pydantic-ai #4137](https://github.com/pydantic/pydantic-ai/issues/4137) compatible context compaction:
+
+| Component | Purpose |
+|-----------|---------|
+| `CompactionSettings` | Configuration for token thresholds, strategies, hooks |
+| `CompactionContext` | Runtime state tracking tool call pairs |
+| `MessageCompactor` | Executes summarization/truncation/hybrid strategies |
+| `ToolCallPair` | Preserves tool call + response pairs during compaction |
+
+**Strategies**:
+- `SUMMARIZATION` - LLM-based summarization of older messages
+- `TRUNCATION` - Head/tail truncation with protected tokens
+- `HYBRID` - Summarize if possible, fall back to truncation
+
+### HITL Tool Approval (`code_puppy/core/tool_approval.py`)
+
+Human-in-the-loop approval for sensitive operations:
+
+| Component | Purpose |
+|-----------|---------|
+| `ToolApprovalRegistry` | Central registry for tool approval configs |
+| `ApprovalSettings` | Global approval settings (enabled, timeout) |
+| `CLIApprovalHandler` | Terminal-based approval prompts |
+| `@requires_approval` | Decorator to mark tools as needing approval |
+| `RiskLevel` | LOW, MEDIUM, HIGH, CRITICAL severity levels |
+
+### Skills Metadata (`code_puppy/core/skills_metadata.py`)
+
+YAML frontmatter parsing for skill files:
+
+| Component | Purpose |
+|-----------|---------|
+| `SkillMetadata` | Structured skill info (triggers, tags, priority) |
+| `SkillRegistry` | Hot-reload registry with trigger/tag indexing |
+| `parse_skill_file()` | Parse markdown with YAML frontmatter |
+| `create_skill_template()` | Generate new skill files |
+
+### GitMCP Client (`code_puppy/mcp_/gitmcp_client.py`)
+
+Access GitHub repository documentation via MCP:
+
+| Component | Purpose |
+|-----------|---------|
+| `GitMCPClient` | Static client for a specific owner/repo |
+| `GitMCPDynamicClient` | Dynamic client that can switch repos |
+| `fetch_documentation()` | Get llms.txt or README.md |
+| `search_code()` | Search repository code via GitHub API |
+
+### GitHub API Client (`code_puppy/api/github_client.py`)
+
+Python equivalent of Octokit.js:
+
+| Component | Purpose |
+|-----------|---------|
+| `GitHubClient` | Main client with REST and GraphQL support |
+| `RestAPI` | REST endpoint router (users, repos, issues, pulls, actions, search) |
+| `graphql()` | Execute GraphQL queries |
+| `paginate()` | Async iterator for paginated results |
+| `TokenAuth` / `GitHubAppAuth` | Authentication strategies |
+
+---
+
 ## Version History
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 2.1 | 2026-02-05 | Context compaction, HITL approval, skills metadata, GitMCP, GitHub API |
 | 2.0 | 2026-01-31 | BART System (Belief-Augmented Reasoning & Tasking), GLM 4.7 optimization |
 | 1.1 | 2026-01-25 | Token budget manager, circuit breaker |
 | 1.0 | 2025-12-01 | Initial release |
 
 ---
 
-*Generated for Code Puppy v2.0 - BART System (Belief-Augmented Reasoning & Tasking)*
+*Generated for Code Puppy v2.1 - Advanced Integrations*

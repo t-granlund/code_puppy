@@ -15,6 +15,16 @@ from .error_isolation import (
     QuarantinedServerError,
     get_error_isolator,
 )
+from .gitmcp_client import (
+    GitMCPClient,
+    GitMCPDynamicClient,
+    GitMCPConfig,
+    DocumentationResult,
+    SearchResult,
+    CodeSearchResult,
+    get_gitmcp_mcp_config,
+    get_dynamic_gitmcp_config,
+)
 from .managed_server import ManagedMCPServer, ServerConfig, ServerState
 from .manager import MCPManager, ServerInfo, get_mcp_manager
 from .mcp_logs import (
@@ -63,4 +73,13 @@ __all__ = [
     "clear_logs",
     "list_servers_with_logs",
     "get_log_stats",
+    # GitMCP client
+    "GitMCPClient",
+    "GitMCPDynamicClient",
+    "GitMCPConfig",
+    "DocumentationResult",
+    "SearchResult",
+    "CodeSearchResult",
+    "get_gitmcp_mcp_config",
+    "get_dynamic_gitmcp_config",
 ]

@@ -177,6 +177,38 @@ from .observability import (
     log_request_complete,
 )
 
+# Advanced Context Compaction (pydantic-ai #4137 compatible)
+from .compaction_settings import (
+    CompactionSettings as AdvancedCompactionSettings,
+    CompactionContext,
+    CompactionStrategy,
+    MessageCompactor,
+    ToolCallPair,
+    CompactionHook,
+    get_compaction_settings,
+)
+
+# HITL Tool Approval System (PAI pattern)
+from .tool_approval import (
+    ToolApprovalRegistry,
+    ApprovalSettings,
+    ApprovalRequest,
+    ApprovalStatus,
+    RiskLevel,
+    CLIApprovalHandler,
+    requires_approval,
+    get_approval_registry,
+)
+
+# Skills Metadata and Registry (YAML frontmatter)
+from .skills_metadata import (
+    SkillMetadata,
+    SkillRegistry,
+    parse_skill_file,
+    create_skill_template,
+    get_skill_registry,
+)
+
 __all__ = [
     # Token budget management
     "TokenBudgetManager",
@@ -312,4 +344,27 @@ __all__ = [
     "log_agent_delegation_complete",
     "log_request_start",
     "log_request_complete",
+    # Advanced Context Compaction
+    "AdvancedCompactionSettings",
+    "CompactionContext",
+    "CompactionStrategy",
+    "MessageCompactor",
+    "ToolCallPair",
+    "CompactionHook",
+    "get_compaction_settings",
+    # HITL Tool Approval
+    "ToolApprovalRegistry",
+    "ApprovalSettings",
+    "ApprovalRequest",
+    "ApprovalStatus",
+    "RiskLevel",
+    "CLIApprovalHandler",
+    "requires_approval",
+    "get_approval_registry",
+    # Skills Metadata
+    "SkillMetadata",
+    "SkillRegistry",
+    "parse_skill_file",
+    "create_skill_template",
+    "get_skill_registry",
 ]
