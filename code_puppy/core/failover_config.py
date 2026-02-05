@@ -115,10 +115,8 @@ WORKLOAD_CHAINS: Dict[WorkloadType, List[str]] = {
         "antigravity-claude-opus-4-5-thinking-high", # Tier 0: Best reasoning, fixed tool format
         "antigravity-gemini-3-pro-high",             # Tier 0: Gemini 3 Pro thinking
         "claude-code-claude-opus-4-5-20251101",      # Tier 0: Claude Code Opus (direct API)
-        "github-copilot-claude-opus-4.5",            # Tier 0: GitHub Copilot Claude Opus
         "synthetic-Kimi-K2.5-Thinking",               # Tier 1: 1T MoE, agent swarms
         "synthetic-hf-Qwen-Qwen3-235B-A22B-Thinking-2507",  # Tier 1: Math leader
-        "xai-grok-4-fast",                           # Tier 1: xAI Grok fast reasoning
         "chatgpt-gpt-5.2-codex",                     # Tier 2: Agentic coding
         "synthetic-hf-deepseek-ai-DeepSeek-R1-0528", # Tier 2: 671B reasoning
         "synthetic-Kimi-K2-Thinking",                 # Tier 2: 1T MoE thinking
@@ -132,8 +130,6 @@ WORKLOAD_CHAINS: Dict[WorkloadType, List[str]] = {
         "antigravity-claude-sonnet-4-5-thinking-medium",  # Tier 0: Claude Sonnet thinking
         "antigravity-gemini-3-pro-low",              # Tier 0: Gemini 3 Pro reasoning
         "claude-code-claude-sonnet-4-5-20250929",    # Tier 0: Claude Code Sonnet (direct API)
-        "github-copilot-claude-sonnet-4.5",          # Tier 0: GitHub Copilot Claude Sonnet
-        "xai-grok-4-fast",                           # Tier 1: xAI Grok fast reasoning
         "synthetic-hf-deepseek-ai-DeepSeek-R1-0528", # Tier 2: 671B reasoning model
         "synthetic-Kimi-K2-Thinking",                 # Tier 2: 1T MoE thinking
         "chatgpt-gpt-5.2-codex",                     # Tier 2: Strong reasoning
@@ -146,13 +142,11 @@ WORKLOAD_CHAINS: Dict[WorkloadType, List[str]] = {
     # NOTE: Antigravity Claude/Gemini tool format bug FIXED in antigravity_model.py
     WorkloadType.CODING: [
         "Cerebras-GLM-4.7",                          # Tier 5: Fastest, agentic
-        "cerebras-zai-glm-4.7",                      # Tier 5: Alternative Cerebras endpoint
         "antigravity-gemini-3-flash",                # Tier 0: Fast Gemini thinking
         "synthetic-GLM-4.7",                          # Tier 5: Backup GLM via Synthetic
         "zai-glm-4.7-coding",                        # Tier 5: ZAI direct coding API
         "chatgpt-gpt-5.2-codex",                     # Tier 2: Agentic coding
         "antigravity-claude-sonnet-4-5",             # Tier 0: Claude Sonnet (non-thinking)
-        "github-copilot-claude-sonnet-4.5",          # Tier 0: GitHub Copilot Claude Sonnet
         "synthetic-MiniMax-M2.1",                     # Tier 3: 1M context, multilang
         "synthetic-hf-MiniMaxAI-MiniMax-M2.1",       # Tier 3: Backup MiniMax
         "claude-code-claude-haiku-4-5-20251001",     # Tier 4: Fast, cheaper (Claude Code works)
@@ -168,7 +162,6 @@ WORKLOAD_CHAINS: Dict[WorkloadType, List[str]] = {
         "Gemini-3",                                  # Tier 3: Gemini 3 base model
         "Gemini-3-Long-Context",                     # Tier 3: 2M context for large searches
         "Cerebras-GLM-4.7",                          # Tier 5: Fast fallback before free tier
-        "cerebras-zai-glm-4.7",                      # Tier 5: Alternative Cerebras
         "synthetic-GLM-4.7",                          # Tier 5: Backup GLM
         "synthetic-hf-zai-org-GLM-4.7",              # Tier 5: Synthetic GLM
         "openrouter-arcee-ai-trinity-large-preview-free",  # Tier 4 FREE: LAST RESORT ONLY
