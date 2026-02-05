@@ -86,20 +86,26 @@ def _is_failover_error(exc: Exception) -> bool:
     - 400 Bad Request (model doesn't support feature)
     - 500/502/503 Server errors (model unavailable or misconfigured)
     - 401/403 Authentication errors (invalid token/model access)
+    - UnexpectedModelBehavior (output validation failures, malformed tool calls)
+    - ToolRetryError (tool call validation errors)
     
     Handles various exception types from different providers:
     - anthropic.RateLimitError, InternalServerError, AuthenticationError
     - openai.RateLimitError, APIError, UnprocessableEntityError
+    - pydantic_ai.exceptions.UnexpectedModelBehavior (output validation)
+    - pydantic_ai.exceptions.ToolRetryError (tool call validation)
     - httpx-based status code responses
     - Generic API errors with status codes
     """
     exc_type = type(exc).__name__
     exc_str = str(exc).lower()
     
-    # Check by exception type name
+    # Check by exception type name (includes pydantic-ai validation errors)
     if any(err in exc_type.lower() for err in [
         "ratelimit", "internalserver", "authentication", "apierror",
-        "unprocessableentity", "badrequest"
+        "unprocessableentity", "badrequest",
+        "unexpectedmodelbehavior",  # pydantic-ai output validation failure
+        "toolretryerror",           # pydantic-ai tool call validation failure
     ]):
         return True
     
@@ -109,7 +115,9 @@ def _is_failover_error(exc: Exception) -> bool:
         "422", "unprocessable", "wrong_api_format",  # Model format incompatibility
         "400", "bad request", "invalid_request",      # Model doesn't support feature
         "500", "502", "503", "internal server error", "service unavailable",
-        "401", "403", "authentication", "unauthorized", "forbidden"
+        "401", "403", "authentication", "unauthorized", "forbidden",
+        "exceeded maximum retries",                   # pydantic-ai output validation
+        "output validation",                          # pydantic-ai output validation
     ]
     if any(indicator in exc_str for indicator in failover_indicators):
         return True
