@@ -680,7 +680,6 @@ def on_tool_call(tool_name, args):
 
 | Plugin | Purpose |
 |--------|---------|
-| `agent_skills` | Dynamic skill loading, SKILL.md discovery, TUI management |
 | `antigravity_oauth` | OAuth for Antigravity |
 | `chatgpt_oauth` | OAuth for ChatGPT |
 | `claude_code_oauth` | OAuth for Claude Code |
@@ -690,119 +689,6 @@ def on_tool_call(tool_name, args):
 | `ralph` | Epistemic Agent Runtime |
 | `shell_safety` | Shell command safety |
 | `universal_constructor` | UC pattern implementation |
-
----
-
-## Scheduler System
-
-The Scheduler enables automated task execution on configurable schedules:
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                     SCHEDULER SYSTEM                         │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  Components:                                                │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │ ScheduledTask    - Task definition with schedule     │   │
-│  │ SchedulerDaemon  - Background process runner         │   │
-│  │ TaskExecutor     - Invokes code-puppy CLI            │   │
-│  │ SchedulerAgent   - AI assistant for task management  │   │
-│  └─────────────────────────────────────────────────────┘   │
-│                                                             │
-│  Schedule Types:                                            │
-│  • interval  - Run every X time (30m, 2h, 1d)             │
-│  • hourly    - Run once per hour                          │
-│  • daily     - Run once per day                           │
-│  • cron      - Cron expression (planned)                  │
-│                                                             │
-│  Commands:                                                  │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │ /scheduler        - Launch TUI menu                  │   │
-│  │ /scheduler start  - Start daemon                     │   │
-│  │ /scheduler stop   - Stop daemon                      │   │
-│  │ /scheduler list   - List all tasks                   │   │
-│  │ /scheduler run <id> - Run task immediately           │   │
-│  └─────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────┘
-```
-
----
-
-## Agent Skills System
-
-Agent Skills are reusable, modular capabilities loaded dynamically:
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                   AGENT SKILLS SYSTEM                        │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  Skill Structure:                                           │
-│  ~/.code_puppy/skills/                                      │
-│  ├── docker/                                                │
-│  │   └── SKILL.md  (YAML frontmatter + instructions)       │
-│  ├── kubernetes/                                            │
-│  │   └── SKILL.md                                          │
-│  └── security-audit/                                        │
-│      └── SKILL.md                                          │
-│                                                             │
-│  Tools:                                                     │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │ list_or_search_skills(query)                         │   │
-│  │   - List/search available skills                     │   │
-│  │                                                      │   │
-│  │ activate_skill(skill_name)                           │   │
-│  │   - Load full SKILL.md content for use              │   │
-│  └─────────────────────────────────────────────────────┘   │
-│                                                             │
-│  Commands:                                                  │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │ /skills        - Launch TUI menu                     │   │
-│  │ /skills list   - List all skills                     │   │
-│  │ /skills enable - Enable skills globally              │   │
-│  │ /skills disable - Disable skills globally            │   │
-│  └─────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────┘
-```
-
----
-
-## Interactive Tools
-
-### ask_user_question Tool
-
-A TUI-based tool for gathering user input through interactive multiple-choice questions:
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                   ask_user_question                          │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  Features:                                                  │
-│  • Split-panel TUI with question headers on left           │
-│  • Options with descriptions on right                      │
-│  • Single-select and multi-select modes                    │
-│  • "Other" option for custom input                         │
-│  • Timeout with warning countdown                          │
-│  • Vim-style navigation (j/k) + arrow keys                 │
-│                                                             │
-│  Controls:                                                  │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │ ↑↓ / j/k  - Navigate options                         │   │
-│  │ ←→ / h/l  - Switch between questions                 │   │
-│  │ Space     - Toggle/select option                     │   │
-│  │ Enter     - Next question / submit                   │   │
-│  │ Ctrl+S    - Submit all answers                       │   │
-│  │ Esc       - Cancel interaction                       │   │
-│  └─────────────────────────────────────────────────────┘   │
-│                                                             │
-│  Safety:                                                    │
-│  • Disabled in sub-agent contexts (prevent infinite loops)│
-│  • Disabled during /wiggum autonomous mode                │
-│  • Requires interactive terminal (stdin TTY)              │
-└─────────────────────────────────────────────────────────────┘
-```
 
 ---
 
