@@ -267,9 +267,8 @@ class TestWorkloadChainMappings:
         assert "synthetic-Kimi-K2-Thinking" in chain
 
     def test_librarian_chain_has_fast_models(self):
-        """Librarian workload should have Haiku, Flash, and OpenRouter free models."""
+        """Librarian workload should have Flash and OpenRouter free models."""
         chain = RateLimitFailover.WORKLOAD_CHAINS[WorkloadType.LIBRARIAN]
-        assert "claude-code-claude-haiku-4-5-20251001" in chain
         assert "antigravity-gemini-3-flash" in chain
         # Verify OpenRouter free tier models are in Librarian chain
         assert "openrouter-arcee-ai-trinity-large-preview-free" in chain or \
