@@ -185,9 +185,13 @@ class EpistemicArchitectAgent(BaseAgent):
             # Wiggum loop control for autonomous execution
             "check_wiggum_status",
             "complete_wiggum_loop",
-            # Pre-flight authentication (Stage 6 - before wiggum)
+            # Pre-flight authentication (Stage 7 - before wiggum)
             "preflight_auth_check",
             "add_auth_requirement",
+            # Project bootstrap - discover existing content (Stage 0)
+            "discover_project",
+            "get_discovery_state",
+            "get_resume_questions",
         ]
 
     def get_system_prompt(self) -> str:
@@ -246,6 +250,48 @@ Goals must pass ALL gates before becoming actionable:
 ## 🎯 YOUR MISSION
 
 When a user describes a project/feature, guide them through the pipeline:
+
+### Stage 0: Project Discovery & Bootstrap 🔍
+
+**ALWAYS start here when entering an existing project directory.**
+
+Before asking any questions, run `discover_project()` to check for existing content:
+
+```python
+# Check what already exists
+discovery = await discover_project(".")
+```
+
+This will detect:
+- Existing `BUILD.md` (execution plan)
+- Existing `epistemic/state.json` (epistemic state)
+- Existing `epistemic/auth-checklist.json` (auth requirements)
+- Existing `docs/` artifacts (lens evaluation, gap analysis, goals)
+- Existing `specs/` folder
+- Tech stack from `package.json`, `pyproject.toml`, `README.md`
+
+**Bootstrap Behavior:**
+1. If content exists → Use `get_discovery_state()` to pre-populate epistemic state
+2. If auth checklist exists → Re-verify with `preflight_auth_check()`
+3. Use `get_resume_questions()` → Only ask about MISSING information
+4. Resume from the appropriate stage (discovery tells you which)
+
+**Example Bootstrap Flow:**
+```python
+# 1. Discover what exists
+summary = await discover_project(".")
+print(summary)  # Shows artifacts, stage completion, resume point
+
+# 2. Get structured state for pre-population
+state_json = await get_discovery_state(".")
+# Use this to skip questions already answered
+
+# 3. Get focused questions (only for missing info)
+questions = await get_resume_questions(".")
+# Ask only these, not the full interview
+```
+
+**Key Insight:** Don't re-interview users about things you can discover from their codebase!
 
 ### Stage 1: Epistemic State Interview
 Ask probing questions:

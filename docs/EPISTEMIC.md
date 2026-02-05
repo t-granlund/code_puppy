@@ -6,7 +6,7 @@ Code Puppy now includes the **Epistemic Agent Runtime** — a structured methodo
 
 ## 🧠 What is EAR?
 
-EAR provides a rigorous, 13-stage pipeline for going from idea → validated specs → working product:
+EAR provides a rigorous, 14-stage pipeline (0-13, plus pre-pipeline discovery) for going from idea → validated specs → working product:
 
 ```
 Idea → Epistemic State → Lens Evaluation → Gap Analysis → Goal Emergence 
@@ -43,7 +43,7 @@ parent-folder/
 - **Reusable** — Next project? Same template, new sibling folder
 - **State versioning** — Track how understanding evolves over time ("git for beliefs")
 
-## �🚀 Quick Start
+## 🚀 Quick Start
 
 ### 1. Switch to the Epistemic Architect Agent
 
@@ -63,10 +63,102 @@ parent-folder/
 
 The agent will guide you through structured planning before any code is written.
 
-## 📋 The 13-Stage Pipeline
+## 🔄 Project Discovery & Bootstrap (Resume Mode)
+
+When you start the Epistemic Architect in an **existing directory** that already has artifacts (BUILD.md, epistemic/, docs/, specs/, etc.), the agent can **bootstrap from existing state** instead of starting from scratch.
+
+### How It Works
+
+```
+Existing Project → Discovery Scan → Parse Artifacts → 
+    Detect Tech Stack → Map Stage Completion → 
+    Generate Focused Questions → Resume Pipeline
+```
+
+### Discovery Capabilities
+
+The bootstrap system scans for and parses:
+
+| Artifact | What's Extracted |
+|----------|------------------|
+| `BUILD.md` | Previous build plan, phases, milestones |
+| `epistemic/state.json` | Full epistemic state, assumptions, hypotheses |
+| `epistemic/auth-checklist.json` | Auth requirements, verification status |
+| `README.md` | Project goals, assumptions, constraints |
+| `docs/*.md` | Analysis documents, decisions |
+| `specs/*.md` | Validated specifications |
+| `package.json` | Node.js dependencies, scripts |
+| `pyproject.toml` | Python dependencies, metadata |
+| `Dockerfile` | Containerization details |
+| `docker-compose.yml` | Service definitions |
+
+### Tech Stack Detection
+
+The system automatically detects:
+
+- **Languages**: Python, JavaScript, TypeScript, Go, Rust, Java, C#
+- **Frameworks**: FastAPI, Flask, Django, React, Vue, Next.js, Express
+- **Databases**: PostgreSQL, MySQL, MongoDB, Redis, SQLite
+- **Services**: AWS, GCP, Azure, Docker, Kubernetes
+- **Auth Providers**: Auth0, Okta, Firebase, Supabase
+
+### Bootstrap Tools
+
+Three agent tools support discovery:
+
+| Tool | Purpose |
+|------|---------|
+| `discover_project` | Scan directory and return full discovery summary |
+| `get_discovery_state` | Get JSON for pre-populating epistemic state |
+| `get_resume_questions` | Get only questions for missing information |
+
+### Example Usage
+
+When entering an existing project:
+
+```
+/agent epistemic-architect
+> I want to continue working on this project
+
+Agent: Let me scan your project for existing artifacts...
+[Calls discover_project]
+
+Found:
+- BUILD.md with 4 phases defined
+- epistemic/state.json with 3 assumptions, 2 hypotheses
+- Auth checklist: 2/3 requirements verified
+- Tech stack: Python, FastAPI, PostgreSQL
+
+Pipeline Status:
+- Stages 0-6: Complete
+- Stage 7 (Auth Pre-Flight): In Progress
+- Stages 8-13: Not Started
+
+You can resume from Stage 7. I only need to ask about:
+1. The unverified auth requirement (DATABASE_URL credential)
+2. Your deployment target for the build phase
+
+Would you like to proceed?
+```
+
+### Focused Questions Mode
+
+Instead of re-asking all interview questions, the bootstrap system generates **focused questions** only for:
+
+- Missing or incomplete epistemic state fields
+- Unverified auth requirements
+- Gaps in specification coverage
+- Unclear constraints or assumptions
+
+This dramatically reduces friction when resuming work on existing projects.
+
+## 📋 The 14-Stage Pipeline
+
+The bootstrap/discovery system operates **before** entering the pipeline to determine where to start or resume.
 
 | Stage | Name | What Happens |
 |-------|------|--------------|
+| — | **Project Discovery** | Bootstrap: scan existing artifacts, detect resume point |
 | 0 | Philosophical Foundation | Internalize Ralph Loops and core principles |
 | 1 | Epistemic State Creation | Surface assumptions, hypotheses, constraints |
 | 2 | Lens Evaluation | Apply 7 expert perspectives |

@@ -86,6 +86,12 @@ from code_puppy.tools.auth_preflight import (
     register_add_auth_requirement,
     register_auth_preflight_tools,
 )
+from code_puppy.tools.project_bootstrap import (
+    register_discover_project,
+    register_get_discovery_state,
+    register_get_resume_questions,
+    register_bootstrap_tools,
+)
 from code_puppy.tools.command_runner import (
     register_agent_run_shell_command,
     register_agent_share_your_reasoning,
