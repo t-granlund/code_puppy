@@ -160,24 +160,25 @@ class TestFailoverChainMappings:
         assert not invalid, f"Invalid failover targets: {invalid}"
 
     def test_opus_chain_complete(self):
-        """Opus should chain through thinking levels to new Tier 1 models then Sonnet."""
+        """Opus should chain through Antigravity Gemini to synthetic models."""
         mgr = TokenBudgetManager()
         chain = mgr.FAILOVER_CHAIN
         
-        # Opus -> thinking-high -> Kimi K2.5 -> thinking-medium -> Qwen3 -> thinking-low -> Sonnet
+        # Opus -> thinking-high -> Gemini Pro (same Antigravity quota) -> Kimi K2.5 -> Qwen3
         assert chain.get("claude-code-claude-opus-4-5-20251101") == "antigravity-claude-opus-4-5-thinking-high"
-        assert chain.get("antigravity-claude-opus-4-5-thinking-high") == "synthetic-Kimi-K2.5-Thinking"
-        assert chain.get("synthetic-Kimi-K2.5-Thinking") == "antigravity-claude-opus-4-5-thinking-medium"
+        assert chain.get("antigravity-claude-opus-4-5-thinking-high") == "antigravity-gemini-3-pro-high"
+        assert chain.get("antigravity-gemini-3-pro-high") == "synthetic-Kimi-K2.5-Thinking"
+        assert chain.get("synthetic-Kimi-K2.5-Thinking") == "synthetic-hf-Qwen-Qwen3-235B-A22B-Thinking-2507"
         assert chain.get("antigravity-claude-opus-4-5-thinking-medium") == "synthetic-hf-Qwen-Qwen3-235B-A22B-Thinking-2507"
-        assert chain.get("antigravity-claude-opus-4-5-thinking-low") == "antigravity-claude-sonnet-4-5-thinking-high"
 
     def test_sonnet_chain_includes_deepseek_and_kimi(self):
         """Sonnet should chain to DeepSeek R1 and Kimi K2-Thinking."""
         mgr = TokenBudgetManager()
         chain = mgr.FAILOVER_CHAIN
         
-        # Sonnet -> regular -> DeepSeek R1 -> Kimi K2-Thinking
-        assert chain.get("claude-code-claude-sonnet-4-5-20250929") == "antigravity-claude-sonnet-4-5"
+        # Sonnet-medium -> DeepSeek R1 -> Kimi K2-Thinking
+        # Sonnet (non-thinking) -> DeepSeek R1 -> Kimi K2-Thinking
+        assert chain.get("claude-code-claude-sonnet-4-5-20250929") == "antigravity-claude-sonnet-4-5-thinking-medium"
         assert chain.get("antigravity-claude-sonnet-4-5") == "synthetic-hf-deepseek-ai-DeepSeek-R1-0528"
         assert chain.get("synthetic-hf-deepseek-ai-DeepSeek-R1-0528") == "synthetic-Kimi-K2-Thinking"
 
@@ -396,10 +397,10 @@ class TestModelFactoryIntegration:
 
     def test_chatgpt_models_have_correct_type(self, models_config):
         """ChatGPT models should have correct types."""
-        # ChatGPT models using OAuth flow use 'chatgpt' type
+        # ChatGPT models using OAuth flow use 'chatgpt_oauth' type
         for model_key in ["chatgpt-gpt-5.2", "chatgpt-gpt-5.2-codex"]:
             if model_key in models_config:
-                assert models_config[model_key]["type"] == "chatgpt", f"{model_key} should be type 'chatgpt'"
+                assert models_config[model_key]["type"] == "chatgpt_oauth", f"{model_key} should be type 'chatgpt_oauth'"
         
         # GPT 5.1 API models use openai type
         for model_key in ["gpt-5.1", "gpt-5.1-codex-api"]:

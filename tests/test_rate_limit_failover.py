@@ -251,8 +251,8 @@ class TestTokenBudgetFailoverIntegration:
         # Architect: Opus → Antigravity Opus thinking
         assert mgr.FAILOVER_CHAIN["claude_opus"] == "antigravity-claude-opus-4-5-thinking-high"
         
-        # Builder: Sonnet → Antigravity Sonnet
-        assert mgr.FAILOVER_CHAIN["claude_sonnet"] == "antigravity-claude-sonnet-4-5"
+        # Builder: Sonnet → Antigravity Sonnet thinking-medium (thinking mode preferred)
+        assert mgr.FAILOVER_CHAIN["claude_sonnet"] == "antigravity-claude-sonnet-4-5-thinking-medium"
         
         # Sprinter: Cerebras → Synthetic GLM (high-volume backup)
         assert mgr.FAILOVER_CHAIN["cerebras"] == "synthetic-GLM-4.7"

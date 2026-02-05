@@ -51,6 +51,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
+from pydantic_ai import RunContext
 
 logger = logging.getLogger(__name__)
 
@@ -796,7 +797,6 @@ def load_checklist(path: Path) -> Optional[PreflightChecklist]:
 
 def register_preflight_check(agent) -> None:
     """Register the preflight authentication check tool with an agent."""
-    from pydantic_ai import RunContext
     
     @agent.tool
     def preflight_auth_check(
@@ -869,7 +869,6 @@ def register_preflight_check(agent) -> None:
 
 def register_add_auth_requirement(agent) -> None:
     """Register tool to manually add auth requirements."""
-    from pydantic_ai import RunContext
     
     @agent.tool
     def add_auth_requirement(

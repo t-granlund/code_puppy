@@ -262,7 +262,7 @@ FAILOVER_CHAIN: Dict[str, str] = {
     "antigravity-claude-sonnet-4-5-thinking-high": "chatgpt-gpt-5.2-codex",
     "chatgpt-gpt-5.2-codex": "chatgpt-gpt-5.2",
     "antigravity-claude-sonnet-4-5-thinking-medium": "chatgpt-gpt-5.2",
-    "chatgpt-gpt-5.2": "cerebras-llama-3.3-70b-specdec",
+    "chatgpt-gpt-5.2": "Cerebras-GLM-4.7",
     "antigravity-claude-sonnet-4-5-thinking-low": "synthetic-MiniMax-M2.1",
     "synthetic-MiniMax-M2.1": "Cerebras-GLM-4.7",
     
@@ -279,11 +279,12 @@ FAILOVER_CHAIN: Dict[str, str] = {
     "claude-code-claude-haiku-4-5-20251001": "antigravity-gemini-3-flash",
     
     # =====================================================================
-    # LIBRARIAN TIER - Search, docs, context, less intensive code
+    # LIBRARIAN TIER - Light tasks (free models only as last resort)
+    # NOTE: antigravity-gemini-3-pro-* models already mapped in ARCHITECT tier
+    #       to synthetic models - do NOT duplicate here!
     # =====================================================================
-    "antigravity-gemini-3-pro-high": "antigravity-gemini-3-pro-low",
-    "antigravity-gemini-3-pro-low": "antigravity-gemini-3-flash",
-    "antigravity-gemini-3-flash": "openrouter-arcee-ai-trinity-large-preview-free",
+    # Free tier fallback chain (last resort for any workload):
+    "antigravity-gemini-3-flash": "synthetic-MiniMax-M2.1",  # Try paid synthetic before free
     "openrouter-arcee-ai-trinity-large-preview-free": "openrouter-stepfun-step-3.5-flash-free",
     "openrouter-stepfun-step-3.5-flash-free": "Cerebras-GLM-4.7",
     
