@@ -147,6 +147,10 @@ TOOL_REGISTRY = {
     # Pre-Flight Authentication
     "preflight_auth_check": register_preflight_check,
     "add_auth_requirement": register_add_auth_requirement,
+    # Project Bootstrap & Discovery
+    "discover_project": register_discover_project,
+    "get_discovery_state": register_get_discovery_state,
+    "get_resume_questions": register_get_resume_questions,
     # Browser Control
     "browser_initialize": register_initialize_browser,
     "browser_close": register_close_browser,

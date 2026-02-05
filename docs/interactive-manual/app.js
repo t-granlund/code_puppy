@@ -63,11 +63,30 @@ const repoData = {
         { name: "Constraint", desc: "Hard and soft limits on behavior." }
       ],
       lenses: [
-        { name: "Philosophy", desc: "Checks alignment with core principles." },
-        { name: "Data Science", desc: "Statistical validity of evidence." },
-        { name: "Product UX", desc: "User experience impact." },
-        { name: "Safety/Risk", desc: "Operational and existential risk." },
-        { name: "Systems Eng", desc: "Integration and scalability." }
+        { name: "🧠 Philosophy", desc: "What are we assuming? Hidden assumptions, category errors." },
+        { name: "📊 Data Science", desc: "Can we measure this? Metrics plan, experiment design." },
+        { name: "🛡️ Safety/Risk", desc: "What could go wrong? Risk flags, abuse vectors." },
+        { name: "🔷 Topology", desc: "What's the structure? Dependencies, phase transitions." },
+        { name: "∑ Theoretical Math", desc: "Is this consistent? Minimal axioms, counterexamples." },
+        { name: "⚙️ Systems Eng", desc: "Can we build this? Service boundaries, failure recovery." },
+        { name: "👤 Product/UX", desc: "Does this help users? Value hypotheses, MVP scope." }
+      ],
+      pipeline: [
+        { stage: "—", name: "Project Discovery", desc: "Bootstrap: scan existing artifacts, detect resume point" },
+        { stage: 0, name: "Philosophical Foundation", desc: "Internalize Ralph Loops and core principles" },
+        { stage: 1, name: "Epistemic State Creation", desc: "Surface assumptions, hypotheses, constraints" },
+        { stage: 2, name: "Lens Evaluation", desc: "Apply 7 expert perspectives" },
+        { stage: 3, name: "Gap Analysis", desc: "Identify CRITICAL/HIGH/MEDIUM/LOW gaps" },
+        { stage: 4, name: "Goal Emergence", desc: "Generate candidates, run through 6 gates" },
+        { stage: 5, name: "MVP Planning", desc: "Create minimal viable plan with rollback" },
+        { stage: 6, name: "Spec Generation", desc: "Generate full specs, readiness check" },
+        { stage: 7, name: "Pre-Flight Auth", desc: "Detect & verify all auth requirements" },
+        { stage: 8, name: "Build Execution", desc: "Phase → Milestone → Checkpoint → Verify" },
+        { stage: 9, name: "Improvement Audit", desc: "Evidence → Analysis → Recommendation loop" },
+        { stage: 10, name: "Gap Re-Inspection", desc: "What new gaps emerged? Re-validate" },
+        { stage: 11, name: "Question Tracking", desc: "Update epistemic state, close hypotheses" },
+        { stage: 12, name: "Verification Audit", desc: "End-to-end check across all layers" },
+        { stage: 13, name: "Documentation Sync", desc: "Update all docs, then loop to Stage 9" }
       ],
       loop: [
         { step: 1, name: "Observe", desc: "Gather evidence from environment" },
@@ -192,6 +211,27 @@ const repoData = {
       `;
       lensesList.appendChild(div);
     });
+    
+    // 14-Stage Pipeline
+    const pipelineContainer = document.getElementById('pipeline-list');
+    if (pipelineContainer) {
+      repoData.epistemic.pipeline.forEach(stage => {
+        const div = document.createElement('div');
+        div.className = 'feature-list-item';
+        const stageLabel = stage.stage === "—" ? "—" : `Stage ${stage.stage}`;
+        const stageColor = stage.stage === "—" ? "#10b981" : 
+                          stage.stage <= 1 ? "#a855f7" :
+                          stage.stage <= 4 ? "#3b82f6" :
+                          stage.stage <= 7 ? "#f59e0b" :
+                          stage.stage <= 10 ? "#10b981" : "#06b6d4";
+        div.innerHTML = `
+          <span style="color: ${stageColor}; font-family: monospace; min-width: 70px;">${stageLabel}</span>
+          <span style="font-weight: 600; color: #f1f5f9; min-width: 150px;">${stage.name}</span>
+          <span style="color: #64748b; font-size: 0.85rem;">${stage.desc}</span>
+        `;
+        pipelineContainer.appendChild(div);
+      });
+    }
   }
   
   // 4. Infrastructure Renderer
