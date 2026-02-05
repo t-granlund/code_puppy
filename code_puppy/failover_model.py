@@ -29,6 +29,7 @@ from pydantic_ai.models import (
     ModelSettings,
     StreamedResponse,
 )
+from pydantic_ai import RunContext
 
 # Import intelligent routing (optional - graceful fallback if not available)
 try:
@@ -537,6 +538,7 @@ class FailoverModel(Model):
         messages: list[ModelMessage],
         model_settings: ModelSettings | None,
         model_request_parameters: ModelRequestParameters,
+        run_context: RunContext[Any] | None = None,
     ) -> StreamedResponse:
         """Make a streaming request with automatic failover on rate limits.
         
@@ -568,7 +570,7 @@ class FailoverModel(Model):
                     )
                 
                 response = await model.request_stream(
-                    messages, model_settings, model_request_parameters
+                    messages, model_settings, model_request_parameters, run_context
                 )
                 
                 if attempts > 0:
