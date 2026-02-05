@@ -969,17 +969,59 @@ async def interactive_mode(message_renderer, initial_command: str = None) -> Non
 
                     # Auto-save
                     auto_save_session_if_enabled()
+                    
+                    # Reset consecutive error counter on success
+                    wiggum_consecutive_errors = 0
 
                 except KeyboardInterrupt:
                     emit_warning("\n🍩 Wiggum loop interrupted by Ctrl+C")
                     stop_wiggum()
                     break
                 except Exception as e:
-                    from code_puppy.messaging import emit_error
-
-                    emit_error(f"Wiggum loop error: {e}")
-                    stop_wiggum()
-                    break
+                    from code_puppy.messaging import emit_error, emit_warning
+                    
+                    error_str = str(e).lower()
+                    
+                    # Track consecutive errors
+                    wiggum_consecutive_errors = getattr(
+                        run_interactive_loop, '_wiggum_errors', 0
+                    ) + 1
+                    run_interactive_loop._wiggum_errors = wiggum_consecutive_errors
+                    
+                    # Check if this is a recoverable error (rate limits, API errors)
+                    is_recoverable = (
+                        "429" in error_str or
+                        "rate limit" in error_str or
+                        "quota" in error_str or
+                        "exhausted failover" in error_str or
+                        "antigravity api error" in error_str or
+                        "too many requests" in error_str or
+                        "resource_exhausted" in error_str or
+                        isinstance(e, RuntimeError)
+                    )
+                    
+                    max_consecutive_errors = 5
+                    
+                    if is_recoverable and wiggum_consecutive_errors < max_consecutive_errors:
+                        # Calculate backoff delay: 30s, 60s, 120s, 240s, 480s
+                        backoff_seconds = min(30 * (2 ** (wiggum_consecutive_errors - 1)), 480)
+                        emit_warning(
+                            f"\n🍩 Wiggum loop hit recoverable error ({wiggum_consecutive_errors}/{max_consecutive_errors}): {e}"
+                        )
+                        emit_warning(
+                            f"⏳ Waiting {backoff_seconds}s for quota to reset before retrying..."
+                        )
+                        time.sleep(backoff_seconds)
+                        # Continue the loop - don't break
+                        continue
+                    else:
+                        # Too many consecutive errors or unrecoverable error
+                        emit_error(f"Wiggum loop error: {e}")
+                        if wiggum_consecutive_errors >= max_consecutive_errors:
+                            emit_error(f"Too many consecutive errors ({max_consecutive_errors}), stopping wiggum loop")
+                        stop_wiggum()
+                        run_interactive_loop._wiggum_errors = 0  # Reset for next time
+                        break
 
             # Re-disable Ctrl+C if needed (uvx mode) - must be done after
             # each iteration as various operations may restore console mode

@@ -396,10 +396,10 @@ class TestModelFactoryIntegration:
 
     def test_chatgpt_models_have_correct_type(self, models_config):
         """ChatGPT models should have correct types."""
-        # ChatGPT models using OAuth flow use 'chatgpt_oauth' type
+        # ChatGPT models use 'chatgpt' type (direct ChatGPT API)
         for model_key in ["chatgpt-gpt-5.2", "chatgpt-gpt-5.2-codex"]:
             if model_key in models_config:
-                assert models_config[model_key]["type"] == "chatgpt_oauth", f"{model_key} should be type 'chatgpt_oauth'"
+                assert models_config[model_key]["type"] == "chatgpt", f"{model_key} should be type 'chatgpt'"
         
         # GPT 5.1 API models use openai type
         for model_key in ["gpt-5.1", "gpt-5.1-codex-api"]:
