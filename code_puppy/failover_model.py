@@ -18,8 +18,9 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
+from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
-from typing import Any, List, Mapping, Optional
+from typing import Any, AsyncIterator, List, Mapping, Optional
 
 from pydantic_ai.models import (
     Model,
@@ -533,16 +534,18 @@ class FailoverModel(Model):
             raise last_error
         raise RuntimeError(f"Max failover attempts ({self._max_failovers}) exceeded")
     
+    @asynccontextmanager
     async def request_stream(
         self,
         messages: list[ModelMessage],
         model_settings: ModelSettings | None,
         model_request_parameters: ModelRequestParameters,
         run_context: RunContext[Any] | None = None,
-    ) -> StreamedResponse:
+    ) -> AsyncIterator[StreamedResponse]:
         """Make a streaming request with automatic failover on rate limits.
         
         Same failover logic as request(), but for streaming responses.
+        This is an async context manager that yields the StreamedResponse.
         """
         attempts = 0
         last_error: Exception | None = None
@@ -569,18 +572,21 @@ class FailoverModel(Model):
                         message_group="model_failover"
                     )
                 
-                response = await model.request_stream(
+                # Use async with on the inner model's request_stream
+                async with model.request_stream(
                     messages, model_settings, model_request_parameters, run_context
-                )
-                
-                if attempts > 0:
-                    emit_info(
-                        f"✅ Stream failover succeeded: {model.model_name} "
-                        f"(attempt {attempts + 1}/{self._max_failovers + 1})",
-                        message_group="model_failover"
-                    )
-                
-                return response
+                ) as response:
+                    if attempts > 0:
+                        emit_info(
+                            f"✅ Stream failover succeeded: {model.model_name} "
+                            f"(attempt {attempts + 1}/{self._max_failovers + 1})",
+                            message_group="model_failover"
+                        )
+                    
+                    # Yield the response - caller will iterate over it
+                    yield response
+                    # Context exits cleanly after caller is done
+                    return
                 
             except Exception as e:
                 last_error = e
