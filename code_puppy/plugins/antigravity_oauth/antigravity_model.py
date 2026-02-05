@@ -42,6 +42,7 @@ from typing_extensions import assert_never
 from code_puppy.gemini_model import (
     GeminiModel,
     generate_tool_call_id,
+    generate_tool_call_id_no_hyphens,
 )
 from code_puppy.model_utils import _load_antigravity_prompt
 from code_puppy.plugins.antigravity_oauth.transport import _inline_refs
@@ -69,6 +70,53 @@ def _is_signature_error(error_text: str) -> bool:
         "Corrupted thought signature" in error_text
         or "thinking.signature" in error_text
     )
+
+
+def _sanitize_tool_format_in_parts(parts: list[dict]) -> list[dict]:
+    """Sanitize parts to ensure Gemini format (function_call instead of tool_use).
+    
+    This is a defensive fix for the case where message history contains
+    Claude format (tool_use) that somehow leaked through serialization.
+    
+    Converts:
+    - {"type": "tool_use", "id": "...", "name": "...", "input": {...}} 
+    → {"function_call": {"id": "...", "name": "...", "args": {...}}}
+    """
+    sanitized = []
+    for part in parts:
+        if isinstance(part, dict) and part.get("type") == "tool_use":
+            # Convert Claude tool_use to Gemini function_call
+            sanitized.append({
+                "function_call": {
+                    "name": part.get("name"),
+                    "args": part.get("input", {}),
+                    "id": part.get("id"),
+                }
+            })
+            logger.warning(
+                "Sanitized tool_use → function_call: name=%s", 
+                part.get("name")
+            )
+        else:
+            sanitized.append(part)
+    return sanitized
+
+
+def _sanitize_contents(contents: list[dict]) -> list[dict]:
+    """Sanitize contents array to ensure Gemini format throughout.
+    
+    Recursively checks parts within each content message and converts
+    any Claude format (tool_use) to Gemini format (function_call).
+    """
+    sanitized_contents = []
+    for content in contents:
+        if isinstance(content, dict) and "parts" in content:
+            sanitized_content = content.copy()
+            sanitized_content["parts"] = _sanitize_tool_format_in_parts(content["parts"])
+            sanitized_contents.append(sanitized_content)
+        else:
+            sanitized_contents.append(content)
+    return sanitized_contents
 
 
 class AntigravityModel(GeminiModel):
@@ -233,6 +281,10 @@ class AntigravityModel(GeminiModel):
         # Build generation config from model settings
         gen_config = self._build_generation_config(model_settings)
 
+        # Defensive sanitization: convert any Claude format (tool_use) to Gemini format (function_call)
+        # This catches edge cases where message history might contain leaked Claude format
+        contents = _sanitize_contents(contents)
+
         # Build JSON body
         body: dict[str, Any] = {
             "contents": contents,
@@ -245,6 +297,25 @@ class AntigravityModel(GeminiModel):
         # Serialize tools
         if model_request_parameters.function_tools:
             body["tools"] = self._build_tools(model_request_parameters.function_tools)
+
+        # DEBUG: Check for tool_use format leak (should not happen after sanitization)
+        body_str = json.dumps(body)
+        if "tool_use" in body_str:
+            logger.error(
+                "CRITICAL: tool_use format still detected after sanitization! "
+                "Body preview: %s",
+                body_str[:2000]
+            )
+            # Log to logfire for observability
+            try:
+                import logfire
+                logfire.error(
+                    "tool_use format leak detected in Antigravity request (post-sanitization)",
+                    model=self._model_name,
+                    body_preview=body_str[:2000],
+                )
+            except Exception:
+                pass
 
         # Get httpx client
         client = await self._get_client()
@@ -327,6 +398,9 @@ class AntigravityModel(GeminiModel):
             messages, model_request_parameters
         )
 
+        # Defensive sanitization: convert any Claude format (tool_use) to Gemini format (function_call)
+        contents = _sanitize_contents(contents)
+
         # Build generation config
         gen_config = self._build_generation_config(model_settings)
 
@@ -340,6 +414,24 @@ class AntigravityModel(GeminiModel):
         # Add tools
         if model_request_parameters.function_tools:
             body["tools"] = self._build_tools(model_request_parameters.function_tools)
+
+        # DEBUG: Check for tool_use format leak in streaming path (should not happen after sanitization)
+        body_str = json.dumps(body)
+        if "tool_use" in body_str:
+            logger.error(
+                "CRITICAL: tool_use format still detected after sanitization in streaming! "
+                "Body preview: %s",
+                body_str[:2000]
+            )
+            try:
+                import logfire
+                logfire.error(
+                    "tool_use format leak in Antigravity streaming request (post-sanitization)",
+                    model=self._model_name,
+                    body_preview=body_str[:2000],
+                )
+            except Exception:
+                pass
 
         # Get httpx client
         client = await self._get_client()
@@ -422,6 +514,7 @@ class AntigravityStreamingResponse(StreamedResponse):
     async def _get_event_iterator(self) -> AsyncIterator[ModelResponseStreamEvent]:
         """Process streaming chunks and yield events."""
         is_gemini = "gemini" in self._model_name_str.lower()
+        is_claude = "claude" in self._model_name_str.lower()
         pending_signature: str | None = None
 
         async for chunk in self._chunks:
@@ -484,9 +577,20 @@ class AntigravityStreamingResponse(StreamedResponse):
                     if event:
                         yield event
 
-                # Handle function call
-                elif part.get("functionCall"):
-                    fc = part["functionCall"]
+                # Handle function call - support both Gemini format (functionCall) and Claude format (type: tool_use)
+                elif part.get("functionCall") or part.get("type") == "tool_use":
+                    # Normalize: Claude uses {"type": "tool_use", "id": ..., "name": ..., "input": ...}
+                    #            Gemini uses {"functionCall": {"name": ..., "args": ..., "id": ...}}
+                    if part.get("functionCall"):
+                        fc = part["functionCall"]
+                        fc_name = fc.get("name")
+                        fc_args = fc.get("args")
+                        fc_id = fc.get("id")
+                    else:
+                        # Claude tool_use format
+                        fc_name = part.get("name")
+                        fc_args = part.get("input")  # Claude uses "input" for args
+                        fc_id = part.get("id")
 
                     # For Gemini: signature on function call belongs to previous thinking
                     if is_gemini and thought_signature:
@@ -499,9 +603,12 @@ class AntigravityStreamingResponse(StreamedResponse):
 
                     event = self._parts_manager.handle_tool_call_delta(
                         vendor_part_id=uuid4(),
-                        tool_name=fc.get("name"),
-                        args=fc.get("args"),
-                        tool_call_id=fc.get("id") or generate_tool_call_id(),
+                        tool_name=fc_name,
+                        args=fc_args,
+                        tool_call_id=fc_id or (
+                            generate_tool_call_id_no_hyphens() if is_claude 
+                            else generate_tool_call_id()
+                        ),
                     )
                     if event:
                         yield event
@@ -641,9 +748,23 @@ def _antigravity_process_response_from_parts(
 
         text = get_attr(part, "text")
         thought = get_attr(part, "thought")
+        
+        # Handle both Gemini format (functionCall/function_call) AND Claude format (tool_use)
         function_call = get_attr(part, "functionCall") or get_attr(
             part, "function_call"
         )
+        
+        # Claude format: {"type": "tool_use", "id": "...", "name": "...", "input": {...}}
+        # Normalize to Gemini-style function_call for consistent handling
+        if not function_call:
+            part_type = get_attr(part, "type")
+            if part_type == "tool_use":
+                # Convert Claude tool_use to normalized function_call format
+                function_call = {
+                    "name": get_attr(part, "name"),
+                    "args": get_attr(part, "input"),  # Claude uses "input", Gemini uses "args"
+                    "id": get_attr(part, "id"),
+                }
 
         parsed_parts.append(
             {

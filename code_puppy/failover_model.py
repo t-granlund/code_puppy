@@ -45,6 +45,17 @@ except ImportError:
     def get_router():
         return None
 
+# Import centralized observability logging
+try:
+    from code_puppy.core.observability import (
+        log_failover_triggered,
+        log_failover_success,
+        log_rate_limit,
+    )
+    OBSERVABILITY_AVAILABLE = True
+except ImportError:
+    OBSERVABILITY_AVAILABLE = False
+
 logger = logging.getLogger(__name__)
 
 # Import messaging for terminal-visible output
@@ -290,17 +301,28 @@ class FailoverModel(Model):
         self._last_failover_time = now
         
         # Log to Logfire for observability
-        try:
-            import logfire
-            logfire.warn(
-                "Model rate limited: {model} ({workload} workload) - cooldown {cooldown}s",
-                model=model_name,
-                workload=self.workload,
-                cooldown=COOLDOWN_SECONDS,
-                consecutive_429s=self._consecutive_429s,
-            )
-        except Exception:
-            pass  # Don't let logging break failover
+        if OBSERVABILITY_AVAILABLE:
+            try:
+                log_rate_limit(
+                    model=model_name,
+                    workload=self.workload,
+                    cooldown_seconds=COOLDOWN_SECONDS,
+                    consecutive_429s=self._consecutive_429s,
+                )
+            except Exception:
+                pass  # Don't let logging break failover
+        else:
+            try:
+                import logfire
+                logfire.warn(
+                    "Model rate limited: {model} ({workload} workload) - cooldown {cooldown}s",
+                    model=model_name,
+                    workload=self.workload,
+                    cooldown=COOLDOWN_SECONDS,
+                    consecutive_429s=self._consecutive_429s,
+                )
+            except Exception:
+                pass  # Don't let logging break failover
         
         # Notify the capacity registry (intelligent routing)
         if INTELLIGENT_ROUTING_AVAILABLE:
@@ -406,17 +428,28 @@ class FailoverModel(Model):
                         message_group="model_failover"
                     )
                     # Log to Logfire for observability
-                    try:
-                        import logfire
-                        logfire.info(
-                            "Failover succeeded: {model} ({workload} workload) - attempt {attempt}",
-                            model=model.model_name,
-                            workload=self.workload,
-                            attempt=attempts + 1,
-                            max_attempts=self._max_failovers + 1,
-                        )
-                    except Exception:
-                        pass
+                    if OBSERVABILITY_AVAILABLE:
+                        try:
+                            log_failover_success(
+                                model=model.model_name,
+                                workload=self.workload,
+                                attempt=attempts + 1,
+                                max_attempts=self._max_failovers + 1,
+                            )
+                        except Exception:
+                            pass
+                    else:
+                        try:
+                            import logfire
+                            logfire.info(
+                                "Failover succeeded: {model} ({workload} workload) - attempt {attempt}",
+                                model=model.model_name,
+                                workload=self.workload,
+                                attempt=attempts + 1,
+                                max_attempts=self._max_failovers + 1,
+                            )
+                        except Exception:
+                            pass
                 
                 return response
                 
@@ -453,19 +486,32 @@ class FailoverModel(Model):
                             message_group="model_failover"
                         )
                         # Log to Logfire for observability
-                        try:
-                            import logfire
-                            logfire.warn(
-                                "Failover triggered: {from_model} → {to_model} ({error_type})",
-                                from_model=model.model_name,
-                                to_model=next_model.model_name,
-                                error_type=error_type,
-                                workload=self.workload,
-                                backoff_delay=backoff_delay,
-                                attempt=attempts + 1,
-                            )
-                        except Exception:
-                            pass
+                        if OBSERVABILITY_AVAILABLE:
+                            try:
+                                log_failover_triggered(
+                                    from_model=model.model_name,
+                                    to_model=next_model.model_name,
+                                    workload=self.workload,
+                                    error_type=error_type,
+                                    attempt=attempts + 1,
+                                    backoff_delay=backoff_delay,
+                                )
+                            except Exception:
+                                pass
+                        else:
+                            try:
+                                import logfire
+                                logfire.warn(
+                                    "Failover triggered: {from_model} → {to_model} ({error_type})",
+                                    from_model=model.model_name,
+                                    to_model=next_model.model_name,
+                                    error_type=error_type,
+                                    workload=self.workload,
+                                    backoff_delay=backoff_delay,
+                                    attempt=attempts + 1,
+                                )
+                            except Exception:
+                                pass
                         # Apply backoff delay before trying next model
                         await asyncio.sleep(backoff_delay)
                     else:

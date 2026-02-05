@@ -764,6 +764,28 @@ See [docs/CEREBRAS.md](docs/CEREBRAS.md) for usage guide.
 
 ---
 
+## Known Issues
+
+⚠️ **Antigravity Claude Models - Tool Usage Bug**
+
+Antigravity Claude models (`antigravity-claude-opus-4-5-thinking-*`, `antigravity-claude-sonnet-4-5-thinking-*`) currently have an issue with tool usage in multi-turn conversations. The system automatically routes around these models to Synthetic/ChatGPT alternatives.
+
+**What works:** Text-only conversations, single-turn tool calls, Antigravity Gemini models  
+**What's affected:** Multi-turn tool usage with conversation history  
+**Workaround:** Active - failover chains bypass Antigravity Claude models  
+
+📖 Full details: [KNOWN-ISSUES.md](KNOWN-ISSUES.md)
+
+✅ **Recent Enhancements**
+
+**Agent Delegation**: Epistemic Architect now properly delegates work to specialist agents through OODA loop phases (Observe → Orient → Decide → Act), enabling dynamic model switching and parallel execution.
+
+📖 Documentation: 
+- [DELEGATION-ENHANCEMENTS.md](DELEGATION-ENHANCEMENTS.md) - Full delegation enhancement details
+- [SESSION-2026-01-30-BUGFIXES.md](SESSION-2026-01-30-BUGFIXES.md) - Complete session summary
+
+---
+
 # Code Puppy Privacy Commitment
 
 **Zero-compromise privacy policy. Always.**

@@ -124,6 +124,47 @@ The universal primitive for all epistemic work:
 
 Use `/ralph` to get guidance on each step.
 
+### 🤝 OODA-Driven Agent Delegation
+
+The Epistemic Architect **orchestrates work** by delegating to specialist agents based on OODA phase and **workload type**:
+
+**OBSERVE Phase** → Architect uses own tools
+- File exploration (`list_files`, `read_file`, `grep`)
+- Project setup (`agent_run_shell_command`)
+- Direct observation to build epistemic state
+
+**ORIENT Phase** → Delegate to REASONING workload specialists
+- `invoke_agent("security-auditor", ...)` — Security analysis [REASONING]
+- `invoke_agent("code-reviewer", ...)` — Code quality review [REASONING]
+- `invoke_agent("qa-expert", ...)` — Test strategy [REASONING]
+- `invoke_agent("shepherd", ...)` — Acceptance criteria review [REASONING]
+- `invoke_agent("watchdog", ...)` — QA validation [REASONING]
+- Multiple analyses run **in parallel** for efficiency
+
+**DECIDE Phase** → Use ORCHESTRATOR workload agents
+- `invoke_agent("planning-agent", ...)` — Task breakdown [ORCHESTRATOR]
+- `invoke_agent("pack-leader", ...)` — Multi-agent coordination [ORCHESTRATOR]
+- `invoke_agent("helios", ...)` — Architecture design [ORCHESTRATOR]
+- Architect synthesizes results and makes strategic decisions
+
+**ACT Phase** → Delegate to CODING/LIBRARIAN workload specialists
+- `invoke_agent("python-programmer", ...)` — Python implementation [CODING]
+- `invoke_agent("test-generator", ...)` — Test creation [CODING]
+- `invoke_agent("doc-writer", ...)` — Documentation [LIBRARIAN]
+- Parallel implementation by specialists
+
+**Workload-Based Model Routing:**
+- **ORCHESTRATOR**: Kimi K2.5 / Qwen3 — Complex reasoning, planning
+- **REASONING**: DeepSeek R1 / GPT-5.2 — Analysis, code review
+- **CODING**: Cerebras GLM 4.7 — Fast code generation
+- **LIBRARIAN**: Haiku / Gemini Flash — Docs, context (cheap)
+
+**Benefits:**
+- ✅ Each agent uses optimal model based on workload type
+- ✅ Parallel execution speeds up ORIENT and ACT phases
+- ✅ Cost-efficient: expensive models only when needed
+- ✅ Automatic failover via `RateLimitFailover` chains
+
 ## 📁 Commands Reference
 
 ### Session Management

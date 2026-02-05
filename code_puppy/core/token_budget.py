@@ -628,8 +628,13 @@ def smart_retry(
                     last_exception = e
                     error_str = str(e).lower()
                     
-                    # Check for rate limit error
-                    if "429" in error_str or "rate limit" in error_str or "too many requests" in error_str:
+                    # Check for rate limit or capacity error
+                    if ("429" in error_str or 
+                        "503" in error_str or
+                        "rate limit" in error_str or 
+                        "too many requests" in error_str or
+                        "capacity" in error_str or
+                        "no capacity available" in error_str):
                         wait_time, failover = budget_mgr.record_429(current_provider)
                         
                         if failover and allow_failover:

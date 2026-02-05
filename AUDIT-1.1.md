@@ -1,3 +1,7 @@
+> **📜 HISTORICAL DOCUMENT** - This is the delta audit specification. Implementation is complete.
+> For current status, see [PRODUCTION-READINESS-REPORT.md](PRODUCTION-READINESS-REPORT.md).
+> For audit index, see [docs/AUDIT-INDEX.md](docs/AUDIT-INDEX.md).
+
 # AUDIT-1.1 (Delta Only)
 Purpose: add ONLY new implementation items beyond AUDIT-1.0.
 

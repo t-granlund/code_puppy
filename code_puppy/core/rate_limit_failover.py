@@ -588,8 +588,13 @@ def with_rate_limit_failover(
                     error_str = str(e).lower()
                     last_error = e
 
-                    # Check if this is a rate limit error
-                    if "429" in error_str or "rate limit" in error_str or "too many requests" in error_str:
+                    # Check if this is a rate limit or capacity error
+                    if ("429" in error_str or 
+                        "503" in error_str or
+                        "rate limit" in error_str or 
+                        "too many requests" in error_str or
+                        "MODEL_CAPACITY_EXHAUSTED" in error_str or
+                        "No capacity available" in error_str):
                         attempts += 1
                         logger.info(
                             f"Rate limit on {current_model} (attempt {attempts}/{max_failovers + 1})"

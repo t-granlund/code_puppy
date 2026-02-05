@@ -1,0 +1,92 @@
+{
+  "timestamp": "2026-02-04T09:19:53.120016",
+  "tests_passed": 3,
+  "tests_failed": 8,
+  "tests_skipped": 1,
+  "details": [
+    {
+      "test": "Model Factory Initialization",
+      "status": "FAIL",
+      "details": "",
+      "error": "'ModelFactory' object has no attribute 'models'",
+      "timestamp": "2026-02-04T09:19:53.120067"
+    },
+    {
+      "test": "Settings Configuration",
+      "status": "FAIL",
+      "details": "",
+      "error": "Missing settings: ['telemetry_enabled', 'max_conversation_tokens', 'rate_limit_threshold']",
+      "timestamp": "2026-02-04T09:19:53.120083"
+    },
+    {
+      "test": "Authentication Providers",
+      "status": "FAIL",
+      "details": "",
+      "error": "'ModelFactory' object has no attribute 'models'",
+      "timestamp": "2026-02-04T09:19:53.120091"
+    },
+    {
+      "test": "OAuth Token Storage",
+      "status": "PASS",
+      "details": "OAuth tokens found for: antigravity, chatgpt",
+      "error": "",
+      "timestamp": "2026-02-04T09:19:53.120934"
+    },
+    {
+      "test": "Agent Registry Coverage",
+      "status": "FAIL",
+      "details": "",
+      "error": "In registry but not filesystem: {'planning', 'c-programmer', 'shepherd', 'husky', 'javascript-programmer', 'commit-message-generator', 'ui-programmer', 'lab-rat', 'retriever', 'rag-agent', 'terrier', 'test-generator', 'doc-writer', 'bloodhound', 'watchdog', 'cpp-programmer', 'typescript-programmer', 'prompt-reviewer', 'golang-programmer', 'file-summarizer'}",
+      "timestamp": "2026-02-04T09:19:53.128047"
+    },
+    {
+      "test": "Workload Model Routing",
+      "status": "FAIL",
+      "details": "",
+      "error": "Only 0/4 workloads accessible",
+      "timestamp": "2026-02-04T09:19:53.128099"
+    },
+    {
+      "test": "Critical Workflow Paths",
+      "status": "PASS",
+      "details": "3 workflows have valid agent paths",
+      "error": "",
+      "timestamp": "2026-02-04T09:19:53.128108"
+    },
+    {
+      "test": "Rate Limiting Detection",
+      "status": "PASS",
+      "details": "RateLimitTracker and TokenBudgetManager active",
+      "error": "",
+      "timestamp": "2026-02-04T09:19:53.128158"
+    },
+    {
+      "test": "Failover Chain Completeness",
+      "status": "FAIL",
+      "details": "",
+      "error": "'ModelFactory' object has no attribute 'models'",
+      "timestamp": "2026-02-04T09:19:53.128166"
+    },
+    {
+      "test": "Model Switching Capability",
+      "status": "FAIL",
+      "details": "",
+      "error": "Only 0 models accessible",
+      "timestamp": "2026-02-04T09:19:53.128173"
+    },
+    {
+      "test": "Session Storage",
+      "status": "FAIL",
+      "details": "",
+      "error": "cannot import name 'SessionStorage' from 'code_puppy.session_storage' (/Users/tygranlund/code_puppy/code_puppy/session_storage.py)",
+      "timestamp": "2026-02-04T09:19:53.128184"
+    },
+    {
+      "test": "Telemetry Integration",
+      "status": "SKIP",
+      "details": "Logfire not available: 'Settings' object has no attribute 'telemetry_enabled'",
+      "error": "",
+      "timestamp": "2026-02-04T09:19:53.128198"
+    }
+  ]
+}

@@ -31,6 +31,9 @@ class HeliosAgent(BaseAgent):
             "delete_file",
             "agent_run_shell_command",
             "agent_share_your_reasoning",
+            # Agent coordination (Helios can invoke other agents for tasks)
+            "list_agents",
+            "invoke_agent",
         ]
 
     def get_system_prompt(self) -> str:

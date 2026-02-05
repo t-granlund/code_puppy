@@ -16,7 +16,7 @@ Overall optimization health: **EXCELLENT** with comprehensive failover coverage.
 | OAuth Authentication | ✅ Pass | 15 OAuth models properly configured |
 | Rate Limit Integration | ✅ Pass | Proactive 20% threshold working |
 | Token Optimization | ✅ Pass | Provider-specific thresholds aligned |
-| Agent Registry | ✅ Pass | 36 agents mapped to workloads |
+| Agent Registry | ✅ Pass | 38 agents mapped to workloads |
 
 ---
 
@@ -73,7 +73,7 @@ All workload chains reference valid models with **expanded coverage** (February 
 | CODING | 9 | Cerebras-GLM-4.7 | 8 backups | ✅ |
 | LIBRARIAN | 9 | claude-code-claude-haiku-4-5-20251001 | 8 backups | ✅ |
 
-#### Agent Registry (36 agents mapped)
+#### Agent Registry (38 agents mapped)
 
 | Workload Type | Agent Count | Example Agents |
 |--------------|-------------|----------------|
@@ -225,7 +225,7 @@ The code_puppy codebase is **well-optimized** for token efficiency and rate limi
 3. **Proactive rate limiting** triggers at 20% remaining capacity
 4. **Provider-aware compression** with different thresholds per tier
 5. **Unified failover configuration** in single source of truth
-6. **36 agents mapped** to appropriate workload types
+6. **38 agents mapped** to appropriate workload types
 7. **Comprehensive test coverage** validates all configurations
 
 **Recent Fixes (February 2026):**

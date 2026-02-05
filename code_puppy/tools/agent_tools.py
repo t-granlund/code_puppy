@@ -419,6 +419,50 @@ def register_invoke_agent(agent):
             session_id = f"{session_id}-{hash_suffix}"
         # else: continuing existing session, use session_id as-is
 
+        # === LOGFIRE OODA DELEGATION OBSERVABILITY ===
+        # Log delegation event with OODA phase context for observability
+        try:
+            from code_puppy.core import get_workload_for_agent
+            
+            # Determine invoking agent name from context
+            invoker_name = getattr(agent, 'name', 'unknown')
+            target_workload = get_workload_for_agent(agent_name)
+            
+            # Map workload to OODA phase for observability
+            workload_to_ooda = {
+                "ORCHESTRATOR": "DECIDE",  # Decision-makers (helios, pack-leader)
+                "REASONING": "ORIENT",     # Analyzers (qa-expert, security-auditor)
+                "CODING": "ACT",           # Implementers (python-programmer, terminal-qa)
+                "LIBRARIAN": "OBSERVE",    # Info gatherers (bloodhound, doc-writer)
+            }
+            ooda_phase = workload_to_ooda.get(target_workload.name, "ACT")
+            
+            # Use centralized observability logging
+            try:
+                from code_puppy.core.observability import log_agent_delegation
+                log_agent_delegation(
+                    invoker=invoker_name,
+                    target=agent_name,
+                    ooda_phase=ooda_phase,
+                    workload=target_workload.name,
+                    session_id=session_id,
+                    is_new_session=is_new_session,
+                )
+            except ImportError:
+                # Fall back to direct logfire if observability not available
+                import logfire
+                logfire.info(
+                    "OODA Delegation: {invoker} → {target} ({phase} phase, {workload})",
+                    invoker=invoker_name,
+                    target=agent_name,
+                    phase=ooda_phase,
+                    workload=target_workload.name,
+                    session_id=session_id,
+                    is_new_session=is_new_session,
+                )
+        except Exception:
+            pass  # Don't let logging break delegation
+
         # Lazy imports to avoid circular dependency
         from code_puppy.agents.subagent_stream_handler import subagent_stream_handler
 
@@ -730,6 +774,21 @@ def register_invoke_agent(agent):
                     message_count=len(updated_history),
                 )
             )
+
+            # === LOGFIRE OODA DELEGATION COMPLETION ===
+            try:
+                import logfire
+                invoker_name = getattr(agent, 'name', 'unknown')
+                logfire.info(
+                    "OODA Delegation Complete: {invoker} ← {target} (success)",
+                    invoker=invoker_name,
+                    target=agent_name,
+                    session_id=session_id,
+                    message_count=len(updated_history),
+                    response_length=len(response) if response else 0,
+                )
+            except Exception:
+                pass
 
             # Emit clean completion summary
             emit_success(

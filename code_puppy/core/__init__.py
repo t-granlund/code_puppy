@@ -161,6 +161,22 @@ from .husky_execution import (
     ThinkingMemory,
 )
 
+# Observability - Centralized Logfire logging with model name mapping
+from .observability import (
+    ModelContext,
+    get_api_model_name,
+    clear_model_name_cache,
+    log_model_selected,
+    log_model_fallback,
+    log_failover_triggered,
+    log_failover_success,
+    log_rate_limit,
+    log_agent_delegation,
+    log_agent_delegation_complete,
+    log_request_start,
+    log_request_complete,
+)
+
 __all__ = [
     # Token budget management
     "TokenBudgetManager",
@@ -283,4 +299,17 @@ __all__ = [
     "ExecutionResult",
     "ReasoningMode",
     "ThinkingMemory",
+    # Observability
+    "ModelContext",
+    "get_api_model_name",
+    "clear_model_name_cache",
+    "log_model_selected",
+    "log_model_fallback",
+    "log_failover_triggered",
+    "log_failover_success",
+    "log_rate_limit",
+    "log_agent_delegation",
+    "log_agent_delegation_complete",
+    "log_request_start",
+    "log_request_complete",
 ]

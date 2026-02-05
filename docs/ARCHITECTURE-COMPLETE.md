@@ -79,49 +79,51 @@ Agents are discovered from:
 
 ### Workload Types (`failover_config.py`)
 
-| Workload Type | Purpose | Primary Models | Agents |
-|---------------|---------|----------------|--------|
-| **ORCHESTRATOR** | Complex planning, multi-agent coordination | Opus → Kimi K2.5 → Sonnet | pack-leader, helios, epistemic-architect |
-| **REASONING** | Logic, security analysis, code review | Sonnet → DeepSeek R1 → Kimi | shepherd, watchdog, security-auditor |
-| **CODING** | Fast code generation | Cerebras → GPT-5.2-Codex → MiniMax | husky, retriever, code-puppy, python-programmer |
-| **LIBRARIAN** | Search, docs, context retrieval | Haiku → Gemini Flash → OpenRouter | bloodhound, lab-rat, doc-writer |
+> **📍 Single Source of Truth:** The authoritative workload chains and agent mappings are in [failover_config.py](../code_puppy/core/failover_config.py). This summary may become outdated - always check the source file.
+
+| Workload Type | Purpose | Primary Models | Example Agents |
+|---------------|---------|----------------|----------------|
+| **ORCHESTRATOR** | Planning, multi-agent coordination | Antigravity Opus → Gemini Pro → Kimi K2.5 | pack-leader, helios, epistemic-architect |
+| **REASONING** | Logic, security analysis, code review | Antigravity Sonnet → DeepSeek R1 → Kimi K2 | shepherd, watchdog, security-auditor |
+| **CODING** | Fast code generation | Cerebras → Gemini Flash → GPT-5.2-Codex | husky, terrier, python-programmer |
+| **LIBRARIAN** | Search, docs, context retrieval | Haiku → Gemini Flash → Cerebras → OpenRouter (last resort) | bloodhound, lab-rat, doc-writer |
 
 ### Agent → Workload Mapping
 
+> **Note:** This is a subset. See [failover_config.py](../code_puppy/core/failover_config.py) for the complete `AGENT_WORKLOAD_REGISTRY` (38 agents).
+
 ```python
 AGENT_WORKLOAD_REGISTRY = {
-    # ORCHESTRATORS (Claude Opus → Antigravity Opus → Kimi K2.5)
+    # ORCHESTRATORS
     "pack-leader": WorkloadType.ORCHESTRATOR,
     "helios": WorkloadType.ORCHESTRATOR,
     "epistemic-architect": WorkloadType.ORCHESTRATOR,
-    "planning": WorkloadType.ORCHESTRATOR,
+    "planning-agent": WorkloadType.ORCHESTRATOR,
     "agent-creator": WorkloadType.ORCHESTRATOR,
     
-    # REASONING (Sonnet → DeepSeek R1 → Kimi K2)
+    # REASONING
     "shepherd": WorkloadType.REASONING,
     "watchdog": WorkloadType.REASONING,
     "code-reviewer": WorkloadType.REASONING,
-    "python-reviewer": WorkloadType.REASONING,
     "security-auditor": WorkloadType.REASONING,
     "qa-expert": WorkloadType.REASONING,
-    # + typescript-reviewer, golang-reviewer, cpp-reviewer, etc.
+    # ...plus language-specific reviewers
     
-    # CODING (Cerebras GLM → GPT-5.2-Codex → MiniMax)
+    # CODING
     "husky": WorkloadType.CODING,
     "terrier": WorkloadType.CODING,
-    "retriever": WorkloadType.CODING,
     "code-puppy": WorkloadType.CODING,
     "python-programmer": WorkloadType.CODING,
     "test-generator": WorkloadType.CODING,
-    # + qa-kitten, ui-programmer, rag-agent, etc.
+    "terminal-qa": WorkloadType.CODING,  # Added Feb 2026
+    # ...plus other programmers
     
-    # LIBRARIAN (Haiku → Gemini Flash → OpenRouter)
+    # LIBRARIAN
     "bloodhound": WorkloadType.LIBRARIAN,
     "lab-rat": WorkloadType.LIBRARIAN,
-    "file-summarizer": WorkloadType.LIBRARIAN,
     "doc-writer": WorkloadType.LIBRARIAN,
 }
-# See failover_config.py for complete list of 30+ agent mappings
+# Total: 38 agents mapped to workload types
 ```
 
 ---
@@ -410,14 +412,16 @@ The credential checker supports **multiple key name formats** for each provider:
 
 ### OAuth Token Storage
 
-OAuth tokens are stored in plugin directories:
+OAuth tokens are stored in the XDG data directory:
 
 ```
-~/.code_puppy/plugins/
-├── claude_code_oauth/tokens.json
-├── antigravity_oauth/tokens.json
-└── chatgpt_oauth/tokens.json
+~/.local/share/code_puppy/
+├── claude_code_oauth.json      # Claude Code OAuth tokens
+├── antigravity_oauth.json       # Antigravity OAuth tokens
+└── chatgpt_oauth.json           # ChatGPT OAuth tokens
 ```
+
+> **Note:** Uses XDG Base Directory spec. Falls back to `~/.code_puppy/` if XDG vars not set.
 
 ### Credential Check Flow
 
@@ -433,8 +437,8 @@ OAuth tokens are stored in plugin directories:
 │  For each model in chain:                                                    │
 │      ↓                                                                       │
 │  has_valid_credentials(model_name)?                                          │
-│      ├── OAuth Provider? → Check ~/.code_puppy/plugins/{plugin}/tokens.json │
-│      │                     → Validate access_token exists & not empty        │
+│      ├── OAuth Provider? → Check ~/.local/share/code_puppy/{plugin}_oauth.json │
+│      │                     → Validate access_token exists & not empty          │
 │      │                                                                       │
 │      └── API Key Provider? → Check config + environment variables           │
 │                             → Try multiple key name formats                  │
@@ -1198,6 +1202,71 @@ Observe → Orient → Decide → Act → Observe (repeat)
 ```
 
 **Key Insight:** Goals are **outputs**, not inputs. They emerge from evidence, not assumptions.
+
+### 🤝 OODA-Driven Agent Delegation
+
+**The Epistemic Architect is an ORCHESTRATOR, not a do-everything agent.** It delegates specialized work to expert agents based on the OODA phase and **workload type** from `AGENT_WORKLOAD_REGISTRY`:
+
+#### Observe Phase → Own Tools
+- Uses `list_files`, `read_file`, `grep` for exploration
+- Uses `agent_run_shell_command` for project setup
+- Builds epistemic state through direct observation
+
+#### Orient Phase → REASONING Workload Specialists
+- `invoke_agent("security-auditor", ...)` for security analysis [REASONING]
+- `invoke_agent("code-reviewer", ...)` for code quality [REASONING]
+- `invoke_agent("qa-expert", ...)` for test strategy [REASONING]
+- `invoke_agent("shepherd", ...)` for acceptance review [REASONING]
+- `invoke_agent("watchdog", ...)` for QA validation [REASONING]
+- **Runs multiple analyses in parallel** using DeepSeek R1/GPT-5.2
+
+#### Decide Phase → ORCHESTRATOR Workload Agents
+- `invoke_agent("planning-agent", ...)` for task breakdown [ORCHESTRATOR]
+- `invoke_agent("pack-leader", ...)` for multi-agent coordination [ORCHESTRATOR]
+- `invoke_agent("helios", ...)` for architecture design [ORCHESTRATOR]
+- Epistemic architect synthesizes and makes strategic decisions using Kimi K2.5/Qwen3
+
+#### Act Phase → CODING/LIBRARIAN Workload Specialists
+- `invoke_agent("python-programmer", ...)` for Python code [CODING]
+- `invoke_agent("test-generator", ...)` for test creation [CODING]
+- `invoke_agent("terminal-qa", ...)` for verification [CODING]
+- `invoke_agent("doc-writer", ...)` for documentation [LIBRARIAN]
+- **Delegates parallel implementation** using Cerebras GLM 4.7 (fast) or Haiku (cheap)
+
+#### Workload-Based Model Routing (via `failover_config.py`)
+
+| Workload | Primary Models | Use Case |
+|----------|----------------|----------|
+| ORCHESTRATOR | Kimi K2.5, Qwen3-235B | Complex planning, coordination |
+| REASONING | DeepSeek R1, GPT-5.2-Codex | Analysis, code review, security |
+| CODING | Cerebras GLM 4.7, MiniMax M2.1 | Fast code generation |
+| LIBRARIAN | Haiku, Gemini Flash | Docs, context (cheap/fast) |
+
+This delegation pattern ensures:
+- ✅ **Dynamic model switching** — `get_model_for_agent()` routes based on workload
+- ✅ **Automatic failover** — `RateLimitFailover` handles 429s
+- ✅ **Token budget awareness** — `token_slimmer` applies provider-specific limits
+- ✅ **Parallel execution** — Multiple specialists work simultaneously
+- ✅ **Cost efficiency** — Use expensive models only when needed
+
+**Example Workflow:**
+```python
+# OBSERVE - Epistemic architect explores
+files = list_files("src/")
+auth_code = read_file("src/auth.py")
+
+# ORIENT - Delegate parallel analysis (REASONING workload → DeepSeek R1)
+invoke_agent("security-auditor", "Review src/auth.py for vulnerabilities")
+invoke_agent("code-reviewer", "Analyze src/auth.py for quality issues")
+
+# DECIDE - Architect synthesizes reviews and plans (ORCHESTRATOR workload → Kimi K2.5)
+# Creates BUILD.md with improvement milestones
+
+# ACT - Delegate parallel implementation (CODING workload → Cerebras GLM)
+invoke_agent("python-programmer", "Implement security fixes in src/auth.py")
+invoke_agent("test-generator", "Create auth integration tests")
+invoke_agent("doc-writer", "Document auth flow in docs/auth.md")  # LIBRARIAN workload
+```
 
 ### The 7 Expert Lenses
 

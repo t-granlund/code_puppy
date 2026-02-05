@@ -266,6 +266,12 @@ class BaseAgent(ABC):
         """Clear the message history for this agent."""
         self._message_history = []
         self._compacted_message_hashes.clear()
+        # Also clear workload routing log cache for fresh logging on next run
+        if self.name in {key.split(":")[0] for key in BaseAgent._workload_routing_logged}:
+            BaseAgent._workload_routing_logged = {
+                k for k in BaseAgent._workload_routing_logged 
+                if not k.startswith(f"{self.name}:")
+            }
 
     def append_to_message_history(self, message: Any) -> None:
         """Append a message to this agent's history.
@@ -299,6 +305,9 @@ class BaseAgent(ABC):
         """
         self._compacted_message_hashes.add(message_hash)
 
+    # Class-level cache for workload routing logs (prevents duplicates)
+    _workload_routing_logged: set = set()
+    
     def get_model_name(self) -> Optional[str]:
         """Get model name for this agent using workload-aware routing.
 
@@ -321,16 +330,30 @@ class BaseAgent(ABC):
             orchestrator = AgentOrchestrator()
             workload_model = orchestrator.get_model_for_agent(self.name)
             if workload_model:
-                # Log the workload routing for observability
+                # Log the workload routing ONCE per agent (deduplicated)
                 try:
-                    import logfire
-                    workload = orchestrator.get_workload_for_agent(self.name)
-                    logfire.info(
-                        "Workload routing: {agent} → {workload} → {model}",
-                        agent=self.name,
-                        workload=workload.name,
-                        model=workload_model,
-                    )
+                    log_key = f"{self.name}:{workload_model}"
+                    if log_key not in BaseAgent._workload_routing_logged:
+                        BaseAgent._workload_routing_logged.add(log_key)
+                        workload = orchestrator.get_workload_for_agent(self.name)
+                        # Use centralized observability logging
+                        try:
+                            from code_puppy.core.observability import log_model_selected
+                            log_model_selected(
+                                config_key=workload_model,
+                                agent_name=self.name,
+                                workload=workload.name,
+                                reason="workload_routing",
+                            )
+                        except ImportError:
+                            # Fall back to direct logfire if observability not available
+                            import logfire
+                            logfire.info(
+                                "Workload routing: {agent} → {workload} → {model}",
+                                agent=self.name,
+                                workload=workload.name,
+                                model=workload_model,
+                            )
                 except Exception:
                     pass  # Don't let logging break model selection
                 return workload_model
@@ -2332,8 +2355,13 @@ class BaseAgent(ABC):
                                         break
                             except Exception as e:
                                 error_str = str(e)
-                                # Check if this is a 429 rate limit from the failover model
-                                if "429" in error_str or "RESOURCE_EXHAUSTED" in error_str or "quota" in error_str.lower():
+                                # Check if this is a rate limit or capacity error from the failover model
+                                if ("429" in error_str or 
+                                    "503" in error_str or
+                                    "RESOURCE_EXHAUSTED" in error_str or
+                                    "MODEL_CAPACITY_EXHAUSTED" in error_str or
+                                    "No capacity available" in error_str or
+                                    "quota" in error_str.lower()):
                                     next_failover = budget_manager.FAILOVER_CHAIN.get(current_failover)
                                     if next_failover:
                                         emit_warning(
@@ -2482,8 +2510,13 @@ class BaseAgent(ABC):
                                 )
                         except Exception as run_error:
                             error_str = str(run_error)
-                            # Check if this is a rate limit error
-                            if "429" in error_str or "RESOURCE_EXHAUSTED" in error_str or "quota" in error_str.lower():
+                            # Check if this is a rate limit or capacity error
+                            if ("429" in error_str or 
+                                "503" in error_str or
+                                "RESOURCE_EXHAUSTED" in error_str or 
+                                "MODEL_CAPACITY_EXHAUSTED" in error_str or
+                                "No capacity available" in error_str or
+                                "quota" in error_str.lower()):
                                 # Check if the error indicates a PROVIDER is exhausted
                                 # Antigravity models all share the same quota - skip ALL of them
                                 exhausted_provider = None

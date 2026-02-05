@@ -110,57 +110,57 @@ TIER_MAPPINGS: Dict[str, int] = {
 
 WORKLOAD_CHAINS: Dict[WorkloadType, List[str]] = {
     # Pack leader, governor, planning - needs maximum reasoning power
+    # NOTE: Antigravity Claude/Gemini tool format bug FIXED in antigravity_model.py
     WorkloadType.ORCHESTRATOR: [
-        "antigravity-claude-opus-4-5-thinking-high",  # Tier 1: Most stable Opus
-        "antigravity-claude-opus-4-5-thinking-medium",
-        "claude-code-claude-opus-4-5-20251101",      # Tier 1: Best reasoning (may have 500 errors)
+        "antigravity-claude-opus-4-5-thinking-high", # Tier 0: Best reasoning, fixed tool format
+        "antigravity-gemini-3-pro-high",             # Tier 0: Gemini 3 Pro thinking
         "synthetic-Kimi-K2.5-Thinking",               # Tier 1: 1T MoE, agent swarms
         "synthetic-hf-Qwen-Qwen3-235B-A22B-Thinking-2507",  # Tier 1: Math leader
-        "antigravity-claude-opus-4-5-thinking-low",
-        "claude-code-claude-sonnet-4-5-20250929",    # Fall to Tier 2/3
-        "antigravity-claude-sonnet-4-5-thinking-high",
         "chatgpt-gpt-5.2-codex",                     # Tier 2: Agentic coding
+        "synthetic-hf-deepseek-ai-DeepSeek-R1-0528", # Tier 2: 671B reasoning
+        "synthetic-Kimi-K2-Thinking",                 # Tier 2: 1T MoE thinking
+        "synthetic-MiniMax-M2.1",                     # Tier 3: 1M context coding
         "Cerebras-GLM-4.7",                          # Emergency fallback
     ],
     
     # Complex logic, security audit, design - needs deep reasoning
+    # NOTE: Antigravity Claude/Gemini tool format bug FIXED in antigravity_model.py
     WorkloadType.REASONING: [
-        "claude-code-claude-sonnet-4-5-20250929",    # Tier 2/3: Agentic coding leader
-        "antigravity-claude-sonnet-4-5-thinking-high",
+        "antigravity-claude-sonnet-4-5-thinking-medium",  # Tier 0: Claude Sonnet thinking
+        "antigravity-gemini-3-pro-low",              # Tier 0: Gemini 3 Pro reasoning
         "synthetic-hf-deepseek-ai-DeepSeek-R1-0528", # Tier 2: 671B reasoning model
         "synthetic-Kimi-K2-Thinking",                 # Tier 2: 1T MoE thinking
-        "antigravity-claude-sonnet-4-5-thinking-medium",
         "chatgpt-gpt-5.2-codex",                     # Tier 2: Strong reasoning
-        "antigravity-claude-sonnet-4-5-thinking-low",
-        "antigravity-claude-sonnet-4-5",
         "synthetic-MiniMax-M2.1",                     # Tier 3: 1M context coding
-        "Cerebras-GLM-4.7",
+        "chatgpt-gpt-5.2",                           # Tier 2: Backup reasoning
+        "Cerebras-GLM-4.7",                          # Tier 5: Fast fallback
     ],
     
     # Main code generation (high volume, fast) - needs speed + quality
+    # NOTE: Antigravity Claude/Gemini tool format bug FIXED in antigravity_model.py
     WorkloadType.CODING: [
         "Cerebras-GLM-4.7",                          # Tier 5: Fastest, agentic
+        "antigravity-gemini-3-flash",                # Tier 0: Fast Gemini thinking
         "synthetic-GLM-4.7",                          # Tier 5: Backup GLM via Synthetic
         "chatgpt-gpt-5.2-codex",                     # Tier 2: Agentic coding
+        "antigravity-claude-sonnet-4-5",             # Tier 0: Claude Sonnet (non-thinking)
         "synthetic-MiniMax-M2.1",                     # Tier 3: 1M context, multilang
         "synthetic-hf-MiniMaxAI-MiniMax-M2.1",       # Tier 3: Backup MiniMax
-        "claude-code-claude-haiku-4-5-20251001",     # Tier 4: Fast, cheaper
-        "antigravity-gemini-3-flash",                # Tier 4: 1M context, fast
-        "antigravity-claude-sonnet-4-5",             # Tier 3: Quality fallback
+        "claude-code-claude-haiku-4-5-20251001",     # Tier 4: Fast, cheaper (Claude Code works)
         "synthetic-hf-zai-org-GLM-4.7",              # Tier 5: Synthetic GLM backup
     ],
     
     # Search, docs, context (less intensive) - needs context + cost efficiency
+    # CORRECT ORDER: Haiku → Gemini Flash → Cerebras → GLM → OpenRouter Free (last resort)
+    # NOTE: Antigravity Claude/Gemini tool format bug FIXED in antigravity_model.py
     WorkloadType.LIBRARIAN: [
-        "claude-code-claude-haiku-4-5-20251001",     # Tier 4: Fast, cheap
-        "antigravity-gemini-3-flash",                # Tier 4: 1M context
-        "openrouter-arcee-ai-trinity-large-preview-free",  # Tier 4: Free
-        "openrouter-stepfun-step-3.5-flash-free",    # Tier 4: Free
-        "antigravity-gemini-3-pro-low",              # Tier 4: Gemini Pro backup
-        "synthetic-hf-zai-org-GLM-4.7",              # Tier 5: Synthetic GLM
-        "Cerebras-GLM-4.7",                          # Tier 5: Emergency
-        "synthetic-GLM-4.7",                          # Tier 5: Backup GLM
-        "antigravity-gemini-3-pro-high",             # Tier 4: High-compute Gemini
+        "claude-code-claude-haiku-4-5-20251001",     # Tier 4: FIRST - Fast, cheap (Claude Code works)
+        "antigravity-gemini-3-flash",                # Tier 4: SECOND - 1M context, good for search
+        "Cerebras-GLM-4.7",                          # Tier 5: THIRD - Fast fallback before free tier
+        "synthetic-GLM-4.7",                          # Tier 5: FOURTH - Backup GLM
+        "synthetic-hf-zai-org-GLM-4.7",              # Tier 5: FIFTH - Synthetic GLM
+        "openrouter-arcee-ai-trinity-large-preview-free",  # Tier 4 FREE: LAST RESORT ONLY
+        "openrouter-stepfun-step-3.5-flash-free",    # Tier 4 FREE: EMERGENCY ONLY
     ],
 }
 
@@ -177,7 +177,8 @@ AGENT_WORKLOAD_REGISTRY: Dict[str, WorkloadType] = {
     "pack-leader": WorkloadType.ORCHESTRATOR,
     "helios": WorkloadType.ORCHESTRATOR,
     "epistemic-architect": WorkloadType.ORCHESTRATOR,
-    "planning": WorkloadType.ORCHESTRATOR,
+    "planning": WorkloadType.ORCHESTRATOR,  # Legacy name
+    "planning-agent": WorkloadType.ORCHESTRATOR,  # Actual agent name
     "agent-creator": WorkloadType.ORCHESTRATOR,
     
     # ═══════════════════════════════════════════════════════════════════
@@ -205,6 +206,7 @@ AGENT_WORKLOAD_REGISTRY: Dict[str, WorkloadType] = {
     "code-puppy": WorkloadType.CODING,
     "python-programmer": WorkloadType.CODING,
     "qa-kitten": WorkloadType.CODING,
+    "terminal-qa": WorkloadType.CODING,  # Terminal/TUI testing agent
     "c-programmer": WorkloadType.CODING,
     "cpp-programmer": WorkloadType.CODING,
     "golang-programmer": WorkloadType.CODING,
@@ -235,27 +237,32 @@ FAILOVER_CHAIN: Dict[str, str] = {
     # =====================================================================
     # ARCHITECT TIER - Big reasoning, planning, orchestrator roles
     # =====================================================================
+    # NOTE: Antigravity Claude/Gemini tool format bug FIXED in antigravity_model.py
+    #       Now properly handles tool_use <-> function_call format conversion
     "claude_opus": "antigravity-claude-opus-4-5-thinking-high",
     "claude-code-claude-opus-4-5-20251101": "antigravity-claude-opus-4-5-thinking-high",
-    "antigravity-claude-opus-4-5-thinking-high": "synthetic-Kimi-K2.5-Thinking",
-    "synthetic-Kimi-K2.5-Thinking": "antigravity-claude-opus-4-5-thinking-medium",
+    "antigravity-claude-opus-4-5-thinking-high": "antigravity-gemini-3-pro-high",
+    "antigravity-gemini-3-pro-high": "synthetic-Kimi-K2.5-Thinking",
+    "synthetic-Kimi-K2.5-Thinking": "synthetic-hf-Qwen-Qwen3-235B-A22B-Thinking-2507",
     "antigravity-claude-opus-4-5-thinking-medium": "synthetic-hf-Qwen-Qwen3-235B-A22B-Thinking-2507",
-    "synthetic-hf-Qwen-Qwen3-235B-A22B-Thinking-2507": "antigravity-claude-opus-4-5-thinking-low",
-    "antigravity-claude-opus-4-5-thinking-low": "antigravity-claude-sonnet-4-5-thinking-high",
-    "synthetic-hf-moonshotai-Kimi-K2.5": "antigravity-claude-opus-4-5-thinking-medium",
+    "synthetic-hf-Qwen-Qwen3-235B-A22B-Thinking-2507": "chatgpt-gpt-5.2-codex",
+    "antigravity-claude-opus-4-5-thinking-low": "synthetic-hf-Qwen-Qwen3-235B-A22B-Thinking-2507",
+    "synthetic-hf-moonshotai-Kimi-K2.5": "synthetic-hf-Qwen-Qwen3-235B-A22B-Thinking-2507",
     
     # =====================================================================
     # BUILDER TIER - Complex logic, design, refactoring
     # =====================================================================
-    "claude_sonnet": "antigravity-claude-sonnet-4-5",
-    "claude-code-claude-sonnet-4-5-20250929": "antigravity-claude-sonnet-4-5",
+    # NOTE: Antigravity Claude/Gemini tool format bug FIXED in antigravity_model.py
+    "claude_sonnet": "antigravity-claude-sonnet-4-5-thinking-medium",
+    "claude-code-claude-sonnet-4-5-20250929": "antigravity-claude-sonnet-4-5-thinking-medium",
+    "antigravity-claude-sonnet-4-5-thinking-medium": "synthetic-hf-deepseek-ai-DeepSeek-R1-0528",
     "antigravity-claude-sonnet-4-5": "synthetic-hf-deepseek-ai-DeepSeek-R1-0528",
     "synthetic-hf-deepseek-ai-DeepSeek-R1-0528": "synthetic-Kimi-K2-Thinking",
-    "synthetic-Kimi-K2-Thinking": "antigravity-claude-sonnet-4-5-thinking-high",
+    "synthetic-Kimi-K2-Thinking": "chatgpt-gpt-5.2-codex",
     "antigravity-claude-sonnet-4-5-thinking-high": "chatgpt-gpt-5.2-codex",
-    "chatgpt-gpt-5.2-codex": "antigravity-claude-sonnet-4-5-thinking-medium",
+    "chatgpt-gpt-5.2-codex": "chatgpt-gpt-5.2",
     "antigravity-claude-sonnet-4-5-thinking-medium": "chatgpt-gpt-5.2",
-    "chatgpt-gpt-5.2": "antigravity-claude-sonnet-4-5-thinking-low",
+    "chatgpt-gpt-5.2": "cerebras-llama-3.3-70b-specdec",
     "antigravity-claude-sonnet-4-5-thinking-low": "synthetic-MiniMax-M2.1",
     "synthetic-MiniMax-M2.1": "Cerebras-GLM-4.7",
     

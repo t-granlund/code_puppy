@@ -137,10 +137,76 @@ Code Puppy now emits **structured telemetry events** for key system operations:
 - [x] genai-prices added to dependencies  
 - [x] Cost tracking integrated in TokenBudgetManager
 - [x] logfire-mcp server config created
+- [x] OODA Delegation observability (Feb 4, 2026)
+- [x] Workload routing deduplication (Feb 4, 2026)
 - [ ] Get Logfire write token (optional, for cloud sync)
 - [ ] Get Logfire read token (optional, for self-analysis)
 - [ ] Enable logfire-mcp in mcp_servers.json
 - [ ] Test integration
+
+## OODA Delegation Telemetry (NEW - Feb 4, 2026)
+
+Code Puppy now emits **OODA-aware delegation events** for observability:
+
+| Event | Level | Source | Fields |
+|-------|-------|--------|--------|
+| `OODA Delegation` | INFO | `agent_tools.py` | invoker, target, phase, workload, session_id |
+| `OODA Delegation Complete` | INFO | `agent_tools.py` | invoker, target, session_id, message_count |
+| `Workload routing` | INFO | `base_agent.py` | agent, workload, model (deduplicated) |
+
+**OODA Phase Mapping:**
+- **OBSERVE** (LIBRARIAN): bloodhound, doc-writer, file-summarizer
+- **ORIENT** (REASONING): qa-expert, security-auditor, shepherd, watchdog
+- **DECIDE** (ORCHESTRATOR): epistemic-architect, helios, pack-leader, planning
+- **ACT** (CODING): python-programmer, test-generator, terminal-qa
+
+This enables **self-optimization** queries like:
+- "Which agents are delegated to most frequently?"
+- "What's the average delegation latency per OODA phase?"
+- "Show me failed delegations from today"
+
+## Logfire-MCP Self-Optimization (For Code Puppy Itself)
+
+To enable Code Puppy to analyze its **own** telemetry:
+
+### Step 1: Get Logfire Read Token
+Visit: https://logfire.pydantic.dev/-/redirect/latest-project/settings/read-tokens
+
+### Step 2: Add to MCP Registry
+Edit `~/.code_puppy/mcp_registry.json` or run:
+```bash
+code-puppy --add-mcp-server logfire
+```
+
+Or manually add to `~/.code_puppy/mcp_servers.json`:
+```json
+{
+  "mcpServers": {
+    "logfire": {
+      "command": "uvx",
+      "args": ["logfire-mcp@latest"],
+      "env": {
+        "LOGFIRE_READ_TOKEN": "pylf_v1_us_YOUR_READ_TOKEN"
+      },
+      "enabled": true
+    }
+  }
+}
+```
+
+### Step 3: Restart Code Puppy
+The logfire MCP server provides these tools:
+- `find_exceptions_in_file` - Recent exceptions in a file
+- `arbitrary_query` - SQL queries on traces/metrics
+- `logfire_link` - Link to view trace in Logfire UI
+- `schema_reference` - Database schema reference
+
+### Example Self-Optimization Queries
+Ask Code Puppy:
+- "What exceptions occurred in base_agent.py in the last hour?"
+- "Show me the slowest agent invocations today"
+- "How many 429 rate limit errors per model this week?"
+- "Find OODA delegations that took >10 seconds"
 
 ## Dependencies Added
 

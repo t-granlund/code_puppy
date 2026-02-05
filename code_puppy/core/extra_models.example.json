@@ -1,7 +1,7 @@
 {
   "version": "1.0",
   "models": {
-    "cerebras-glm-4.7": {
+    "Cerebras-GLM-4.7": {
       "provider": "cerebras",
       "tier": "SPRINTER",
       "max_context": 50000,

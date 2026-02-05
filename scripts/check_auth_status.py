@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 """
 Check authentication status for all model providers.
+
+This script checks:
+1. Environment variables and .env file for API keys
+2. OAuth token files in ~/.local/share/code_puppy/
+3. Runtime settings (requires running inside Code Puppy session)
+
+Note: API keys set via /set commands at runtime won't be detected
+unless they're also in environment variables or .env file.
 """
 import os
 import sys
@@ -32,29 +40,23 @@ def check_auth_status():
         ("Logfire", "LOGFIRE_TOKEN", settings.logfire_token, "Token"),
     ]
     
-    # Check OAuth based providers
+    # Check OAuth based providers (stored in XDG DATA_DIR)
     oauth_providers = []
-    
-    # Check Claude Code OAuth
-    claude_code_token_path = Path.home() / ".cache" / "code-puppy" / "claude_code_token.json"
-    if claude_code_token_path.exists():
-        oauth_providers.append(("Claude Code", "OAuth", "✅ Authenticated", "OAuth"))
-    else:
-        oauth_providers.append(("Claude Code", "OAuth", "❌ Not authenticated", "OAuth"))
+    data_dir = Path.home() / ".local" / "share" / "code_puppy"
     
     # Check ChatGPT OAuth
-    chatgpt_token_path = Path.home() / ".cache" / "code-puppy" / "chatgpt_token.json"
+    chatgpt_token_path = data_dir / "chatgpt_models.json"
     if chatgpt_token_path.exists():
         oauth_providers.append(("ChatGPT", "OAuth", "✅ Authenticated", "OAuth"))
     else:
         oauth_providers.append(("ChatGPT", "OAuth", "❌ Not authenticated", "OAuth"))
     
-    # Check Antigravity (uses multiple OAuth)
-    antigravity_config = Path.home() / ".config" / "code_puppy" / "antigravity.json"
-    if antigravity_config.exists():
-        oauth_providers.append(("Antigravity", "OAuth", "✅ Configured", "OAuth"))
+    # Check Antigravity (Google OAuth for Claude + Gemini)
+    antigravity_token_path = data_dir / "antigravity_oauth.json"
+    if antigravity_token_path.exists():
+        oauth_providers.append(("Antigravity", "OAuth", "✅ Authenticated", "OAuth"))
     else:
-        oauth_providers.append(("Antigravity", "OAuth", "❌ Not configured", "OAuth"))
+        oauth_providers.append(("Antigravity", "OAuth", "❌ Not authenticated", "OAuth"))
     
     print("\n📦 API Key Providers:\n")
     for name, env_var, value, auth_type in providers:
@@ -81,25 +83,33 @@ def check_auth_status():
     print(f"\n📊 Summary:")
     print(f"  • API Key Providers: {api_key_count}/{len(providers)} configured")
     print(f"  • OAuth Providers: {oauth_count}/{len(oauth_providers)} authenticated")
-    print(f"  • Total: {api_key_count + oauth_count}/{len(providers) + len(oauth_providers)} ready\n")
+    print(f"  • Total: {api_key_count + oauth_count}/{len(providers) + len(oauth_providers)} ready")
+    
+    print(f"\n💡 Note: This checks environment variables, .env file, and OAuth tokens.")
+    print(f"   API keys set via /set commands at runtime are not detected by this script.")
+    print(f"   Run /status inside Code Puppy to see runtime configuration.\n")
     
     # Recommendations
     if api_key_count + oauth_count < len(providers) + len(oauth_providers):
-        print("\n💡 To configure missing providers:\n")
+        print("\n🔧 To configure missing providers:\n")
         
+        print("  Environment variables or .env file:")
         for name, env_var, value, _ in providers:
             if value is None:
-                print(f"  • {name}: export {env_var}='your-api-key'")
+                print(f"    export {env_var}='your-api-key'")
         
+        print("\n  OAuth authentication (run inside Code Puppy):")
         for name, _, status, _ in oauth_providers:
             if "❌" in status:
-                if "Claude" in name:
-                    print(f"  • {name}: Run `/claude-code-auth` in Code Puppy")
-                elif "ChatGPT" in name:
-                    print(f"  • {name}: Run `/chatgpt-auth` in Code Puppy")
+                if "ChatGPT" in name:
+                    print(f"    /chatgpt-auth   # Authenticate {name}")
                 elif "Antigravity" in name:
-                    print(f"  • {name}: Configure ~/.config/code_puppy/antigravity.json")
+                    print(f"    /antigravity-auth  # Authenticate {name}")
         
+        print("\n  Runtime configuration (inside Code Puppy session):")
+        print(f"    /set synthetic_api_key your-key")
+        print(f"    /set cerebras_api_key your-key")
+        print(f"    /set openai_api_key your-key")
         print()
 
 

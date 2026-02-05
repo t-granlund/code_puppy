@@ -46,8 +46,21 @@ BYPASS_THOUGHT_SIGNATURE = "context_engineering_is_the_way_to_go"
 
 
 def generate_tool_call_id() -> str:
-    """Generate a unique tool call ID."""
+    """Generate a unique tool call ID.
+    
+    Returns a UUID string. The format uses hyphens by default, which should
+    match the pattern ^[a-zA-Z0-9_-]+$ required by most APIs.
+    """
     return str(uuid.uuid4())
+
+
+def generate_tool_call_id_no_hyphens() -> str:
+    """Generate a unique tool call ID without hyphens.
+    
+    Some APIs (like Antigravity's Claude endpoint) may have issues with
+    hyphenated UUIDs during format conversion. This returns a hex-only ID.
+    """
+    return uuid.uuid4().hex
 
 
 def _flatten_union_to_object_gemini(union_items: list, defs: dict, resolve_fn) -> dict:

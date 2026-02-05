@@ -262,12 +262,14 @@ Code Puppy now supports a diverse set of providers for optimal task routing:
 
 ### Workload-Based Failover Chains
 
+> **Note:** Antigravity Claude tool format bug was **FIXED** in February 2026. Antigravity models are now primary in chains.
+
 | Workload | Primary → Fallback Chain |
 |----------|--------------------------|
 | **ORCHESTRATOR** | Opus → Kimi K2.5 → Qwen3 → Sonnet → Cerebras |
 | **REASONING** | Sonnet → DeepSeek R1 → Kimi K2 → GPT-5.2-Codex |
 | **CODING** | Cerebras GLM → GPT-5.2-Codex → MiniMax → Haiku |
-| **LIBRARIAN** | Haiku → Gemini Flash → OpenRouter Free → Cerebras |
+| **LIBRARIAN** | Haiku → Gemini Flash → Cerebras → GLM → OpenRouter Free (last resort) |
 
 ### Pinning Models to Agents
 
@@ -276,7 +278,7 @@ Code Puppy now supports a diverse set of providers for optimal task routing:
 /model Cerebras-GLM-4.7
 
 # Pin Claude for complex reviews
-/pin_model code-reviewer claude-code-claude-opus-4-1-20250805
+/pin_model code-reviewer claude-code-claude-opus-4-5-20251101
 
 # Pin Haiku for fast validation
 /pin_model python-reviewer claude-code-claude-haiku-4-5-20251001
@@ -305,7 +307,7 @@ Copy and paste these commands one by one to set up your keys, authentication, an
 
 ```text
 /model Cerebras-GLM-4.7
-/pin_model planning-agent claude-code-claude-opus-4-1-20250805
+/pin_model planning-agent claude-code-claude-opus-4-5-20251101
 /pin_model code-reviewer claude-code-claude-haiku-4-5-20251001
 /pin_model python-reviewer claude-code-claude-haiku-4-5-20251001
 ```

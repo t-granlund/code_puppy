@@ -1,3 +1,7 @@
+> **📜 HISTORICAL DOCUMENT** - This is the original audit specification. Implementation is complete.
+> For current status, see [PRODUCTION-READINESS-REPORT.md](PRODUCTION-READINESS-REPORT.md).
+> For audit index, see [docs/AUDIT-INDEX.md](docs/AUDIT-INDEX.md).
+
 You are my Copilot coding agent running in VS Code Agent mode. Your mission is to audit and improve the Code Puppy repository so it can run an agent pack efficiently on Cerebras Code Pro without blowing up token usage, while also supporting optional routing to ChatGPT Teams, Google AI Pro (Gemini), and Claude Max.
 
 Non negotiable safety rules about credentials
