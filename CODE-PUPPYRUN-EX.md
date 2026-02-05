@@ -200,7 +200,7 @@ Let me check what's available and ready.
 - agent-creator: Agent Creator 🏗️
   Helps you create new JSON agent configurations with proper schema validation
 - epistemic-architect: Epistemic Architect 🏛️🔬
-  Structured planning through evidence-based reasoning. Uses 7 Expert Lenses, 6 Quality Gates, and a 12-Stage Pipeline to go from idea → validated specs → build plan.
+  Structured planning through evidence-based reasoning. Uses 7 Expert Lenses, 6 Quality Gates, and a 13-Stage Pipeline (including Pre-Flight Auth) to go from idea → validated specs → build plan.
 - golang-reviewer: Golang Reviewer 🦴
   Meticulous reviewer for Go pull requests with idiomatic guidance
 - helios: Helios ☀️

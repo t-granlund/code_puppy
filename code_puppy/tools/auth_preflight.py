@@ -56,6 +56,23 @@ logger = logging.getLogger(__name__)
 
 
 # =============================================================================
+# 🔥 LOGFIRE TELEMETRY SUPPORT
+# =============================================================================
+
+def _log_preflight_event(event_type: str, **kwargs) -> None:
+    """Log a Pre-Flight Auth telemetry event to Logfire.
+    
+    Pattern follows ralph_loop.py for consistent observability.
+    Fails silently if Logfire is not available.
+    """
+    try:
+        import logfire
+        logfire.info(f"Pre-flight auth: {event_type}", **kwargs)
+    except Exception:
+        pass
+
+
+# =============================================================================
 # 🔐 AUTHENTICATION CATEGORY DEFINITIONS
 # =============================================================================
 
@@ -390,6 +407,14 @@ def detect_auth_requirements_from_text(text: str) -> List[AuthRequirement]:
                 detected.append(AuthRequirement(**req_data))
                 seen_ids.add(req_data["id"])
     
+    # Log detection results to Logfire
+    _log_preflight_event(
+        "requirements_detected",
+        count=len(detected),
+        categories=[r.category.value for r in detected],
+        text_length=len(text),
+    )
+    
     return detected
 
 
@@ -536,6 +561,15 @@ def verify_single_requirement(req: AuthRequirement) -> AuthRequirementResult:
     Returns:
         AuthRequirementResult with status and details
     """
+    # Log verification start
+    _log_preflight_event(
+        "verification_start",
+        requirement_id=req.id,
+        requirement_name=req.name,
+        category=req.category.value,
+        priority=req.priority.value,
+    )
+    
     # Try verification methods in order of preference
     if req.verification_command:
         success, message, details = verify_cli_command(req.verification_command)
@@ -554,42 +588,70 @@ def verify_single_requirement(req: AuthRequirement) -> AuthRequirementResult:
                 # Azure subscription ID extraction
                 pass
         
-        return AuthRequirementResult(
+        result = AuthRequirementResult(
             requirement_id=req.id,
             status=status,
             message=message,
             details=details,
         )
+        _log_preflight_event(
+            "verification_complete",
+            requirement_id=req.id,
+            status=status.value,
+            method="cli_command",
+        )
+        return result
     
     if req.verification_env_var:
         success, message, details = verify_env_var(req.verification_env_var)
         status = AuthStatus.PASSED if success else AuthStatus.MISSING
         
-        return AuthRequirementResult(
+        result = AuthRequirementResult(
             requirement_id=req.id,
             status=status,
             message=message,
             details=details,
         )
+        _log_preflight_event(
+            "verification_complete",
+            requirement_id=req.id,
+            status=status.value,
+            method="env_var",
+        )
+        return result
     
     if req.verification_file:
         success, message, details = verify_file_exists(req.verification_file)
         status = AuthStatus.PASSED if success else AuthStatus.MISSING
         
-        return AuthRequirementResult(
+        result = AuthRequirementResult(
             requirement_id=req.id,
             status=status,
             message=message,
             details=details,
         )
+        _log_preflight_event(
+            "verification_complete",
+            requirement_id=req.id,
+            status=status.value,
+            method="file_check",
+        )
+        return result
     
     # No verification method - mark as not checked
-    return AuthRequirementResult(
+    result = AuthRequirementResult(
         requirement_id=req.id,
         status=AuthStatus.NOT_CHECKED,
         message="No verification method available - manual verification required",
         details={},
     )
+    _log_preflight_event(
+        "verification_complete",
+        requirement_id=req.id,
+        status="not_checked",
+        method="none",
+    )
+    return result
 
 
 def verify_preflight_checklist(checklist: PreflightChecklist) -> PreflightVerificationResult:
@@ -601,6 +663,13 @@ def verify_preflight_checklist(checklist: PreflightChecklist) -> PreflightVerifi
     Returns:
         PreflightVerificationResult with all results
     """
+    # Log checklist verification start
+    _log_preflight_event(
+        "checklist_verification_start",
+        project_name=checklist.project_name,
+        requirement_count=len(checklist.requirements),
+    )
+    
     results: List[AuthRequirementResult] = []
     blocking: List[str] = []
     warnings: List[str] = []
@@ -637,6 +706,17 @@ def verify_preflight_checklist(checklist: PreflightChecklist) -> PreflightVerifi
         summary = f"⚠️ Critical requirements passed, but {len(blocking)} high-priority issues remain."
     else:
         summary = f"❌ {len(blocking)} blocking authentication requirements not satisfied."
+    
+    # Log checklist verification complete
+    _log_preflight_event(
+        "checklist_verification_complete",
+        project_name=checklist.project_name,
+        all_passed=all_passed,
+        critical_passed=critical_passed,
+        ready_for_phase2=ready,
+        blocking_count=len(blocking),
+        warning_count=len(warnings),
+    )
     
     return PreflightVerificationResult(
         checklist_id=checklist.project_name,

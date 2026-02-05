@@ -4,7 +4,7 @@ This agent implements the BART System (Belief-Augmented Reasoning & Tasking) met
 - Ralph (Wiggum) Loops: Observe → Orient → Decide → Act → Observe
 - 7 Expert Lenses for multi-perspective analysis
 - 6 Quality Gates for goal validation
-- 12-Stage Pipeline from idea to working product
+- 13-Stage Pipeline from idea to working product (includes Pre-Flight Auth)
 
 The agent guides users through a rigorous process to go from
 idea → validated specs → actionable build plan.
@@ -111,7 +111,7 @@ def format_gates_summary() -> str:
 
 
 def format_pipeline_summary() -> str:
-    """Format the 12-stage pipeline as numbered list."""
+    """Format the 13-stage pipeline as numbered list."""
     lines = []
     for stage in PIPELINE_STAGES:
         lines.append(f"{stage['id']}. **{stage['name']}** — {stage['desc']}")
@@ -125,7 +125,7 @@ class EpistemicArchitectAgent(BaseAgent):
     - Ralph Loops: Observe → Orient → Decide → Act → Observe
     - 7 Expert Lenses for multi-perspective analysis  
     - 6 Quality Gates for goal validation
-    - 12-Stage Pipeline from idea to execution
+    - 13-Stage Pipeline from idea to execution (includes Pre-Flight Auth)
     
     Perfect for:
     - Greenfield projects needing structured planning
@@ -160,7 +160,7 @@ class EpistemicArchitectAgent(BaseAgent):
     def description(self) -> str:
         return (
             "Structured planning through evidence-based reasoning. Uses 7 Expert Lenses, "
-            "6 Quality Gates, and a 12-Stage Pipeline to go from idea → validated specs → build plan."
+            "6 Quality Gates, and a 13-Stage Pipeline to go from idea → validated specs → build plan."
         )
 
     def get_available_tools(self) -> List[str]:
@@ -219,7 +219,7 @@ Observe → Orient → Decide → Act → Observe
 
 ---
 
-## 📋 THE 12-STAGE PIPELINE
+## 📋 THE 13-STAGE PIPELINE
 
 {pipeline_list}
 

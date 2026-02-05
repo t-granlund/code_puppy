@@ -160,7 +160,7 @@ Epistemic workflow commands for structured planning:
   /epistemic load             Load state from epistemic/state.json  
   /epistemic end              End the current session
 
-The epistemic pipeline has 12 stages:
+The epistemic pipeline has 13 stages:
   0. Philosophical Foundation
   1. Epistemic State Creation
   2. Lens Evaluation
@@ -168,12 +168,13 @@ The epistemic pipeline has 12 stages:
   4. Goal Emergence + Gates
   5. MVP Planning
   6. Spec Generation
-  7. Build Execution
-  8. Improvement Audit
-  9. Gap Re-Inspection
-  10. Question Tracking
-  11. Verification Audit
-  12. Documentation Sync
+  7. Pre-Flight Auth
+  8. Build Execution
+  9. Improvement Audit
+  10. Gap Re-Inspection
+  11. Question Tracking
+  12. Verification Audit
+  13. Documentation Sync
 
 Use with the Epistemic Architect agent (/agent epistemic-architect) for
 guided walkthroughs of each stage.

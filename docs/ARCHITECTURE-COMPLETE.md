@@ -578,7 +578,7 @@ GovernorConfig(
 | ⚙️ **Systems Engineering** | Can we build this? | Service boundaries, interfaces |
 | 👤 **Product/UX** | Does this help users? | Value hypotheses, MVP scope |
 
-### The 12-Stage Pipeline
+### The 13-Stage Pipeline (Includes Pre-Flight Auth)
 
 | Stage | Name | Purpose |
 |-------|------|---------|
@@ -589,12 +589,13 @@ GovernorConfig(
 | 4 | Goal Emergence | Run goals through 6 gates |
 | 5 | MVP Planning | Minimal viable plan |
 | 6 | Spec Generation | Full specs, readiness check |
-| 7 | Build Execution | Phase → Milestone → Checkpoint |
-| **8** | **Improvement Audit** | Evidence → Analysis → Recommendation |
-| 9 | Gap Re-Inspection | What new gaps emerged? |
-| 10 | Question Tracking | Update epistemic state |
-| 11 | Verification Audit | End-to-end check |
-| 12 | Documentation Sync | Update docs, **LOOP TO STAGE 8** |
+| **7** | **Pre-Flight Auth** | Verify auth before build |
+| 8 | Build Execution | Phase → Milestone → Checkpoint |
+| **9** | **Improvement Audit** | Evidence → Analysis → Recommendation |
+| 10 | Gap Re-Inspection | What new gaps emerged? |
+| 11 | Question Tracking | Update epistemic state |
+| 12 | Verification Audit | End-to-end check |
+| 13 | Documentation Sync | Update docs, **LOOP TO STAGE 9** |
 
 ### Project Artifact Structure
 
@@ -1293,7 +1294,7 @@ Goals must pass **ALL 6 gates** before they become actionable:
 5. **🤝 Lens Agreement** — Do 3+ lenses approve?
 6. **📚 Evidence Grounding** — Is it based on actual evidence?
 
-### The 12-Stage Pipeline
+### The 13-Stage Pipeline (Includes Pre-Flight Auth)
 
 ```
 Stage 0:  Philosophical Foundation — Internalize Ralph Loops and core principles
@@ -1303,15 +1304,16 @@ Stage 3:  Gap Analysis — Identify CRITICAL/HIGH/MEDIUM/LOW gaps
 Stage 4:  Goal Emergence — Generate candidates, run through 6 gates
 Stage 5:  MVP Planning — Create minimal viable plan with rollback
 Stage 6:  Spec Generation — Generate full specs, readiness check
-Stage 7:  Build Execution — Phase → Milestone → Checkpoint → Verify
-Stage 8:  Improvement Audit — Evidence → Analysis → Recommendation loop
-Stage 9:  Gap Re-Inspection — What new gaps emerged? Re-validate
-Stage 10: Question Tracking — Update epistemic state, close hypotheses
-Stage 11: Verification Audit — End-to-end check across all layers
-Stage 12: Documentation Sync — Update all docs, then loop to Stage 8
+Stage 7:  Pre-Flight Auth — Verify authentication requirements are met
+Stage 8:  Build Execution — Phase → Milestone → Checkpoint → Verify
+Stage 9:  Improvement Audit — Evidence → Analysis → Recommendation loop
+Stage 10: Gap Re-Inspection — What new gaps emerged? Re-validate
+Stage 11: Question Tracking — Update epistemic state, close hypotheses
+Stage 12: Verification Audit — End-to-end check across all layers
+Stage 13: Documentation Sync — Update all docs, then loop to Stage 9
 ```
 
-**The loop (Stages 8-12) creates continuous improvement** — each iteration refines the project.
+**The loop (Stages 9-13) creates continuous improvement** — each iteration refines the project.
 
 ### Project Artifact Structure
 

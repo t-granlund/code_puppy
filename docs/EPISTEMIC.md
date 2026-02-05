@@ -6,7 +6,7 @@ Code Puppy now includes the **Epistemic Agent Runtime** — a structured methodo
 
 ## 🧠 What is EAR?
 
-EAR provides a rigorous, 12-stage pipeline for going from idea → validated specs → working product:
+EAR provides a rigorous, 13-stage pipeline for going from idea → validated specs → working product:
 
 ```
 Idea → Epistemic State → Lens Evaluation → Gap Analysis → Goal Emergence 
@@ -63,7 +63,7 @@ parent-folder/
 
 The agent will guide you through structured planning before any code is written.
 
-## 📋 The 12-Stage Pipeline
+## 📋 The 13-Stage Pipeline
 
 | Stage | Name | What Happens |
 |-------|------|--------------|
@@ -74,12 +74,13 @@ The agent will guide you through structured planning before any code is written.
 | 4 | Goal Emergence | Generate candidates, run through 6 gates |
 | 5 | MVP Planning | Create minimal viable plan with rollback |
 | 6 | Spec Generation | Generate full specs, readiness check |
-| 7 | Build Execution | Phase → Milestone → Checkpoint → Verify |
-| 8 | Improvement Audit | Evidence → Analysis → Recommendation loop |
-| 9 | Gap Re-Inspection | What new gaps emerged? Re-validate |
-| 10 | Question Tracking | Update epistemic state, close hypotheses |
-| 11 | Verification Audit | End-to-end check across all layers |
-| 12 | Documentation Sync | Update all docs, then loop to Stage 8 |
+| 7 | Pre-Flight Auth | Detect & verify all auth requirements before wiggum |
+| 8 | Build Execution | Phase → Milestone → Checkpoint → Verify |
+| 9 | Improvement Audit | Evidence → Analysis → Recommendation loop |
+| 10 | Gap Re-Inspection | What new gaps emerged? Re-validate |
+| 11 | Question Tracking | Update epistemic state, close hypotheses |
+| 12 | Verification Audit | End-to-end check across all layers |
+| 13 | Documentation Sync | Update all docs, then loop to Stage 9 |
 
 ## 🔍 The 7 Expert Lenses
 
@@ -174,12 +175,14 @@ The Epistemic Architect **orchestrates work** by delegating to specialist agents
 | `/epistemic start <project>` | Start a new epistemic session |
 | `/epistemic status` | Show current session status |
 | `/epistemic stage` | Advance to next pipeline stage |
-| `/epistemic stage <n>` | Jump to specific stage (0-12) |
+| `/epistemic stage <n>` | Jump to specific stage (0-13) |
 | `/epistemic pause <reason>` | Pause with a reason |
 | `/epistemic resume` | Resume paused session |
 | `/epistemic save` | Save state to `epistemic/state.json` |
 | `/epistemic load` | Load state from `epistemic/state.json` |
 | `/epistemic end` | End the current session |
+| `/wiggum` | Start autonomous execution loop (Phase 2) |
+| `/wiggum_stop` | Stop autonomous loop |
 
 ### Analysis Tools
 
@@ -356,23 +359,66 @@ Example workflow:
 2. /epistemic save             → Save the plan
 3. /agent pack-leader          → Execute the build
 4. /agent code-reviewer        → Review implementation
-5. /agent epistemic-architect  → Run improvement audit (Stage 8)
+5. /agent epistemic-architect  → Run improvement audit (Stage 9)
 ```
 
-## � Logfire Telemetry for EAR Loops
+## 🔐 Pre-Flight Authentication (Stage 7)
+
+Before autonomous execution can begin, the Epistemic Architect verifies all authentication requirements are satisfied:
+
+### Authentication Categories
+
+| Category | Examples | Verification |
+|----------|----------|--------------|
+| CLI_AUTH | Azure CLI, AWS CLI, gcloud | CLI commands |
+| API_KEY | OPENAI_API_KEY, GITHUB_TOKEN | Environment variables |
+| OAUTH_APP | Azure AD App Registration | Manual + CLI check |
+| BROWSER_SESSION | Admin portals without API | Browser automation |
+| DATABASE | PostgreSQL, MongoDB | Connection string |
+
+### Pre-Flight Workflow
+
+```
+Spec Generation (Stage 6)
+         ↓
+┌────────────────────────────────────┐
+│  📋 Detect Auth Requirements       │  ← Auto-detect from project specs
+│  🔍 Verify Each Requirement        │  ← CLI commands, env vars, files
+│  ✅ Generate Checklist             │  → epistemic/auth-checklist.json
+└────────────────────────────────────┘
+         ↓
+    Gate Check: ready_for_phase2?
+         ↓ YES
+Build Execution (Stage 8) via /wiggum
+```
+
+### Agent Tools for Pre-Flight
+
+- `preflight_auth_check()` — Run all auth verifications
+- `add_auth_requirement()` — Add custom auth requirement
+- `check_wiggum_status()` — Check if wiggum mode is active
+- `complete_wiggum_loop()` — Signal completion of autonomous work
+
+See [EPISTEMIC-WIGGUM-METHODOLOGY.md](EPISTEMIC-WIGGUM-METHODOLOGY.md) for detailed workflow.
+
+## 🔥 Logfire Telemetry for EAR Loops
 
 All EAR loop phases emit **real-time telemetry** to track confidence and completion:
 
 | Event | Source | Purpose |
 |-------|--------|---------|
 | `ear_phase` | `ralph_loop.py` | Tracks OBSERVE→ORIENT→DECIDE→ACT with confidence scores |
+| `preflight_auth_detected` | `auth_preflight.py` | Auth requirements detected from project specs |
+| `preflight_auth_verified` | `auth_preflight.py` | Individual auth verification result |
+| `preflight_complete` | `auth_preflight.py` | Overall pre-flight status and Phase 2 readiness |
 
 **Health Check Queries:** See [LOGFIRE-OBSERVABILITY.md](LOGFIRE-OBSERVABILITY.md) for SQL to verify:
 - ✅ EAR loops complete >90% of the time
 - ✅ Error rate <10%
 - ✅ Average confidence scores by phase
+- ✅ Pre-flight auth pass rate
 
-## �📚 Further Reading
+## 📚 Further Reading
 
 - [EAR Philosophy Documentation](code_puppy/epistemic/philosophy/project-plan.md)
 - [Build Methodology](code_puppy/epistemic/process/build-methodology.md)

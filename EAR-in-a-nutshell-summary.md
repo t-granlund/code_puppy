@@ -28,7 +28,7 @@ The very first lines set the tone:
 │ "You are inside an epistemic project template workspace. Your job is to guide the user through a rigorous, structured process to go from idea → validated specs → built product. **Do NOT modify files in this templa
 │ te.** You will create a new project in a sibling folder."
 
-From there, it defines a 12-stage pipeline the agent must follow:
+From there, it defines a 13-stage pipeline the agent must follow (including Pre-Flight Auth):
 
 ┌───────┬─────────────────────────────────────────────────────────────────────────┬────────────────────────────────────────────┐
 │ Stage │ What Happens                                                            │ Output                                     │
@@ -40,12 +40,13 @@ From there, it defines a 12-stage pipeline the agent must follow:
 │ 4     │ Goal emergence through 6 epistemic gates                                │ docs/goals-and-gates.md                    │
 │ 5     │ MVP planning — smallest commitment that reduces uncertainty             │ BUILD.md                                   │
 │ 6     │ Spec generation + readiness check                                       │ specs/ folder + explicit user approval     │
-│ 7     │ Build execution — phase by phase with checkpoints                       │ Actual code in src/                        │
-│ 8     │ EAR audit loop (Evidence → Analysis → Recommendation)                   │ docs/improvement-plan.md                   │
-│ 9     │ Re-run gap analysis — what new gaps emerged?                            │ Updated gaps                               │
-│ 10    │ Question tracking + epistemic state update                              │ State commits                              │
-│ 11    │ Verification audit — end-to-end checklist                               │ Verification report                        │
-│ 12    │ Documentation sync, then loop back to Stage 8                           │ Updated docs, then repeat                  │
+│ 7     │ Pre-Flight Auth — verify CLI/API credentials before build               │ epistemic/auth-checklist.json              │
+│ 8     │ Build execution — phase by phase with checkpoints                       │ Actual code in src/                        │
+│ 9     │ EAR audit loop (Evidence → Analysis → Recommendation)                   │ docs/improvement-plan.md                   │
+│ 10    │ Re-run gap analysis — what new gaps emerged?                            │ Updated gaps                               │
+│ 11    │ Question tracking + epistemic state update                              │ State commits                              │
+│ 12    │ Verification audit — end-to-end checklist                               │ Verification report                        │
+│ 13    │ Documentation sync, then loop back to Stage 9                           │ Updated docs, then repeat                  │
 └───────┴─────────────────────────────────────────────────────────────────────────┴────────────────────────────────────────────┘
 
 What Results From It
@@ -191,11 +192,11 @@ And from philosophy/project-plan.md, the deeper point:
 │  ear-runtime/                ← The "engine" (Python library)    │
 │                                                                 │
 ├─────────────────────────────────────────────────────────────────┤
-│                    Agent follows 12 stages:                      │
+│                    Agent follows 13 stages:                      │
 │                                                                 │
-│  Interview → Lenses → Gaps → Gates → MVP → Specs → BUILD       │
+│  Interview → Lenses → Gaps → Gates → MVP → Specs → Auth → BUILD│
 │                                    ↑                            │
-│                                    └── Audit loop (8→12→8→...)  │
+│                                    └── Audit loop (9→13→9→...) │
 │                                                                 │
 ├─────────────────────────────────────────────────────────────────┤
 │                    Output goes to sibling folder:                │

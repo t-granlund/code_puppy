@@ -10,11 +10,11 @@ Successfully created comprehensive documentation for the **Epistemic Architect**
 
 Added a complete reference section documenting:
 - **Core Philosophy** - "Think before you code" principle
-- **Complete Workflow Visualization** - From prompt input through 12 stages
+- **Complete Workflow Visualization** - From prompt input through 13 stages
 - **Ralph (Wiggum) Loops** - The Observe → Orient → Decide → Act → Observe pattern
 - **7 Expert Lenses** - Philosophy, Data Science, Safety/Risk, Topology, Math, Systems, Product/UX
 - **6 Quality Gates** - Observables, Testability, Reversibility, Confidence, Lens Agreement, Evidence Grounding
-- **12-Stage Pipeline** - From Stage 0 (Foundation) to Stage 12 (Documentation Sync)
+- **13-Stage Pipeline** - From Stage 0 (Foundation) to Stage 13 (Documentation Sync), including Pre-Flight Auth
 - **Project Artifact Structure** - epistemic/, docs/, specs/ directories
 - **Agent Coordination** - How to invoke helios and agent-creator
 - **Complete Example Workflow** - REST API with authentication example
@@ -24,7 +24,7 @@ Added a complete reference section documenting:
 ### 2. Interactive Section in index.html
 
 Added a complete interactive section with:
-- **Visual Workflow Diagram** - Color-coded ASCII art showing the 12-stage flow
+- **Visual Workflow Diagram** - Color-coded ASCII art showing the 13-stage flow
 - **Ralph Loops Visualization** - Interactive loop display
 - **7 Lenses Grid** - Card-based layout with emoji, questions, and outputs
 - **6 Gates Grid** - Visual gate representation
@@ -54,7 +54,7 @@ User: "I want to build X"
 │ Output: epistemic/state.json                │
 └─────────────────────────────────────────────┘
     ↓
-[... continues through all 12 stages ...]
+[... continues through all 13 stages including Pre-Flight Auth ...]
 ```
 
 ### Ralph Loops Display
@@ -223,13 +223,14 @@ Complete walkthrough showing:
 - Interview process (6 probing questions)
 - Lens evaluation results (CRITICAL and HIGH gaps)
 - Project scaffolding (epistemic/, docs/, specs/, BUILD.md)
+- Pre-Flight Auth check (Stage 7) for CLI/API credentials
 - Milestone checkpoints (✅ Completed, 🧪 Verified, ⚠️ Issues, 📋 Spec Compliance)
 - Continuous improvement audit
 
 ## Success Metrics
 
 ✅ **Comprehensive Coverage** - All aspects of the Epistemic Architect documented  
-✅ **Visual Workflow** - Complete 12-stage pipeline visualization  
+✅ **Visual Workflow** - Complete 13-stage pipeline visualization (includes Pre-Flight Auth)  
 ✅ **Interactive Elements** - Card grids, code examples, ASCII art  
 ✅ **Agent Coordination** - Full delegation patterns documented  
 ✅ **Example Walkthrough** - Real-world REST API example  
@@ -237,6 +238,7 @@ Complete walkthrough showing:
 ✅ **Navigation Added** - Easy access from sidebar  
 ✅ **Consistency** - Same content in both HTML files  
 ✅ **GitHub Pages** - Deployed and live  
+✅ **Logfire Telemetry** - Pre-Flight Auth module has observability events  
 
 ## Next Steps
 

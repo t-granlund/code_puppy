@@ -2317,9 +2317,26 @@ calc_price(usage) → <span style="color: var(--accent-green)">Decimal</span> (U
                 </div>
               </div>
 
-              <!-- Step 7+ -->
+              <!-- Step 7: Pre-Flight Auth (NEW) -->
               <div class="timeline-item">
-                <div class="timeline-marker cyan">5</div>
+                <div class="timeline-marker" style="border-color: #f59e0b; color: #f59e0b;">5</div>
+                <div class="timeline-card" style="border-left: 3px solid #f59e0b;">
+                  <div class="timeline-title">
+                    <span>🔐 Pre-Flight Authentication</span>
+                    <span style="font-size:0.75rem; background: rgba(245, 158, 11, 0.15); color: #f59e0b; padding: 2px 8px; border-radius: 12px;">Gate Check</span>
+                  </div>
+                  <p style="font-size: 0.85rem; color: var(--text-secondary);">
+                    Detect and verify authentication requirements before build execution. Ensures CLI tools, API keys, and service credentials are ready.
+                  </p>
+                  <div class="tag-list">
+                    <span class="file-tag">epistemic/auth-checklist.json</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Step 8+ -->
+              <div class="timeline-item">
+                <div class="timeline-marker cyan">6</div>
                 <div class="timeline-card">
                   <div class="timeline-title">
                     <span>Build Execution & Checkpoints</span>
@@ -2331,9 +2348,9 @@ calc_price(usage) → <span style="color: var(--accent-green)">Decimal</span> (U
                 </div>
               </div>
 
-              <!-- Step 8-12 -->
+              <!-- Step 9-13 -->
               <div class="timeline-item">
-                <div class="timeline-marker purple">6</div>
+                <div class="timeline-marker purple">7</div>
                 <div class="timeline-card">
                   <div class="timeline-title">
                     <span>Continuous Improvement Loop</span>
@@ -2601,7 +2618,7 @@ calc_price(usage) → <span style="color: var(--accent-green)">Decimal</span> (U
             </div>
 
             <div style="margin-top: 1.5rem; padding: 1rem; background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(59, 130, 246, 0.1)); border-radius: 6px; border-left: 3px solid var(--accent-purple);">
-              <strong style="font-size: 0.85rem; color: var(--text-primary);">Tools Available:</strong>
+              <strong style="font-size: 0.85rem; color: var(--text-primary);">Tools Available (13):</strong>
               <div style="display: flex; gap: 0.75rem; margin-top: 0.5rem; flex-wrap: wrap;">
                 <code style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: var(--bg-card); border-radius: 4px;">list_agents</code>
                 <code style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: var(--bg-card); border-radius: 4px;">invoke_agent</code>
@@ -2611,6 +2628,11 @@ calc_price(usage) → <span style="color: var(--accent-green)">Decimal</span> (U
                 <code style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: var(--bg-card); border-radius: 4px;">grep</code>
                 <code style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: var(--bg-card); border-radius: 4px;">agent_run_shell_command</code>
                 <code style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: var(--bg-card); border-radius: 4px;">agent_share_your_reasoning</code>
+                <code style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: var(--bg-card); border-radius: 4px; border: 1px solid var(--accent-orange);">run_preflight_analysis</code>
+                <code style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: var(--bg-card); border-radius: 4px; border: 1px solid var(--accent-orange);">verify_auth_checklist</code>
+                <code style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: var(--bg-card); border-radius: 4px; border: 1px solid var(--accent-orange);">generate_setup_instructions</code>
+                <code style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: var(--bg-card); border-radius: 4px; border: 1px solid var(--accent-green);">start_wiggum_mode</code>
+                <code style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: var(--bg-card); border-radius: 4px; border: 1px solid var(--accent-red);">stop_wiggum_mode</code>
               </div>
             </div>
           </div>

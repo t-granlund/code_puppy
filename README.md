@@ -713,15 +713,16 @@ Everything else — lenses, gates, the Ralph loop — is machinery to make that 
 /epistemic start my-project   # Begin a planning session
 ```
 
-### The 12-Stage Pipeline
+### The 13-Stage Pipeline
 
 | Stage | What Happens |
 |-------|--------------|
 | 0-1 | Philosophical foundation, epistemic state creation |
 | 2-4 | Lens evaluation, gap analysis, goal emergence |
 | 5-6 | MVP planning, spec generation |
-| 7 | Build execution with checkpoints |
-| 8-12 | Improvement audit loop (repeats) |
+| 7 | Pre-Flight Auth (verify credentials before autonomous execution) |
+| 8 | Build execution with checkpoints |
+| 9-13 | Improvement audit loop (repeats) |
 
 ### Commands
 
@@ -732,6 +733,7 @@ Everything else — lenses, gates, the Ralph loop — is machinery to make that 
 | `/epistemic gaps` | Show identified gaps |
 | `/lens <name>` | Apply expert lens (philosophy, data, safety, etc.) |
 | `/ralph` | Execute Ralph Loop (Observe → Orient → Decide → Act) |
+| `/wiggum` | Start autonomous execution (Phase 2) |
 
 📖 Full documentation: [docs/EPISTEMIC.md](docs/EPISTEMIC.md)
 
