@@ -371,6 +371,7 @@ def _default_model_from_models_json():
 
     Returns the first model in models.json as the default.
     Falls back to ``gpt-5`` if the file cannot be read.
+    Skips metadata entries that start with underscore (e.g. _MODEL_CATALOG_NOTES).
     """
     global _default_model_cache
 
@@ -382,10 +383,11 @@ def _default_model_from_models_json():
 
         models_config = ModelFactory.load_config()
         if models_config:
-            # Use first model in models.json as default
-            first_key = next(iter(models_config))
-            _default_model_cache = first_key
-            return first_key
+            # Use first model in models.json as default, skipping metadata entries
+            for key in models_config:
+                if not key.startswith("_"):
+                    _default_model_cache = key
+                    return key
         _default_model_cache = "gpt-5"
         return "gpt-5"
     except Exception:

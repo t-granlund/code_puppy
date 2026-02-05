@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pipeline Phases - Epistemic Architect</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 50%, #0d1117 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        .container { max-width: 1400px; margin: 0 auto; padding: 30px 20px; }
+
+        .nav-bar {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 15px 20px;
+            background: rgba(30, 30, 60, 0.8);
+            border-radius: 12px;
+        }
+
+        .nav-bar a { color: #888; text-decoration: none; font-size: 0.9rem; transition: color 0.2s; }
+        .nav-bar a:hover { color: #7c3aed; }
+        .nav-bar a.active { color: #10b981; font-weight: 600; }
+        .nav-title { font-size: 1.3rem; font-weight: 700; color: #10b981; display: flex; align-items: center; gap: 10px; }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #10b981, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle { color: #888; margin-bottom: 30px; font-size: 1.1rem; }
+
+        .panel {
+            background: rgba(30, 30, 60, 0.8);
+            border-radius: 16px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .panel-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #10b981;
+        }
+
+        /* Phase Overview */
+        .phase-overview {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 900px) {
+            .phase-overview { flex-direction: column; }
+        }
+
+        .phase-block {
+            flex: 1;
+            padding: 25px;
+            border-radius: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .phase-block:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .phase-block.active {
+            box-shadow: 0 0 30px rgba(124, 58, 237, 0.5);
+        }
+
+        .phase-block.phase1 { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+        .phase-block.gate { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .phase-block.phase2 { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+
+        .phase-block-emoji { font-size: 3rem; margin-bottom: 15px; }
+        .phase-block-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 10px; }
+        .phase-block-stages { font-size: 0.9rem; opacity: 0.9; margin-bottom: 10px; }
+        .phase-block-desc { font-size: 0.85rem; opacity: 0.8; }
+
+        /* Stage Timeline */
+        .stage-timeline {
+            position: relative;
+            padding-left: 40px;
+        }
+
+        .stage-timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(180deg, #3b82f6, #f59e0b, #8b5cf6);
+            border-radius: 3px;
+        }
+
+        .stage-item {
+            position: relative;
+            padding: 20px;
+            margin-bottom: 15px;
+            background: rgba(40, 40, 70, 0.6);
+            border-radius: 12px;
+            margin-left: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .stage-item:hover {
+            background: rgba(60, 60, 100, 0.8);
+            transform: translateX(10px);
+        }
+
+        .stage-item.expanded {
+            background: rgba(80, 80, 120, 0.8);
+        }
+
+        .stage-item::before {
+            content: '';
+            position: absolute;
+            left: -28px;
+            top: 25px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #7c3aed;
+            border: 3px solid rgba(30, 30, 60, 0.8);
+        }
+
+        .stage-item.phase1::before { background: #3b82f6; }
+        .stage-item.gate::before { background: #f59e0b; }
+        .stage-item.phase2::before { background: #8b5cf6; }
+
+        .stage-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .stage-number {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .stage-number.phase1 { background: rgba(59, 130, 246, 0.3); color: #3b82f6; }
+        .stage-number.gate { background: rgba(245, 158, 11, 0.3); color: #f59e0b; }
+        .stage-number.phase2 { background: rgba(139, 92, 246, 0.3); color: #8b5cf6; }
+
+        .stage-info { flex: 1; }
+        .stage-name { font-weight: 700; font-size: 1.1rem; margin-bottom: 5px; }
+        .stage-desc { font-size: 0.9rem; color: #aaa; }
+
+        .stage-expand {
+            font-size: 1.5rem;
+            color: #666;
+            transition: transform 0.3s;
+        }
+
+        .stage-item.expanded .stage-expand {
+            transform: rotate(180deg);
+        }
+
+        /* Stage Details */
+        .stage-details {
+            display: none;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stage-item.expanded .stage-details {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; max-height: 0; }
+            to { opacity: 1; max-height: 1000px; }
+        }
+
+        .detail-section {
+            margin-bottom: 20px;
+        }
+
+        .detail-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #10b981;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .detail-content {
+            font-size: 0.9rem;
+            color: #ccc;
+            line-height: 1.6;
+        }
+
+        .detail-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .detail-list li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .detail-list li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: #7c3aed;
+        }
+
+        .tool-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: rgba(100, 100, 150, 0.3);
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-family: 'Monaco', monospace;
+            margin: 3px;
+        }
+
+        .artifact-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: rgba(16, 185, 129, 0.3);
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-family: 'Monaco', monospace;
+            margin: 3px;
+            color: #10b981;
+        }
+
+        /* Flow Diagrams */
+        .flow-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding: 20px;
+            background: rgba(20, 20, 40, 0.5);
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .flow-node {
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .flow-arrow { color: #666; font-size: 1.2rem; }
+
+        .flow-node.input { background: rgba(59, 130, 246, 0.4); }
+        .flow-node.process { background: rgba(139, 92, 246, 0.4); }
+        .flow-node.output { background: rgba(16, 185, 129, 0.4); }
+        .flow-node.decision { background: rgba(245, 158, 11, 0.4); border-radius: 0; transform: rotate(0deg); }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        th {
+            background: rgba(100, 100, 150, 0.2);
+            font-weight: 600;
+            color: #10b981;
+        }
+
+        td { color: #ccc; }
+        tr:hover td { background: rgba(100, 100, 150, 0.1); }
+
+        /* Checkpoint Example */
+        .checkpoint-example {
+            background: #1a1a2e;
+            border-radius: 10px;
+            padding: 20px;
+            font-family: 'Monaco', monospace;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            border-left: 4px solid #10b981;
+        }
+
+        .checkpoint-example .header { color: #10b981; font-weight: bold; }
+        .checkpoint-example .field { color: #f59e0b; }
+        .checkpoint-example .value { color: #c3e88d; }
+
+        /* Interactive Filters */
+        .filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            background: rgba(60, 60, 100, 0.5);
+            color: #ccc;
+        }
+
+        .filter-btn:hover {
+            background: rgba(100, 100, 150, 0.5);
+        }
+
+        .filter-btn.active {
+            background: #7c3aed;
+            color: white;
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(30, 30, 60, 0.5); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: rgba(124, 58, 237, 0.5); border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Navigation -->
+        <div class="nav-bar">
+            <div class="nav-title">📋 Pipeline Phases</div>
+            <a href="epistemic-architect-diagram.html">Architecture</a>
+            <a href="telemetry.html">Telemetry</a>
+            <a href="ooda-failover.html">OODA & Failover</a>
+            <a href="phases.html" class="active">Phases</a>
+            <a href="rules.html">Rules</a>
+            <a href="agents.html">Agents</a>
+        </div>
+
+        <h1>📋 14-Stage Pipeline</h1>
+        <p class="subtitle">Complete breakdown of each phase from discovery to documentation</p>
+
+        <!-- Phase Overview -->
+        <div class="phase-overview">
+            <div class="phase-block phase1 active" onclick="filterPhase('phase1')">
+                <div class="phase-block-emoji">📋</div>
+                <div class="phase-block-title">Phase 1: Interview</div>
+                <div class="phase-block-stages">Stages 0-6</div>
+                <div class="phase-block-desc">Interactive user interview, epistemic state creation, lens evaluation</div>
+            </div>
+            <div class="phase-block gate" onclick="filterPhase('gate')">
+                <div class="phase-block-emoji">🔐</div>
+                <div class="phase-block-title">Auth Gate</div>
+                <div class="phase-block-stages">Stage 7</div>
+                <div class="phase-block-desc">Pre-flight authentication verification before autonomous mode</div>
+            </div>
+            <div class="phase-block phase2" onclick="filterPhase('phase2')">
+                <div class="phase-block-emoji">🤖</div>
+                <div class="phase-block-title">Phase 2: Wiggum</div>
+                <div class="phase-block-stages">Stages 8-13</div>
+                <div class="phase-block-desc">Autonomous execution, build, audit, and continuous improvement</div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters">
+            <button class="filter-btn active" onclick="filterPhase('all')">All Stages</button>
+            <button class="filter-btn" onclick="filterPhase('phase1')">Phase 1 (0-6)</button>
+            <button class="filter-btn" onclick="filterPhase('gate')">Auth Gate (7)</button>
+            <button class="filter-btn" onclick="filterPhase('phase2')">Phase 2 (8-13)</button>
+        </div>
+
+        <!-- Stage Timeline -->
+        <div class="panel">
+            <div class="panel-title">🗺️ Stage-by-Stage Breakdown</div>
+            <div class="stage-timeline" id="stage-timeline">
+                
+                <!-- Stage 0 -->
+                <div class="stage-item phase1" data-phase="phase1" onclick="toggleStage(this)">
+                    <div class="stage-header">
+                        <div class="stage-number phase1">0</div>
+                        <div class="stage-info">
+                            <div class="stage-name">Project Discovery & Bootstrap</div>
+                            <div class="stage-desc">Scan existing artifacts, detect resume point</div>
+                        </div>
+                        <div class="stage-expand">▼</div>
+                    </div>
+                    <div class="stage-details">
+                        <div class="detail-section">
+                            <div class="detail-title">📥 Inputs</div>
+                            <div class="detail-content">
+                                Existing project directory with potential artifacts (BUILD.md, epistemic/, docs/, specs/)
+                            </div>
+                        </div>
+                        <div class="detail-section">
+                            <div class="detail-title">🔧 Tools Used</div>
+                            <div class="detail-content">
+                                <span class="tool-badge">discover_project</span>
+                                <span class="tool-badge">get_discovery_state</span>
+                                <span class="tool-badge">get_resume_questions</span>
+                            </div>
+                        </div>
+                        <div class="detail-section">
+                            <div class="detail-title">📋 What Happens</div>
+                            <ul class="detail-list">
+                                <li>Scan for existing BUILD.md, epistemic/state.json, auth-checklist.json</li>
+                                <li>Parse existing docs (lens-evaluation.md, gap-analysis.md, goals-and-gates.md)</li>
+                                <li>Detect tech stack from package.json, pyproject.toml, README.md</li>
+                                <li>Identify which pipeline stages are complete vs incomplete</li>
+                                <li>Generate focused questions only for missing information</li>
+                            </ul>
+                        </div>
+                        <div class="detail-section">
+                            <div class="detail-title">📤 Outputs</div>
+                            <div class="detail-content">
+                                <span class="artifact-badge">Discovery summary</span>
+                                <span class="artifact-badge">Resume point (stage N)</span>
+                                <span class="artifact-badge">Focused questions list</span>
+                            </div>
+                        </div>
+                        <div class="detail-section">
+                            <div class="detail-title">🎯 Key Insight</div>
+                            <div class="detail-content">
+                                Don't re-interview users about things you can discover from their codebase!
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stage 1 -->
+                <div class="stage-item phase1" data-phase="phase1" onclick="toggleStage(this)">
+                    <div class="stage-header">
+                        <div class="stage-number phase1">1</div>
+                        <div class="stage-info">
+                            <div class="stage-name">Epistemic State Creation</div>
+                            <div class="stage-desc">Interview user, surface assumptions and hypotheses</div>
+                        </div>
+                        <div class="stage-expand">▼</div>
+                    </div>
+                    <div class="stage-details">
+                        <div class="detail-section">
+                            <div class="detail-title">🔧 Tools Used</div>
+                            <div class="detail-content">
+                                <span class="tool-badge">ask_user_question</span>
+                                <span class="tool-badge">edit_file</span>
+                            </div>
+                        </div>
+                        <div class="detail-section">
+                            <div class="detail-title">📋 Interview Questions</div>
+                            <ul class="detail-list">
+                                <li>What problem are you solving? For whom?</li>
+                                <li>What are you <strong>assuming</strong> is true? (Surface hidden assumptions)</li>
+                                <li>What would <strong>prove you wrong</strong>? (Falsification criteria)</li>
+                                <li>What are the <strong>hard constraints</strong>? (Non-negotiable)</li>
+                                <li>What are the <strong>soft constraints</strong>? (Preferences)</li>
+                                <li>What <strong>evidence</strong> do you already have?</li>
+                            </ul>
+                        </div>
+                        <div class="detail-section">
+                            <div class="detail-title">📤 Artifacts Created</div>
+                            <div class="detail-content">
+                                <span class="artifact-badge">epistemic/state.json</span>
+                                <span class="artifact-badge">epistemic/assumptions.md</span>
+                                <span class="artifact-badge">epistemic/hypotheses.md</span>
+                                <span class="artifact-badge">epistemic/constraints.md</span>
+                                <span class="artifact-badge">epistemic/evidence.md</span>
+                            </div>
+                        </div>
+                        <div class="detail-section">
+                            <div class="detail-title">📊 State Structure</div>
+                            <div class="checkpoint-example">
+{
+  <span class="field">"assumptions"</span>: [{<span class="field">"text"</span>: <span class="value">"..."</span>, <span class="field">"confidence"</span>: <span class="value">0.7</span>}],
+  <span class="field">"hypotheses"</span>: [{<span class="field">"text"</span>: <span class="value">"..."</span>, <span class="field">"falsification_criteria"</span>: <span class="value">"..."</span>}],
+  <span class="field">"hard_constraints"</span>: [<span class="value">"..."</span>],
+  <span class="field">"soft_constraints"</span>: [<span class="value">"..."</span>],
+  <span class="field">"evidence"</span>: [{<span class="field">"supports"</span>: <span class="value">"..."</span>, <span class="field">"source"</span>: <span class="value">"..."</span>}]
+}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stage 2 -->
+                <div class="stage-item phase1" data-phase="phase1" onclick="toggleStage(this)">
+                    <div class="stage-header">
+                        <div class="stage-number phase1">2</div>
+                        <div class="stage-info">
+                            <div class="stage-name">Lens Evaluation</div>
+                            <div class="stage-desc">Apply 7 expert perspectives to epistemic state</div>
+                        </div>
+                        <div class="stage-expand">▼</div>
+                    </div>
+                    <div class="stage-details">
+                        <div class="detail-section">
+                            <div class="detail-title">🔍 The 7 Expert Lenses</div>
+                            <table>
+                                <tr><th>Lens</th><th>Question</th><th>Key Outputs</th></tr>
+                                <tr><td>🧠 Philosophy</td><td>What are we assuming?</td><td>Hidden assumptions, category errors</td></tr>
+                                <tr><td>📊 Data Science</td><td>Can we measure this?</td><td>Metrics plan, experiment design</td></tr>
+                                <tr><td>🛡️ Safety/Risk</td><td>What could go wrong?</td><td>Risk flags, abuse vectors</td></tr>
+                                <tr><td>🔷 Topology</td><td>What's the structure?</td><td>Dependencies, phase transitions</td></tr>
+                                <tr><td>∑ Theoretical Math</td><td>Is this consistent?</td><td>Minimal axioms, counterexamples</td></tr>
+                                <tr><td>⚙️ Systems Eng</td><td>Can we build this?</td><td>Service boundaries, failure recovery</td></tr>
+                                <tr><td>👤 Product/UX</td><td>Does this help users?</td><td>Value hypotheses, MVP scope</td></tr>
+                            </table>
+                        </div>
+                        <div class="detail-section">
+                            <div class="detail-title">📤 Output Per Lens</div>
+                            <div class="detail-content">
+                                Each lens produces: <code>constraints_delta</code>, <code>risk_flags</code>, 
+                                <code>tests_requested</code>, <code>confidence_update</code>
+                            </div>
+                        </div>
+                        <div class="detail-section">
+                            <div class="detail-title">📤 Artifact</div>
+                            <div class="detail-content">
+                                <span class="artifact-badge">docs/lens-evaluation.md</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stage 3 -->
+                <div class="stage-item phase1" data-phase="phase1" onclick="toggleStage(this)">
+                    <div class="stage-header">
+                        <div class="stage-number phase1">3</div>
+                        <div class="stage-info">
+                            <div class="stage-name">Gap Analysis</div>
+                            <div class="stage-desc">Identify CRITICAL/HIGH/MEDIUM/LOW gaps</div>
+                        </div>
+                        <div class="stage-expand">▼</div>
+                    </div>
+                    <div class="stage-details">
+                        <div class="detail-section">
+                            <div class="detail-title">🚦 Gap Severity Levels</div>
+                            <table>
+                                <tr><th>Level</th><th>Meaning</th><th>Action</th></tr>
+                                <tr><td>🔴 CRITICAL</td><td>Must resolve before building</td><td>Block until resolved</td></tr>
+                                <tr><td>🟠 HIGH</td><td>Should resolve soon</td><td>Prioritize in Phase 1</td></tr>
+                                <tr><td>🟡 MEDIUM</td><td>Important but can iterate</td><td>Track, address when possible</td></tr>
+                                <tr><td>🟢 LOW</td><td>Nice to have</td><td>Backlog for future</td></tr>
+                            </table>
+                        </div>
+                        <div class="detail-section">
+                            <div class="detail-title">📤 Artifact</div>
+                            <div class="detail-content">
+                                <span class="artifact-badge">docs/gap-analysis.md</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stage 4 -->
+                <div class="stage-item phase1" data-phase="phase1" onclick="toggleStage(this)">
+                    <div class="stage-header">
+                        <div class="stage-number phase1">4</div>
+                        <div class="stage-info">
+                            <div class="stage-name">Goal Emergence + Gate Protocol</div>
+                            <div class="stage-desc">Generate candidates, validate through 6 quality gates</div>
+                        </div>
+                        <div class="stage-expand">▼</div>
+                    </div>
+                    <div class="stage-details">
+                        <div class="detail-section">
+                            <div class="detail-title">✅ The 6 Quality Gates</div>
+                            <table>
+                                <tr><th>Gate</th><th>Check</th><th>Requirement</th></tr>
+                                <tr><td>👁️ Observables</td><td>Does it have measurable outcomes?</td><td>Must define metrics</td></tr>
+                                <tr><td>🧪 Testability</td><td>Clear success/failure criteria?</td><td>Must be verifiable</td></tr>
+                                <tr><td>↩️ Reversibility</td><td>Is there a rollback plan?</td><td>Must have escape hatch</td></tr>
+                                <tr><td>📈 Confidence</td><td>Is confidence ≥ 0.6?</td><td>Must meet threshold</td></tr>
+                                <tr><td>🤝 Lens Agreement</td><td>Do 3+ lenses approve?</td><td>Must have consensus</td></tr>
+                                <tr><td>📚 Evidence</td><td>Based on actual evidence?</td><td>Must cite sources</td></tr>
+                            </table>
+                        </div>
+                        <div class="detail-section">
+                            <div class="detail-title">📊 Gate Flow</div>
+                            <div class="flow-diagram">
+                                <div class="flow-node input">Candidate Goal</div>
+                                <div class="flow-arrow">→</div>
+                                <div class="flow-node process">Gate 1</div>
+                                <div class="flow-arrow">→</div>
+                                <div class="flow-node process">Gate 2</div>
+                                <div class="flow-arrow">→</div>
+                                <div class="flow-node process">...</div>
+                                <div class="flow-arrow">→</div>
+                                <div class="flow-node process">Gate 6</div>
+                                <div class="flow-arrow">→</div>
+                                <div class="flow-node output">Approved ✓</div>
+                            </div>
+                        </div>
+                        <div class="detail-section">
+                            <div class="detail-title">📤 Artifact</div>
+                            <div class="detail-content">
+                                <span class="artifact-badge">docs/goals-and-gates.md</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stage 5 -->
+                <div class="stage-item phase1" data-phase="phase1" onclick="toggleStage(this)">
+                    <div class="stage-header">
+                        <div class="stage-number phase1">5</div>
+                        <div class="stage-info">
+                            <div class="stage-name">MVP Planning</div>
+                            <div class="stage-desc">Create minimal viable plan with rollback</div>
+                        </div>
+                        <div class="stage-expand">▼</div>
+                    </div>
+                    <div class="stage-details">
+                        <div class="detail-section">
+                            <div class="detail-title">📋 BUILD.md Structure</div>
+                            <ul class="detail-list">
+                                <li><strong>Phases</strong>: Foundation → Core → Polish</li>
+                                <li><strong>Milestones</strong>: 1-2 hours each, clear deliverables</li>
+                                <li><strong>Checkpoints</strong>: Verification questions per milestone</li>
+                                <li><strong>Rollback plans</strong>: How to undo if things go wrong</li>
+                            </ul>
+                        </div>
+                        <div class="detail-section">
+                            <div class="detail-title">📤 Artifact</div>
+                            <div class="detail-content">
+                                <span class="artifact-badge">BUILD.md</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stage 6 -->
+                <div class="stage-item phase1" data-phase="phase1" onclick="toggleStage(this)">
+                    <div class="stage-header">
+                        <div class="stage-number phase1">6</div>
+                        <div class="stage-info">
+                            <div class="stage-name">Spec Generation</div>
+                            <div class="stage-desc">Generate full specs, readiness check</div>
+                        </div>
+                        <div class="stage-expand">▼</div>
+                    </div>
+                    <div class="stage-details">
+                        <div class="detail-section">
+                            <div class="detail-title">📤 Specification Files</div>
+                            <div class="detail-content">
+                                <span class="artifact-badge">specs/entities.md</span>
+                                <span class="artifact-badge">specs/personas.md</span>
+                                <span class="artifact-badge">specs/critical-flows.md</span>
+                                <span class="artifact-badge">specs/metrics.md</span>
+                                <span class="artifact-badge">specs/trust-safety.md</span>
+                            </div>
+                        </div>
+                        <div class="detail-section">
+                            <div class="detail-title">✅ Readiness Check</div>
+                            <ul class="detail-list">
+                                <li>All CRITICAL gaps resolved?</li>
+                                <li>All approved goals have specs?</li>
+                                <li>BUILD.md complete with milestones?</li>
+                                <li>User has approved the plan?</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stage 7 - Auth Gate -->
+                <div class="stage-item gate" data-phase="gate" onclick="toggleStage(this)">
+                    <div class="stage-header">
+                        <div class="stage-number gate">7</div>
+                        <div class="stage-info">
+                            <div class="stage-name">Pre-Flight Authentication</div>
+                            <div class="stage-desc">Detect & verify all auth requirements before Wiggum</div>
+                        </div>
+                        <div class="stage-expand">▼</div>
+                    </div>
+                    <div class="stage-details">
+                        <div class="detail-section">
+                            <div class="detail-title">🔧 Tools Used</div>
+                            <div class="detail-content">
+                                <span class="tool-badge">preflight_auth_check</span>
+                                <span class="tool-badge">add_auth_requirement</span>
+                            </div>
+                        </div>
+                        <div class="detail-section">
+                            <div class="detail-title">🔐 Auth Categories</div>
+                            <table>
+                                <tr><th>Category</th><th>Examples</th><th>Verification</th></tr>
+                                <tr><td>CLI_AUTH</td><td>Azure CLI, AWS CLI, gcloud</td><td>CLI commands</td></tr>
+                                <tr><td>API_KEY</td><td>OPENAI_API_KEY, GITHUB_TOKEN</td><td>Env vars</td></tr>
+                                <tr><td>OAUTH_APP</td><td>Azure AD App Registration</td><td>Manual + CLI</td></tr>
+                                <tr><td>BROWSER_SESSION</td><td>Admin portals</td><td>Browser automation</td></tr>
+                                <tr><td>DATABASE</td><td>PostgreSQL, MongoDB</td><td>Connection string</td></tr>
+                            </table>
+                        </div>
+                        <div class="detail-section">
+                            <div class="detail-title">🚦 Gate Requirement</div>
+                            <div class="detail-content" style="color: #f59e0b; font-weight: 600;">
+                                Phase 2 (Wiggum) CANNOT start until preflight_auth_check() returns ready_for_phase2: true
+                            </div>
+                        </div>
+                        <div class="detail-section">
+                            <div class="detail-title">📤 Artifact</div>
+                            <div class="detail-content">
+                                <span class="artifact-badge">epistemic/auth-checklist.json</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stage 8 -->
+                <div class="stage-item phase2" data-phase="phase2" onclick="toggleStage(this)">
+                    <div class="stage-header">
+                        <div class="stage-number phase2">8</div>
+                        <div class="stage-info">
+                            <div class="stage-name">Build Execution</div>
+                            <div class="stage-desc">Phase → Milestone → Checkpoint → Verify</div>
+                        </div>
+                        <div class="stage-expand">▼</div>
+                    </div>
+                    <div class="stage-details">
+                        <div class="detail-section">
+                            <div class="detail-title">🔧 Tools Used</div>
+                            <div class="detail-content">
+                                <span class="tool-badge">invoke_agent</span>
+                                <span class="tool-badge">edit_file</span>
+                                <span class="tool-badge">agent_run_shell_command</span>
+                                <span class="tool-badge">check_wiggum_status</span>
+                            </div>
+                        </div>
+                        <div class="detail-section">
+                            <div class="detail-title">📋 Checkpoint Format</div>
+                            <div class="checkpoint-example">
+<span class="header">🔍 CHECKPOINT: [Milestone Name]</span>
+<span class="field">✅ Completed:</span> <span class="value">[What was built]</span>
+<span class="field">🧪 Verified:</span> <span class="value">[What was tested]</span>
+<span class="field">⚠️ Issues:</span> <span class="value">[Any problems]</span>
+<span class="field">📋 Spec Compliance:</span> <span class="value">[Which specs met]</span>
+<span class="field">➡️ Next:</span> <span class="value">[Next milestone]</span>
+                            </div>
+                        </div>
+                        <div class="detail-section">
+                            <div class="detail-title">🤖 OODA-Driven Execution</div>
+                            <ul class="detail-list">
+                                <li><strong>OBSERVE</strong>: Read BUILD.md, find next milestone</li>
+                                <li><strong>ORIENT</strong>: Delegate to REASONING agents (security-auditor, code-reviewer)</li>
+                                <li><strong>DECIDE</strong>: Synthesize findings, update plan</li>
+                                <li><strong>ACT</strong>: Delegate to CODING agents (python-programmer, test-generator)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stage 9 -->
+                <div class="stage-item phase2" data-phase="phase2" onclick="toggleStage(this)">
+                    <div class="stage-header">
+                        <div class="stage-number phase2">9</div>
+                        <div class="stage-info">
+                            <div class="stage-name">Improvement Audit</div>
+                            <div class="stage-desc">Evidence → Analysis → Recommendation loop</div>
+                        </div>
+                        <div class="stage-expand">▼</div>
+                    </div>
+                    <div class="stage-details">
+                        <div class="detail-section">
+                            <div class="detail-title">📋 Audit Process</div>
+                            <ul class="detail-list">
+                                <li>Collect evidence from build execution</li>
+                                <li>Analyze against original specs and goals</li>
+                                <li>Generate improvement recommendations</li>
+                                <li>Prioritize by impact and effort</li>
+                            </ul>
+                        </div>
+                        <div class="detail-section">
+                            <div class="detail-title">📤 Artifact</div>
+                            <div class="detail-content">
+                                <span class="artifact-badge">docs/improvement-plan.md</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stage 10 -->
+                <div class="stage-item phase2" data-phase="phase2" onclick="toggleStage(this)">
+                    <div class="stage-header">
+                        <div class="stage-number phase2">10</div>
+                        <div class="stage-info">
+                            <div class="stage-name">Gap Re-Inspection</div>
+                            <div class="stage-desc">What new gaps emerged? Re-validate</div>
+                        </div>
+                        <div class="stage-expand">▼</div>
+                    </div>
+                    <div class="stage-details">
+                        <div class="detail-section">
+                            <div class="detail-title">📋 Re-Inspection Focus</div>
+                            <ul class="detail-list">
+                                <li>Did building reveal new unknowns?</li>
+                                <li>Any assumptions proven wrong?</li>
+                                <li>New constraints discovered?</li>
+                                <li>Technical debt introduced?</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stage 11 -->
+                <div class="stage-item phase2" data-phase="phase2" onclick="toggleStage(this)">
+                    <div class="stage-header">
+                        <div class="stage-number phase2">11</div>
+                        <div class="stage-info">
+                            <div class="stage-name">Question Tracking</div>
+                            <div class="stage-desc">Update epistemic state, close hypotheses</div>
+                        </div>
+                        <div class="stage-expand">▼</div>
+                    </div>
+                    <div class="stage-details">
+                        <div class="detail-section">
+                            <div class="detail-title">📋 State Updates</div>
+                            <ul class="detail-list">
+                                <li>Update assumption confidence levels</li>
+                                <li>Mark hypotheses as validated/falsified</li>
+                                <li>Add newly discovered constraints</li>
+                                <li>Record evidence from build</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stage 12 -->
+                <div class="stage-item phase2" data-phase="phase2" onclick="toggleStage(this)">
+                    <div class="stage-header">
+                        <div class="stage-number phase2">12</div>
+                        <div class="stage-info">
+                            <div class="stage-name">Verification Audit</div>
+                            <div class="stage-desc">End-to-end check across all layers</div>
+                        </div>
+                        <div class="stage-expand">▼</div>
+                    </div>
+                    <div class="stage-details">
+                        <div class="detail-section">
+                            <div class="detail-title">✅ Verification Checklist</div>
+                            <ul class="detail-list">
+                                <li>All milestones in BUILD.md marked complete?</li>
+                                <li>All quality gates passed?</li>
+                                <li>E2E tests passing?</li>
+                                <li>Security audit complete?</li>
+                                <li>Documentation up to date?</li>
+                            </ul>
+                        </div>
+                        <div class="detail-section">
+                            <div class="detail-title">🔧 Termination Tool</div>
+                            <div class="detail-content">
+                                <span class="tool-badge">complete_wiggum_loop</span>
+                                <p style="margin-top: 10px;">Called only when ALL verification criteria are met.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stage 13 -->
+                <div class="stage-item phase2" data-phase="phase2" onclick="toggleStage(this)">
+                    <div class="stage-header">
+                        <div class="stage-number phase2">13</div>
+                        <div class="stage-info">
+                            <div class="stage-name">Documentation Sync</div>
+                            <div class="stage-desc">Update all docs, then loop to Stage 9</div>
+                        </div>
+                        <div class="stage-expand">▼</div>
+                    </div>
+                    <div class="stage-details">
+                        <div class="detail-section">
+                            <div class="detail-title">📋 Documentation Updates</div>
+                            <ul class="detail-list">
+                                <li>Update README.md with new features</li>
+                                <li>Update CHANGELOG.md</li>
+                                <li>Sync specs with implementation</li>
+                                <li>Update epistemic state with learnings</li>
+                            </ul>
+                        </div>
+                        <div class="detail-section">
+                            <div class="detail-title">🔄 Continuous Loop</div>
+                            <div class="flow-diagram">
+                                <div class="flow-node process">Stage 9</div>
+                                <div class="flow-arrow">→</div>
+                                <div class="flow-node process">Stage 10</div>
+                                <div class="flow-arrow">→</div>
+                                <div class="flow-node process">Stage 11</div>
+                                <div class="flow-arrow">→</div>
+                                <div class="flow-node process">Stage 12</div>
+                                <div class="flow-arrow">→</div>
+                                <div class="flow-node process">Stage 13</div>
+                                <div class="flow-arrow">→</div>
+                                <div class="flow-node decision">More work?</div>
+                                <div class="flow-arrow">→</div>
+                                <div class="flow-node output">Loop back to 9</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleStage(element) {
+            element.classList.toggle('expanded');
+        }
+
+        function filterPhase(phase) {
+            // Update filter buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.phase-block').forEach(block => block.classList.remove('active'));
+            
+            if (phase === 'all') {
+                document.querySelector('.filter-btn').classList.add('active');
+            } else {
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    if (btn.textContent.toLowerCase().includes(phase.replace('phase', ''))) {
+                        btn.classList.add('active');
+                    }
+                });
+                document.querySelector(`.phase-block.${phase}`).classList.add('active');
+            }
+
+            // Filter stage items
+            document.querySelectorAll('.stage-item').forEach(item => {
+                if (phase === 'all' || item.dataset.phase === phase) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

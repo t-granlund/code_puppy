@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rules & Guidelines - Epistemic Architect</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 50%, #0d1117 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        .container { max-width: 1400px; margin: 0 auto; padding: 30px 20px; }
+
+        .nav-bar {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 15px 20px;
+            background: rgba(30, 30, 60, 0.8);
+            border-radius: 12px;
+        }
+
+        .nav-bar a { color: #888; text-decoration: none; font-size: 0.9rem; transition: color 0.2s; }
+        .nav-bar a:hover { color: #7c3aed; }
+        .nav-bar a.active { color: #10b981; font-weight: 600; }
+        .nav-title { font-size: 1.3rem; font-weight: 700; color: #10b981; display: flex; align-items: center; gap: 10px; }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #f59e0b, #ef4444);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle { color: #888; margin-bottom: 30px; font-size: 1.1rem; }
+
+        .panel {
+            background: rgba(30, 30, 60, 0.8);
+            border-radius: 16px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .panel-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #10b981;
+        }
+
+        /* Rule Categories */
+        .category-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .category-tab {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            background: rgba(60, 60, 100, 0.5);
+            color: #ccc;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .category-tab:hover { background: rgba(100, 100, 150, 0.5); }
+        .category-tab.active { background: #7c3aed; color: white; }
+
+        /* Rule Cards */
+        .rule-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 20px;
+        }
+
+        @media (max-width: 500px) {
+            .rule-grid { grid-template-columns: 1fr; }
+        }
+
+        .rule-card {
+            background: rgba(40, 40, 70, 0.6);
+            border-radius: 16px;
+            padding: 25px;
+            border-left: 4px solid;
+            transition: all 0.3s ease;
+        }
+
+        .rule-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .rule-card.pause { border-left-color: #ef4444; }
+        .rule-card.delegate { border-left-color: #8b5cf6; }
+        .rule-card.quality { border-left-color: #10b981; }
+        .rule-card.confidence { border-left-color: #f59e0b; }
+        .rule-card.best-practice { border-left-color: #3b82f6; }
+
+        .rule-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .rule-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .rule-card.pause .rule-icon { background: rgba(239, 68, 68, 0.2); }
+        .rule-card.delegate .rule-icon { background: rgba(139, 92, 246, 0.2); }
+        .rule-card.quality .rule-icon { background: rgba(16, 185, 129, 0.2); }
+        .rule-card.confidence .rule-icon { background: rgba(245, 158, 11, 0.2); }
+        .rule-card.best-practice .rule-icon { background: rgba(59, 130, 246, 0.2); }
+
+        .rule-title { font-weight: 700; font-size: 1.1rem; margin-bottom: 5px; }
+        .rule-category { font-size: 0.8rem; color: #888; text-transform: uppercase; }
+
+        .rule-description {
+            font-size: 0.95rem;
+            color: #ccc;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .rule-trigger {
+            background: rgba(20, 20, 40, 0.5);
+            border-radius: 8px;
+            padding: 12px 15px;
+            margin-bottom: 15px;
+        }
+
+        .rule-trigger-label {
+            font-size: 0.75rem;
+            color: #888;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .rule-trigger-text {
+            font-size: 0.9rem;
+            color: #f59e0b;
+            font-family: 'Monaco', monospace;
+        }
+
+        .rule-action {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 15px;
+            background: rgba(100, 100, 150, 0.2);
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .rule-action-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+
+        /* Severity badges */
+        .severity {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .severity.critical { background: rgba(239, 68, 68, 0.3); color: #ef4444; }
+        .severity.high { background: rgba(245, 158, 11, 0.3); color: #f59e0b; }
+        .severity.medium { background: rgba(59, 130, 246, 0.3); color: #3b82f6; }
+        .severity.low { background: rgba(16, 185, 129, 0.3); color: #10b981; }
+
+        /* Gate Checklist */
+        .gate-checklist {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+        }
+
+        .gate-item {
+            background: rgba(40, 40, 70, 0.6);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .gate-item:hover { background: rgba(60, 60, 100, 0.6); }
+        .gate-item.passed { background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.5); }
+        .gate-item.failed { background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.5); }
+
+        .gate-item-icon { font-size: 2rem; margin-bottom: 10px; }
+        .gate-item-name { font-weight: 600; margin-bottom: 5px; }
+        .gate-item-status { font-size: 0.8rem; color: #888; }
+
+        /* Threshold Sliders */
+        .threshold-container {
+            background: rgba(40, 40, 70, 0.6);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .threshold-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .threshold-label { font-weight: 600; }
+        .threshold-value { color: #10b981; font-weight: 700; }
+
+        .threshold-bar {
+            height: 8px;
+            background: rgba(100, 100, 150, 0.3);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .threshold-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .threshold-fill.green { background: linear-gradient(90deg, #10b981, #34d399); }
+        .threshold-fill.yellow { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+        .threshold-fill.red { background: linear-gradient(90deg, #ef4444, #f87171); }
+
+        .threshold-markers {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 0.75rem;
+            color: #888;
+        }
+
+        /* Decision Tree */
+        .decision-tree {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            padding: 30px;
+        }
+
+        .decision-node {
+            background: rgba(60, 60, 100, 0.6);
+            border-radius: 12px;
+            padding: 20px 30px;
+            text-align: center;
+            max-width: 400px;
+            position: relative;
+        }
+
+        .decision-node.question {
+            background: rgba(139, 92, 246, 0.3);
+            border: 2px solid rgba(139, 92, 246, 0.5);
+        }
+
+        .decision-node.yes {
+            background: rgba(16, 185, 129, 0.3);
+            border: 2px solid rgba(16, 185, 129, 0.5);
+        }
+
+        .decision-node.no {
+            background: rgba(239, 68, 68, 0.3);
+            border: 2px solid rgba(239, 68, 68, 0.5);
+        }
+
+        .decision-branches {
+            display: flex;
+            gap: 50px;
+        }
+
+        .decision-branch {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .branch-label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 5px 15px;
+            border-radius: 6px;
+        }
+
+        .branch-label.yes { background: rgba(16, 185, 129, 0.3); color: #10b981; }
+        .branch-label.no { background: rgba(239, 68, 68, 0.3); color: #ef4444; }
+
+        .branch-line {
+            width: 2px;
+            height: 30px;
+            background: #666;
+        }
+
+        /* Code examples */
+        .code-block {
+            background: #1a1a2e;
+            border-radius: 10px;
+            padding: 20px;
+            font-family: 'Monaco', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+
+        .code-block .comment { color: #666; }
+        .code-block .keyword { color: #c792ea; }
+        .code-block .string { color: #c3e88d; }
+        .code-block .number { color: #f78c6c; }
+        .code-block .function { color: #82aaff; }
+
+        /* Summary table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        th {
+            background: rgba(100, 100, 150, 0.2);
+            font-weight: 600;
+            color: #10b981;
+        }
+
+        td { color: #ccc; }
+        tr:hover td { background: rgba(100, 100, 150, 0.1); }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(30, 30, 60, 0.5); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: rgba(124, 58, 237, 0.5); border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Navigation -->
+        <div class="nav-bar">
+            <div class="nav-title">📜 Rules & Guidelines</div>
+            <a href="epistemic-architect-diagram.html">Architecture</a>
+            <a href="telemetry.html">Telemetry</a>
+            <a href="ooda-failover.html">OODA & Failover</a>
+            <a href="phases.html">Phases</a>
+            <a href="rules.html" class="active">Rules</a>
+            <a href="agents.html">Agents</a>
+        </div>
+
+        <h1>📜 Rules & Guidelines</h1>
+        <p class="subtitle">Complete reference for pause triggers, delegation rules, gate requirements, and best practices</p>
+
+        <!-- Category Tabs -->
+        <div class="category-tabs">
+            <button class="category-tab active" onclick="showCategory('all')">
+                📋 All Rules
+            </button>
+            <button class="category-tab" onclick="showCategory('pause')">
+                ⏸️ Pause Triggers
+            </button>
+            <button class="category-tab" onclick="showCategory('delegate')">
+                🤝 Delegation
+            </button>
+            <button class="category-tab" onclick="showCategory('quality')">
+                ✅ Quality Gates
+            </button>
+            <button class="category-tab" onclick="showCategory('confidence')">
+                📊 Confidence
+            </button>
+            <button class="category-tab" onclick="showCategory('best-practice')">
+                💡 Best Practices
+            </button>
+        </div>
+
+        <!-- Pause Trigger Rules -->
+        <div class="panel" id="pause-panel">
+            <div class="panel-title">⏸️ Pause Triggers</div>
+            <p style="color: #888; margin-bottom: 20px;">Conditions that REQUIRE pausing and returning control to the user.</p>
+            
+            <div class="rule-grid" id="pause-rules">
+                <div class="rule-card pause" data-category="pause">
+                    <div class="rule-header">
+                        <div class="rule-icon">🔴</div>
+                        <div>
+                            <div class="rule-title">CRITICAL Gap Unresolved</div>
+                            <span class="severity critical">CRITICAL</span>
+                        </div>
+                    </div>
+                    <div class="rule-description">
+                        Any gap marked as CRITICAL severity that has not been addressed. Building on a critical gap will lead to fundamental architectural failures.
+                    </div>
+                    <div class="rule-trigger">
+                        <div class="rule-trigger-label">Trigger Condition</div>
+                        <div class="rule-trigger-text">gap.severity == "CRITICAL" && gap.status != "resolved"</div>
+                    </div>
+                    <div class="rule-action">
+                        <div class="rule-action-icon">🛑</div>
+                        Block Phase 2 (Wiggum) entry until resolved
+                    </div>
+                </div>
+
+                <div class="rule-card pause" data-category="pause">
+                    <div class="rule-header">
+                        <div class="rule-icon">📉</div>
+                        <div>
+                            <div class="rule-title">Confidence Below Threshold</div>
+                            <span class="severity high">HIGH</span>
+                        </div>
+                    </div>
+                    <div class="rule-description">
+                        Overall epistemic confidence has dropped below 0.6, indicating too much uncertainty to proceed safely.
+                    </div>
+                    <div class="rule-trigger">
+                        <div class="rule-trigger-label">Trigger Condition</div>
+                        <div class="rule-trigger-text">epistemic_state.overall_confidence < 0.6</div>
+                    </div>
+                    <div class="rule-action">
+                        <div class="rule-action-icon">❓</div>
+                        Ask clarifying questions, gather more evidence
+                    </div>
+                </div>
+
+                <div class="rule-card pause" data-category="pause">
+                    <div class="rule-header">
+                        <div class="rule-icon">🚫</div>
+                        <div>
+                            <div class="rule-title">Quality Gate Failed</div>
+                            <span class="severity high">HIGH</span>
+                        </div>
+                    </div>
+                    <div class="rule-description">
+                        One or more of the 6 quality gates has failed. All gates must pass for a goal to be approved.
+                    </div>
+                    <div class="rule-trigger">
+                        <div class="rule-trigger-label">Trigger Condition</div>
+                        <div class="rule-trigger-text">goal.gates.filter(g => !g.passed).length > 0</div>
+                    </div>
+                    <div class="rule-action">
+                        <div class="rule-action-icon">🔧</div>
+                        Refine goal until all gates pass
+                    </div>
+                </div>
+
+                <div class="rule-card pause" data-category="pause">
+                    <div class="rule-header">
+                        <div class="rule-icon">🤷</div>
+                        <div>
+                            <div class="rule-title">Lens Disagreement</div>
+                            <span class="severity medium">MEDIUM</span>
+                        </div>
+                    </div>
+                    <div class="rule-description">
+                        Fewer than 3 expert lenses approve the current approach. Need broader expert consensus.
+                    </div>
+                    <div class="rule-trigger">
+                        <div class="rule-trigger-label">Trigger Condition</div>
+                        <div class="rule-trigger-text">lens_evaluations.filter(l => l.approved).length < 3</div>
+                    </div>
+                    <div class="rule-action">
+                        <div class="rule-action-icon">🔍</div>
+                        Re-evaluate with dissenting lenses, find common ground
+                    </div>
+                </div>
+
+                <div class="rule-card pause" data-category="pause">
+                    <div class="rule-header">
+                        <div class="rule-icon">🔐</div>
+                        <div>
+                            <div class="rule-title">Auth Check Failed</div>
+                            <span class="severity critical">CRITICAL</span>
+                        </div>
+                    </div>
+                    <div class="rule-description">
+                        Pre-flight authentication check failed. User must configure credentials before Phase 2.
+                    </div>
+                    <div class="rule-trigger">
+                        <div class="rule-trigger-label">Trigger Condition</div>
+                        <div class="rule-trigger-text">preflight_auth_check().ready_for_phase2 == false</div>
+                    </div>
+                    <div class="rule-action">
+                        <div class="rule-action-icon">🔑</div>
+                        Guide user through auth setup for each requirement
+                    </div>
+                </div>
+
+                <div class="rule-card pause" data-category="pause">
+                    <div class="rule-header">
+                        <div class="rule-icon">💥</div>
+                        <div>
+                            <div class="rule-title">Hypothesis Falsified</div>
+                            <span class="severity high">HIGH</span>
+                        </div>
+                    </div>
+                    <div class="rule-description">
+                        A core hypothesis has been proven false by evidence. Need to pivot approach.
+                    </div>
+                    <div class="rule-trigger">
+                        <div class="rule-trigger-label">Trigger Condition</div>
+                        <div class="rule-trigger-text">hypothesis.status == "falsified" && hypothesis.core == true</div>
+                    </div>
+                    <div class="rule-action">
+                        <div class="rule-action-icon">🔄</div>
+                        Return to Stage 1, reformulate approach
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delegation Rules -->
+        <div class="panel" id="delegate-panel">
+            <div class="panel-title">🤝 Delegation Rules</div>
+            <p style="color: #888; margin-bottom: 20px;">When to delegate to specialized agents vs. handle yourself</p>
+
+            <div class="decision-tree">
+                <div class="decision-node question">
+                    <strong>Is this a specialized task?</strong><br>
+                    <small>(Security audit, code generation, testing, documentation)</small>
+                </div>
+                
+                <div class="decision-branches">
+                    <div class="decision-branch">
+                        <span class="branch-label yes">YES</span>
+                        <div class="branch-line"></div>
+                        <div class="decision-node yes">
+                            <strong>Delegate to specialist agent</strong><br>
+                            <small>Match workload type to agent</small>
+                        </div>
+                    </div>
+                    <div class="decision-branch">
+                        <span class="branch-label no">NO</span>
+                        <div class="branch-line"></div>
+                        <div class="decision-node no">
+                            <strong>Handle as orchestrator</strong><br>
+                            <small>Interview, planning, synthesis</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="rule-grid" style="margin-top: 30px;">
+                <div class="rule-card delegate" data-category="delegate">
+                    <div class="rule-header">
+                        <div class="rule-icon">🛡️</div>
+                        <div>
+                            <div class="rule-title">Security Review Required</div>
+                            <div class="rule-category">REASONING Workload</div>
+                        </div>
+                    </div>
+                    <div class="rule-description">
+                        Delegate to <code>security-auditor</code> for auth flows, crypto, input validation, and sensitive data handling.
+                    </div>
+                    <div class="rule-trigger">
+                        <div class="rule-trigger-label">Trigger</div>
+                        <div class="rule-trigger-text">Code touches: auth, crypto, user_input, database, secrets</div>
+                    </div>
+                </div>
+
+                <div class="rule-card delegate" data-category="delegate">
+                    <div class="rule-header">
+                        <div class="rule-icon">🐍</div>
+                        <div>
+                            <div class="rule-title">Python Code Generation</div>
+                            <div class="rule-category">CODING Workload</div>
+                        </div>
+                    </div>
+                    <div class="rule-description">
+                        Delegate to <code>python-programmer</code> for implementation, refactoring, and Python-specific tasks.
+                    </div>
+                    <div class="rule-trigger">
+                        <div class="rule-trigger-label">Trigger</div>
+                        <div class="rule-trigger-text">Task: Create/modify Python files with >10 lines</div>
+                    </div>
+                </div>
+
+                <div class="rule-card delegate" data-category="delegate">
+                    <div class="rule-header">
+                        <div class="rule-icon">🧪</div>
+                        <div>
+                            <div class="rule-title">Test Generation</div>
+                            <div class="rule-category">CODING Workload</div>
+                        </div>
+                    </div>
+                    <div class="rule-description">
+                        Delegate to <code>test-generator</code> for pytest fixtures, coverage, and test organization.
+                    </div>
+                    <div class="rule-trigger">
+                        <div class="rule-trigger-label">Trigger</div>
+                        <div class="rule-trigger-text">Task: Write tests, improve coverage, test refactoring</div>
+                    </div>
+                </div>
+
+                <div class="rule-card delegate" data-category="delegate">
+                    <div class="rule-header">
+                        <div class="rule-icon">📖</div>
+                        <div>
+                            <div class="rule-title">Documentation Writing</div>
+                            <div class="rule-category">LIBRARIAN Workload</div>
+                        </div>
+                    </div>
+                    <div class="rule-description">
+                        Delegate to <code>doc-writer</code> for README, docstrings, API docs, and user guides.
+                    </div>
+                    <div class="rule-trigger">
+                        <div class="rule-trigger-label">Trigger</div>
+                        <div class="rule-trigger-text">Task: Write/update documentation, explain codebase</div>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 30px; margin-bottom: 15px;">📊 Delegation Summary Table</h3>
+            <table>
+                <tr>
+                    <th>Workload Type</th>
+                    <th>When to Use</th>
+                    <th>Agents</th>
+                    <th>Model</th>
+                </tr>
+                <tr>
+                    <td>ORCHESTRATOR</td>
+                    <td>Planning, synthesis, decision-making</td>
+                    <td>pack-leader, helios, planning-agent</td>
+                    <td>Kimi K2.5</td>
+                </tr>
+                <tr>
+                    <td>REASONING</td>
+                    <td>Analysis, review, complex problem-solving</td>
+                    <td>security-auditor, code-reviewer, qa-expert</td>
+                    <td>DeepSeek R1</td>
+                </tr>
+                <tr>
+                    <td>CODING</td>
+                    <td>Implementation, refactoring, test writing</td>
+                    <td>python-programmer, test-generator, husky</td>
+                    <td>Cerebras GLM 4.7</td>
+                </tr>
+                <tr>
+                    <td>LIBRARIAN</td>
+                    <td>Documentation, file analysis, search</td>
+                    <td>doc-writer, file-summarizer, bloodhound</td>
+                    <td>Claude 3.5 Haiku</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Quality Gates -->
+        <div class="panel" id="quality-panel">
+            <div class="panel-title">✅ The 6 Quality Gates</div>
+            <p style="color: #888; margin-bottom: 20px;">ALL gates must pass for a goal to be approved. Click to toggle pass/fail state.</p>
+
+            <div class="gate-checklist">
+                <div class="gate-item passed" onclick="toggleGate(this)">
+                    <div class="gate-item-icon">👁️</div>
+                    <div class="gate-item-name">Observables</div>
+                    <div class="gate-item-status">Measurable outcomes defined</div>
+                </div>
+                <div class="gate-item passed" onclick="toggleGate(this)">
+                    <div class="gate-item-icon">🧪</div>
+                    <div class="gate-item-name">Testability</div>
+                    <div class="gate-item-status">Clear success/failure criteria</div>
+                </div>
+                <div class="gate-item passed" onclick="toggleGate(this)">
+                    <div class="gate-item-icon">↩️</div>
+                    <div class="gate-item-name">Reversibility</div>
+                    <div class="gate-item-status">Rollback plan exists</div>
+                </div>
+                <div class="gate-item passed" onclick="toggleGate(this)">
+                    <div class="gate-item-icon">📈</div>
+                    <div class="gate-item-name">Confidence</div>
+                    <div class="gate-item-status">≥ 0.6 threshold met</div>
+                </div>
+                <div class="gate-item passed" onclick="toggleGate(this)">
+                    <div class="gate-item-icon">🤝</div>
+                    <div class="gate-item-name">Lens Agreement</div>
+                    <div class="gate-item-status">3+ lenses approve</div>
+                </div>
+                <div class="gate-item passed" onclick="toggleGate(this)">
+                    <div class="gate-item-icon">📚</div>
+                    <div class="gate-item-name">Evidence Grounding</div>
+                    <div class="gate-item-status">Based on actual evidence</div>
+                </div>
+            </div>
+
+            <div class="rule-grid" style="margin-top: 30px;">
+                <div class="rule-card quality" data-category="quality">
+                    <div class="rule-header">
+                        <div class="rule-icon">👁️</div>
+                        <div>
+                            <div class="rule-title">Observables Gate</div>
+                            <div class="rule-category">Measurement</div>
+                        </div>
+                    </div>
+                    <div class="rule-description">
+                        Every goal must define concrete, measurable outcomes. "Improve performance" fails. "Reduce p99 latency from 500ms to 200ms" passes.
+                    </div>
+                    <div class="code-block">
+<span class="comment"># ❌ FAILS</span>
+goal = <span class="string">"Make the app faster"</span>
+
+<span class="comment"># ✅ PASSES</span>
+goal = {
+  <span class="string">"objective"</span>: <span class="string">"Reduce API latency"</span>,
+  <span class="string">"metric"</span>: <span class="string">"p99_latency_ms"</span>,
+  <span class="string">"current"</span>: <span class="number">500</span>,
+  <span class="string">"target"</span>: <span class="number">200</span>
+}
+                    </div>
+                </div>
+
+                <div class="rule-card quality" data-category="quality">
+                    <div class="rule-header">
+                        <div class="rule-icon">📚</div>
+                        <div>
+                            <div class="rule-title">Evidence Grounding Gate</div>
+                            <div class="rule-category">Verification</div>
+                        </div>
+                    </div>
+                    <div class="rule-description">
+                        Goals must be grounded in actual evidence, not assumptions. Each claim needs a source: user interview, metrics data, prior research, or domain expertise.
+                    </div>
+                    <div class="code-block">
+<span class="comment"># Evidence sources:</span>
+[
+  {<span class="string">"claim"</span>: <span class="string">"Users want X"</span>, <span class="string">"source"</span>: <span class="string">"interview_2024-01-15"</span>},
+  {<span class="string">"claim"</span>: <span class="string">"Y causes Z"</span>, <span class="string">"source"</span>: <span class="string">"metrics_dashboard"</span>},
+  {<span class="string">"claim"</span>: <span class="string">"Best practice is W"</span>, <span class="string">"source"</span>: <span class="string">"RFC-1234"</span>}
+]
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Confidence Thresholds -->
+        <div class="panel" id="confidence-panel">
+            <div class="panel-title">📊 Confidence Thresholds</div>
+            <p style="color: #888; margin-bottom: 20px;">Confidence levels and their implications</p>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                <div class="threshold-container">
+                    <div class="threshold-header">
+                        <span class="threshold-label">Proceed to Phase 2</span>
+                        <span class="threshold-value">≥ 0.6</span>
+                    </div>
+                    <div class="threshold-bar">
+                        <div class="threshold-fill green" style="width: 60%;"></div>
+                    </div>
+                    <div class="threshold-markers">
+                        <span>0.0</span>
+                        <span>0.6 (min)</span>
+                        <span>1.0</span>
+                    </div>
+                </div>
+
+                <div class="threshold-container">
+                    <div class="threshold-header">
+                        <span class="threshold-label">High Confidence</span>
+                        <span class="threshold-value">≥ 0.8</span>
+                    </div>
+                    <div class="threshold-bar">
+                        <div class="threshold-fill green" style="width: 80%;"></div>
+                    </div>
+                    <div class="threshold-markers">
+                        <span>0.0</span>
+                        <span>0.8 (optimal)</span>
+                        <span>1.0</span>
+                    </div>
+                </div>
+
+                <div class="threshold-container">
+                    <div class="threshold-header">
+                        <span class="threshold-label">Pause Required</span>
+                        <span class="threshold-value">< 0.6</span>
+                    </div>
+                    <div class="threshold-bar">
+                        <div class="threshold-fill red" style="width: 50%;"></div>
+                    </div>
+                    <div class="threshold-markers">
+                        <span>0.0</span>
+                        <span>0.5 (danger)</span>
+                        <span>0.6</span>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="margin-bottom: 15px;">📈 Confidence Interpretation</h3>
+            <table>
+                <tr>
+                    <th>Range</th>
+                    <th>Meaning</th>
+                    <th>Action</th>
+                </tr>
+                <tr>
+                    <td>0.0 - 0.3</td>
+                    <td>Very Low - Too uncertain</td>
+                    <td style="color: #ef4444;">STOP. Major discovery needed.</td>
+                </tr>
+                <tr>
+                    <td>0.3 - 0.5</td>
+                    <td>Low - Significant gaps</td>
+                    <td style="color: #f59e0b;">PAUSE. Ask questions, gather evidence.</td>
+                </tr>
+                <tr>
+                    <td>0.5 - 0.6</td>
+                    <td>Borderline</td>
+                    <td style="color: #f59e0b;">CAUTION. Consider targeted investigation.</td>
+                </tr>
+                <tr>
+                    <td>0.6 - 0.7</td>
+                    <td>Adequate</td>
+                    <td style="color: #10b981;">PROCEED. Monitor for issues.</td>
+                </tr>
+                <tr>
+                    <td>0.7 - 0.85</td>
+                    <td>Good</td>
+                    <td style="color: #10b981;">PROCEED. High confidence in approach.</td>
+                </tr>
+                <tr>
+                    <td>0.85 - 1.0</td>
+                    <td>Excellent</td>
+                    <td style="color: #10b981;">PROCEED. Very high certainty.</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Best Practices -->
+        <div class="panel" id="best-practice-panel">
+            <div class="panel-title">💡 Best Practices</div>
+            <p style="color: #888; margin-bottom: 20px;">Guidelines for effective epistemic architecture</p>
+
+            <div class="rule-grid">
+                <div class="rule-card best-practice" data-category="best-practice">
+                    <div class="rule-header">
+                        <div class="rule-icon">🔍</div>
+                        <div>
+                            <div class="rule-title">Discover Before Asking</div>
+                            <div class="rule-category">Efficiency</div>
+                        </div>
+                    </div>
+                    <div class="rule-description">
+                        Always scan existing artifacts (BUILD.md, specs, code) before interviewing. Don't waste user time asking what can be discovered.
+                    </div>
+                </div>
+
+                <div class="rule-card best-practice" data-category="best-practice">
+                    <div class="rule-header">
+                        <div class="rule-icon">🎯</div>
+                        <div>
+                            <div class="rule-title">Surface Assumptions Early</div>
+                            <div class="rule-category">Risk Mitigation</div>
+                        </div>
+                    </div>
+                    <div class="rule-description">
+                        Hidden assumptions are the #1 cause of project failure. Always ask: "What are we assuming is true that might not be?"
+                    </div>
+                </div>
+
+                <div class="rule-card best-practice" data-category="best-practice">
+                    <div class="rule-header">
+                        <div class="rule-icon">📋</div>
+                        <div>
+                            <div class="rule-title">Define Falsification Criteria</div>
+                            <div class="rule-category">Scientific Rigor</div>
+                        </div>
+                    </div>
+                    <div class="rule-description">
+                        Every hypothesis needs clear criteria for what would prove it wrong. If you can't falsify it, it's not a hypothesis.
+                    </div>
+                </div>
+
+                <div class="rule-card best-practice" data-category="best-practice">
+                    <div class="rule-header">
+                        <div class="rule-icon">🔄</div>
+                        <div>
+                            <div class="rule-title">Plan for Rollback</div>
+                            <div class="rule-category">Safety</div>
+                        </div>
+                    </div>
+                    <div class="rule-description">
+                        Every milestone should have a rollback plan. If things go wrong, you should know exactly how to return to a safe state.
+                    </div>
+                </div>
+
+                <div class="rule-card best-practice" data-category="best-practice">
+                    <div class="rule-header">
+                        <div class="rule-icon">📝</div>
+                        <div>
+                            <div class="rule-title">Document as You Go</div>
+                            <div class="rule-category">Sustainability</div>
+                        </div>
+                    </div>
+                    <div class="rule-description">
+                        Write documentation during Stage 13, not after. The epistemic state captures why decisions were made.
+                    </div>
+                </div>
+
+                <div class="rule-card best-practice" data-category="best-practice">
+                    <div class="rule-header">
+                        <div class="rule-icon">👥</div>
+                        <div>
+                            <div class="rule-title">Seek Lens Diversity</div>
+                            <div class="rule-category">Quality</div>
+                        </div>
+                    </div>
+                    <div class="rule-description">
+                        Don't skip lenses. A systems engineer sees different risks than a product manager. Diversity catches blind spots.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentCategory = 'all';
+
+        function showCategory(category) {
+            currentCategory = category;
+            
+            // Update tabs
+            document.querySelectorAll('.category-tab').forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.textContent.toLowerCase().includes(category.replace('-', ' ')) || 
+                    (category === 'all' && tab.textContent.includes('All'))) {
+                    tab.classList.add('active');
+                }
+            });
+
+            // Show/hide panels
+            const panels = ['pause', 'delegate', 'quality', 'confidence', 'best-practice'];
+            panels.forEach(panel => {
+                const el = document.getElementById(`${panel}-panel`);
+                if (category === 'all' || category === panel) {
+                    el.style.display = 'block';
+                } else {
+                    el.style.display = 'none';
+                }
+            });
+        }
+
+        function toggleGate(element) {
+            element.classList.toggle('passed');
+            element.classList.toggle('failed');
+            
+            const status = element.querySelector('.gate-item-status');
+            if (element.classList.contains('failed')) {
+                status.textContent = '❌ FAILED - Needs work';
+                status.style.color = '#ef4444';
+            } else {
+                status.style.color = '';
+                // Restore original status based on gate name
+                const name = element.querySelector('.gate-item-name').textContent;
+                const statusMap = {
+                    'Observables': 'Measurable outcomes defined',
+                    'Testability': 'Clear success/failure criteria',
+                    'Reversibility': 'Rollback plan exists',
+                    'Confidence': '≥ 0.6 threshold met',
+                    'Lens Agreement': '3+ lenses approve',
+                    'Evidence Grounding': 'Based on actual evidence'
+                };
+                status.textContent = statusMap[name] || '✓ PASSED';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Directory - Epistemic Architect</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 50%, #0d1117 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        .container { max-width: 1400px; margin: 0 auto; padding: 30px 20px; }
+
+        .nav-bar {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 15px 20px;
+            background: rgba(30, 30, 60, 0.8);
+            border-radius: 12px;
+            flex-wrap: wrap;
+        }
+
+        .nav-bar a { color: #888; text-decoration: none; font-size: 0.9rem; transition: color 0.2s; }
+        .nav-bar a:hover { color: #7c3aed; }
+        .nav-bar a.active { color: #10b981; font-weight: 600; }
+        .nav-title { font-size: 1.3rem; font-weight: 700; color: #10b981; display: flex; align-items: center; gap: 10px; }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #8b5cf6, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle { color: #888; margin-bottom: 30px; font-size: 1.1rem; }
+
+        /* Workload Type Cards */
+        .workload-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 1000px) {
+            .workload-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 600px) {
+            .workload-grid { grid-template-columns: 1fr; }
+        }
+
+        .workload-card {
+            padding: 25px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .workload-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .workload-card.active {
+            box-shadow: 0 0 30px rgba(124, 58, 237, 0.5);
+        }
+
+        .workload-card.orchestrator { background: linear-gradient(135deg, #ec4899, #be185d); }
+        .workload-card.reasoning { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+        .workload-card.coding { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+        .workload-card.librarian { background: linear-gradient(135deg, #10b981, #059669); }
+
+        .workload-icon { font-size: 2.5rem; margin-bottom: 15px; }
+        .workload-name { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; }
+        .workload-model { font-size: 0.8rem; opacity: 0.9; margin-bottom: 5px; }
+        .workload-count { font-size: 0.8rem; opacity: 0.8; }
+
+        /* Panel */
+        .panel {
+            background: rgba(30, 30, 60, 0.8);
+            border-radius: 16px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .panel-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #10b981;
+        }
+
+        /* Agent Cards */
+        .agent-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        @media (max-width: 500px) {
+            .agent-grid { grid-template-columns: 1fr; }
+        }
+
+        .agent-card {
+            background: rgba(40, 40, 70, 0.6);
+            border-radius: 16px;
+            padding: 25px;
+            transition: all 0.3s ease;
+            border-left: 4px solid;
+        }
+
+        .agent-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .agent-card.orchestrator { border-left-color: #ec4899; }
+        .agent-card.reasoning { border-left-color: #8b5cf6; }
+        .agent-card.coding { border-left-color: #3b82f6; }
+        .agent-card.librarian { border-left-color: #10b981; }
+
+        .agent-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .agent-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            flex-shrink: 0;
+        }
+
+        .agent-card.orchestrator .agent-avatar { background: rgba(236, 72, 153, 0.2); }
+        .agent-card.reasoning .agent-avatar { background: rgba(139, 92, 246, 0.2); }
+        .agent-card.coding .agent-avatar { background: rgba(59, 130, 246, 0.2); }
+        .agent-card.librarian .agent-avatar { background: rgba(16, 185, 129, 0.2); }
+
+        .agent-name { font-weight: 700; font-size: 1.2rem; margin-bottom: 5px; }
+        .agent-type { font-size: 0.8rem; color: #888; text-transform: uppercase; }
+
+        .agent-description {
+            font-size: 0.95rem;
+            color: #ccc;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .agent-capabilities {
+            margin-bottom: 15px;
+        }
+
+        .capability-title {
+            font-size: 0.75rem;
+            color: #888;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .capability-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .capability-tag {
+            display: inline-block;
+            padding: 5px 12px;
+            background: rgba(100, 100, 150, 0.3);
+            border-radius: 8px;
+            font-size: 0.8rem;
+            color: #ddd;
+        }
+
+        .agent-tools {
+            background: rgba(20, 20, 40, 0.5);
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .tools-title {
+            font-size: 0.75rem;
+            color: #888;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .tool-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: rgba(124, 58, 237, 0.3);
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-family: 'Monaco', monospace;
+            margin: 3px;
+            color: #a78bfa;
+        }
+
+        .agent-model {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .model-label {
+            font-size: 0.75rem;
+            color: #888;
+            text-transform: uppercase;
+        }
+
+        .model-value {
+            font-size: 0.9rem;
+            color: #f59e0b;
+            font-weight: 600;
+        }
+
+        .model-fallback {
+            font-size: 0.75rem;
+            color: #666;
+        }
+
+        /* When to Use Section */
+        .when-to-use {
+            background: rgba(60, 60, 100, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .when-to-use-title {
+            font-size: 0.75rem;
+            color: #10b981;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .when-to-use ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .when-to-use li {
+            padding: 5px 0;
+            font-size: 0.9rem;
+            color: #ccc;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .when-to-use li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: #7c3aed;
+        }
+
+        /* Model Comparison Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        th {
+            background: rgba(100, 100, 150, 0.2);
+            font-weight: 600;
+            color: #10b981;
+        }
+
+        td { color: #ccc; }
+        tr:hover td { background: rgba(100, 100, 150, 0.1); }
+
+        /* Filter Controls */
+        .filter-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-label {
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        .filter-btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            background: rgba(60, 60, 100, 0.5);
+            color: #ccc;
+        }
+
+        .filter-btn:hover { background: rgba(100, 100, 150, 0.5); }
+        .filter-btn.active { background: #7c3aed; color: white; }
+
+        /* Search */
+        .search-box {
+            padding: 12px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            background: rgba(40, 40, 70, 0.6);
+            color: #fff;
+            font-size: 0.9rem;
+            width: 250px;
+        }
+
+        .search-box::placeholder { color: #666; }
+        .search-box:focus { outline: none; border-color: #7c3aed; }
+
+        /* Delegation Flow */
+        .flow-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            padding: 30px;
+            background: rgba(20, 20, 40, 0.5);
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+
+        .flow-node {
+            padding: 15px 25px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-align: center;
+            min-width: 140px;
+        }
+
+        .flow-arrow { color: #666; font-size: 1.5rem; }
+
+        .flow-node.user { background: rgba(100, 100, 150, 0.4); }
+        .flow-node.orchestrator { background: rgba(236, 72, 153, 0.4); }
+        .flow-node.reasoning { background: rgba(139, 92, 246, 0.4); }
+        .flow-node.coding { background: rgba(59, 130, 246, 0.4); }
+        .flow-node.librarian { background: rgba(16, 185, 129, 0.4); }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(30, 30, 60, 0.5); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: rgba(124, 58, 237, 0.5); border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Navigation -->
+        <div class="nav-bar">
+            <div class="nav-title">🤖 Agent Directory</div>
+            <a href="epistemic-architect-diagram.html">Architecture</a>
+            <a href="telemetry.html">Telemetry</a>
+            <a href="ooda-failover.html">OODA & Failover</a>
+            <a href="phases.html">Phases</a>
+            <a href="rules.html">Rules</a>
+            <a href="agents.html" class="active">Agents</a>
+        </div>
+
+        <h1>🤖 Agent Directory</h1>
+        <p class="subtitle">Complete reference for all available agents by workload type</p>
+
+        <!-- Workload Type Cards -->
+        <div class="workload-grid">
+            <div class="workload-card orchestrator active" onclick="filterWorkload('orchestrator')">
+                <div class="workload-icon">🎯</div>
+                <div class="workload-name">ORCHESTRATOR</div>
+                <div class="workload-model">Kimi K2.5</div>
+                <div class="workload-count">4 agents</div>
+            </div>
+            <div class="workload-card reasoning" onclick="filterWorkload('reasoning')">
+                <div class="workload-icon">🧠</div>
+                <div class="workload-name">REASONING</div>
+                <div class="workload-model">DeepSeek R1</div>
+                <div class="workload-count">5 agents</div>
+            </div>
+            <div class="workload-card coding" onclick="filterWorkload('coding')">
+                <div class="workload-icon">💻</div>
+                <div class="workload-name">CODING</div>
+                <div class="workload-model">Cerebras GLM 4.7</div>
+                <div class="workload-count">4 agents</div>
+            </div>
+            <div class="workload-card librarian" onclick="filterWorkload('librarian')">
+                <div class="workload-icon">📚</div>
+                <div class="workload-name">LIBRARIAN</div>
+                <div class="workload-model">Claude 3.5 Haiku</div>
+                <div class="workload-count">3 agents</div>
+            </div>
+        </div>
+
+        <!-- Delegation Flow -->
+        <div class="panel">
+            <div class="panel-title">🔄 Delegation Flow</div>
+            <div class="flow-diagram">
+                <div class="flow-node user">👤 User Request</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-node orchestrator">🎯 Pack Leader<br><small>ORCHESTRATOR</small></div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-node reasoning">🧠 Analyze<br><small>REASONING</small></div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-node coding">💻 Implement<br><small>CODING</small></div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-node librarian">📚 Document<br><small>LIBRARIAN</small></div>
+            </div>
+        </div>
+
+        <!-- Filter & Search -->
+        <div class="filter-row">
+            <span class="filter-label">Filter:</span>
+            <button class="filter-btn active" onclick="filterWorkload('all')">All</button>
+            <button class="filter-btn" onclick="filterWorkload('orchestrator')">Orchestrator</button>
+            <button class="filter-btn" onclick="filterWorkload('reasoning')">Reasoning</button>
+            <button class="filter-btn" onclick="filterWorkload('coding')">Coding</button>
+            <button class="filter-btn" onclick="filterWorkload('librarian')">Librarian</button>
+            <input type="text" class="search-box" placeholder="Search agents..." oninput="searchAgents(this.value)">
+        </div>
+
+        <!-- Agent Grid -->
+        <div class="agent-grid" id="agent-grid">
+            
+            <!-- ORCHESTRATOR Agents -->
+            <div class="agent-card orchestrator" data-workload="orchestrator" data-name="pack-leader">
+                <div class="agent-header">
+                    <div class="agent-avatar">🐺</div>
+                    <div>
+                        <div class="agent-name">pack-leader</div>
+                        <div class="agent-type">Orchestrator</div>
+                    </div>
+                </div>
+                <div class="agent-description">
+                    Primary orchestrator for complex multi-step tasks. Manages delegation to specialist agents and synthesizes results.
+                </div>
+                <div class="agent-capabilities">
+                    <div class="capability-title">Capabilities</div>
+                    <div class="capability-list">
+                        <span class="capability-tag">Task Planning</span>
+                        <span class="capability-tag">Agent Delegation</span>
+                        <span class="capability-tag">Result Synthesis</span>
+                        <span class="capability-tag">OODA Loop</span>
+                    </div>
+                </div>
+                <div class="agent-tools">
+                    <div class="tools-title">Tools</div>
+                    <span class="tool-badge">invoke_agent</span>
+                    <span class="tool-badge">edit_file</span>
+                    <span class="tool-badge">ask_user_question</span>
+                    <span class="tool-badge">agent_run_shell_command</span>
+                </div>
+                <div class="when-to-use">
+                    <div class="when-to-use-title">When to Invoke</div>
+                    <ul>
+                        <li>Complex tasks requiring multiple agents</li>
+                        <li>Planning and coordination work</li>
+                        <li>When synthesis of multiple perspectives needed</li>
+                    </ul>
+                </div>
+                <div class="agent-model">
+                    <span class="model-label">Model:</span>
+                    <span class="model-value">Kimi K2.5</span>
+                    <span class="model-fallback">→ GPT-4o → Claude 3.5</span>
+                </div>
+            </div>
+
+            <div class="agent-card orchestrator" data-workload="orchestrator" data-name="helios">
+                <div class="agent-header">
+                    <div class="agent-avatar">☀️</div>
+                    <div>
+                        <div class="agent-name">helios</div>
+                        <div class="agent-type">Orchestrator</div>
+                    </div>
+                </div>
+                <div class="agent-description">
+                    High-level strategic planner for project architecture. Provides bird's-eye view of project structure and dependencies.
+                </div>
+                <div class="agent-capabilities">
+                    <div class="capability-title">Capabilities</div>
+                    <div class="capability-list">
+                        <span class="capability-tag">Architecture Design</span>
+                        <span class="capability-tag">Strategic Planning</span>
+                        <span class="capability-tag">Dependency Analysis</span>
+                    </div>
+                </div>
+                <div class="when-to-use">
+                    <div class="when-to-use-title">When to Invoke</div>
+                    <ul>
+                        <li>System architecture decisions</li>
+                        <li>High-level project planning</li>
+                        <li>Evaluating design trade-offs</li>
+                    </ul>
+                </div>
+                <div class="agent-model">
+                    <span class="model-label">Model:</span>
+                    <span class="model-value">Kimi K2.5</span>
+                </div>
+            </div>
+
+            <div class="agent-card orchestrator" data-workload="orchestrator" data-name="planning-agent">
+                <div class="agent-header">
+                    <div class="agent-avatar">📋</div>
+                    <div>
+                        <div class="agent-name">planning-agent</div>
+                        <div class="agent-type">Orchestrator</div>
+                    </div>
+                </div>
+                <div class="agent-description">
+                    Creates detailed BUILD.md with phases, milestones, and checkpoints. Specializes in breaking down complex work.
+                </div>
+                <div class="agent-capabilities">
+                    <div class="capability-title">Capabilities</div>
+                    <div class="capability-list">
+                        <span class="capability-tag">BUILD.md Generation</span>
+                        <span class="capability-tag">Milestone Planning</span>
+                        <span class="capability-tag">Checkpoint Design</span>
+                    </div>
+                </div>
+                <div class="when-to-use">
+                    <div class="when-to-use-title">When to Invoke</div>
+                    <ul>
+                        <li>Creating or updating BUILD.md</li>
+                        <li>Breaking down large features</li>
+                        <li>Sprint/milestone planning</li>
+                    </ul>
+                </div>
+                <div class="agent-model">
+                    <span class="model-label">Model:</span>
+                    <span class="model-value">Kimi K2.5</span>
+                </div>
+            </div>
+
+            <div class="agent-card orchestrator" data-workload="orchestrator" data-name="agent-creator">
+                <div class="agent-header">
+                    <div class="agent-avatar">🔧</div>
+                    <div>
+                        <div class="agent-name">agent-creator</div>
+                        <div class="agent-type">Orchestrator</div>
+                    </div>
+                </div>
+                <div class="agent-description">
+                    Creates new agent definitions with proper prompts, tools, and configurations. Meta-agent for growing the pack.
+                </div>
+                <div class="agent-capabilities">
+                    <div class="capability-title">Capabilities</div>
+                    <div class="capability-list">
+                        <span class="capability-tag">Agent Design</span>
+                        <span class="capability-tag">Prompt Engineering</span>
+                        <span class="capability-tag">Tool Configuration</span>
+                    </div>
+                </div>
+                <div class="when-to-use">
+                    <div class="when-to-use-title">When to Invoke</div>
+                    <ul>
+                        <li>Creating new specialized agents</li>
+                        <li>Refining existing agent prompts</li>
+                        <li>Adding new tool capabilities</li>
+                    </ul>
+                </div>
+                <div class="agent-model">
+                    <span class="model-label">Model:</span>
+                    <span class="model-value">Kimi K2.5</span>
+                </div>
+            </div>
+
+            <!-- REASONING Agents -->
+            <div class="agent-card reasoning" data-workload="reasoning" data-name="security-auditor">
+                <div class="agent-header">
+                    <div class="agent-avatar">🛡️</div>
+                    <div>
+                        <div class="agent-name">security-auditor</div>
+                        <div class="agent-type">Reasoning</div>
+                    </div>
+                </div>
+                <div class="agent-description">
+                    Deep security analysis for auth flows, crypto, input validation, and sensitive data handling. Finds vulnerabilities before attackers do.
+                </div>
+                <div class="agent-capabilities">
+                    <div class="capability-title">Capabilities</div>
+                    <div class="capability-list">
+                        <span class="capability-tag">Auth Review</span>
+                        <span class="capability-tag">Crypto Analysis</span>
+                        <span class="capability-tag">Input Validation</span>
+                        <span class="capability-tag">OWASP Checks</span>
+                    </div>
+                </div>
+                <div class="agent-tools">
+                    <div class="tools-title">Tools</div>
+                    <span class="tool-badge">read_file</span>
+                    <span class="tool-badge">grep_codebase</span>
+                    <span class="tool-badge">analyze_dependencies</span>
+                </div>
+                <div class="when-to-use">
+                    <div class="when-to-use-title">When to Invoke</div>
+                    <ul>
+                        <li>Any code touching auth/secrets/crypto</li>
+                        <li>Before deploying user-facing features</li>
+                        <li>After adding new dependencies</li>
+                    </ul>
+                </div>
+                <div class="agent-model">
+                    <span class="model-label">Model:</span>
+                    <span class="model-value">DeepSeek R1</span>
+                    <span class="model-fallback">→ o1-mini → Claude 3.5</span>
+                </div>
+            </div>
+
+            <div class="agent-card reasoning" data-workload="reasoning" data-name="code-reviewer">
+                <div class="agent-header">
+                    <div class="agent-avatar">👀</div>
+                    <div>
+                        <div class="agent-name">code-reviewer</div>
+                        <div class="agent-type">Reasoning</div>
+                    </div>
+                </div>
+                <div class="agent-description">
+                    Thorough code review focusing on correctness, maintainability, edge cases, and best practices.
+                </div>
+                <div class="agent-capabilities">
+                    <div class="capability-title">Capabilities</div>
+                    <div class="capability-list">
+                        <span class="capability-tag">Logic Review</span>
+                        <span class="capability-tag">Edge Case Detection</span>
+                        <span class="capability-tag">Best Practices</span>
+                        <span class="capability-tag">Code Smells</span>
+                    </div>
+                </div>
+                <div class="when-to-use">
+                    <div class="when-to-use-title">When to Invoke</div>
+                    <ul>
+                        <li>Before merging significant changes</li>
+                        <li>When reviewing complex algorithms</li>
+                        <li>Finding potential bugs</li>
+                    </ul>
+                </div>
+                <div class="agent-model">
+                    <span class="model-label">Model:</span>
+                    <span class="model-value">DeepSeek R1</span>
+                </div>
+            </div>
+
+            <div class="agent-card reasoning" data-workload="reasoning" data-name="qa-expert">
+                <div class="agent-header">
+                    <div class="agent-avatar">🧪</div>
+                    <div>
+                        <div class="agent-name">qa-expert</div>
+                        <div class="agent-type">Reasoning</div>
+                    </div>
+                </div>
+                <div class="agent-description">
+                    Quality assurance specialist for test strategy, coverage analysis, and identifying testing gaps.
+                </div>
+                <div class="agent-capabilities">
+                    <div class="capability-title">Capabilities</div>
+                    <div class="capability-list">
+                        <span class="capability-tag">Test Strategy</span>
+                        <span class="capability-tag">Coverage Analysis</span>
+                        <span class="capability-tag">Test Planning</span>
+                        <span class="capability-tag">Bug Prediction</span>
+                    </div>
+                </div>
+                <div class="when-to-use">
+                    <div class="when-to-use-title">When to Invoke</div>
+                    <ul>
+                        <li>Planning test strategy</li>
+                        <li>Analyzing coverage gaps</li>
+                        <li>Prioritizing test efforts</li>
+                    </ul>
+                </div>
+                <div class="agent-model">
+                    <span class="model-label">Model:</span>
+                    <span class="model-value">DeepSeek R1</span>
+                </div>
+            </div>
+
+            <div class="agent-card reasoning" data-workload="reasoning" data-name="shepherd">
+                <div class="agent-header">
+                    <div class="agent-avatar">🐑</div>
+                    <div>
+                        <div class="agent-name">shepherd</div>
+                        <div class="agent-type">Reasoning</div>
+                    </div>
+                </div>
+                <div class="agent-description">
+                    Watches over agent delegations and quality. Ensures agents stay on track and produce quality work.
+                </div>
+                <div class="agent-capabilities">
+                    <div class="capability-title">Capabilities</div>
+                    <div class="capability-list">
+                        <span class="capability-tag">Quality Control</span>
+                        <span class="capability-tag">Progress Tracking</span>
+                        <span class="capability-tag">Course Correction</span>
+                    </div>
+                </div>
+                <div class="when-to-use">
+                    <div class="when-to-use-title">When to Invoke</div>
+                    <ul>
+                        <li>Long-running multi-agent tasks</li>
+                        <li>Quality assurance checkpoints</li>
+                        <li>When agents may be going off-track</li>
+                    </ul>
+                </div>
+                <div class="agent-model">
+                    <span class="model-label">Model:</span>
+                    <span class="model-value">DeepSeek R1</span>
+                </div>
+            </div>
+
+            <div class="agent-card reasoning" data-workload="reasoning" data-name="watchdog">
+                <div class="agent-header">
+                    <div class="agent-avatar">🐕</div>
+                    <div>
+                        <div class="agent-name">watchdog</div>
+                        <div class="agent-type">Reasoning</div>
+                    </div>
+                </div>
+                <div class="agent-description">
+                    Monitors system health, detects anomalies, and raises alerts for potential issues.
+                </div>
+                <div class="agent-capabilities">
+                    <div class="capability-title">Capabilities</div>
+                    <div class="capability-list">
+                        <span class="capability-tag">Anomaly Detection</span>
+                        <span class="capability-tag">Health Monitoring</span>
+                        <span class="capability-tag">Alert Generation</span>
+                    </div>
+                </div>
+                <div class="when-to-use">
+                    <div class="when-to-use-title">When to Invoke</div>
+                    <ul>
+                        <li>System health checks</li>
+                        <li>Post-deployment verification</li>
+                        <li>When issues suspected</li>
+                    </ul>
+                </div>
+                <div class="agent-model">
+                    <span class="model-label">Model:</span>
+                    <span class="model-value">DeepSeek R1</span>
+                </div>
+            </div>
+
+            <!-- CODING Agents -->
+            <div class="agent-card coding" data-workload="coding" data-name="python-programmer">
+                <div class="agent-header">
+                    <div class="agent-avatar">🐍</div>
+                    <div>
+                        <div class="agent-name">python-programmer</div>
+                        <div class="agent-type">Coding</div>
+                    </div>
+                </div>
+                <div class="agent-description">
+                    Expert Python developer for implementation, refactoring, and Python-specific patterns. Writes clean, idiomatic code.
+                </div>
+                <div class="agent-capabilities">
+                    <div class="capability-title">Capabilities</div>
+                    <div class="capability-list">
+                        <span class="capability-tag">Implementation</span>
+                        <span class="capability-tag">Refactoring</span>
+                        <span class="capability-tag">Async/Await</span>
+                        <span class="capability-tag">Type Hints</span>
+                    </div>
+                </div>
+                <div class="agent-tools">
+                    <div class="tools-title">Tools</div>
+                    <span class="tool-badge">edit_file</span>
+                    <span class="tool-badge">create_file</span>
+                    <span class="tool-badge">agent_run_shell_command</span>
+                </div>
+                <div class="when-to-use">
+                    <div class="when-to-use-title">When to Invoke</div>
+                    <ul>
+                        <li>Creating or modifying Python files</li>
+                        <li>Implementing new features</li>
+                        <li>Refactoring existing code</li>
+                    </ul>
+                </div>
+                <div class="agent-model">
+                    <span class="model-label">Model:</span>
+                    <span class="model-value">Cerebras GLM 4.7</span>
+                    <span class="model-fallback">→ Claude 3.5 → GPT-4o</span>
+                </div>
+            </div>
+
+            <div class="agent-card coding" data-workload="coding" data-name="test-generator">
+                <div class="agent-header">
+                    <div class="agent-avatar">✅</div>
+                    <div>
+                        <div class="agent-name">test-generator</div>
+                        <div class="agent-type">Coding</div>
+                    </div>
+                </div>
+                <div class="agent-description">
+                    Generates comprehensive pytest tests with fixtures, edge cases, and proper organization.
+                </div>
+                <div class="agent-capabilities">
+                    <div class="capability-title">Capabilities</div>
+                    <div class="capability-list">
+                        <span class="capability-tag">pytest</span>
+                        <span class="capability-tag">Fixtures</span>
+                        <span class="capability-tag">Mocking</span>
+                        <span class="capability-tag">Edge Cases</span>
+                    </div>
+                </div>
+                <div class="when-to-use">
+                    <div class="when-to-use-title">When to Invoke</div>
+                    <ul>
+                        <li>Writing tests for new features</li>
+                        <li>Improving test coverage</li>
+                        <li>Creating test fixtures</li>
+                    </ul>
+                </div>
+                <div class="agent-model">
+                    <span class="model-label">Model:</span>
+                    <span class="model-value">Cerebras GLM 4.7</span>
+                </div>
+            </div>
+
+            <div class="agent-card coding" data-workload="coding" data-name="terminal-qa">
+                <div class="agent-header">
+                    <div class="agent-avatar">💻</div>
+                    <div>
+                        <div class="agent-name">terminal-qa</div>
+                        <div class="agent-type">Coding</div>
+                    </div>
+                </div>
+                <div class="agent-description">
+                    Runs shell commands to verify behavior, test scripts, and validate system state.
+                </div>
+                <div class="agent-capabilities">
+                    <div class="capability-title">Capabilities</div>
+                    <div class="capability-list">
+                        <span class="capability-tag">Shell Commands</span>
+                        <span class="capability-tag">Script Testing</span>
+                        <span class="capability-tag">System Verification</span>
+                    </div>
+                </div>
+                <div class="when-to-use">
+                    <div class="when-to-use-title">When to Invoke</div>
+                    <ul>
+                        <li>Running test commands</li>
+                        <li>Verifying system state</li>
+                        <li>Script execution and testing</li>
+                    </ul>
+                </div>
+                <div class="agent-model">
+                    <span class="model-label">Model:</span>
+                    <span class="model-value">Cerebras GLM 4.7</span>
+                </div>
+            </div>
+
+            <div class="agent-card coding" data-workload="coding" data-name="husky">
+                <div class="agent-header">
+                    <div class="agent-avatar">🐕‍🦺</div>
+                    <div>
+                        <div class="agent-name">husky</div>
+                        <div class="agent-type">Coding</div>
+                    </div>
+                </div>
+                <div class="agent-description">
+                    General-purpose coding assistant for quick fixes, one-off tasks, and simple implementations.
+                </div>
+                <div class="agent-capabilities">
+                    <div class="capability-title">Capabilities</div>
+                    <div class="capability-list">
+                        <span class="capability-tag">Quick Fixes</span>
+                        <span class="capability-tag">Small Tasks</span>
+                        <span class="capability-tag">Utilities</span>
+                    </div>
+                </div>
+                <div class="when-to-use">
+                    <div class="when-to-use-title">When to Invoke</div>
+                    <ul>
+                        <li>Small, quick code changes</li>
+                        <li>Utility script creation</li>
+                        <li>When specialist not needed</li>
+                    </ul>
+                </div>
+                <div class="agent-model">
+                    <span class="model-label">Model:</span>
+                    <span class="model-value">Cerebras GLM 4.7</span>
+                </div>
+            </div>
+
+            <!-- LIBRARIAN Agents -->
+            <div class="agent-card librarian" data-workload="librarian" data-name="doc-writer">
+                <div class="agent-header">
+                    <div class="agent-avatar">📝</div>
+                    <div>
+                        <div class="agent-name">doc-writer</div>
+                        <div class="agent-type">Librarian</div>
+                    </div>
+                </div>
+                <div class="agent-description">
+                    Technical writer for README, docstrings, API docs, and user guides. Makes code understandable.
+                </div>
+                <div class="agent-capabilities">
+                    <div class="capability-title">Capabilities</div>
+                    <div class="capability-list">
+                        <span class="capability-tag">README</span>
+                        <span class="capability-tag">Docstrings</span>
+                        <span class="capability-tag">API Docs</span>
+                        <span class="capability-tag">Tutorials</span>
+                    </div>
+                </div>
+                <div class="agent-tools">
+                    <div class="tools-title">Tools</div>
+                    <span class="tool-badge">edit_file</span>
+                    <span class="tool-badge">read_file</span>
+                    <span class="tool-badge">create_file</span>
+                </div>
+                <div class="when-to-use">
+                    <div class="when-to-use-title">When to Invoke</div>
+                    <ul>
+                        <li>Writing or updating documentation</li>
+                        <li>Adding docstrings to code</li>
+                        <li>Creating user guides</li>
+                    </ul>
+                </div>
+                <div class="agent-model">
+                    <span class="model-label">Model:</span>
+                    <span class="model-value">Claude 3.5 Haiku</span>
+                    <span class="model-fallback">→ GPT-4o-mini</span>
+                </div>
+            </div>
+
+            <div class="agent-card librarian" data-workload="librarian" data-name="file-summarizer">
+                <div class="agent-header">
+                    <div class="agent-avatar">📄</div>
+                    <div>
+                        <div class="agent-name">file-summarizer</div>
+                        <div class="agent-type">Librarian</div>
+                    </div>
+                </div>
+                <div class="agent-description">
+                    Creates concise summaries of files, modules, and codebases for context and onboarding.
+                </div>
+                <div class="agent-capabilities">
+                    <div class="capability-title">Capabilities</div>
+                    <div class="capability-list">
+                        <span class="capability-tag">File Summaries</span>
+                        <span class="capability-tag">Module Overview</span>
+                        <span class="capability-tag">Context Building</span>
+                    </div>
+                </div>
+                <div class="when-to-use">
+                    <div class="when-to-use-title">When to Invoke</div>
+                    <ul>
+                        <li>Building context on large files</li>
+                        <li>Onboarding to new codebases</li>
+                        <li>Creating architecture overviews</li>
+                    </ul>
+                </div>
+                <div class="agent-model">
+                    <span class="model-label">Model:</span>
+                    <span class="model-value">Claude 3.5 Haiku</span>
+                </div>
+            </div>
+
+            <div class="agent-card librarian" data-workload="librarian" data-name="bloodhound">
+                <div class="agent-header">
+                    <div class="agent-avatar">🔍</div>
+                    <div>
+                        <div class="agent-name">bloodhound</div>
+                        <div class="agent-type">Librarian</div>
+                    </div>
+                </div>
+                <div class="agent-description">
+                    Expert codebase searcher. Finds references, tracks down bugs, and locates relevant code.
+                </div>
+                <div class="agent-capabilities">
+                    <div class="capability-title">Capabilities</div>
+                    <div class="capability-list">
+                        <span class="capability-tag">Code Search</span>
+                        <span class="capability-tag">Reference Tracking</span>
+                        <span class="capability-tag">Bug Hunting</span>
+                    </div>
+                </div>
+                <div class="agent-tools">
+                    <div class="tools-title">Tools</div>
+                    <span class="tool-badge">grep_codebase</span>
+                    <span class="tool-badge">find_references</span>
+                    <span class="tool-badge">read_file</span>
+                </div>
+                <div class="when-to-use">
+                    <div class="when-to-use-title">When to Invoke</div>
+                    <ul>
+                        <li>Finding where something is used</li>
+                        <li>Tracking down bugs</li>
+                        <li>Understanding code flow</li>
+                    </ul>
+                </div>
+                <div class="agent-model">
+                    <span class="model-label">Model:</span>
+                    <span class="model-value">Claude 3.5 Haiku</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Model Summary -->
+        <div class="panel">
+            <div class="panel-title">📊 Model Assignment Summary</div>
+            <table>
+                <tr>
+                    <th>Workload Type</th>
+                    <th>Primary Model</th>
+                    <th>Fallback Chain</th>
+                    <th>Best For</th>
+                </tr>
+                <tr>
+                    <td><span style="color: #ec4899;">● ORCHESTRATOR</span></td>
+                    <td>Kimi K2.5</td>
+                    <td>GPT-4o → Claude 3.5 Sonnet</td>
+                    <td>Long context, planning, synthesis</td>
+                </tr>
+                <tr>
+                    <td><span style="color: #8b5cf6;">● REASONING</span></td>
+                    <td>DeepSeek R1</td>
+                    <td>o1-mini → Claude 3.5 Sonnet</td>
+                    <td>Complex analysis, deep thinking</td>
+                </tr>
+                <tr>
+                    <td><span style="color: #3b82f6;">● CODING</span></td>
+                    <td>Cerebras GLM 4.7</td>
+                    <td>Claude 3.5 Sonnet → GPT-4o</td>
+                    <td>Fast code generation, implementation</td>
+                </tr>
+                <tr>
+                    <td><span style="color: #10b981;">● LIBRARIAN</span></td>
+                    <td>Claude 3.5 Haiku</td>
+                    <td>GPT-4o-mini</td>
+                    <td>Documentation, search, summaries</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let currentWorkload = 'all';
+
+        function filterWorkload(workload) {
+            currentWorkload = workload;
+            
+            // Update workload cards
+            document.querySelectorAll('.workload-card').forEach(card => {
+                card.classList.remove('active');
+                if (card.classList.contains(workload)) {
+                    card.classList.add('active');
+                }
+            });
+
+            // Update filter buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent.toLowerCase().includes(workload) || 
+                    (workload === 'all' && btn.textContent === 'All')) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Filter agent cards
+            document.querySelectorAll('.agent-card').forEach(card => {
+                if (workload === 'all' || card.dataset.workload === workload) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        function searchAgents(query) {
+            const lowerQuery = query.toLowerCase();
+            document.querySelectorAll('.agent-card').forEach(card => {
+                const name = card.dataset.name.toLowerCase();
+                const workload = card.dataset.workload.toLowerCase();
+                const text = card.textContent.toLowerCase();
+                
+                const matchesSearch = name.includes(lowerQuery) || 
+                                     workload.includes(lowerQuery) || 
+                                     text.includes(lowerQuery);
+                const matchesWorkload = currentWorkload === 'all' || 
+                                       card.dataset.workload === currentWorkload;
+                
+                if (matchesSearch && matchesWorkload) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

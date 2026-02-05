@@ -63,8 +63,17 @@ class TestAgentPinnedModels:
         result = get_agent_pinned_model(agent_name)
         assert result == "" or result is None
 
-    def test_base_agent_get_model_name(self):
+    def test_base_agent_get_model_name(self, monkeypatch):
         """Test BaseAgent.get_model_name() returns pinned model."""
+        # Mock orchestrator to disable workload routing for this test
+        mock_orch_class = type("MockOrchestrator", (), {
+            "get_model_for_agent": lambda self, name: None
+        })
+        monkeypatch.setattr(
+            "code_puppy.core.agent_orchestration.AgentOrchestrator",
+            mock_orch_class,
+        )
+        
         agent = CodePuppyAgent()
         agent_name = agent.name  # "code-puppy"
         model_name = "gpt-4o-mini"

@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logfire Telemetry - Epistemic Architect</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 50%, #0d1117 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        .container { max-width: 1400px; margin: 0 auto; padding: 30px 20px; }
+
+        /* Navigation */
+        .nav-bar {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 15px 20px;
+            background: rgba(30, 30, 60, 0.8);
+            border-radius: 12px;
+        }
+
+        .nav-bar a {
+            color: #888;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .nav-bar a:hover { color: #7c3aed; }
+        .nav-bar a.active { color: #f59e0b; font-weight: 600; }
+
+        .nav-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #f59e0b;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #f59e0b, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle { color: #888; margin-bottom: 30px; font-size: 1.1rem; }
+
+        /* Grid Layout */
+        .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+
+        @media (max-width: 1000px) {
+            .grid-2, .grid-3 { grid-template-columns: 1fr; }
+        }
+
+        /* Panels */
+        .panel {
+            background: rgba(30, 30, 60, 0.8);
+            border-radius: 16px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .panel-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #f59e0b;
+        }
+
+        /* Event Cards */
+        .event-card {
+            background: rgba(40, 40, 70, 0.6);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid;
+            transition: all 0.3s ease;
+        }
+
+        .event-card:hover {
+            background: rgba(50, 50, 80, 0.8);
+            transform: translateX(5px);
+        }
+
+        .event-card.info { border-left-color: #3b82f6; }
+        .event-card.warn { border-left-color: #f59e0b; }
+        .event-card.success { border-left-color: #10b981; }
+        .event-card.error { border-left-color: #ef4444; }
+
+        .event-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .event-name {
+            font-weight: 700;
+            font-size: 1rem;
+            color: #fff;
+        }
+
+        .event-source {
+            font-size: 0.75rem;
+            color: #888;
+            background: rgba(100, 100, 150, 0.3);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: 'Monaco', monospace;
+        }
+
+        .event-desc {
+            color: #aaa;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .event-fields {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .field-tag {
+            padding: 4px 10px;
+            background: rgba(100, 100, 150, 0.3);
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-family: 'Monaco', monospace;
+            color: #c4b5fd;
+        }
+
+        /* Code Blocks */
+        .code-block {
+            background: #1a1a2e;
+            border-radius: 10px;
+            padding: 20px;
+            overflow-x: auto;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            margin: 15px 0;
+        }
+
+        .code-block .keyword { color: #c792ea; }
+        .code-block .string { color: #c3e88d; }
+        .code-block .comment { color: #546e7a; }
+        .code-block .function { color: #82aaff; }
+        .code-block .variable { color: #f78c6c; }
+
+        /* SQL Query Blocks */
+        .sql-block {
+            background: #1a1a2e;
+            border-radius: 10px;
+            padding: 20px;
+            font-family: 'Monaco', monospace;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            margin: 15px 0;
+            border-left: 4px solid #00d4ff;
+        }
+
+        .sql-block .keyword { color: #7c3aed; font-weight: bold; }
+        .sql-block .string { color: #10b981; }
+        .sql-block .comment { color: #666; }
+
+        /* Dashboard Cards */
+        .dashboard-card {
+            background: rgba(40, 40, 70, 0.6);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .dashboard-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .dashboard-label {
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        .dashboard-card.healthy .dashboard-value { color: #10b981; }
+        .dashboard-card.warning .dashboard-value { color: #f59e0b; }
+        .dashboard-card.critical .dashboard-value { color: #ef4444; }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 10px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: transparent;
+            border: none;
+            color: #888;
+            font-size: 0.95rem;
+            cursor: pointer;
+            border-radius: 8px 8px 0 0;
+            transition: all 0.2s;
+        }
+
+        .tab:hover { color: #fff; background: rgba(100, 100, 150, 0.2); }
+        .tab.active { color: #f59e0b; background: rgba(245, 158, 11, 0.2); }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        th {
+            background: rgba(100, 100, 150, 0.2);
+            font-weight: 600;
+            color: #f59e0b;
+        }
+
+        td { color: #ccc; }
+        tr:hover td { background: rgba(100, 100, 150, 0.1); }
+
+        /* Live Stream */
+        .live-stream {
+            max-height: 400px;
+            overflow-y: auto;
+            background: #0a0a15;
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .stream-event {
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            font-family: 'Monaco', monospace;
+            font-size: 0.8rem;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .stream-event.info { background: rgba(59, 130, 246, 0.2); border-left: 3px solid #3b82f6; }
+        .stream-event.warn { background: rgba(245, 158, 11, 0.2); border-left: 3px solid #f59e0b; }
+        .stream-event.success { background: rgba(16, 185, 129, 0.2); border-left: 3px solid #10b981; }
+        .stream-event.error { background: rgba(239, 68, 68, 0.2); border-left: 3px solid #ef4444; }
+
+        .stream-time { color: #666; margin-right: 10px; }
+        .stream-msg { color: #ddd; }
+
+        /* Architecture Diagram */
+        .telemetry-flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            padding: 30px;
+            background: rgba(20, 20, 40, 0.5);
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+
+        .flow-node {
+            padding: 15px 20px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .flow-arrow { font-size: 1.5rem; color: #666; }
+
+        .flow-node.source { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+        .flow-node.logfire { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .flow-node.query { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+        .flow-node.dashboard { background: linear-gradient(135deg, #10b981, #059669); }
+
+        /* Copy Button */
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            background: rgba(100, 100, 150, 0.5);
+            border: none;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover { background: #7c3aed; }
+
+        .code-wrapper { position: relative; }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(30, 30, 60, 0.5); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: rgba(124, 58, 237, 0.5); border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Navigation -->
+        <div class="nav-bar">
+            <div class="nav-title">🔥 Logfire Telemetry</div>
+            <a href="epistemic-architect-diagram.html">Architecture</a>
+            <a href="telemetry.html" class="active">Telemetry</a>
+            <a href="ooda-failover.html">OODA & Failover</a>
+            <a href="phases.html">Phases</a>
+            <a href="rules.html">Rules</a>
+            <a href="agents.html">Agents</a>
+        </div>
+
+        <h1>🔥 Logfire Observability</h1>
+        <p class="subtitle">Complete telemetry integration for BART System monitoring and debugging</p>
+
+        <!-- Dashboard Overview -->
+        <div class="panel">
+            <div class="panel-title">📊 Health Dashboard</div>
+            <div class="grid-3" style="gap: 15px;">
+                <div class="dashboard-card healthy">
+                    <div class="dashboard-value">98.2%</div>
+                    <div class="dashboard-label">Loop Completion Rate</div>
+                </div>
+                <div class="dashboard-card healthy">
+                    <div class="dashboard-value">3.2%</div>
+                    <div class="dashboard-label">Failover Rate</div>
+                </div>
+                <div class="dashboard-card healthy">
+                    <div class="dashboard-value">0.72</div>
+                    <div class="dashboard-label">Avg Confidence</div>
+                </div>
+                <div class="dashboard-card warning">
+                    <div class="dashboard-value">12</div>
+                    <div class="dashboard-label">Rate Limits (24h)</div>
+                </div>
+                <div class="dashboard-card healthy">
+                    <div class="dashboard-value">847</div>
+                    <div class="dashboard-label">Agent Delegations</div>
+                </div>
+                <div class="dashboard-card healthy">
+                    <div class="dashboard-value">94%</div>
+                    <div class="dashboard-label">Auth Pre-Flight Pass</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Telemetry Architecture -->
+        <div class="panel">
+            <div class="panel-title">🏗️ Telemetry Architecture</div>
+            <div class="telemetry-flow">
+                <div class="flow-node source">📦 Source Files<br><small>observability.py<br>failover_model.py<br>base_agent.py</small></div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-node logfire">🔥 Pydantic Logfire<br><small>logfire.info()<br>logfire.warn()<br>logfire.span()</small></div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-node query">🔍 Query API<br><small>SQL over HTTP<br>Real-time events</small></div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-node dashboard">📊 Dashboards<br><small>Health checks<br>Alerts</small></div>
+            </div>
+        </div>
+
+        <!-- Tabs for Event Categories -->
+        <div class="panel">
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('workload')">Workload Routing</button>
+                <button class="tab" onclick="showTab('failover')">Failover Events</button>
+                <button class="tab" onclick="showTab('delegation')">Agent Delegation</button>
+                <button class="tab" onclick="showTab('ear')">EAR Phases</button>
+                <button class="tab" onclick="showTab('auth')">Pre-Flight Auth</button>
+            </div>
+
+            <!-- Workload Routing Events -->
+            <div id="workload" class="tab-content active">
+                <div class="event-card info">
+                    <div class="event-header">
+                        <div class="event-name">Workload Model Assignment</div>
+                        <div class="event-source">base_agent.py → get_model_name()</div>
+                    </div>
+                    <div class="event-desc">
+                        Emitted when an agent is assigned a model based on its workload type. Verifies agents use 
+                        workload-appropriate models (CODING → GLM-4.7, ORCHESTRATOR → Kimi K2.5).
+                    </div>
+                    <div class="event-fields">
+                        <span class="field-tag">agent</span>
+                        <span class="field-tag">workload</span>
+                        <span class="field-tag">orchestrated_model</span>
+                        <span class="field-tag">default_model</span>
+                    </div>
+                </div>
+
+                <div class="code-wrapper">
+                    <div class="code-block">
+<span class="function">logfire</span>.<span class="keyword">info</span>(
+    <span class="string">"Workload routing: {agent} → {workload} → {model}"</span>,
+    agent=agent_name,
+    workload=workload_type,
+    orchestrated_model=model_from_orchestrator,
+    default_model=fallback_model,
+)
+                    </div>
+                </div>
+
+                <h4 style="margin: 20px 0 10px; color: #00d4ff;">Verification Query</h4>
+                <div class="sql-block">
+<span class="keyword">SELECT</span> 
+    attributes->>'agent' <span class="keyword">as</span> agent,
+    attributes->>'workload' <span class="keyword">as</span> workload,
+    attributes->>'orchestrated_model' <span class="keyword">as</span> model,
+    <span class="keyword">COUNT</span>(*) <span class="keyword">as</span> calls
+<span class="keyword">FROM</span> records 
+<span class="keyword">WHERE</span> message <span class="keyword">LIKE</span> <span class="string">'Workload routing%'</span>
+  <span class="keyword">AND</span> start_timestamp > <span class="keyword">NOW</span>() - <span class="keyword">INTERVAL</span> <span class="string">'12 hours'</span>
+<span class="keyword">GROUP BY</span> 1, 2, 3
+<span class="keyword">ORDER BY</span> calls <span class="keyword">DESC</span>
+                </div>
+
+                <h4 style="margin: 20px 0 10px; color: #00d4ff;">Expected Behavior</h4>
+                <table>
+                    <tr><th>Agent</th><th>Workload</th><th>Expected Model</th></tr>
+                    <tr><td>husky, terrier, retriever</td><td>CODING</td><td>Cerebras-GLM-4.7</td></tr>
+                    <tr><td>pack-leader, helios</td><td>ORCHESTRATOR</td><td>Kimi-K2.5 / Claude Opus</td></tr>
+                    <tr><td>security-auditor, code-reviewer</td><td>REASONING</td><td>DeepSeek R1 / GPT-5.2</td></tr>
+                    <tr><td>doc-writer, file-summarizer</td><td>LIBRARIAN</td><td>Haiku / Gemini Flash</td></tr>
+                </table>
+            </div>
+
+            <!-- Failover Events -->
+            <div id="failover" class="tab-content">
+                <div class="event-card warn">
+                    <div class="event-header">
+                        <div class="event-name">Failover Triggered</div>
+                        <div class="event-source">failover_model.py</div>
+                    </div>
+                    <div class="event-desc">
+                        Emitted when a model fails and the system switches to the next model in the failover chain.
+                        Tracks error type (rate_limit, format_error, timeout) and workload context.
+                    </div>
+                    <div class="event-fields">
+                        <span class="field-tag">from_model</span>
+                        <span class="field-tag">to_model</span>
+                        <span class="field-tag">error_type</span>
+                        <span class="field-tag">workload</span>
+                        <span class="field-tag">attempt</span>
+                    </div>
+                </div>
+
+                <div class="event-card success">
+                    <div class="event-header">
+                        <div class="event-name">Failover Success</div>
+                        <div class="event-source">failover_model.py</div>
+                    </div>
+                    <div class="event-desc">
+                        Emitted when a failover model successfully processes a request.
+                    </div>
+                    <div class="event-fields">
+                        <span class="field-tag">model</span>
+                        <span class="field-tag">workload</span>
+                        <span class="field-tag">attempts</span>
+                    </div>
+                </div>
+
+                <div class="event-card warn">
+                    <div class="event-header">
+                        <div class="event-name">Rate Limit Recorded</div>
+                        <div class="event-source">failover_model.py</div>
+                    </div>
+                    <div class="event-desc">
+                        Emitted when a 429 rate limit is received. Tracks cooldown period and consecutive limit count.
+                    </div>
+                    <div class="event-fields">
+                        <span class="field-tag">model</span>
+                        <span class="field-tag">workload</span>
+                        <span class="field-tag">cooldown</span>
+                        <span class="field-tag">consecutive_429s</span>
+                    </div>
+                </div>
+
+                <div class="code-wrapper">
+                    <div class="code-block">
+<span class="comment"># Failover triggered</span>
+<span class="function">logfire</span>.<span class="keyword">warn</span>(
+    <span class="string">"Failover triggered: {from_model} → {to_model} ({error_type})"</span>,
+    from_model=failed_model_name,
+    to_model=next_model_name,
+    error_type=error_classification,
+    workload=workload_type,
+)
+
+<span class="comment"># Rate limit recorded</span>
+<span class="function">logfire</span>.<span class="keyword">warn</span>(
+    <span class="string">"Rate limit: {model} ({workload}) - cooldown {cooldown}s"</span>,
+    model=model_name,
+    workload=workload_type,
+    cooldown=cooldown_seconds,
+    consecutive_429s=consecutive_count,
+)
+                    </div>
+                </div>
+
+                <h4 style="margin: 20px 0 10px; color: #00d4ff;">Failover Monitoring Query</h4>
+                <div class="sql-block">
+<span class="keyword">SELECT</span> 
+    attributes->>'from_model' <span class="keyword">as</span> from_model,
+    attributes->>'to_model' <span class="keyword">as</span> to_model,
+    attributes->>'error_type' <span class="keyword">as</span> error_type,
+    <span class="keyword">COUNT</span>(*) <span class="keyword">as</span> failovers
+<span class="keyword">FROM</span> records 
+<span class="keyword">WHERE</span> message <span class="keyword">LIKE</span> <span class="string">'Failover triggered%'</span>
+  <span class="keyword">AND</span> start_timestamp > <span class="keyword">NOW</span>() - <span class="keyword">INTERVAL</span> <span class="string">'12 hours'</span>
+<span class="keyword">GROUP BY</span> 1, 2, 3
+<span class="keyword">ORDER BY</span> failovers <span class="keyword">DESC</span>
+                </div>
+            </div>
+
+            <!-- Agent Delegation Events -->
+            <div id="delegation" class="tab-content">
+                <div class="event-card info">
+                    <div class="event-header">
+                        <div class="event-name">OODA Delegation</div>
+                        <div class="event-source">observability.py → log_agent_delegation()</div>
+                    </div>
+                    <div class="event-desc">
+                        Emitted when one agent delegates work to another based on OODA phase.
+                        Tracks invoker → target, phase context, and workload type.
+                    </div>
+                    <div class="event-fields">
+                        <span class="field-tag">invoker</span>
+                        <span class="field-tag">target</span>
+                        <span class="field-tag">ooda_phase</span>
+                        <span class="field-tag">workload</span>
+                        <span class="field-tag">session_id</span>
+                    </div>
+                </div>
+
+                <div class="event-card success">
+                    <div class="event-header">
+                        <div class="event-name">Delegation Complete</div>
+                        <div class="event-source">observability.py → log_agent_delegation_complete()</div>
+                    </div>
+                    <div class="event-desc">
+                        Emitted when a delegation finishes. Tracks success/failure and duration.
+                    </div>
+                    <div class="event-fields">
+                        <span class="field-tag">invoker</span>
+                        <span class="field-tag">target</span>
+                        <span class="field-tag">success</span>
+                        <span class="field-tag">duration_seconds</span>
+                        <span class="field-tag">error</span>
+                    </div>
+                </div>
+
+                <div class="code-wrapper">
+                    <div class="code-block">
+<span class="function">logfire</span>.<span class="keyword">info</span>(
+    <span class="string">"OODA Delegation: {invoker} → {target} ({phase}, {workload})"</span>,
+    invoker=invoker,
+    target=target,
+    phase=ooda_phase,
+    workload=workload,
+    session_id=session_id,
+    is_new_session=is_new_session,
+)
+                    </div>
+                </div>
+
+                <h4 style="margin: 20px 0 10px; color: #00d4ff;">Delegation Analysis Query</h4>
+                <div class="sql-block">
+<span class="keyword">SELECT</span> 
+    attributes->>'invoker' <span class="keyword">as</span> invoker,
+    attributes->>'target' <span class="keyword">as</span> target,
+    attributes->>'phase' <span class="keyword">as</span> ooda_phase,
+    <span class="keyword">AVG</span>((attributes->>'duration_seconds')::float) <span class="keyword">as</span> avg_duration,
+    <span class="keyword">COUNT</span>(*) <span class="keyword">as</span> delegations
+<span class="keyword">FROM</span> records 
+<span class="keyword">WHERE</span> message <span class="keyword">LIKE</span> <span class="string">'OODA Delegation%'</span>
+  <span class="keyword">AND</span> start_timestamp > <span class="keyword">NOW</span>() - <span class="keyword">INTERVAL</span> <span class="string">'24 hours'</span>
+<span class="keyword">GROUP BY</span> 1, 2, 3
+<span class="keyword">ORDER BY</span> delegations <span class="keyword">DESC</span>
+                </div>
+            </div>
+
+            <!-- EAR Phase Events -->
+            <div id="ear" class="tab-content">
+                <div class="event-card info">
+                    <div class="event-header">
+                        <div class="event-name">EAR Phase Transition</div>
+                        <div class="event-source">ralph_loop.py</div>
+                    </div>
+                    <div class="event-desc">
+                        Tracks Ralph loop phase transitions (OBSERVE → ORIENT → DECIDE → ACT).
+                        Includes confidence scores and state snapshots.
+                    </div>
+                    <div class="event-fields">
+                        <span class="field-tag">loop_id</span>
+                        <span class="field-tag">from_phase</span>
+                        <span class="field-tag">to_phase</span>
+                        <span class="field-tag">confidence</span>
+                        <span class="field-tag">agent_id</span>
+                    </div>
+                </div>
+
+                <div class="event-card success">
+                    <div class="event-header">
+                        <div class="event-name">Loop Complete</div>
+                        <div class="event-source">ralph_loop.py</div>
+                    </div>
+                    <div class="event-desc">
+                        Emitted when a Ralph loop completes successfully. Tracks duration and artifacts produced.
+                    </div>
+                    <div class="event-fields">
+                        <span class="field-tag">loop_id</span>
+                        <span class="field-tag">duration_ms</span>
+                        <span class="field-tag">artifacts_produced</span>
+                        <span class="field-tag">final_confidence</span>
+                    </div>
+                </div>
+
+                <h4 style="margin: 20px 0 10px; color: #00d4ff;">EAR Health Query</h4>
+                <div class="sql-block">
+<span class="comment">-- Loop completion rate by phase</span>
+<span class="keyword">SELECT</span> 
+    attributes->>'to_phase' <span class="keyword">as</span> phase,
+    <span class="keyword">COUNT</span>(*) <span class="keyword">as</span> transitions,
+    <span class="keyword">AVG</span>((attributes->>'confidence')::float) <span class="keyword">as</span> avg_confidence
+<span class="keyword">FROM</span> records 
+<span class="keyword">WHERE</span> message <span class="keyword">LIKE</span> <span class="string">'EAR phase%'</span>
+  <span class="keyword">AND</span> start_timestamp > <span class="keyword">NOW</span>() - <span class="keyword">INTERVAL</span> <span class="string">'24 hours'</span>
+<span class="keyword">GROUP BY</span> 1
+<span class="keyword">ORDER BY</span> transitions <span class="keyword">DESC</span>
+                </div>
+            </div>
+
+            <!-- Pre-Flight Auth Events -->
+            <div id="auth" class="tab-content">
+                <div class="event-card info">
+                    <div class="event-header">
+                        <div class="event-name">Auth Requirement Detected</div>
+                        <div class="event-source">auth_preflight.py</div>
+                    </div>
+                    <div class="event-desc">
+                        Emitted when the pre-flight system detects an authentication requirement from project specs.
+                    </div>
+                    <div class="event-fields">
+                        <span class="field-tag">requirement_id</span>
+                        <span class="field-tag">category</span>
+                        <span class="field-tag">priority</span>
+                        <span class="field-tag">purpose</span>
+                    </div>
+                </div>
+
+                <div class="event-card success">
+                    <div class="event-header">
+                        <div class="event-name">Auth Verified</div>
+                        <div class="event-source">auth_preflight.py</div>
+                    </div>
+                    <div class="event-desc">
+                        Emitted when an auth requirement passes verification.
+                    </div>
+                    <div class="event-fields">
+                        <span class="field-tag">requirement_id</span>
+                        <span class="field-tag">verification_method</span>
+                        <span class="field-tag">status</span>
+                    </div>
+                </div>
+
+                <div class="event-card success">
+                    <div class="event-header">
+                        <div class="event-name">Pre-Flight Complete</div>
+                        <div class="event-source">auth_preflight.py</div>
+                    </div>
+                    <div class="event-desc">
+                        Summary event when all pre-flight checks complete. Indicates if Phase 2 can begin.
+                    </div>
+                    <div class="event-fields">
+                        <span class="field-tag">total_requirements</span>
+                        <span class="field-tag">passed</span>
+                        <span class="field-tag">failed</span>
+                        <span class="field-tag">ready_for_phase2</span>
+                    </div>
+                </div>
+
+                <h4 style="margin: 20px 0 10px; color: #00d4ff;">Pre-Flight Status Query</h4>
+                <div class="sql-block">
+<span class="keyword">SELECT</span> 
+    attributes->>'ready_for_phase2' <span class="keyword">as</span> ready,
+    <span class="keyword">SUM</span>((attributes->>'passed')::int) <span class="keyword">as</span> total_passed,
+    <span class="keyword">SUM</span>((attributes->>'failed')::int) <span class="keyword">as</span> total_failed,
+    <span class="keyword">COUNT</span>(*) <span class="keyword">as</span> preflight_runs
+<span class="keyword">FROM</span> records 
+<span class="keyword">WHERE</span> message <span class="keyword">LIKE</span> <span class="string">'Pre-flight auth: complete%'</span>
+  <span class="keyword">AND</span> start_timestamp > <span class="keyword">NOW</span>() - <span class="keyword">INTERVAL</span> <span class="string">'7 days'</span>
+<span class="keyword">GROUP BY</span> 1
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Stream Simulation -->
+        <div class="panel">
+            <div class="panel-title">📡 Live Telemetry Stream (Simulation)</div>
+            <div class="live-stream" id="live-stream">
+                <!-- Events added via JS -->
+            </div>
+            <div style="margin-top: 15px; display: flex; gap: 10px;">
+                <button onclick="startStream()" style="padding: 10px 20px; background: #10b981; border: none; border-radius: 8px; color: white; cursor: pointer;">▶️ Start Stream</button>
+                <button onclick="stopStream()" style="padding: 10px 20px; background: #ef4444; border: none; border-radius: 8px; color: white; cursor: pointer;">⏹️ Stop</button>
+                <button onclick="clearStream()" style="padding: 10px 20px; background: #6b7280; border: none; border-radius: 8px; color: white; cursor: pointer;">🗑️ Clear</button>
+            </div>
+        </div>
+
+        <!-- API Access -->
+        <div class="panel">
+            <div class="panel-title">🔑 Logfire API Access</div>
+            <div class="code-wrapper">
+                <div class="code-block">
+<span class="comment"># Query endpoint</span>
+BASE_URL=<span class="string">"https://logfire-api.pydantic.dev/v1/query"</span>
+
+<span class="comment"># Example: Last 12 hours of events</span>
+curl -H <span class="string">"Authorization: Bearer $LOGFIRE_READ_TOKEN"</span> \
+  <span class="string">"$BASE_URL?sql=SELECT * FROM records WHERE start_timestamp > NOW() - INTERVAL '12 hours'"</span>
+
+<span class="comment"># Python client</span>
+<span class="keyword">import</span> logfire
+
+logfire.configure(token=<span class="string">"your-token"</span>)
+
+<span class="comment"># Emit custom events</span>
+logfire.info(<span class="string">"Custom event: {data}"</span>, data={<span class="string">"key"</span>: <span class="string">"value"</span>})
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching
+        function showTab(id) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(id).classList.add('active');
+        }
+
+        // Live stream simulation
+        let streamInterval = null;
+        const sampleEvents = [
+            { type: 'info', msg: 'Workload routing: epistemic-architect → ORCHESTRATOR → kimi-k2.5' },
+            { type: 'info', msg: 'Request start: epistemic-architect using kimi-k2.5' },
+            { type: 'success', msg: 'EAR phase: OBSERVE → state captured (confidence: 0.72)' },
+            { type: 'info', msg: 'OODA Delegation: architect → security-auditor (ORIENT, REASONING)' },
+            { type: 'info', msg: 'OODA Delegation: architect → code-reviewer (ORIENT, REASONING)' },
+            { type: 'success', msg: 'Delegation complete: architect ← security-auditor (2.3s)' },
+            { type: 'success', msg: 'Delegation complete: architect ← code-reviewer (1.8s)' },
+            { type: 'info', msg: 'EAR phase: ORIENT → DECIDE (confidence: 0.75)' },
+            { type: 'warn', msg: 'Rate limit: cerebras-glm-4.7 (CODING) - cooldown 30s' },
+            { type: 'warn', msg: 'Failover triggered: cerebras-glm-4.7 → deepseek-r1 (rate_limit)' },
+            { type: 'success', msg: 'Failover success: now using deepseek-r1' },
+            { type: 'info', msg: 'OODA Delegation: architect → python-programmer (ACT, CODING)' },
+            { type: 'success', msg: 'Delegation complete: architect ← python-programmer (5.1s)' },
+            { type: 'success', msg: 'EAR phase: ACT → OBSERVE (loop complete)' },
+            { type: 'success', msg: 'Quality gate passed: Observables ✓' },
+            { type: 'success', msg: 'Quality gate passed: Testability ✓' },
+            { type: 'info', msg: 'Pre-flight auth: azure-cli verified' },
+            { type: 'success', msg: 'Pre-flight complete: 5/5 passed, ready_for_phase2: true' }
+        ];
+
+        function addStreamEvent(event) {
+            const stream = document.getElementById('live-stream');
+            const time = new Date().toLocaleTimeString();
+            
+            const div = document.createElement('div');
+            div.className = `stream-event ${event.type}`;
+            div.innerHTML = `<span class="stream-time">${time}</span><span class="stream-msg">${event.msg}</span>`;
+            
+            stream.insertBefore(div, stream.firstChild);
+            
+            // Keep last 50 events
+            while (stream.children.length > 50) {
+                stream.removeChild(stream.lastChild);
+            }
+        }
+
+        function startStream() {
+            if (streamInterval) return;
+            let index = 0;
+            streamInterval = setInterval(() => {
+                addStreamEvent(sampleEvents[index % sampleEvents.length]);
+                index++;
+            }, 1500);
+        }
+
+        function stopStream() {
+            if (streamInterval) {
+                clearInterval(streamInterval);
+                streamInterval = null;
+            }
+        }
+
+        function clearStream() {
+            document.getElementById('live-stream').innerHTML = '';
+        }
+
+        // Add initial events
+        for (let i = 0; i < 5; i++) {
+            addStreamEvent(sampleEvents[i]);
+        }
+    </script>
+</body>
+</html>
