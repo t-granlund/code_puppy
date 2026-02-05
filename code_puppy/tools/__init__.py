@@ -75,6 +75,7 @@ from code_puppy.tools.browser.terminal_tools import (
     register_open_terminal,
     register_start_api_server,
 )
+from code_puppy.tools.ask_user_question import register_ask_user_question
 from code_puppy.tools.command_runner import (
     register_agent_run_shell_command,
     register_agent_share_your_reasoning,
@@ -87,6 +88,23 @@ from code_puppy.tools.file_operations import (
     register_grep,
     register_list_files,
     register_read_file,
+)
+
+# Scheduler tools
+from code_puppy.tools.scheduler_tools import (
+    register_scheduler_create_task,
+    register_scheduler_daemon_status,
+    register_scheduler_delete_task,
+    register_scheduler_list_tasks,
+    register_scheduler_run_task,
+    register_scheduler_start_daemon,
+    register_scheduler_stop_daemon,
+    register_scheduler_toggle_task,
+    register_scheduler_view_log,
+)
+from code_puppy.tools.skills_tools import (
+    register_activate_skill,
+    register_list_or_search_skills,
 )
 from code_puppy.tools.universal_constructor import register_universal_constructor
 
@@ -105,6 +123,8 @@ TOOL_REGISTRY = {
     # Command Runner
     "agent_run_shell_command": register_agent_run_shell_command,
     "agent_share_your_reasoning": register_agent_share_your_reasoning,
+    # User Interaction
+    "ask_user_question": register_ask_user_question,
     # Browser Control
     "browser_initialize": register_initialize_browser,
     "browser_close": register_close_browser,
@@ -165,8 +185,21 @@ TOOL_REGISTRY = {
     "terminal_read_output": register_terminal_read_output,
     "terminal_compare_mockup": register_terminal_compare_mockup,
     "load_image_for_analysis": register_load_image,
+    # Skills Tools
+    "activate_skill": register_activate_skill,
+    "list_or_search_skills": register_list_or_search_skills,
     # Universal Constructor
     "universal_constructor": register_universal_constructor,
+    # Scheduler Tools
+    "scheduler_list_tasks": register_scheduler_list_tasks,
+    "scheduler_create_task": register_scheduler_create_task,
+    "scheduler_delete_task": register_scheduler_delete_task,
+    "scheduler_toggle_task": register_scheduler_toggle_task,
+    "scheduler_daemon_status": register_scheduler_daemon_status,
+    "scheduler_start_daemon": register_scheduler_start_daemon,
+    "scheduler_stop_daemon": register_scheduler_stop_daemon,
+    "scheduler_run_task": register_scheduler_run_task,
+    "scheduler_view_log": register_scheduler_view_log,
 }
 
 

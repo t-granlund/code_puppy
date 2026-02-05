@@ -24,7 +24,7 @@ from code_puppy.messaging import emit_warning
 
 from . import callbacks
 from .claude_cache_client import ClaudeCacheAsyncClient, patch_anthropic_client_messages
-from .config import EXTRA_MODELS_FILE, get_value
+from .config import EXTRA_MODELS_FILE, get_value, get_yolo_mode
 from .http_utils import create_async_client, get_cert_bundle_path, get_http2
 from .round_robin_model import RoundRobinModel
 
@@ -39,6 +39,7 @@ def _load_plugin_model_providers():
     global _CUSTOM_MODEL_PROVIDERS
     try:
         from code_puppy.callbacks import on_register_model_providers
+
         results = on_register_model_providers()
         for result in results:
             if isinstance(result, dict):
@@ -126,6 +127,10 @@ def make_model_settings(
     model_settings_dict["max_tokens"] = max_tokens
     effective_settings = get_effective_model_settings(model_name)
     model_settings_dict.update(effective_settings)
+
+    # Disable parallel tool calls when yolo_mode is off (for safer, sequential tool execution)
+    if not get_yolo_mode():
+        model_settings_dict["parallel_tool_calls"] = False
 
     # GLM 4.7 Optimization (from Cerebras Migration Guide)
     # Rule #6: Disable reasoning for simple tasks
@@ -362,7 +367,9 @@ class ModelFactory:
         if model_type in _CUSTOM_MODEL_PROVIDERS:
             provider_class = _CUSTOM_MODEL_PROVIDERS[model_type]
             try:
-                return provider_class(model_name=model_name, model_config=model_config, config=config)
+                return provider_class(
+                    model_name=model_name, model_config=model_config, config=config
+                )
             except Exception as e:
                 logger.error(f"Custom model provider '{model_type}' failed: {e}")
                 return None
