@@ -14,6 +14,7 @@ The infrastructure consists of 7 interconnected modules that work together to pr
 - **Analytics**: Metrics tracking, dashboards, trend analysis
 - **Intelligence**: Smart model selection, priority queues, load balancing
 - **Wiggum Loop Resilience**: Generator athrow() prevention, model cooldown tracking (5-min), 29+ failover models
+- **GitHub Models API**: 8 additional models via GH_TOKEN with auto-auth via `gh auth token`
 
 ## Recent Enhancements (February 2026)
 
@@ -34,6 +35,16 @@ Validation errors now include detailed context with error types (UnexpectedModel
 Commands validate directory existence before execution, preventing ModuleNotFoundError cascades.
 
 See [WIGGUM-LOOP-CERTIFICATION.md](../WIGGUM-LOOP-CERTIFICATION.md) for complete production readiness certification.
+
+### GitHub Models API Integration
+Added 8 models via GitHub Models API (February 2026):
+- **Tier 2**: github-grok-3, github-deepseek-r1, github-gpt-4.1
+- **Tier 3**: github-grok-3-mini, github-gpt-4.1-mini, github-gpt-4o
+- **Tier 4**: github-gpt-4o-mini, github-phi-4
+
+Auto-authentication via `gh auth token` fallback when GH_TOKEN not set.
+
+See [GITHUB-MODELS-INTEGRATION.md](GITHUB-MODELS-INTEGRATION.md) for complete details.
 
 ## Module Reference
 

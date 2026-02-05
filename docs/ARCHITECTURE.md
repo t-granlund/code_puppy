@@ -141,14 +141,17 @@ Code Puppy implements the **BART System (Belief-Augmented Reasoning & Tasking)**
 │  │  │  Tier 2 ─────► GPT-5.2-Codex ────────► Complex Logic, Refactoring       │   │   │
 │  │  │  (Builder-Hi)  DeepSeek R1-0528        Agentic Coding (400K ctx)        │   │   │
 │  │  │               Kimi K2-Thinking         Algorithm Implementation          │   │   │
+│  │  │               🆕 GitHub: Grok-3, GPT-4.1, DeepSeek-R1                    │   │   │
 │  │  │                                                                         │   │   │
 │  │  │  Tier 3 ─────► Claude Sonnet 4.5 ────► Class Design, API Design         │   │   │
 │  │  │  (Builder-Mid) MiniMax M2.1 (1M ctx)   Code Review, Standard Dev        │   │   │
 │  │  │               Gemini 3 Pro             All-rounder Development          │   │   │
+│  │  │               🆕 GitHub: Grok-3-mini, GPT-4.1-mini, GPT-4o              │   │   │
 │  │  │                                                                         │   │   │
 │  │  │  Tier 4 ─────► Gemini 3 Flash ───────► Context Search, Summarization    │   │   │
 │  │  │  (Librarian)   Claude Haiku 4.5        Log Analysis, Documentation       │   │   │
 │  │  │               OpenRouter Free Models   Cost-effective Context           │   │   │
+│  │  │               🆕 GitHub: GPT-4o-mini, Phi-4                             │   │   │
 │  │  │                                                                         │   │   │
 │  │  │  Tier 5 ─────► Cerebras GLM 4.7 ─────► Code Gen, Tests, Linting         │   │   │
 │  │  │  (Sprinter)    (358B MoE, 1500+ t/s)   Boilerplate, Syntax Fixing        │   │   │

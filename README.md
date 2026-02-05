@@ -20,6 +20,7 @@
 [![Synthetic](https://img.shields.io/badge/Synthetic-Kimi%20K2.5-green?style=flat-square)](https://synthetic.new)
 [![DeepSeek](https://img.shields.io/badge/DeepSeek-R1--0528-teal?style=flat-square)](https://deepseek.com)
 [![MiniMax](https://img.shields.io/badge/MiniMax-M2.1-cyan?style=flat-square)](https://minimax.chat)
+[![GitHub Models](https://img.shields.io/badge/GitHub%20Models-8%20Models-black?style=flat-square&logo=github)](https://docs.github.com/en/github-models)
 
 [![100% Open Source](https://img.shields.io/badge/100%25-Open%20Source-blue?style=for-the-badge)](https://github.com/mpfaffenberger/code_puppy)
 [![Pydantic AI](https://img.shields.io/badge/Pydantic-AI-success?style=for-the-badge)](https://github.com/pydantic/pydantic-ai)
