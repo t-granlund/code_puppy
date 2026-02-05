@@ -174,14 +174,14 @@ class TestQualityGates:
 class TestPipelineStages:
     """Tests for the PIPELINE_STAGES configuration."""
 
-    def test_thirteen_stages(self):
-        """Test that there are 13 stages (0-12)."""
-        assert len(PIPELINE_STAGES) == 13
+    def test_fourteen_stages(self):
+        """Test that there are 14 stages (0-13)."""
+        assert len(PIPELINE_STAGES) == 14
 
     def test_stage_ids_sequential(self):
         """Test that stage IDs are sequential from 0."""
         ids = [stage["id"] for stage in PIPELINE_STAGES]
-        assert ids == list(range(13))
+        assert ids == list(range(14))
 
     def test_stage_structure(self):
         """Test that each stage has required fields."""
