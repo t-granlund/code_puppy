@@ -108,7 +108,7 @@ class SmartModelSelector:
         "antigravity-claude-opus-4-5-thinking-medium": 1,
         "antigravity-claude-opus-4-5-thinking-high": 1,
         "synthetic-Kimi-K2.5-Thinking": 1,
-        "synthetic-hf-moonshotai-Kimi-K2.5": 1,
+        "synthetic-Kimi-K2.5-Thinking": 1,
         "synthetic-hf-Qwen-Qwen3-235B-A22B-Thinking-2507": 1,
         
         # Tier 2 - BUILDER_HIGH (Sonnet-thinking-high, GPT-5.2-Codex, DeepSeek R1, Kimi K2)
@@ -116,7 +116,7 @@ class SmartModelSelector:
         "chatgpt-gpt-5.2-codex": 2,
         "antigravity-claude-sonnet-4-5-thinking-high": 2,
         "synthetic-Kimi-K2-Thinking": 2,
-        "synthetic-hf-moonshotai-Kimi-K2-Thinking": 2,
+        "synthetic-Kimi-K2-Thinking": 2,
         "synthetic-hf-deepseek-ai-DeepSeek-R1-0528": 2,
         
         # Tier 3 - BUILDER_MID (Sonnet, Gemini Pro, MiniMax M2.1)
@@ -182,8 +182,8 @@ class SmartModelSelector:
         "synthetic-MiniMax-M2.1": "synthetic",
         "synthetic-Kimi-K2-Thinking": "synthetic",
         "synthetic-Kimi-K2.5-Thinking": "synthetic",
-        "synthetic-hf-moonshotai-Kimi-K2.5": "synthetic",
-        "synthetic-hf-moonshotai-Kimi-K2-Thinking": "synthetic",
+        "synthetic-Kimi-K2.5-Thinking": "synthetic",
+        "synthetic-Kimi-K2-Thinking": "synthetic",
         "synthetic-hf-deepseek-ai-DeepSeek-R1-0528": "synthetic",
         "synthetic-hf-MiniMaxAI-MiniMax-M2.1": "synthetic",
         "synthetic-hf-Qwen-Qwen3-235B-A22B-Thinking-2507": "synthetic",

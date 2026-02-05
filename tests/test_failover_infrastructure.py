@@ -98,7 +98,6 @@ class TestModelsJsonIntegrity:
         """Verify Synthetic HuggingFace models are defined (February 2026)."""
         required = [
             "synthetic-hf-deepseek-ai-DeepSeek-R1-0528",
-            "synthetic-hf-moonshotai-Kimi-K2.5",
             "synthetic-hf-Qwen-Qwen3-235B-A22B-Thinking-2507",
             "synthetic-hf-zai-org-GLM-4.7",
             "synthetic-hf-MiniMaxAI-MiniMax-M2.1",

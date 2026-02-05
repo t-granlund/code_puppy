@@ -242,7 +242,6 @@ class TokenBudgetManager:
             "antigravity-claude-opus-4-5-thinking-high": "claude_opus",
             # Synthetic HuggingFace models (February 2026)
             "synthetic-hf-deepseek-ai-deepseek-r1-0528": "deepseek",
-            "synthetic-hf-moonshotai-kimi-k2.5": "kimi",
             "synthetic-hf-qwen-qwen3-235b-a22b-thinking-2507": "qwen",
             "synthetic-hf-zai-org-glm-4.7": "synthetic_glm",
             "synthetic-hf-minimax-ai-minimax-m2.1": "minimax",

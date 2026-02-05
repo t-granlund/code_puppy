@@ -66,34 +66,6 @@
     "capabilities": ["thinking", "moe", "agent_swarms", "vision"],
     "supported_settings": ["temperature", "seed", "top_p"]
   },
-  "synthetic-hf-moonshotai-Kimi-K2.5": {
-    "type": "custom_openai",
-    "name": "hf:moonshotai/Kimi-K2.5",
-    "custom_endpoint": {
-      "url": "https://api.synthetic.new/openai/v1/",
-      "api_key": "$SYN_API_KEY"
-    },
-    "context_length": 256000,
-    "max_output": 32000,
-    "tier": 1,
-    "workload": ["orchestrator", "architect"],
-    "capabilities": ["thinking", "moe", "agent_swarms", "vision"],
-    "supported_settings": ["temperature", "seed", "top_p"]
-  },
-  "synthetic-hf-moonshotai-Kimi-K2-Thinking": {
-    "type": "custom_openai",
-    "name": "hf:moonshotai/Kimi-K2-Thinking",
-    "custom_endpoint": {
-      "url": "https://api.synthetic.new/openai/v1/",
-      "api_key": "$SYN_API_KEY"
-    },
-    "context_length": 256000,
-    "max_output": 32000,
-    "tier": 2,
-    "workload": ["reasoning", "builder_high"],
-    "capabilities": ["thinking", "moe"],
-    "supported_settings": ["temperature", "seed", "top_p"]
-  },
   "synthetic-hf-deepseek-ai-DeepSeek-R1-0528": {
     "type": "custom_openai",
     "name": "hf:deepseek-ai/DeepSeek-R1-0528",

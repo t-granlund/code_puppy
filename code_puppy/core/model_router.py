@@ -302,15 +302,6 @@ class ModelRouter:
             cost_per_1k_input=0.001,
             cost_per_1k_output=0.003,
         ),
-        "synthetic-hf-moonshotai-Kimi-K2-Thinking": ModelConfig(
-            name="synthetic-hf-moonshotai-Kimi-K2-Thinking",
-            provider="kimi",
-            tier=ModelTier.BUILDER_HIGH,
-            max_context=256_000,
-            max_output=32_000,
-            cost_per_1k_input=0.001,
-            cost_per_1k_output=0.003,
-        ),
         "antigravity-claude-sonnet-4-5-thinking-high": ModelConfig(
             name="antigravity-claude-sonnet-4-5-thinking-high",
             provider="claude_sonnet",
@@ -380,15 +371,6 @@ class ModelRouter:
         ),
         "synthetic-Kimi-K2.5-Thinking": ModelConfig(
             name="synthetic-Kimi-K2.5-Thinking",
-            provider="kimi",
-            tier=ModelTier.ARCHITECT,
-            max_context=256_000,
-            max_output=32_000,
-            cost_per_1k_input=0.001,
-            cost_per_1k_output=0.003,
-        ),
-        "synthetic-hf-moonshotai-Kimi-K2.5": ModelConfig(
-            name="synthetic-hf-moonshotai-Kimi-K2.5",
             provider="kimi",
             tier=ModelTier.ARCHITECT,
             max_context=256_000,

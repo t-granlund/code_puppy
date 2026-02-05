@@ -247,7 +247,7 @@ FAILOVER_CHAIN: Dict[str, str] = {
     "antigravity-claude-opus-4-5-thinking-medium": "synthetic-hf-Qwen-Qwen3-235B-A22B-Thinking-2507",
     "synthetic-hf-Qwen-Qwen3-235B-A22B-Thinking-2507": "chatgpt-gpt-5.2-codex",
     "antigravity-claude-opus-4-5-thinking-low": "synthetic-hf-Qwen-Qwen3-235B-A22B-Thinking-2507",
-    "synthetic-hf-moonshotai-Kimi-K2.5": "synthetic-hf-Qwen-Qwen3-235B-A22B-Thinking-2507",
+    "synthetic-Kimi-K2.5-Thinking": "synthetic-hf-Qwen-Qwen3-235B-A22B-Thinking-2507",
     
     # =====================================================================
     # BUILDER TIER - Complex logic, design, refactoring
@@ -292,7 +292,7 @@ FAILOVER_CHAIN: Dict[str, str] = {
     # SYNTHETIC/HF MODELS - Backup chains
     # =====================================================================
     "synthetic-hf-MiniMaxAI-MiniMax-M2.1": "synthetic-MiniMax-M2.1",
-    "synthetic-hf-moonshotai-Kimi-K2-Thinking": "synthetic-Kimi-K2-Thinking",
+    "synthetic-Kimi-K2-Thinking": "synthetic-Kimi-K2-Thinking",
     
     # ChatGPT models are OAuth-only and added at runtime
 }
