@@ -1,4 +1,4 @@
-# Integration Audit: External Agent Frameworks
+https://github.com/octokit/octokit.js# Integration Audit: External Agent Frameworks
 
 **Date**: February 5, 2026  
 **Author**: GitHub Copilot (Claude Opus 4.5)  
@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-This audit analyzes 5 external projects for integration potential with Code Puppy:
+This audit analyzes 8 external projects for integration potential with Code Puppy:
 
 | Project | Relevance | Priority | Effort |
 |---------|-----------|----------|--------|
@@ -17,8 +17,11 @@ This audit analyzes 5 external projects for integration potential with Code Pupp
 | [DBOS Transact](#3-dbos-transact-py) | 🟡 Medium | P2 | High |
 | [GEPA](#4-gepa) | 🟢 Low | P3 | Medium |
 | [pydantic-deepagents](#5-pydantic-deepagents) | 🟡 Medium | P2 | Low |
+| [Pydantic AI Chat UI](#6-pydantic-ai-chat-ui) | 🟡 Medium | P2 | Medium |
+| [GitMCP](#7-gitmcp) | 🔴 High | P1 | Low |
+| [Octokit.js](#8-octokitjs) | 🟢 Low | P3 | Low |
 
-**Key Recommendation**: The Context Compaction API (#4137) should be implemented immediately as Code Puppy already has infrastructure for this. The pai-agent-sdk patterns should be adopted for environment abstraction and skills system.
+**Key Recommendation**: The Context Compaction API (#4137) should be implemented immediately as Code Puppy already has infrastructure for this. GitMCP should be integrated as an MCP server for documentation access. The pai-agent-sdk patterns should be adopted for environment abstraction and skills system.
 
 ---
 
@@ -484,25 +487,209 @@ sandbox = [
 
 ---
 
+## 6. Pydantic AI Chat UI
+
+**Repository**: https://github.com/pydantic/ai-chat-ui (fork: dsfaccini/ai-chat-ui)  
+**Version**: 1.0.0  
+**Stars**: N/A (new) | License: MIT
+
+### What It Is
+
+A React-based chat interface for Pydantic AI agents. Powers the documentation assistant at [ai.pydantic.dev/web/](https://ai.pydantic.dev/web/). Built with Vercel AI SDK.
+
+### Key Features
+
+| Feature | Description | Code Puppy Equivalent |
+|---------|-------------|----------------------|
+| **Streaming Responses** | Real-time message streaming with reasoning display | ✅ Have streaming |
+| **Tool Call Visualization** | Collapsible input/output for tool calls | ❌ CLI only, no web UI |
+| **Conversation Persistence** | localStorage-based persistence | ✅ `session_storage.py` |
+| **Model Selection** | Dynamic model and tool selection | ✅ `model_factory.py` |
+| **Theme Support** | Dark/light theme | ❌ CLI only |
+| **Mobile Responsive** | Responsive sidebar | ❌ CLI only |
+| **Vercel AI Protocol** | Standard streaming protocol | ⚠️ Different protocol |
+
+### Integration Value
+
+**Low for core Code Puppy** - Code Puppy is a CLI tool, not a web app.
+
+**Valuable for**:
+- Building a web interface for Code Puppy agents
+- Reference implementation for tool call visualization
+- Understanding Vercel AI SDK integration patterns
+
+### Recommended Approach
+
+1. **Monitor for patterns** - Use as reference for future web UI
+2. **Extract tool visualization logic** - Could adapt for CLI display
+3. **Consider for separate project** - Web UI wrapper around Code Puppy
+
+### Priority: P2 - Medium
+
+Useful reference, but not core functionality.
+
+---
+
+## 7. GitMCP
+
+**Repository**: https://github.com/idosal/git-mcp  
+**Website**: https://gitmcp.io/  
+**Stars**: 7.5k | License: Apache-2.0
+
+### What It Is
+
+A free, open-source, remote MCP server that transforms any GitHub repository into a documentation hub. Enables AI assistants to access up-to-date documentation and code to eliminate hallucinations.
+
+### Key Features
+
+| Feature | Description | Code Puppy Equivalent |
+|---------|-------------|----------------------|
+| **Remote MCP Server** | Zero-setup cloud-hosted MCP | ✅ Have MCP client |
+| **Documentation Fetching** | Gets README, llms.txt, docs | ❌ Manual only |
+| **Smart Search** | Semantic search through repos | ⚠️ Local only |
+| **Code Search** | GitHub code search integration | ❌ Not integrated |
+| **Embedded Chat** | Browser-based chat with repos | ❌ CLI only |
+| **Dynamic Endpoint** | `gitmcp.io/docs` for any repo | ❌ Need to configure per-repo |
+
+### How It Works
+
+1. Configure GitMCP URL (e.g., `gitmcp.io/pydantic/pydantic-ai`)
+2. AI sends MCP requests for documentation
+3. GitMCP returns relevant docs/code
+4. AI generates accurate, grounded responses
+
+### MCP Tools Provided
+
+| Tool | Purpose |
+|------|---------|
+| `fetch_<repo>_documentation` | Get primary docs (llms.txt, README) |
+| `search_<repo>_documentation` | Semantic search through docs |
+| `search_<repo>_code` | GitHub code search |
+| `fetch_url_content` | Fetch external links |
+
+### Integration Opportunity
+
+**HIGH VALUE** - Code Puppy can use GitMCP as an MCP server to access ANY GitHub project's documentation without local cloning.
+
+```python
+# code_puppy/mcp_/gitmcp_client.py (NEW)
+
+class GitMCPClient:
+    """Client for accessing GitHub repos via GitMCP."""
+    
+    def __init__(self, owner: str, repo: str):
+        self.base_url = f"https://gitmcp.io/{owner}/{repo}"
+    
+    async def fetch_documentation(self) -> str:
+        """Fetch primary documentation."""
+        ...
+    
+    async def search_documentation(self, query: str) -> list[str]:
+        """Search through documentation."""
+        ...
+    
+    async def search_code(self, query: str) -> list[CodeResult]:
+        """Search through repository code."""
+        ...
+```
+
+### Configuration
+
+Add to MCP config:
+
+```json
+{
+  "mcpServers": {
+    "gitmcp": {
+      "url": "https://gitmcp.io/docs"
+    }
+  }
+}
+```
+
+### Priority: P1 - HIGH
+
+Immediate value with minimal effort. Just configure as MCP server.
+
+---
+
+## 8. Octokit.js
+
+**Repository**: https://github.com/octokit/octokit.js  
+**Version**: 5.0.5  
+**Stars**: 7.7k | License: MIT
+
+### What It Is
+
+The all-batteries-included GitHub SDK for JavaScript/TypeScript. Provides complete coverage of GitHub's REST and GraphQL APIs.
+
+### Key Features
+
+| Feature | Description | Code Puppy Equivalent |
+|---------|-------------|----------------------|
+| **REST API Client** | Full GitHub REST API | ❌ Python, not JS |
+| **GraphQL API** | GitHub GraphQL queries | ❌ Python, not JS |
+| **Pagination** | Automatic pagination handling | N/A |
+| **Webhooks** | Receive/verify webhook events | N/A |
+| **OAuth** | GitHub OAuth flows | N/A |
+| **GitHub Apps** | Full App authentication | N/A |
+| **Throttling** | Rate limit handling | ✅ Have rate limit handling |
+| **Retry** | Automatic retry on failure | ✅ Have retry/failover |
+
+### Relevance to Code Puppy
+
+**LOW** - Code Puppy is Python-based. Octokit.js is for JavaScript/Node.js.
+
+### Python Alternatives
+
+| Library | Purpose |
+|---------|---------|
+| **PyGithub** | Python GitHub API wrapper |
+| **ghapi** | FastAPI-style GitHub API |
+| **httpx** + GitHub REST | Direct API calls |
+
+### Current Code Puppy GitHub Integration
+
+Code Puppy likely already has GitHub tooling. Check existing tools:
+
+```bash
+grep -r "github" code_puppy/tools/
+```
+
+### Recommended Approach
+
+1. **Use for reference** - Rate limiting, retry patterns
+2. **Don't integrate directly** - Wrong language
+3. **Consider PyGithub** - If Python GitHub SDK needed
+
+### Priority: P3 - Low
+
+Reference only. Use Python libraries instead.
+
+---
+
 ## Summary
 
 ### Immediate Actions (This Week)
 
 1. **Implement CompactionSettings** aligned with #4137
 2. **Add protected_tokens support** per @mpfaffenberger's suggestions
-3. **Prepare PR for pydantic-ai** once upstream API stabilizes
+3. **Configure GitMCP** as MCP server for documentation access
+4. **Prepare PR for pydantic-ai** once upstream API stabilizes
 
 ### Medium-term Actions (This Month)
 
 1. **YAML frontmatter for skills**
 2. **Human-in-the-loop approval**
 3. **Docker sandbox environment**
+4. **GitMCP integration wrapper** for programmatic access
 
 ### Long-term Monitoring
 
 1. **PAI Agent SDK** - May merge patterns with pydantic-ai
 2. **DBOS** - Watch for pydantic-ai integration
 3. **GEPA** - Consider for production prompt tuning
+4. **Pydantic AI Chat UI** - Reference for web interface
 
 ---
 
@@ -513,4 +700,7 @@ sandbox = [
 - [DBOS Transact](https://github.com/dbos-inc/dbos-transact-py)
 - [GEPA](https://github.com/gepa-ai/gepa)
 - [pydantic-deepagents](https://github.com/vstorm-co/pydantic-deepagents)
+- [Pydantic AI Chat UI](https://github.com/pydantic/ai-chat-ui)
+- [GitMCP](https://github.com/idosal/git-mcp)
+- [Octokit.js](https://github.com/octokit/octokit.js)
 - [pai-agent-sdk compact.py](https://github.com/youware-labs/pai-agent-sdk/blob/main/pai_agent_sdk/agents/compact.py)
