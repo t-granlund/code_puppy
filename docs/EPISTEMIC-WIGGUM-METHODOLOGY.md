@@ -119,13 +119,144 @@ Goals pass through 6 Quality Gates:
 
 **Output**: `BUILD.md` with milestones
 
+### Stage 7: Pre-Flight Authentication Check 🔐
+
+**CRITICAL GATE**: Before Phase 2 (wiggum) can begin, all authentication requirements must be verified.
+
+#### Why Pre-Flight Auth Matters
+
+When building an application, dashboard, or integration, you typically need:
+- **Azure CLI** auth to deploy infrastructure (requires UPN, possibly admin permissions)
+- **App Registrations** for OAuth/Graph API access (requires tenant admin or delegated permissions)
+- **Database credentials** for data storage
+- **Third-party API keys** for integrations
+- **Browser automation fallback** for services without CLI/API access
+
+The Pre-Flight system ensures all these are in place BEFORE autonomous execution begins.
+
+#### How It Works
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    PRE-FLIGHT AUTH WORKFLOW                         │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  1. DETECT REQUIREMENTS                                             │
+│     ├── Scan epistemic/state.json for keywords                      │
+│     ├── "Azure" → Azure CLI auth needed                             │
+│     ├── "Graph API" → OAuth app registration needed                 │
+│     ├── "PostgreSQL" → DATABASE_URL needed                          │
+│     └── Custom services → add_auth_requirement()                    │
+│                                                                     │
+│  2. CREATE CHECKLIST                                                │
+│     └── epistemic/auth-checklist.json                               │
+│         ├── id: "azure-cli"                                         │
+│         ├── status: "not_checked"                                   │
+│         ├── priority: "critical"                                    │
+│         └── verification_command: "az account show"                 │
+│                                                                     │
+│  3. GUIDE USER THROUGH SETUP                                        │
+│     ├── ask_user_question() for UPN, tenant, subscription           │
+│     ├── Provide CLI commands to authenticate                        │
+│     └── For browser-only services, document manual steps            │
+│                                                                     │
+│  4. VERIFY ALL REQUIREMENTS                                         │
+│     ├── preflight_auth_check() runs verification commands           │
+│     ├── Updates status: passed/failed/missing                       │
+│     └── Returns ready_for_phase2: true/false                        │
+│                                                                     │
+│  5. GATE CHECK                                                      │
+│     ├── ready_for_phase2: true → Proceed to /wiggum                 │
+│     └── ready_for_phase2: false → Block, show missing requirements  │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+#### Auth Requirement Categories
+
+| Category | Examples | Verification Method |
+|----------|----------|---------------------|
+| `CLI_AUTH` | Azure CLI, AWS CLI, gcloud, kubectl | Run verification command |
+| `OAUTH_APP` | Azure AD app, Google OAuth | Check app registration exists |
+| `API_KEY` | OPENAI_API_KEY, STRIPE_API_KEY | Check env var set |
+| `BROWSER_SESSION` | Admin portals without API | Document manual login steps |
+| `DATABASE` | PostgreSQL, MySQL, CosmosDB | Check DATABASE_URL |
+| `SERVICE_PRINCIPAL` | CI/CD identity | Check client credentials |
+
+#### Example Pre-Flight Questions
+
+```python
+ask_user_question(questions=[
+    {
+        "question": "What is your Azure User Principal Name (email)?",
+        "header": "Azure UPN",
+        "options": [
+            {"label": "I'll type it", "description": "e.g., user@company.onmicrosoft.com"},
+            {"label": "Already logged in", "description": "Use existing az login session"}
+        ]
+    },
+    {
+        "question": "Do you have permissions to create App Registrations?",
+        "header": "Permissions",
+        "options": [
+            {"label": "Yes, I'm a tenant admin"},
+            {"label": "No, I need IT to create it"},
+            {"label": "I have delegated permissions"}
+        ]
+    },
+    {
+        "question": "Does this integration require Microsoft Graph API?",
+        "header": "Graph API",
+        "options": [
+            {"label": "Yes", "description": "Need User.Read, Mail.Send, etc."},
+            {"label": "No", "description": "No M365 integration needed"}
+        ]
+    }
+])
+```
+
+#### Browser Automation Fallback
+
+For services without CLI/API access (e.g., admin portals, legacy systems):
+
+1. Agent creates a browser automation agent or tool via `invoke_agent("helios", "...")`
+2. The automation agent uses Playwright to:
+   - Navigate to login page
+   - Wait for user to authenticate (interactive)
+   - Capture session cookies/tokens
+3. Session persists for wiggum execution
+
+**Output**: `epistemic/auth-checklist.json`
+
+```json
+{
+  "project_name": "my-dashboard",
+  "ready_for_phase2": true,
+  "requirements": [
+    {
+      "id": "azure-cli",
+      "name": "Azure CLI Authentication",
+      "status": "passed",
+      "user_upn": "user@company.com",
+      "tenant_id": "abc123..."
+    },
+    {
+      "id": "graph-api",
+      "name": "Microsoft Graph API Access",
+      "status": "passed",
+      "required_permissions": ["User.Read", "Mail.Send"]
+    }
+  ]
+}
+```
+
 ---
 
 ## 🍩 Phase 2: Autonomous Execution (Wiggum Mode)
 
 ### Activating Wiggum Mode
 
-Once Phase 1 artifacts are complete and approved, the user runs:
+Once Phase 1 artifacts are complete AND `preflight_auth_check()` returns `ready_for_phase2: true`, the user runs:
 
 ```
 /wiggum Execute the next milestone from BUILD.md. Read epistemic/state.json 

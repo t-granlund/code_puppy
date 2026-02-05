@@ -81,6 +81,11 @@ from code_puppy.tools.wiggum_control import (
     register_complete_wiggum_loop,
     register_wiggum_control_tools,
 )
+from code_puppy.tools.auth_preflight import (
+    register_preflight_check,
+    register_add_auth_requirement,
+    register_auth_preflight_tools,
+)
 from code_puppy.tools.command_runner import (
     register_agent_run_shell_command,
     register_agent_share_your_reasoning,
@@ -133,6 +138,9 @@ TOOL_REGISTRY = {
     # Wiggum Loop Control
     "check_wiggum_status": register_check_wiggum_status,
     "complete_wiggum_loop": register_complete_wiggum_loop,
+    # Pre-Flight Authentication
+    "preflight_auth_check": register_preflight_check,
+    "add_auth_requirement": register_add_auth_requirement,
     # Browser Control
     "browser_initialize": register_initialize_browser,
     "browser_close": register_close_browser,

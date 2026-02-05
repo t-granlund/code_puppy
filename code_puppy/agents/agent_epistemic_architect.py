@@ -74,7 +74,7 @@ QUALITY_GATES = [
     {"name": "Evidence Grounding", "check": "Is it based on actual evidence?", "emoji": "📚"},
 ]
 
-# The 12-Stage Pipeline
+# The 13-Stage Pipeline (includes Pre-Flight Auth)
 PIPELINE_STAGES = [
     {"id": 0, "name": "Philosophical Foundation", "desc": "Internalize Ralph Loops and core principles"},
     {"id": 1, "name": "Epistemic State Creation", "desc": "Interview user, surface assumptions/hypotheses"},
@@ -83,12 +83,13 @@ PIPELINE_STAGES = [
     {"id": 4, "name": "Goal Emergence", "desc": "Generate candidates, run through 6 gates"},
     {"id": 5, "name": "MVP Planning", "desc": "Create minimal viable plan with rollback"},
     {"id": 6, "name": "Spec Generation", "desc": "Generate full specs, readiness check"},
-    {"id": 7, "name": "Build Execution", "desc": "Phase → Milestone → Checkpoint → Verify"},
-    {"id": 8, "name": "Improvement Audit", "desc": "Evidence → Analysis → Recommendation loop"},
-    {"id": 9, "name": "Gap Re-Inspection", "desc": "What new gaps emerged? Re-validate"},
-    {"id": 10, "name": "Question Tracking", "desc": "Update epistemic state, close hypotheses"},
-    {"id": 11, "name": "Verification Audit", "desc": "End-to-end check across all layers"},
-    {"id": 12, "name": "Documentation Sync", "desc": "Update all docs, then loop to Stage 8"},
+    {"id": 7, "name": "Pre-Flight Auth", "desc": "Detect & verify all auth requirements before wiggum"},
+    {"id": 8, "name": "Build Execution", "desc": "Phase → Milestone → Checkpoint → Verify"},
+    {"id": 9, "name": "Improvement Audit", "desc": "Evidence → Analysis → Recommendation loop"},
+    {"id": 10, "name": "Gap Re-Inspection", "desc": "What new gaps emerged? Re-validate"},
+    {"id": 11, "name": "Question Tracking", "desc": "Update epistemic state, close hypotheses"},
+    {"id": 12, "name": "Verification Audit", "desc": "End-to-end check across all layers"},
+    {"id": 13, "name": "Documentation Sync", "desc": "Update all docs, then loop to Stage 9"},
 ]
 
 
@@ -184,6 +185,9 @@ class EpistemicArchitectAgent(BaseAgent):
             # Wiggum loop control for autonomous execution
             "check_wiggum_status",
             "complete_wiggum_loop",
+            # Pre-flight authentication (Stage 6 - before wiggum)
+            "preflight_auth_check",
+            "add_auth_requirement",
         ]
 
     def get_system_prompt(self) -> str:
@@ -289,7 +293,45 @@ Create a `BUILD.md` with:
 - Rollback plans
 - Spec files: entities.md, personas.md, critical-flows.md, metrics.md
 
-### Stage 7+: Build Execution with Checkpoints
+### Stage 7: Pre-Flight Authentication Check 🔐
+
+**CRITICAL: Before /wiggum can begin, ALL auth requirements must be verified.**
+
+The pre-flight system automatically detects what authentication is needed based on your specs:
+
+**Detection**: Based on keywords in epistemic state (e.g., "Azure", "Graph API", "AWS")
+**Categories**:
+- `CLI_AUTH`: Azure CLI, AWS CLI, gcloud, kubectl
+- `OAUTH_APP`: Custom app registrations (Azure AD, Google)
+- `API_KEY`: Static API keys (OPENAI_API_KEY, etc.)
+- `BROWSER_SESSION`: Manual browser login for services without CLI/API
+- `DATABASE`: Connection strings
+- `SERVICE_PRINCIPAL`: Automated identity for CI/CD
+
+**Workflow**:
+1. Run `preflight_auth_check()` to detect and verify all requirements
+2. If requirements are MISSING, guide user through setup:
+   - Use `ask_user_question` to collect UPN, tenant ID, subscription info
+   - Provide step-by-step CLI commands to authenticate
+   - For browser-only services, note that browser automation may be needed
+3. Use `add_auth_requirement()` for custom services not auto-detected
+4. Re-run `preflight_auth_check()` until `ready_for_phase2: true`
+
+**Example Pre-Flight Questions**:
+```python
+ask_user_question(questions=[
+    {{"question": "What is your Azure UPN (user@domain.com)?", "header": "Azure UPN",
+      "options": [{{"label": "I'll provide it"}}, {{"label": "Use current az login"}}]}},
+    {{"question": "Do you have Owner access to create app registrations?", "header": "Permissions",
+      "options": [{{"label": "Yes, I'm an admin"}}, {{"label": "No, need IT help"}}, {{"label": "Unknown"}}]}}
+])
+```
+
+**Output**: `epistemic/auth-checklist.json` with all requirements and their status
+
+**Gate**: Phase 2 (wiggum) CANNOT start until `preflight_auth_check()` returns `ready_for_phase2: true`
+
+### Stage 8+: Build Execution with Checkpoints
 After each milestone:
 ```
 🔍 CHECKPOINT: [Milestone Name]

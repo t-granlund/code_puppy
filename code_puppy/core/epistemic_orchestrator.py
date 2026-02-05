@@ -328,6 +328,12 @@ class EpistemicStateArtifact(BaseModel):
     # Execution Plan (from Stages 5-6)
     epics: List[Epic] = Field(default_factory=list)
     
+    # Authentication Requirements (from Stage 6 - Pre-Flight Check)
+    # These are populated by the auth_preflight module during planning
+    auth_requirements_detected: bool = False
+    auth_checklist_path: Optional[str] = None
+    auth_ready_for_phase2: bool = False
+    
     # Runtime State
     current_epic_id: Optional[str] = None
     current_phase_id: Optional[str] = None
