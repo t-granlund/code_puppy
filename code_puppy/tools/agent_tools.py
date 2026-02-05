@@ -804,14 +804,32 @@ def register_invoke_agent(agent):
             # Check if this is a retriable error
             err_str = str(e).lower()
             err_type = type(e).__name__.lower()
+            
+            # Enhanced error detection
             is_retriable = any(indicator in err_str or indicator in err_type for indicator in [
                 "remoteprotocolerror", "incomplete chunked", "peer closed",
                 "connection reset", "connection refused", "timeout",
                 "generator didn't stop",  # asynccontextmanager issue
+                "unexpectedmodelbehavior",  # pydantic-ai validation failures
+                "toolretryerror",  # Tool execution failures
+                "rate limit", "429",  # Rate limiting
             ])
             
-            # Log the failure
-            emit_error(f"✗ {agent_name} failed: {str(e)}", message_group=group_id)
+            # Extract detailed error context for validation failures
+            error_context = str(e)
+            if "unexpectedmodelbehavior" in err_type or "validation" in err_str:
+                # Log validation failure details to help debug
+                logger.error(
+                    f"Agent {agent_name} validation failed. "
+                    f"Error type: {type(e).__name__}, Details: {error_context}"
+                )
+                emit_error(
+                    f"✗ {agent_name} validation failed: {error_context[:200]}",
+                    message_group=group_id
+                )
+            else:
+                # Log the failure with standard formatting
+                emit_error(f"✗ {agent_name} failed: {str(e)}", message_group=group_id)
 
             # Full traceback for debugging
             error_msg = f"Error invoking agent '{agent_name}': {traceback.format_exc()}"

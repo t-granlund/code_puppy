@@ -939,6 +939,20 @@ async def run_shell_command(
 ) -> ShellCommandOutput:
     time.time()
 
+    # Validate working directory exists if specified
+    if cwd:
+        import os
+        if not os.path.isdir(cwd):
+            error_msg = f"Working directory does not exist: {cwd}"
+            logger.error(error_msg)
+            emit_error(error_msg, message_group="shell_command")
+            return ShellCommandOutput(
+                stdout="",
+                stderr=error_msg,
+                exit_code=1,
+                command=command,
+            )
+
     # Generate unique group_id for this command execution
     group_id = generate_group_id("shell_command", command)
 

@@ -127,6 +127,8 @@ class RateLimitFailover:
         self._available_models: Dict[str, FailoverTarget] = {}
         self._failover_chains: Dict[str, List[str]] = {}
         self._rate_limited: Set[str] = set()
+        self._failed_models: Dict[str, datetime] = {}  # Track model failures with cooldown
+        self._cooldown_seconds = 300  # 5 minute cooldown for failed models
         self._lock = asyncio.Lock()
         self._initialized = True
         self._loaded = False
@@ -515,6 +517,28 @@ class RateLimitFailover:
     def is_rate_limited(self, model_name: str) -> bool:
         """Check if a model is currently rate-limited."""
         return model_name in self._rate_limited
+    
+    def record_model_failure(self, model_name: str) -> None:
+        """Record a model failure and set cooldown period.
+        
+        This prevents immediately retrying a model that just failed,
+        allowing time for transient issues to resolve.
+        """
+        from datetime import datetime
+        self._failed_models[model_name] = datetime.now()
+        logger.debug(f"Recorded failure for {model_name}, cooldown: {self._cooldown_seconds}s")
+    
+    def is_model_in_cooldown(self, model_name: str) -> bool:
+        """Check if a model is in cooldown period after failure."""
+        from datetime import datetime, timedelta
+        if model_name not in self._failed_models:
+            return False
+        cooldown_end = self._failed_models[model_name] + timedelta(seconds=self._cooldown_seconds)
+        if datetime.now() < cooldown_end:
+            return True
+        # Cooldown expired, remove from tracking
+        del self._failed_models[model_name]
+        return False
 
     def get_available_models(
         self, 
@@ -524,7 +548,7 @@ class RateLimitFailover:
         """Get list of available models.
         
         Args:
-            exclude_rate_limited: Exclude models currently rate-limited
+            exclude_rate_limited: Exclude models currently rate-limited or in cooldown
             filter_by_credentials: Exclude models without valid API keys/OAuth tokens
             
         Returns:
@@ -534,7 +558,12 @@ class RateLimitFailover:
         models = list(self._available_models.keys())
         
         if exclude_rate_limited:
-            models = [m for m in models if m not in self._rate_limited]
+            # Exclude both rate-limited and cooldown models
+            models = [
+                m for m in models 
+                if m not in self._rate_limited 
+                and not self.is_model_in_cooldown(m)
+            ]
         
         if filter_by_credentials:
             try:
