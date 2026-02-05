@@ -45,6 +45,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, ConfigDict, Field
+from pydantic_ai import RunContext
 
 logger = logging.getLogger(__name__)
 
@@ -886,7 +887,7 @@ def register_discover_project(agent):
     """Register the discover_project tool."""
     
     @agent.tool
-    async def discover_project(project_path: str = ".") -> str:
+    async def discover_project(ctx: RunContext, project_path: str = ".") -> str:
         """Discover existing project content and determine where to resume.
         
         Scans the project directory for:
@@ -925,7 +926,7 @@ def register_get_discovery_state(agent):
     """Register the get_discovery_state tool."""
     
     @agent.tool
-    async def get_discovery_state(project_path: str = ".") -> str:
+    async def get_discovery_state(ctx: RunContext, project_path: str = ".") -> str:
         """Get the discovered project state as JSON for use in epistemic state.
         
         This tool returns structured JSON data that can be used to
@@ -952,7 +953,7 @@ def register_get_resume_questions(agent):
     """Register the get_resume_questions tool."""
     
     @agent.tool
-    async def get_resume_questions(project_path: str = ".") -> str:
+    async def get_resume_questions(ctx: RunContext, project_path: str = ".") -> str:
         """Get focused questions to ask based on what's missing.
         
         After discovering existing content, this returns only the questions
