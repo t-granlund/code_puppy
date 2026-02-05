@@ -162,6 +162,58 @@
     "capabilities": ["fast", "free"],
     "supported_settings": ["temperature", "top_p"]
   },
+  "github-copilot-claude-opus-4.5": {
+    "type": "custom_openai",
+    "name": "claude-opus-4.5",
+    "custom_endpoint": {
+      "url": "https://api.githubcopilot.com",
+      "api_key": "$GITHUB_TOKEN"
+    },
+    "context_length": 128000,
+    "max_output": 32000,
+    "tier": 1,
+    "workload": ["orchestrator", "reasoning"],
+    "capabilities": ["reasoning", "planning", "coding"],
+    "supported_settings": ["temperature", "seed", "top_p"]
+  },
+  "github-copilot-claude-sonnet-4.5": {
+    "type": "custom_openai",
+    "name": "claude-sonnet-4.5",
+    "custom_endpoint": {
+      "url": "https://api.githubcopilot.com",
+      "api_key": "$GITHUB_TOKEN"
+    },
+    "context_length": 128000,
+    "max_output": 32000,
+    "tier": 2,
+    "workload": ["reasoning", "coding"],
+    "capabilities": ["reasoning", "coding", "refactoring"],
+    "supported_settings": ["temperature", "seed", "top_p"]
+  },
+  "xai-grok-4-fast": {
+    "type": "custom_openai",
+    "name": "grok-4-fast",
+    "custom_endpoint": {
+      "url": "https://api.x.ai/v1",
+      "api_key": "$XAI_API_KEY"
+    },
+    "context_length": 2000000,
+    "max_output": 64000,
+    "tier": 1,
+    "workload": ["orchestrator", "reasoning"],
+    "capabilities": ["reasoning", "long_context", "coding"],
+    "supported_settings": ["temperature", "seed", "top_p"]
+  },
+  "cerebras-zai-glm-4.7": {
+    "type": "cerebras",
+    "name": "zai-glm-4.7",
+    "context_length": 131072,
+    "max_output": 32000,
+    "tier": 5,
+    "workload": ["coding", "librarian"],
+    "capabilities": ["fast", "agentic_coding"],
+    "supported_settings": ["temperature", "seed", "top_p"]
+  },
   "Gemini-3": {
     "type": "gemini",
     "name": "gemini-3-pro-preview",
