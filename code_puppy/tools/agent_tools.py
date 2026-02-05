@@ -3,6 +3,7 @@ import asyncio
 import hashlib
 import itertools
 import json
+import logging
 import pickle
 import re
 import traceback
@@ -13,6 +14,8 @@ from typing import List, Optional, Set
 
 from dbos import DBOS, SetWorkflowID
 from pydantic import BaseModel
+
+logger = logging.getLogger(__name__)
 
 # Pack Governor for concurrent agent limits
 from code_puppy.core import PackGovernor, AgentRole, acquire_agent_slot, release_agent_slot
