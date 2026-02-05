@@ -67,10 +67,15 @@ TIER_MAPPINGS: Dict[str, int] = {
     "deepseek-r1": 2,         # 671B, 131K context, reasoning model
     "kimi-k2-thinking": 2,    # 1T MoE, thinking mode
     "sonnet-4-5-thinking-high": 2,
+    "grok-3": 2,              # xAI reasoning model (via GitHub Models API)
+    "gpt-4.1": 2,             # GPT-4.1 (via GitHub Models API)
     
     # Tier 3: Builder Mid - Standard development
     "sonnet": 3,
     "gpt-4": 3,
+    "gpt-4o": 3,              # GPT-4o (via GitHub Models API)
+    "grok-3-mini": 3,         # xAI fast reasoning (via GitHub Models API)
+    "gpt-4.1-mini": 3,        # GPT-4.1-mini (via GitHub Models API)
     "minimax-m2": 3,          # 1M context, multilang coding
     "sonnet-4-5-thinking-medium": 3,
     "sonnet-4-5-thinking-low": 3,
@@ -81,6 +86,8 @@ TIER_MAPPINGS: Dict[str, int] = {
     "haiku": 4,
     "flash": 4,
     "gemini-3-flash": 4,      # 1M context, fast
+    "gpt-4o-mini": 4,         # GPT-4o-mini (via GitHub Models API)
+    "phi-4": 4,               # Microsoft Phi-4 (via GitHub Models API)
     "openrouter": 4,          # Free tier models
     "stepfun": 4,
     "arcee": 4,
@@ -100,13 +107,13 @@ TIER_MAPPINGS: Dict[str, int] = {
 #
 # STRATEGY:
 # - ORCHESTRATOR: Start with Claude Opus (best reasoning) → Kimi K2.5 (agent swarms)
-#                 → Qwen3 Thinking (math reasoning) → fall to Sonnet
+#                 → Qwen3 Thinking (math reasoning) → GitHub Grok-3 → fall to Codex
 # - REASONING: Claude Sonnet thinking → DeepSeek R1 (reasoning model)
-#              → Kimi K2 Thinking → GPT-5.2-Codex
-# - CODING: Cerebras GLM (fastest) → GPT-5.2-Codex (agentic) → MiniMax M2.1
-#           → Gemini Flash (1M context backup)
-# - LIBRARIAN: Haiku (cheap) → Gemini Flash (1M context) → OpenRouter free
-#              → Cerebras as last resort
+#              → GitHub Grok-3 → Kimi K2 Thinking → GPT-5.2-Codex
+# - CODING: Cerebras GLM (fastest) → GPT-5.2-Codex (agentic) → GitHub GPT-4.1-mini
+#           → MiniMax M2.1 → Gemini Flash (1M context backup)
+# - LIBRARIAN: Gemini Flash (1M context) → GitHub GPT-4o-mini → Phi-4
+#              → OpenRouter free → Cerebras as last resort
 
 WORKLOAD_CHAINS: Dict[WorkloadType, List[str]] = {
     # Pack leader, governor, planning - needs maximum reasoning power
@@ -116,9 +123,12 @@ WORKLOAD_CHAINS: Dict[WorkloadType, List[str]] = {
         "antigravity-gemini-3-pro-high",             # Tier 0: Gemini 3 Pro thinking
         "synthetic-Kimi-K2.5-Thinking",               # Tier 1: 1T MoE, agent swarms
         "synthetic-hf-Qwen-Qwen3-235B-A22B-Thinking-2507",  # Tier 1: Math leader
+        "github-grok-3",                              # Tier 2: xAI reasoning via GitHub API
         "chatgpt-gpt-5.2-codex",                     # Tier 2: Agentic coding
-        "synthetic-hf-deepseek-ai-DeepSeek-R1-0528", # Tier 2: 671B reasoning
+        "github-deepseek-r1",                         # Tier 2: 671B reasoning via GitHub API
+        "synthetic-hf-deepseek-ai-DeepSeek-R1-0528", # Tier 2: 671B reasoning via Synthetic
         "synthetic-Kimi-K2-Thinking",                 # Tier 2: 1T MoE thinking
+        "github-gpt-4.1",                             # Tier 2: GPT-4.1 via GitHub API
         "synthetic-MiniMax-M2.1",                     # Tier 3: 1M context coding
         "Cerebras-GLM-4.7",                          # Emergency fallback
     ],
@@ -128,9 +138,13 @@ WORKLOAD_CHAINS: Dict[WorkloadType, List[str]] = {
     WorkloadType.REASONING: [
         "antigravity-claude-sonnet-4-5-thinking-medium",  # Tier 0: Claude Sonnet thinking
         "antigravity-gemini-3-pro-low",              # Tier 0: Gemini 3 Pro reasoning
+        "github-grok-3",                              # Tier 2: xAI reasoning via GitHub API
+        "github-deepseek-r1",                         # Tier 2: 671B reasoning via GitHub API
         "synthetic-hf-deepseek-ai-DeepSeek-R1-0528", # Tier 2: 671B reasoning model
         "synthetic-Kimi-K2-Thinking",                 # Tier 2: 1T MoE thinking
+        "github-gpt-4.1",                             # Tier 2: GPT-4.1 via GitHub API
         "chatgpt-gpt-5.2-codex",                     # Tier 2: Strong reasoning
+        "github-grok-3-mini",                         # Tier 3: xAI fast reasoning
         "synthetic-MiniMax-M2.1",                     # Tier 3: 1M context coding
         "chatgpt-gpt-5.2",                           # Tier 2: Backup reasoning
         "Cerebras-GLM-4.7",                          # Tier 5: Fast fallback
@@ -143,19 +157,24 @@ WORKLOAD_CHAINS: Dict[WorkloadType, List[str]] = {
         "antigravity-gemini-3-flash",                # Tier 0: Fast Gemini thinking
         "synthetic-GLM-4.7",                          # Tier 5: Backup GLM via Synthetic
         "zai-glm-4.7-coding",                        # Tier 5: ZAI direct coding API
+        "github-gpt-4.1-mini",                        # Tier 3: Fast GPT-4.1 via GitHub API
         "chatgpt-gpt-5.2-codex",                     # Tier 2: Agentic coding
+        "github-grok-3-mini",                         # Tier 3: xAI fast via GitHub API
         "antigravity-claude-sonnet-4-5",             # Tier 0: Claude Sonnet (non-thinking)
+        "github-gpt-4o",                              # Tier 3: GPT-4o via GitHub API
         "synthetic-MiniMax-M2.1",                     # Tier 3: 1M context, multilang
         "synthetic-hf-MiniMaxAI-MiniMax-M2.1",       # Tier 3: Backup MiniMax
         "synthetic-hf-zai-org-GLM-4.7",              # Tier 5: Synthetic GLM backup
     ],
     
     # Search, docs, context (less intensive) - needs context + cost efficiency
-    # CORRECT ORDER: Gemini Flash → Cerebras → GLM → OpenRouter Free (last resort)
+    # CORRECT ORDER: Gemini Flash → GitHub models → Cerebras → OpenRouter Free (last resort)
     # NOTE: Antigravity Claude/Gemini tool format bug FIXED in antigravity_model.py
     WorkloadType.LIBRARIAN: [
         "antigravity-gemini-3-flash",                # Tier 4: FIRST - 1M context, good for search
         "Gemini-3",                                  # Tier 3: Gemini 3 base model
+        "github-gpt-4o-mini",                         # Tier 4: Fast GPT-4o-mini via GitHub API
+        "github-phi-4",                               # Tier 4: Microsoft Phi-4 via GitHub API
         "Gemini-3-Long-Context",                     # Tier 3: 2M context for large searches
         "Cerebras-GLM-4.7",                          # Tier 5: Fast fallback before free tier
         "synthetic-GLM-4.7",                          # Tier 5: Backup GLM
@@ -294,6 +313,19 @@ FAILOVER_CHAIN: Dict[str, str] = {
     # =====================================================================
     "synthetic-hf-MiniMaxAI-MiniMax-M2.1": "synthetic-MiniMax-M2.1",
     "synthetic-Kimi-K2-Thinking": "synthetic-Kimi-K2-Thinking",
+    
+    # =====================================================================
+    # GITHUB MODELS API - Fallback chains (via GitHub Models API)
+    # These models use GH_TOKEN and connect to models.github.ai
+    # =====================================================================
+    "github-grok-3": "github-deepseek-r1",          # Tier 2 → Tier 2
+    "github-deepseek-r1": "github-gpt-4.1",          # Tier 2 → Tier 2
+    "github-gpt-4.1": "github-grok-3-mini",          # Tier 2 → Tier 3
+    "github-grok-3-mini": "github-gpt-4.1-mini",     # Tier 3 → Tier 3
+    "github-gpt-4.1-mini": "github-gpt-4o",          # Tier 3 → Tier 3
+    "github-gpt-4o": "github-gpt-4o-mini",           # Tier 3 → Tier 4
+    "github-gpt-4o-mini": "github-phi-4",            # Tier 4 → Tier 4
+    "github-phi-4": "Cerebras-GLM-4.7",              # Tier 4 → Tier 5 (emergency)
     
     # ChatGPT models are OAuth-only and added at runtime
 }
@@ -542,6 +574,23 @@ PROVIDER_LIMITS: Dict[str, Dict[str, int]] = {
         "optimal_prompt_size": 50_000,
         "plan": "teams",
         "cost_per_month": 35,
+    },
+    
+    # =========================================================================
+    # GitHub Models API - Free tier via GH CLI token (models.github.ai)
+    # Based on GitHub Models documentation - generous free tier
+    # =========================================================================
+    "github_models": {
+        "tokens_per_minute": 150_000,       # GitHub Models is generous
+        "tokens_per_day": 5_000_000,         # Daily limit estimated
+        "requests_per_minute": 30,           # Conservative RPM
+        "requests_per_day": 5_000,           # Conservative daily
+        "reset_window_seconds": 60,
+        "context_length": 128_000,           # Varies by model (~128K avg)
+        "max_output": 16_384,                # Varies by model
+        "optimal_prompt_size": 50_000,
+        "plan": "free",
+        "cost_per_month": 0,                 # Free with GitHub account
     },
 }
 

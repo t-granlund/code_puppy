@@ -285,5 +285,131 @@
     "name": "glm-4.7",
     "context_length": 200000,
     "supported_settings": ["temperature", "top_p"]
+  },
+
+  "_GITHUB_MODELS_API_NOTES": {
+    "description": "Models available via GitHub Models API (models.github.ai)",
+    "auth": "Uses GH_TOKEN from 'gh auth token' command",
+    "endpoint": "https://models.github.ai/inference",
+    "tiers": {
+      "gpt-4.1/gpt-4o": "Tier 2-3 - Strong reasoning and coding",
+      "grok-3": "Tier 2 - xAI reasoning model",
+      "grok-3-mini": "Tier 3 - xAI reasoning (faster)",
+      "deepseek-r1": "Tier 2 - 671B reasoning model",
+      "phi-4": "Tier 4 - Microsoft small model"
+    }
+  },
+
+  "github-gpt-4.1": {
+    "type": "custom_openai",
+    "name": "openai/gpt-4.1",
+    "custom_endpoint": {
+      "url": "https://models.github.ai/inference/",
+      "api_key": "$GH_TOKEN"
+    },
+    "context_length": 128000,
+    "max_output": 16384,
+    "tier": 2,
+    "workload": ["reasoning", "coding", "builder_high"],
+    "capabilities": ["reasoning", "code_gen", "multimodal"],
+    "supported_settings": ["temperature", "top_p"]
+  },
+  "github-gpt-4.1-mini": {
+    "type": "custom_openai",
+    "name": "openai/gpt-4.1-mini",
+    "custom_endpoint": {
+      "url": "https://models.github.ai/inference/",
+      "api_key": "$GH_TOKEN"
+    },
+    "context_length": 128000,
+    "max_output": 16384,
+    "tier": 3,
+    "workload": ["coding", "builder"],
+    "capabilities": ["code_gen", "fast"],
+    "supported_settings": ["temperature", "top_p"]
+  },
+  "github-gpt-4o": {
+    "type": "custom_openai",
+    "name": "openai/gpt-4o",
+    "custom_endpoint": {
+      "url": "https://models.github.ai/inference/",
+      "api_key": "$GH_TOKEN"
+    },
+    "context_length": 128000,
+    "max_output": 16384,
+    "tier": 3,
+    "workload": ["coding", "reasoning", "builder"],
+    "capabilities": ["reasoning", "code_gen", "multimodal"],
+    "supported_settings": ["temperature", "top_p"]
+  },
+  "github-gpt-4o-mini": {
+    "type": "custom_openai",
+    "name": "openai/gpt-4o-mini",
+    "custom_endpoint": {
+      "url": "https://models.github.ai/inference/",
+      "api_key": "$GH_TOKEN"
+    },
+    "context_length": 128000,
+    "max_output": 16384,
+    "tier": 4,
+    "workload": ["librarian", "coding"],
+    "capabilities": ["code_gen", "fast", "cheap"],
+    "supported_settings": ["temperature", "top_p"]
+  },
+  "github-grok-3": {
+    "type": "custom_openai",
+    "name": "xai/grok-3",
+    "custom_endpoint": {
+      "url": "https://models.github.ai/inference/",
+      "api_key": "$GH_TOKEN"
+    },
+    "context_length": 131072,
+    "max_output": 16384,
+    "tier": 2,
+    "workload": ["reasoning", "orchestrator", "builder_high"],
+    "capabilities": ["reasoning", "code_gen", "deep_thinking"],
+    "supported_settings": ["temperature", "top_p"]
+  },
+  "github-grok-3-mini": {
+    "type": "custom_openai",
+    "name": "xai/grok-3-mini",
+    "custom_endpoint": {
+      "url": "https://models.github.ai/inference/",
+      "api_key": "$GH_TOKEN"
+    },
+    "context_length": 131072,
+    "max_output": 8192,
+    "tier": 3,
+    "workload": ["reasoning", "coding", "builder"],
+    "capabilities": ["reasoning", "fast"],
+    "supported_settings": ["temperature", "top_p"]
+  },
+  "github-deepseek-r1": {
+    "type": "custom_openai",
+    "name": "deepseek/deepseek-r1",
+    "custom_endpoint": {
+      "url": "https://models.github.ai/inference/",
+      "api_key": "$GH_TOKEN"
+    },
+    "context_length": 131072,
+    "max_output": 16384,
+    "tier": 2,
+    "workload": ["reasoning", "builder_high"],
+    "capabilities": ["thinking", "reasoning", "math", "moe"],
+    "supported_settings": ["temperature", "top_p"]
+  },
+  "github-phi-4": {
+    "type": "custom_openai",
+    "name": "microsoft/phi-4",
+    "custom_endpoint": {
+      "url": "https://models.github.ai/inference/",
+      "api_key": "$GH_TOKEN"
+    },
+    "context_length": 16384,
+    "max_output": 4096,
+    "tier": 4,
+    "workload": ["librarian", "coding"],
+    "capabilities": ["fast", "efficient", "small"],
+    "supported_settings": ["temperature", "top_p"]
   }
 }

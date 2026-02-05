@@ -66,6 +66,8 @@ PROVIDER_CREDENTIALS: Dict[str, Tuple[str, str | tuple]] = {
     "openai": (CredentialType.API_KEY, ("OPENAI_API_KEY", "openai_api_key")),
     "anthropic": (CredentialType.API_KEY, ("ANTHROPIC_API_KEY", "anthropic_api_key")),
     "azure_openai": (CredentialType.API_KEY, ("AZURE_OPENAI_API_KEY", "azure_openai_api_key")),
+    # GitHub Models API - uses GH_TOKEN from gh CLI or environment
+    "github_models": (CredentialType.API_KEY, ("GH_TOKEN", "gh_token", "GITHUB_TOKEN")),
 }
 
 
@@ -121,6 +123,16 @@ MODEL_TO_PROVIDER: Dict[str, str] = {
     "zai-glm-4.6-api": "zai",
     "zai-glm-4.7-coding": "zai",
     "zai-glm-4.7-api": "zai",
+    
+    # GitHub Models API (GH_TOKEN - via models.github.ai)
+    "github-gpt-4.1": "github_models",
+    "github-gpt-4.1-mini": "github_models",
+    "github-gpt-4o": "github_models",
+    "github-gpt-4o-mini": "github_models",
+    "github-grok-3": "github_models",
+    "github-grok-3-mini": "github_models",
+    "github-deepseek-r1": "github_models",
+    "github-phi-4": "github_models",
 }
 
 
@@ -128,8 +140,28 @@ MODEL_TO_PROVIDER: Dict[str, str] = {
 # CREDENTIAL CHECKING FUNCTIONS
 # =============================================================================
 
+def _get_gh_cli_token() -> Optional[str]:
+    """Get GitHub token from gh CLI if installed."""
+    import subprocess
+    try:
+        result = subprocess.run(
+            ["gh", "auth", "token"],
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            return result.stdout.strip()
+    except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
+        pass  # gh CLI not installed or not authenticated
+    return None
+
+
 def _get_api_key(env_var: str) -> Optional[str]:
-    """Get API key from config or environment."""
+    """Get API key from config or environment.
+    
+    For GH_TOKEN/GITHUB_TOKEN, also tries `gh auth token` as a fallback.
+    """
     try:
         from code_puppy.config import get_value
         
@@ -141,7 +173,21 @@ def _get_api_key(env_var: str) -> Optional[str]:
         pass
     
     # Fall back to environment variable
-    return os.environ.get(env_var)
+    env_value = os.environ.get(env_var)
+    if env_value:
+        return env_value
+    
+    # Special case: For GH_TOKEN/GITHUB_TOKEN, try gh CLI
+    if env_var.upper() in ("GH_TOKEN", "GITHUB_TOKEN"):
+        # Also check the alternative env var
+        alt_name = "GITHUB_TOKEN" if env_var.upper() == "GH_TOKEN" else "GH_TOKEN"
+        alt_value = os.environ.get(alt_name)
+        if alt_value:
+            return alt_value
+        # Try gh CLI as last resort
+        return _get_gh_cli_token()
+    
+    return None
 
 
 def _check_oauth_token(plugin_name: str) -> bool:

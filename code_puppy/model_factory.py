@@ -52,11 +52,34 @@ def _load_plugin_model_providers():
 _load_plugin_model_providers()
 
 
+def _get_gh_cli_token() -> str | None:
+    """Get GitHub token from gh CLI if installed.
+    
+    This allows using GitHub Models API without setting GH_TOKEN manually.
+    Requires the GitHub CLI (gh) to be installed and authenticated.
+    """
+    import subprocess
+    try:
+        result = subprocess.run(
+            ["gh", "auth", "token"],
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            return result.stdout.strip()
+    except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
+        pass  # gh CLI not installed or not authenticated
+    return None
+
+
 def get_api_key(env_var_name: str) -> str | None:
     """Get an API key from config first, then fall back to environment variable.
 
     This allows users to set API keys via `/set KIMI_API_KEY=xxx` in addition to
     setting them as environment variables.
+    
+    For GH_TOKEN specifically, also tries `gh auth token` as a fallback.
 
     Args:
         env_var_name: The name of the environment variable (e.g., "OPENAI_API_KEY")
@@ -70,7 +93,21 @@ def get_api_key(env_var_name: str) -> str | None:
         return config_value
 
     # Fall back to environment variable
-    return os.environ.get(env_var_name)
+    env_value = os.environ.get(env_var_name)
+    if env_value:
+        return env_value
+    
+    # Special case: For GH_TOKEN/GITHUB_TOKEN, try gh CLI
+    if env_var_name.upper() in ("GH_TOKEN", "GITHUB_TOKEN"):
+        # Also check the alternative env var
+        alt_name = "GITHUB_TOKEN" if env_var_name.upper() == "GH_TOKEN" else "GH_TOKEN"
+        alt_value = os.environ.get(alt_name)
+        if alt_value:
+            return alt_value
+        # Try gh CLI as last resort
+        return _get_gh_cli_token()
+    
+    return None
 
 
 def make_model_settings(
