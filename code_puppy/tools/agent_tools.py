@@ -232,6 +232,7 @@ class AgentInvokeOutput(BaseModel):
     agent_name: str
     session_id: str | None = None
     error: str | None = None
+    is_retriable: bool = False  # Hint that retry may succeed (transient network error)
 
 
 def register_list_agents(agent):
@@ -800,7 +801,16 @@ def register_invoke_agent(agent):
             )
 
         except Exception as e:
-            # Emit clean failure summary
+            # Check if this is a retriable error
+            err_str = str(e).lower()
+            err_type = type(e).__name__.lower()
+            is_retriable = any(indicator in err_str or indicator in err_type for indicator in [
+                "remoteprotocolerror", "incomplete chunked", "peer closed",
+                "connection reset", "connection refused", "timeout",
+                "generator didn't stop",  # asynccontextmanager issue
+            ])
+            
+            # Log the failure
             emit_error(f"✗ {agent_name} failed: {str(e)}", message_group=group_id)
 
             # Full traceback for debugging
@@ -812,6 +822,7 @@ def register_invoke_agent(agent):
                 agent_name=agent_name,
                 session_id=session_id,
                 error=error_msg,
+                is_retriable=is_retriable,  # Hint to caller that retry may succeed
             )
 
         finally:

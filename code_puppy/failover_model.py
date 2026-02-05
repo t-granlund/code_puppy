@@ -88,12 +88,17 @@ def _is_failover_error(exc: Exception) -> bool:
     - 401/403 Authentication errors (invalid token/model access)
     - UnexpectedModelBehavior (output validation failures, malformed tool calls)
     - ToolRetryError (tool call validation errors)
+    - RemoteProtocolError (connection closed mid-stream, incomplete chunked read)
+    - ConnectionError (generic connection failures)
+    - Timeout errors
     
     Handles various exception types from different providers:
     - anthropic.RateLimitError, InternalServerError, AuthenticationError
     - openai.RateLimitError, APIError, UnprocessableEntityError
     - pydantic_ai.exceptions.UnexpectedModelBehavior (output validation)
     - pydantic_ai.exceptions.ToolRetryError (tool call validation)
+    - httpx.RemoteProtocolError (connection closed mid-stream)
+    - httpcore.RemoteProtocolError (peer closed connection)
     - httpx-based status code responses
     - Generic API errors with status codes
     """
@@ -106,6 +111,9 @@ def _is_failover_error(exc: Exception) -> bool:
         "unprocessableentity", "badrequest",
         "unexpectedmodelbehavior",  # pydantic-ai output validation failure
         "toolretryerror",           # pydantic-ai tool call validation failure
+        "remoteprotocolerror",      # httpx/httpcore connection closed mid-stream
+        "connectionerror",          # Generic connection failures
+        "timeout",                  # Request timeouts
     ]):
         return True
     
@@ -118,6 +126,10 @@ def _is_failover_error(exc: Exception) -> bool:
         "401", "403", "authentication", "unauthorized", "forbidden",
         "exceeded maximum retries",                   # pydantic-ai output validation
         "output validation",                          # pydantic-ai output validation
+        "incomplete chunked read",                    # httpx connection closed mid-stream
+        "peer closed connection",                     # httpcore connection dropped
+        "connection reset",                           # TCP connection reset
+        "connection refused",                         # Server not accepting connections
     ]
     if any(indicator in exc_str for indicator in failover_indicators):
         return True
@@ -554,6 +566,11 @@ class FailoverModel(Model):
         
         Same failover logic as request(), but for streaming responses.
         This is an async context manager that yields the StreamedResponse.
+        
+        Note: Failover happens BEFORE yielding (during stream setup).
+        Once we yield a response, we cannot failover mid-stream because
+        the caller is already consuming it. If an error occurs after yield
+        (during consumption), it propagates to the caller.
         """
         attempts = 0
         last_error: Exception | None = None
@@ -592,7 +609,16 @@ class FailoverModel(Model):
                         )
                     
                     # Yield the response - caller will iterate over it
-                    yield response
+                    # Once yielded, we're committed to this model - no mid-stream failover
+                    try:
+                        yield response
+                    except GeneratorExit:
+                        # Caller closed the generator cleanly
+                        return
+                    except BaseException:
+                        # Any exception during yield must be re-raised to satisfy
+                        # asynccontextmanager's requirement that the generator stops
+                        raise
                     # Context exits cleanly after caller is done
                     return
                 
@@ -608,6 +634,8 @@ class FailoverModel(Model):
                         err_str = str(e)
                         if "429" in err_str or "rate limit" in err_str.lower():
                             error_type = "Rate limit"
+                        elif "incomplete chunked" in err_str.lower() or "peer closed" in err_str.lower():
+                            error_type = "Connection dropped"
                         elif "422" in err_str or "wrong_api_format" in err_str.lower():
                             error_type = "Format error"
                         elif "500" in err_str or "502" in err_str or "503" in err_str:
@@ -615,7 +643,7 @@ class FailoverModel(Model):
                         elif "400" in err_str or "bad request" in err_str.lower():
                             error_type = "Bad request"
                         else:
-                            error_type = "Auth error"
+                            error_type = "Error"
                         
                         emit_warning(
                             f"🔄 Stream {error_type} on {model.model_name} → "
