@@ -574,6 +574,7 @@ class FailoverModel(Model):
         """
         attempts = 0
         last_error: Exception | None = None
+        yielded = False  # Track if we've yielded to caller
         
         while attempts < self._max_failovers + 1:
             model = self._get_next_model()
@@ -610,19 +611,17 @@ class FailoverModel(Model):
                     
                     # Yield the response - caller will iterate over it
                     # Once yielded, we're committed to this model - no mid-stream failover
-                    try:
-                        yield response
-                    except GeneratorExit:
-                        # Caller closed the generator cleanly
-                        return
-                    except BaseException:
-                        # Any exception during yield must be re-raised to satisfy
-                        # asynccontextmanager's requirement that the generator stops
-                        raise
-                    # Context exits cleanly after caller is done
+                    yielded = True
+                    yield response
+                    # If we reach here, caller finished consuming the stream successfully
                     return
                 
             except Exception as e:
+                # CRITICAL: If we've already yielded to caller, any exception must propagate
+                # immediately to satisfy asynccontextmanager protocol. Do NOT retry.
+                if yielded:
+                    raise
+                
                 last_error = e
                 
                 if _is_failover_error(e):
