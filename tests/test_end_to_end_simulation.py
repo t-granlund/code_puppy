@@ -157,9 +157,15 @@ class TestWorkingDirectoryValidation:
     async def test_invalid_working_directory_returns_error(self):
         """Test that non-existent working directory returns error immediately."""
         from code_puppy.tools.command_runner import run_shell_command
+        from unittest.mock import MagicMock
+        
+        # Create a mock context
+        mock_context = MagicMock()
+        mock_context.deps = MagicMock()
         
         # Try to run command in non-existent directory
         result = await run_shell_command(
+            context=mock_context,
             command="ls",
             cwd="/nonexistent/directory/path/12345"
         )
