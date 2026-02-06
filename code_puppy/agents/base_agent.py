@@ -1758,7 +1758,11 @@ class BaseAgent(ABC):
 
     def reload_code_generation_agent(self, message_group: Optional[str] = None):
         """Force-reload the pydantic-ai Agent based on current config and model."""
-        from code_puppy.tools import register_tools_for_agent
+        from code_puppy.tools import (
+            EXTENDED_THINKING_PROMPT_NOTE,
+            has_extended_thinking_active,
+            register_tools_for_agent,
+        )
 
         if message_group is None:
             message_group = str(uuid.uuid4())
@@ -1784,6 +1788,11 @@ class BaseAgent(ABC):
         # Handle claude-code models: swap instructions (prompt prepending happens in run_with_mcp)
         from code_puppy.model_utils import prepare_prompt_for_model
 
+        # When extended thinking is active, nudge the model to think between
+        # tool calls (the share_your_reasoning tool is stripped in this case).
+        if has_extended_thinking_active(resolved_model_name):
+            instructions += EXTENDED_THINKING_PROMPT_NOTE
+
         prepared = prepare_prompt_for_model(
             model_name, instructions, "", prepend_system_to_user=False
         )
@@ -1801,7 +1810,7 @@ class BaseAgent(ABC):
         )
 
         agent_tools = self.get_available_tools()
-        register_tools_for_agent(p_agent, agent_tools)
+        register_tools_for_agent(p_agent, agent_tools, model_name=resolved_model_name)
 
         # Get existing tool names to filter out conflicts with MCP tools
         existing_tool_names = set()
@@ -1878,7 +1887,9 @@ class BaseAgent(ABC):
 
             # Register regular tools (non-MCP) on the new agent
             agent_tools = self.get_available_tools()
-            register_tools_for_agent(agent_without_mcp, agent_tools)
+            register_tools_for_agent(
+                agent_without_mcp, agent_tools, model_name=resolved_model_name
+            )
 
             # Wrap with DBOS - pass event_stream_handler at construction time
             # so DBOSModel gets the handler for streaming output
@@ -1906,7 +1917,9 @@ class BaseAgent(ABC):
             )
             # Register regular tools on the agent
             agent_tools = self.get_available_tools()
-            register_tools_for_agent(p_agent, agent_tools)
+            register_tools_for_agent(
+                p_agent, agent_tools, model_name=resolved_model_name
+            )
 
             self.pydantic_agent = p_agent
             self._code_generation_agent = p_agent
@@ -1928,7 +1941,11 @@ class BaseAgent(ABC):
             A configured PydanticAgent (or DBOSAgent wrapper) with the custom output_type.
         """
         from code_puppy.model_utils import prepare_prompt_for_model
-        from code_puppy.tools import register_tools_for_agent
+        from code_puppy.tools import (
+            EXTENDED_THINKING_PROMPT_NOTE,
+            has_extended_thinking_active,
+            register_tools_for_agent,
+        )
 
         model_name = self.get_model_name()
         models_config = ModelFactory.load_config()
@@ -1949,6 +1966,11 @@ class BaseAgent(ABC):
         )
         instructions = prepared.instructions
 
+        # When extended thinking is active, nudge the model to think between
+        # tool calls (the share_your_reasoning tool is stripped in this case).
+        if has_extended_thinking_active(resolved_model_name):
+            instructions += EXTENDED_THINKING_PROMPT_NOTE
+
         global _reload_count
         _reload_count += 1
 
@@ -1963,7 +1985,9 @@ class BaseAgent(ABC):
                 model_settings=model_settings,
             )
             agent_tools = self.get_available_tools()
-            register_tools_for_agent(temp_agent, agent_tools)
+            register_tools_for_agent(
+                temp_agent, agent_tools, model_name=resolved_model_name
+            )
             # Pass event_stream_handler at construction time for streaming output
             dbos_agent = DBOSAgent(
                 temp_agent,
@@ -1982,7 +2006,9 @@ class BaseAgent(ABC):
                 model_settings=model_settings,
             )
             agent_tools = self.get_available_tools()
-            register_tools_for_agent(temp_agent, agent_tools)
+            register_tools_for_agent(
+                temp_agent, agent_tools, model_name=resolved_model_name
+            )
             return temp_agent
 
     # It's okay to decorate it with DBOS.step even if not using DBOS; the decorator is a no-op in that case.

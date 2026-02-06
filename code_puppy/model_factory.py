@@ -52,25 +52,29 @@ def _load_plugin_model_providers():
 _load_plugin_model_providers()
 
 
-def _get_gh_cli_token() -> str | None:
-    """Get GitHub token from gh CLI if installed.
-    
-    This allows using GitHub Models API without setting GH_TOKEN manually.
-    Requires the GitHub CLI (gh) to be installed and authenticated.
+# Anthropic beta header required for 1M context window support.
+CONTEXT_1M_BETA = "context-1m-2025-08-07"
+
+
+def _build_anthropic_beta_header(
+    model_config: Dict,
+    *,
+    interleaved_thinking: bool = False,
+) -> str | None:
+    """Build the anthropic-beta header value for an Anthropic model.
+
+    Combines beta flags based on model capabilities:
+    - interleaved-thinking-2025-05-14  (when interleaved_thinking is enabled)
+    - context-1m-2025-08-07            (when context_length >= 1_000_000)
+
+    Returns None if no beta flags are needed.
     """
-    import subprocess
-    try:
-        result = subprocess.run(
-            ["gh", "auth", "token"],
-            capture_output=True,
-            text=True,
-            timeout=5,
-        )
-        if result.returncode == 0 and result.stdout.strip():
-            return result.stdout.strip()
-    except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
-        pass  # gh CLI not installed or not authenticated
-    return None
+    parts: list[str] = []
+    if interleaved_thinking:
+        parts.append("interleaved-thinking-2025-05-14")
+    if model_config.get("context_length", 0) >= 1_000_000:
+        parts.append(CONTEXT_1M_BETA)
+    return ",".join(parts) if parts else None
 
 
 def get_api_key(env_var_name: str) -> str | None:
@@ -78,8 +82,6 @@ def get_api_key(env_var_name: str) -> str | None:
 
     This allows users to set API keys via `/set KIMI_API_KEY=xxx` in addition to
     setting them as environment variables.
-    
-    For GH_TOKEN specifically, also tries `gh auth token` as a fallback.
 
     Args:
         env_var_name: The name of the environment variable (e.g., "OPENAI_API_KEY")
@@ -93,21 +95,7 @@ def get_api_key(env_var_name: str) -> str | None:
         return config_value
 
     # Fall back to environment variable
-    env_value = os.environ.get(env_var_name)
-    if env_value:
-        return env_value
-    
-    # Special case: For GH_TOKEN/GITHUB_TOKEN, try gh CLI
-    if env_var_name.upper() in ("GH_TOKEN", "GITHUB_TOKEN"):
-        # Also check the alternative env var
-        alt_name = "GITHUB_TOKEN" if env_var_name.upper() == "GH_TOKEN" else "GH_TOKEN"
-        alt_value = os.environ.get(alt_name)
-        if alt_value:
-            return alt_value
-        # Try gh CLI as last resort
-        return _get_gh_cli_token()
-    
-    return None
+    return os.environ.get(env_var_name)
 
 
 def make_model_settings(
@@ -147,19 +135,8 @@ def make_model_settings(
         except Exception:
             # Fallback if config loading fails (e.g., in CI environments)
             context_length = 128000
-        
-        # CEREBRAS OPTIMIZATION: Use aggressive token limits for Cerebras models
-        # Based on usage analysis: avg 28K tokens/req, need to reduce to <15K
-        model_lower = model_name.lower()
-        is_cerebras = "cerebras" in model_lower or "glm-4" in model_lower or "qwen" in model_lower
-        
-        if is_cerebras:
-            # Cerebras: Default to 1500 tokens (reduced from 2000)
-            # Most responses are tool calls which need <500 tokens
-            max_tokens = 1500
-        else:
-            # min 2048, 15% of context, max 65536
-            max_tokens = max(2048, min(int(0.15 * context_length), 65536))
+        # min 2048, 15% of context, max 65536
+        max_tokens = max(2048, min(int(0.15 * context_length), 65536))
 
     model_settings_dict["max_tokens"] = max_tokens
     effective_settings = get_effective_model_settings(model_name)
@@ -169,32 +146,13 @@ def make_model_settings(
     if not get_yolo_mode():
         model_settings_dict["parallel_tool_calls"] = False
 
-    # GLM 4.7 Optimization (from Cerebras Migration Guide)
-    # Rule #6: Disable reasoning for simple tasks
-    # Rule #7: Enable reasoning for complex tasks
-    # Rule #10: Use clear_thinking to control memory between calls
+    # Default to clear_thinking=False for GLM-4.7 models (preserved thinking)
     if "glm-4.7" in model_name.lower():
-        # Get reasoning mode from settings (default: enabled for compatibility)
-        disable_reasoning = effective_settings.get("disable_reasoning", False)
         clear_thinking = effective_settings.get("clear_thinking", False)
-        
-        # Build thinking configuration
         model_settings_dict["thinking"] = {
-            "type": "disabled" if disable_reasoning else "enabled",
+            "type": "enabled",
             "clear_thinking": clear_thinking,
         }
-        
-        # Cerebras-specific extra_body parameters
-        model_settings_dict["extra_body"] = {
-            "disable_reasoning": disable_reasoning,
-            "clear_thinking": clear_thinking,
-        }
-        
-        # Apply recommended sampling defaults (temp=1, top_p=0.95)
-        if "temperature" not in model_settings_dict:
-            model_settings_dict["temperature"] = 1.0
-        if "top_p" not in model_settings_dict:
-            model_settings_dict["top_p"] = 0.95
 
     model_settings: ModelSettings = ModelSettings(**model_settings_dict)
 
@@ -215,7 +173,12 @@ def make_model_settings(
         if model_settings_dict.get("temperature") is None:
             model_settings_dict["temperature"] = 1.0
 
-        extended_thinking = effective_settings.get("extended_thinking", "enabled")
+        from code_puppy.model_utils import get_default_extended_thinking
+
+        default_thinking = get_default_extended_thinking(model_name)
+        extended_thinking = effective_settings.get(
+            "extended_thinking", default_thinking
+        )
         # Backwards compat: handle legacy boolean values
         if extended_thinking is True:
             extended_thinking = "enabled"
@@ -232,6 +195,18 @@ def make_model_settings(
                 model_settings_dict["anthropic_thinking"]["budget_tokens"] = (
                     budget_tokens
                 )
+
+        # Opus 4-6 models support the `effort` setting via output_config.
+        # pydantic-ai doesn't have a native field for output_config yet,
+        # so we inject it through extra_body which gets merged into the
+        # HTTP request body.
+        if model_supports_setting(model_name, "effort"):
+            effort = effective_settings.get("effort", "high")
+            if "anthropic_thinking" in model_settings_dict:
+                extra_body = model_settings_dict.get("extra_body") or {}
+                extra_body["output_config"] = {"effort": effort}
+                model_settings_dict["extra_body"] = extra_body
+
         model_settings = AnthropicModelSettings(**model_settings_dict)
 
     # Handle Gemini thinking models (Gemini-3)
@@ -474,9 +449,12 @@ class ModelFactory:
             effective_settings = get_effective_model_settings(model_name)
             interleaved_thinking = effective_settings.get("interleaved_thinking", False)
 
+            beta_header = _build_anthropic_beta_header(
+                model_config, interleaved_thinking=interleaved_thinking
+            )
             default_headers = {}
-            if interleaved_thinking:
-                default_headers["anthropic-beta"] = "interleaved-thinking-2025-05-14"
+            if beta_header:
+                default_headers["anthropic-beta"] = beta_header
 
             anthropic_client = AsyncAnthropic(
                 api_key=api_key,
@@ -517,9 +495,12 @@ class ModelFactory:
             effective_settings = get_effective_model_settings(model_name)
             interleaved_thinking = effective_settings.get("interleaved_thinking", False)
 
+            beta_header = _build_anthropic_beta_header(
+                model_config, interleaved_thinking=interleaved_thinking
+            )
             default_headers = {}
-            if interleaved_thinking:
-                default_headers["anthropic-beta"] = "interleaved-thinking-2025-05-14"
+            if beta_header:
+                default_headers["anthropic-beta"] = beta_header
 
             anthropic_client = AsyncAnthropic(
                 base_url=url,
