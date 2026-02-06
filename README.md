@@ -384,6 +384,14 @@ This is useful for managing context length when you have a long conversation his
 - **Principles**: Clean, concise code following YAGNI, SRP, DRY principles
 - **File limit**: Max 600 lines per file (enforced!)
 
+### Epistemic Architect 🧠 (Enterprise Planning)
+- **Name**: `epistemic-architect`
+- **Specialty**: Evidence-based project planning and structured software development
+- **Tools**: Full discovery, lens evaluation, gap analysis, build execution
+- **Best for**: Complex enterprise projects, compliance-driven development, cross-team coordination
+- **Features**: 14-stage pipeline, 7 Expert Lenses, 6 Quality Gates, Pre-Flight Auth verification
+- **Documentation**: [Full Guide](docs/EPISTEMIC.md) | [Interactive Manual](docs/interactive-manual/epistemic-architect-diagram.html)
+
 ### Agent Creator 🏗️
 - **Name**: `agent-creator`
 - **Specialty**: Creating custom JSON agent configurations
@@ -797,6 +805,40 @@ Code Puppy includes the **Epistemic Agent Runtime** — a structured methodology
 > **Write down what you believe, how confident you are, and how you'd prove yourself wrong.**
 
 Everything else — lenses, gates, the Ralph loop — is machinery to make that practice systematic.
+
+### 🏢 Enterprise Use Cases
+
+The Epistemic Architect agent is ideal for software teams working on complex enterprise projects:
+
+| Scenario | How EAR Helps |
+|----------|---------------|
+| **New Microservice Architecture** | Surfaces hidden integration assumptions, validates API contracts across teams before code |
+| **Legacy System Modernization** | Tracks migration risks, establishes rollback checkpoints, documents technical debt |
+| **Compliance-Driven Development** | Pre-flight auth verification ensures credentials exist before automation; audit trails via epistemic state |
+| **Cross-Team Platform Development** | 7 Expert Lenses provide structured review (security, UX, systems engineering) before implementation |
+| **MVP/Proof of Concept** | 6 Quality Gates ensure testability and reversibility before building |
+
+**Example: Enterprise API Platform**
+```
+Problem: Building a multi-tenant billing API with SOC2 compliance requirements
+
+Epistemic Architect workflow:
+1. Philosophy Lens → Identifies hidden assumption: "all tenants have USD pricing"  
+2. Safety Lens → Flags abuse vector: rate limiting per-tenant vs global
+3. Systems Lens → Surfaces service boundary: billing ⟷ identity ⟷ usage tracking
+4. Pre-Flight Auth → Verifies Stripe API key, database credentials before autonomous build
+5. Build with Wiggum → Checkpointed execution with rollback capability
+```
+
+**Example: Healthcare Data Pipeline**
+```
+Problem: HIPAA-compliant analytics pipeline with 5 data sources
+
+Epistemic Architect value:
+- Gap Analysis identifies critical: "No BAA for third-party geocoding API"
+- Evidence tracking: logs confidence levels for each compliance requirement
+- Checkpoint-based build: stops at Stage 7 if PHI credentials unverified
+```
 
 ### Quick Start
 
