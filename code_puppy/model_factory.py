@@ -842,6 +842,22 @@ class ModelFactory:
             # Create and return the round-robin model
             return RoundRobinModel(*models, rotate_every=rotate_every)
 
+        elif model_type == "github-copilot":
+            # GitHub Copilot SDK integration
+            try:
+                from code_puppy.github_copilot_model import GitHubCopilotModel
+                
+                model = GitHubCopilotModel(model_name=model_config["name"])
+                return model
+            except RuntimeError as e:
+                emit_warning(
+                    f"GitHub Copilot model '{model_config.get('name')}' could not be initialized: {e}"
+                )
+                return None
+            except Exception as e:
+                logger.error(f"Failed to create GitHub Copilot model: {e}")
+                return None
+
         else:
             # Check for plugin-registered model type handlers
             registered_handlers = callbacks.on_register_model_types()

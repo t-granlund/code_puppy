@@ -1,0 +1,84 @@
+{
+  "comment": "Example GitHub Copilot SDK model configurations",
+  "comment2": "Add these to your ~/.code_puppy/extra_models.json file",
+  "comment3": "Prerequisites: gh copilot CLI installed, authenticated, and github-copilot-sdk Python package",
+  
+  "copilot-gpt52": {
+    "type": "github-copilot",
+    "name": "gpt-5.2",
+    "context_length": 128000,
+    "comment": "Latest general model (1x multiplier)"
+  },
+  "copilot-gpt52-codex": {
+    "type": "github-copilot",
+    "name": "gpt-5.2-codex",
+    "context_length": 128000,
+    "comment": "Latest code model (1x multiplier)"
+  },
+  "copilot-gpt51-codex-max": {
+    "type": "github-copilot",
+    "name": "gpt-5.1-codex-max",
+    "context_length": 128000,
+    "comment": "Maximum performance code model (1x multiplier)"
+  },
+  "copilot-gpt51-codex-mini": {
+    "type": "github-copilot",
+    "name": "gpt-5.1-codex-mini",
+    "context_length": 128000,
+    "comment": "Efficient code model (0.33x multiplier)"
+  },
+  "copilot-gpt41": {
+    "type": "github-copilot",
+    "name": "gpt-4.1",
+    "context_length": 128000,
+    "comment": "FREE - No quota usage! (0x multiplier)"
+  },
+  "copilot-gpt5-mini": {
+    "type": "github-copilot",
+    "name": "gpt-5-mini",
+    "context_length": 128000,
+    "comment": "FREE - No quota usage! (0x multiplier)"
+  },
+  "copilot-claude-opus-45": {
+    "type": "github-copilot",
+    "name": "claude-opus-4.5",
+    "context_length": 200000,
+    "comment": "Flagship reasoning model (3x multiplier)"
+  },
+  "copilot-claude-sonnet-45": {
+    "type": "github-copilot",
+    "name": "claude-sonnet-4.5",
+    "context_length": 200000,
+    "comment": "Default balanced model (1x multiplier)"
+  },
+  "copilot-claude-haiku-45": {
+    "type": "github-copilot",
+    "name": "claude-haiku-4.5",
+    "context_length": 200000,
+    "comment": "Fastest model (0.33x multiplier)"
+  },
+  "copilot-gemini-3-pro": {
+    "type": "github-copilot",
+    "name": "gemini-3-pro",
+    "context_length": 1000000,
+    "comment": "Advanced reasoning (1x multiplier)"
+  },
+  "copilot-gemini-3-flash": {
+    "type": "github-copilot",
+    "name": "gemini-3-flash",
+    "context_length": 1000000,
+    "comment": "Fastest & efficient (0.33x multiplier)"
+  },
+  "copilot-grok": {
+    "type": "github-copilot",
+    "name": "grok-code-fast-1",
+    "context_length": 128000,
+    "comment": "Most efficient! (0.25x multiplier)"
+  },
+  "copilot-raptor-mini": {
+    "type": "github-copilot",
+    "name": "raptor-mini",
+    "context_length": 128000,
+    "comment": "FREE fine-tuned GPT-5 mini (0x multiplier)"
+  }
+}
