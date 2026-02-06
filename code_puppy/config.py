@@ -219,7 +219,40 @@ def ensure_config_exists():
     return config
 
 
+# Local project config file - checked first before global config
+LOCAL_CONFIG_FILE = ".code_puppy.cfg"
+
+
+def _get_local_config_path() -> Optional[str]:
+    """Get path to local project config file if it exists.
+    
+    Searches for .code_puppy.cfg in current directory, allowing
+    per-project model and configuration overrides.
+    """
+    local_path = os.path.join(os.getcwd(), LOCAL_CONFIG_FILE)
+    if os.path.isfile(local_path):
+        return local_path
+    return None
+
+
 def get_value(key: str):
+    """Get config value with local directory override support.
+    
+    Priority order:
+    1. Local .code_puppy.cfg in current directory (project-specific)
+    2. Global ~/.code_puppy/puppy.cfg (user-wide)
+    """
+    config = configparser.ConfigParser()
+    
+    # First check local project config
+    local_config_path = _get_local_config_path()
+    if local_config_path:
+        config.read(local_config_path)
+        val = config.get(DEFAULT_SECTION, key, fallback=None)
+        if val is not None:
+            return val
+    
+    # Fall back to global config
     config = configparser.ConfigParser()
     config.read(CONFIG_FILE)
     val = config.get(DEFAULT_SECTION, key, fallback=None)

@@ -456,8 +456,14 @@ class RateLimitFailover:
             if model not in self._rate_limited:
                 return model
         
-        # All rate-limited, return first anyway (will trigger failover)
-        return chain[0] if chain else "gemini-3-flash"
+        # All rate-limited or no credentialed models - use chain first if available,
+        # otherwise fall back to user's configured global model
+        if chain:
+            return chain[0]
+        
+        # No workload chain available - use user's global model (single-model support)
+        from code_puppy.config import get_global_model_name
+        return get_global_model_name()
 
     def mark_rate_limited(self, model_name: str, duration_seconds: float = 60.0) -> None:
         """Mark a model as rate-limited (simpler version without auto-scheduling).

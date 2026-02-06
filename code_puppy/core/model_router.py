@@ -842,12 +842,15 @@ class ModelRouter:
                     selected_model = model
                     break
         
-        # Still nothing? Return default with warning
+        # Still nothing? Use user's configured model or any available
         if not selected_model:
+            from code_puppy.config import get_global_model_name
+            global_model = get_global_model_name()
             selected_model = self._models.get(
-                "antigravity-gemini-3-flash", list(self._models.values())[0]
+                global_model, list(self._models.values())[0] if self._models else None
             )
-            logger.warning(f"All providers over budget, using {selected_model.name} anyway")
+            if selected_model:
+                logger.warning(f"All providers over budget, using {selected_model.name} anyway")
         
         # Build decision
         reason_parts = [

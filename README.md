@@ -60,7 +60,9 @@ Code Puppy implements the **BART System (Belief-Augmented Reasoning & Tasking)**
 
 ```bash
 uvx code-puppy -i
-````
+```
+
+**Got just one API key?** See the [Single-Model Setup Guide](docs/SINGLE-MODEL-SETUP.md) - works with OpenAI, Anthropic, or even free [GitHub Models](docs/GITHUB-MODELS-INTEGRATION.md)!
 
 ## Installation
 
