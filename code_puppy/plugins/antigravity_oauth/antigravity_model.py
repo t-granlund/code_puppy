@@ -7,6 +7,7 @@ Claude thinking signatures for Gemini 3 models.
 from __future__ import annotations
 
 import base64
+import hashlib
 import json
 import logging
 from collections.abc import AsyncIterator
@@ -56,7 +57,9 @@ FunctionCallDict = dict[str, Any]
 BlobDict = dict[str, Any]
 
 # Bypass signature for when no real thought signature is available.
-BYPASS_THOUGHT_SIGNATURE = "context_engineering_is_the_way_to_go"
+BYPASS_THOUGHT_SIGNATURE = hashlib.sha256(
+    b"code_puppy_bypass_thought_signature"
+).hexdigest()[:32]
 
 
 def _is_signature_error(error_text: str) -> bool:
@@ -509,6 +512,12 @@ class AntigravityStreamingResponse(StreamedResponse):
     _chunks: AsyncIterator[dict[str, Any]]
     _model_name_str: str
     _provider_name_str: str = "google"
+
+    @property
+    def provider_url(self) -> str | None:
+        """Antigravity uses a custom proxy; no standard provider URL."""
+        return None
+
     _timestamp_val: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
     async def _get_event_iterator(self) -> AsyncIterator[ModelResponseStreamEvent]:
@@ -549,11 +558,10 @@ class AntigravityStreamingResponse(StreamedResponse):
                 if part.get("thought") and part.get("text") is not None:
                     text = part["text"]
 
-                    event = self._parts_manager.handle_thinking_delta(
+                    for event in self._parts_manager.handle_thinking_delta(
                         vendor_part_id=None,
                         content=text,
-                    )
-                    if event:
+                    ):
                         yield event
 
                     # For Claude: signature is ON the thinking block itself
@@ -570,11 +578,10 @@ class AntigravityStreamingResponse(StreamedResponse):
                     text = part["text"]
                     if len(text) == 0:
                         continue
-                    event = self._parts_manager.handle_text_delta(
+                    for event in self._parts_manager.handle_text_delta(
                         vendor_part_id=None,
                         content=text,
-                    )
-                    if event:
+                    ):
                         yield event
 
                 # Handle function call - support both Gemini format (functionCall) and Claude format (type: tool_use)
@@ -610,7 +617,7 @@ class AntigravityStreamingResponse(StreamedResponse):
                             else generate_tool_call_id()
                         ),
                     )
-                    if event:
+                    if event is not None:
                         yield event
 
     @property
