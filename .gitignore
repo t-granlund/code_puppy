@@ -30,5 +30,6 @@ nuitka-crash-report.xml
 *.backup
 main.bin
 
-logs/
-data/*.csv
+# Bundled skills removed — skills are now fetched from remote catalog
+code_puppy/bundled_skills/
+

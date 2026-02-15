@@ -909,13 +909,14 @@ def handle_credentials_command(command: str) -> bool:
 @register_command(
     name="skills",
     description="Manage agent skills - browse, enable, disable skills",
-    usage="/skills [list|enable|disable]",
+    usage="/skills [list|install|enable|disable]",
     category="core",
     detailed_help="""Launch the skills TUI menu or manage skills with subcommands:
     /skills        - Launch interactive TUI menu
-    /skills list   - Quick text list of all skills
-    /skills enable - Enable skills integration globally
-    /skills disable - Disable skills integration globally""",
+    /skills list    - Quick text list of all skills
+    /skills install  - Browse & install skills from remote catalog
+    /skills enable   - Enable skills integration globally
+    /skills disable  - Disable skills integration globally""",
 )
 def handle_skills_command(command: str) -> bool:
     """Handle the /skills command.
@@ -923,6 +924,7 @@ def handle_skills_command(command: str) -> bool:
     Subcommands:
         /skills         - Launch interactive TUI menu
         /skills list    - Quick text list of all skills (no TUI)
+        /skills install - Browse & install skills from remote catalog
         /skills enable  - Enable skills globally
         /skills disable - Disable skills globally
     """
@@ -983,6 +985,14 @@ def handle_skills_command(command: str) -> bool:
 
             return True
 
+        elif subcommand == "install":
+            from code_puppy.command_line.skills_install_menu import (
+                run_skills_install_menu,
+            )
+
+            run_skills_install_menu()
+            return True
+
         elif subcommand == "enable":
             set_skills_enabled(True)
             emit_success("✅ Skills integration enabled globally")
@@ -995,7 +1005,7 @@ def handle_skills_command(command: str) -> bool:
 
         else:
             emit_error(f"Unknown subcommand: {subcommand}")
-            emit_info("Usage: /skills [list|enable|disable]")
+            emit_info("Usage: /skills [list|install|enable|disable]")
             return True
 
     # No subcommand - launch TUI menu
