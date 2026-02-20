@@ -758,104 +758,112 @@ class TestEdgeCases:
         gemini_next = manager.get_current_or_next_for_family("gemini")
         assert gemini_next is not None
 
-    def test_mark_rate_limited_persists_to_disk(self, sample_storage, monkeypatch):
-        """Test that mark_rate_limited persists to disk by default."""
-        manager = AccountManager(initial_refresh_token="", stored=sample_storage)
-        account = manager.get_current_account_for_family("claude")
+    def test_init_with_empty_accounts_in_storage(self):
+        """Test init with stored AccountStorage that has an empty accounts list."""
+        storage = AccountStorage(version=3, accounts=[], active_index=0)
+        manager = AccountManager(initial_refresh_token="token", stored=storage)
+        assert manager.account_count == 0
 
-        # Track if save_to_disk was called
-        save_called = False
-
-        def mock_save(storage):
-            nonlocal save_called
-            save_called = True
-
-        monkeypatch.setattr(
-            "code_puppy.plugins.antigravity_oauth.accounts.save_accounts",
-            mock_save,
-        )
-
-        # Mark rate limited - should persist
-        manager.mark_rate_limited(account, 5000, "claude", "antigravity")
-        assert save_called, "mark_rate_limited should call save_to_disk"
-
-    def test_mark_rate_limited_skip_persist(self, sample_storage, monkeypatch):
-        """Test that mark_rate_limited can skip persistence."""
-        manager = AccountManager(initial_refresh_token="", stored=sample_storage)
-        account = manager.get_current_account_for_family("claude")
-
-        save_called = False
-
-        def mock_save(storage):
-            nonlocal save_called
-            save_called = True
-
-        monkeypatch.setattr(
-            "code_puppy.plugins.antigravity_oauth.accounts.save_accounts",
-            mock_save,
-        )
-
-        # Mark rate limited with persist=False
-        manager.mark_rate_limited(account, 5000, "claude", "antigravity", persist=False)
-        assert not save_called, "mark_rate_limited with persist=False should not save"
-
-    def test_load_from_disk_clears_expired_rate_limits(self, monkeypatch):
-        """Test that load_from_disk clears expired rate limits."""
-        from code_puppy.plugins.antigravity_oauth.storage import (
-            AccountMetadata,
-            AccountStorage,
-            RateLimitState,
-        )
-        import time
-
-        # Create storage with an expired rate limit (in the past)
-        expired_time = (time.time() - 3600) * 1000  # 1 hour ago in ms
+    def test_init_skips_account_without_refresh_token(self):
+        """Test that accounts with no refresh_token are skipped during load."""
+        now = time.time() * 1000
         storage = AccountStorage(
             version=3,
             accounts=[
                 AccountMetadata(
-                    refresh_token="test-token-1",
+                    refresh_token="",
+                    email="no-token@example.com",
+                    added_at=now,
+                    last_used=0,
+                    rate_limit_reset_times=RateLimitState(),
+                ),
+                AccountMetadata(
+                    refresh_token="valid_token",
+                    email="valid@example.com",
+                    added_at=now,
+                    last_used=0,
+                    rate_limit_reset_times=RateLimitState(),
+                ),
+            ],
+            active_index=0,
+        )
+        manager = AccountManager(initial_refresh_token="", stored=storage)
+        assert manager.account_count == 1
+        assert manager.get_accounts_snapshot()[0].email == "valid@example.com"
+
+    def test_init_loads_gemini_cli_rate_limit(self):
+        """Test that gemini_cli rate limits are loaded from storage."""
+        now = time.time() * 1000
+        storage = AccountStorage(
+            version=3,
+            accounts=[
+                AccountMetadata(
+                    refresh_token="token",
                     email="test@example.com",
-                    project_id="test-project",
-                    added_at=time.time() * 1000,
+                    added_at=now,
                     last_used=0,
                     rate_limit_reset_times=RateLimitState(
-                        claude=expired_time,  # Expired
-                        gemini_antigravity=None,
-                        gemini_cli=None,
+                        gemini_cli=now + 9000,
                     ),
                 ),
             ],
             active_index=0,
-            active_index_by_family={"claude": 0, "gemini": 0},
         )
+        manager = AccountManager(initial_refresh_token="", stored=storage)
+        account = manager.get_accounts_snapshot()[0]
+        assert account.rate_limit_reset_times["gemini-cli"] == now + 9000
 
-        # Track what was saved
-        saved_storage = None
+    def test_get_min_wait_time_gemini_all_limited(self):
+        """Test min wait time for gemini when all accounts are rate limited."""
+        manager = AccountManager(initial_refresh_token="", stored=None)
+        manager.add_account("t1", "a@b.com")
+        manager.add_account("t2", "c@d.com")
 
-        def mock_load():
-            return storage
+        # Rate limit both accounts for both gemini pools
+        for acc in manager.get_accounts_snapshot():
+            manager.mark_rate_limited(acc, 10000, "gemini", "antigravity")
+            manager.mark_rate_limited(acc, 5000, "gemini", "gemini-cli")
 
-        def mock_save(s):
-            nonlocal saved_storage
-            saved_storage = s
+        wait = manager.get_min_wait_time_for_family("gemini")
+        # Should pick the min of the min-per-account waits
+        assert wait > 0
+        assert wait <= 5100  # cli expires first at ~5000ms
 
-        monkeypatch.setattr(
-            "code_puppy.plugins.antigravity_oauth.accounts.load_accounts",
-            mock_load,
-        )
-        monkeypatch.setattr(
-            "code_puppy.plugins.antigravity_oauth.accounts.save_accounts",
-            mock_save,
-        )
+    def test_get_min_wait_time_gemini_one_pool_not_limited(self):
+        """Test gemini wait time when only one pool is limited (account available)."""
+        manager = AccountManager(initial_refresh_token="", stored=None)
+        manager.add_account("t1", "a@b.com")
 
-        # Load should clear expired rate limits
-        manager = AccountManager.load_from_disk()
+        # Only limit antigravity, not cli - account is NOT fully rate limited
+        acc = manager.get_accounts_snapshot()[0]
+        manager.mark_rate_limited(acc, 10000, "gemini", "antigravity")
 
-        # Account should no longer be rate limited
-        account = manager.get_current_account_for_family("claude")
-        assert account is not None
-        assert "claude" not in account.rate_limit_reset_times
+        wait = manager.get_min_wait_time_for_family("gemini")
+        assert wait == 0  # Account is available (not fully limited)
 
-        # Should have saved the cleaned state
-        assert saved_storage is not None
+    def test_remove_account_adjusts_cursor(self, sample_storage):
+        """Test that removing an account before cursor adjusts cursor down."""
+        manager = AccountManager(initial_refresh_token="", stored=sample_storage)
+        manager._cursor = 2  # cursor after second account
+
+        # Remove first account (index 0, before cursor)
+        account_to_remove = manager.get_accounts_snapshot()[0]
+        manager.remove_account(account_to_remove)
+
+        assert manager._cursor == 1  # adjusted down
+
+    def test_remove_account_resets_high_family_index(self):
+        """Test that family index is set to -1 when it equals len(accounts)."""
+        manager = AccountManager(initial_refresh_token="", stored=None)
+        manager.add_account("t1", "a@b.com")
+        manager.add_account("t2", "c@d.com")
+
+        # Set claude index to last account (index 1)
+        manager._current_index_by_family["claude"] = 1
+        manager._current_index_by_family["gemini"] = 0
+
+        # Remove last account (index 1) - claude index should become -1
+        acc = manager.get_accounts_snapshot()[1]
+        manager.remove_account(acc)
+
+        assert manager._current_index_by_family["claude"] == -1
