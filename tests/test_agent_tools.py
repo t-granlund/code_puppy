@@ -65,7 +65,7 @@ class TestAgentTools:
 
             # Verify the content contains expected file permission instructions
             file_permission_text = "".join(prompt_additions)
-            assert "User Feedback System" in file_permission_text
+            assert "User Approval System" in file_permission_text
             assert "user_feedback" in file_permission_text
 
     def test_invoke_agent_includes_puppy_rules(self):
