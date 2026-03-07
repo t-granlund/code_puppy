@@ -449,39 +449,17 @@ def get_permission_handler_help() -> str:
 
 
 def get_file_permission_prompt_additions() -> str:
-    """Return file permission handling prompt additions for agents.
-
-    This function provides the file permission rejection handling
-    instructions that can be dynamically injected into agent prompts
-    via the prompt hook system.
-
-    Only returns instructions when yolo_mode is off (False).
-    Uses a compact version to minimize context overhead (~500 tokens vs ~2KB).
-    """
-    # Only inject permission handling instructions when yolo mode is off
+    """Return file permission handling prompt additions for agents."""
     if get_yolo_mode():
-        return ""  # Return empty string when yolo mode is enabled
+        return ""
 
-    # COMPACT version - distilled to essential instructions only (~500 tokens)
-    # The full verbose version was ~2KB and contributed to rate limit cascades
     return """
-## User Feedback System
+## User Approval System
 
-When file/shell operations are rejected with `user_feedback`:
-1. STOP current approach immediately
-2. READ the feedback - user is telling you what they want
-3. IMPLEMENT their suggestion and retry
-
-On rejection with feedback:
-```json
-{"success": false, "user_rejection": true, "user_feedback": "Use async/await"}
-```
-→ Modify your code per feedback and try again.
-
-On silent rejection (empty feedback):
-→ STOP and ASK user what they want.
-
-Key: Feedback = guidance, not criticism. Implement it!
+When file operations are rejected, the response includes a `user_feedback` field:
+- If `user_feedback` has text: implement their suggestion and retry the operation.
+- If `user_feedback` is empty: stop and ask the user what they want instead.
+- Never retry the exact same rejected operation without changes.
 """
 
 
