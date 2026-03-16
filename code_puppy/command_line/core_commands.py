@@ -865,3 +865,262 @@ def handle_wiggum_stop_command(command: str) -> bool:
         emit_info("Wiggum mode is not active.")
 
     return True
+
+
+@register_command(
+    name="update",
+    description="Pull upstream updates with safety checks",
+    usage="/update [--force]",
+    category="core",
+    detailed_help="""
+Fetches updates from the upstream repository with pre-flight safety checks.
+
+Before pulling, the command will:
+1. Check for git merge conflicts
+2. Identify files modified both locally and upstream
+3. Run smoke tests to ensure imports work
+4. Report any breaking changes
+
+If issues are found, you'll be warned and can use --force to proceed anyway.
+
+Usage:
+    /update         - Check for updates and pull if safe
+    /update --force - Pull updates even if conflicts detected
+""",
+)
+def handle_update_command(command: str) -> bool:
+    """Pull upstream updates with safety checks.
+
+    Performs pre-flight checks before pulling to prevent breaking local changes.
+    """
+    import os
+    import subprocess
+    from pathlib import Path
+
+    from code_puppy.messaging import emit_error, emit_info, emit_success, emit_warning
+
+    # Parse arguments
+    tokens = command.split()
+    force = "--force" in tokens
+
+    # Check if we're in a git repo
+    repo_root = Path.home() / "code_puppy"
+    git_dir = repo_root / ".git"
+    if not git_dir.exists():
+        emit_error(f"Not a git repository: {repo_root}")
+        return True
+
+    os.chdir(repo_root)
+
+    # Check for uncommitted changes
+    try:
+        result = subprocess.run(
+            ["git", "status", "--porcelain"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        uncommitted = result.stdout.strip()
+        if uncommitted and not force:
+            emit_warning("⚠️  You have uncommitted changes!")
+            emit_info("Commit or stash your changes first, or use /update --force")
+            emit_info("\nUncommitted files:")
+            for line in uncommitted.split("\n")[:10]:
+                emit_info(f"  {line}")
+            uncommitted_lines = uncommitted.split("\n")
+            if len(uncommitted_lines) > 10:
+                emit_info(f"  ... and {len(uncommitted_lines) - 10} more")
+            return True
+    except subprocess.CalledProcessError as e:
+        emit_error(f"Failed to check git status: {e}")
+        return True
+
+    # Fetch upstream
+    emit_info("📡 Fetching upstream changes...")
+    try:
+        subprocess.run(
+            ["git", "fetch", "origin", "main"],
+            capture_output=True,
+            check=True,
+        )
+    except subprocess.CalledProcessError as e:
+        emit_error(f"Failed to fetch upstream: {e}")
+        return True
+
+    # Check for merge conflicts using merge-tree
+    emit_info("🔍 Checking for merge conflicts...")
+    try:
+        # Get merge base
+        result = subprocess.run(
+            ["git", "merge-base", "HEAD", "origin/main"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        merge_base = result.stdout.strip()
+
+        # Check for conflicts
+        result = subprocess.run(
+            ["git", "merge-tree", merge_base, "HEAD", "origin/main"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        merge_output = result.stdout
+
+        # Look for conflict markers in merge-tree output
+        conflicts = []
+        for line in merge_output.split("\n"):
+            if line.startswith("conflict"):
+                conflicts.append(line)
+
+        if conflicts and not force:
+            emit_warning(f"⚠️  {len(conflicts)} merge conflict(s) detected!")
+            emit_info("Resolve conflicts manually or use /update --force")
+            return True
+        elif conflicts:
+            emit_warning(f"⚠️  {len(conflicts)} conflict(s) detected, but --force specified")
+
+    except subprocess.CalledProcessError as e:
+        emit_error(f"Failed to check for conflicts: {e}")
+        return True
+
+    # Check for files modified both locally and upstream
+    emit_info("🔍 Checking for overlapping changes...")
+    try:
+        # Get local modified files
+        result = subprocess.run(
+            ["git", "diff", "--name-only", "--diff-filter=M", "HEAD"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        local_modified = set(result.stdout.strip().split("\n")) if result.stdout.strip() else set()
+
+        # Get upstream changed files
+        result = subprocess.run(
+            ["git", "diff", "--name-only", "--diff-filter=M", "HEAD", "origin/main"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        upstream_changed = set(result.stdout.strip().split("\n")) if result.stdout.strip() else set()
+
+        overlap = local_modified & upstream_changed
+        if overlap and not force:
+            emit_warning(f"⚠️  {len(overlap)} file(s) modified both locally and upstream:")
+            for f in list(overlap)[:5]:
+                emit_info(f"  - {f}")
+            if len(overlap) > 5:
+                emit_info(f"  ... and {len(overlap) - 5} more")
+            emit_info("\nReview these files or use /update --force")
+            return True
+        elif overlap:
+            emit_warning(f"⚠️  {len(overlap)} overlapping file(s), but --force specified")
+
+    except subprocess.CalledProcessError as e:
+        emit_error(f"Failed to check overlapping changes: {e}")
+        return True
+
+    # Check for version changes
+    emit_info("🔍 Checking version changes...")
+    try:
+        result = subprocess.run(
+            ["git", "diff", "HEAD", "origin/main", "--", "pyproject.toml"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        if "version" in result.stdout:
+            emit_info("📦 Version will be updated in pyproject.toml")
+    except subprocess.CalledProcessError:
+        pass
+
+    # Pre-pull smoke test
+    emit_info("🧪 Running pre-pull smoke tests...")
+    try:
+        subprocess.run(
+            ["python", "-c", "from code_puppy.main import main_entry"],
+            capture_output=True,
+            check=True,
+        )
+        emit_info("✅ Current code imports successfully")
+    except subprocess.CalledProcessError as e:
+        emit_warning("⚠️  Current code has import errors!")
+        emit_info(f"Error: {e}")
+        if not force:
+            emit_info("Fix errors first or use /update --force")
+            return True
+
+    # All checks passed - proceed with pull
+    if not force:
+        emit_success("✅ All safety checks passed!")
+        emit_info("")
+    else:
+        emit_warning("⚠️  Proceeding with --force (skipping safety checks)")
+
+    # Perform the pull
+    emit_info("📥 Pulling upstream changes...")
+    try:
+        # Try merge first
+        result = subprocess.run(
+            ["git", "pull", "origin", "main", "--no-rebase"],
+            capture_output=True,
+            text=True,
+        )
+
+        if result.returncode != 0:
+            # Check if it's a conflict issue
+            if "conflict" in result.stderr.lower():
+                emit_error("❌ Merge conflicts occurred during pull!")
+                emit_info("Resolve manually with:")
+                emit_info("  cd ~/code_puppy")
+                emit_info("  git status  # see conflicted files")
+                emit_info("  # edit files to resolve conflicts")
+                emit_info("  git add .")
+                emit_info("  git commit")
+                return True
+            else:
+                emit_error(f"Pull failed: {result.stderr}")
+                return True
+
+        emit_success("✅ Successfully pulled upstream changes!")
+
+        # Check if uv.lock needs updating
+        if "uv.lock" in result.stdout or "uv.lock" in result.stderr:
+            emit_info("📦 uv.lock was updated")
+
+        # Post-pull reinstall
+        emit_info("🔄 Reinstalling package...")
+        try:
+            subprocess.run(
+                ["uv", "tool", "uninstall", "code-puppy"],
+                capture_output=True,
+            )
+            subprocess.run(
+                ["uv", "tool", "install", "-e", "."],
+                capture_output=True,
+                check=True,
+            )
+            emit_success("✅ Package reinstalled successfully!")
+        except subprocess.CalledProcessError as e:
+            emit_warning(f"⚠️  Package reinstall failed: {e}")
+            emit_info("You may need to reinstall manually:")
+            emit_info("  uv tool install -e ~/code_puppy")
+
+        # Show new version
+        try:
+            result = subprocess.run(
+                ["code-puppy", "--version"],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            emit_success(f"🎉 Code Puppy is now at version {result.stdout.strip()}")
+        except subprocess.CalledProcessError:
+            pass
+
+    except subprocess.CalledProcessError as e:
+        emit_error(f"Failed to pull: {e}")
+
+    return True

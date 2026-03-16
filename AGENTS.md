@@ -54,19 +54,47 @@
 ```
 code_puppy/
 ├── callbacks.py               ← lifecycle hook registry (THE contract)
+├── prompt_assembler.py        ← centralized prompt assembly pipeline (OPT-000)
+├── model_capabilities.py      ← model capability registry (OPT-004-B)
+├── fallback_config.py         ← fallback chain config & event logging (OPT-006)
+├── config_validation.py       ← fork-specific model config validation
+├── models_dev_parser.py       ← models.dev API integration for /add_model
+├── hook_engine/               ← user-configurable rule engine (.claude/settings.json compatible)
+│   ├── engine.py              ← main HookEngine orchestration
+│   ├── executor.py            ← async subprocess execution with timeouts
+│   ├── matcher.py             ← pattern matching (wildcards, regex, &&/||)
+│   ├── models.py              ← EventData, HookConfig, HookRegistry
+│   ├── registry.py            ← build registry from config
+│   ├── validator.py           ← config validation & suggestions
+│   └── aliases.py             ← Claude Code ↔ Code Puppy tool name mapping
+├── mcp_prompts/               ← MCP prompt templates for hook creator
 ├── plugins/
 │   ├── __init__.py            ← plugin loader (builtin + user)
-│   ├── scheduler/             ← example: TUI + slash commands
-│   ├── shell_safety/          ← example: intercepts shell commands
-│   ├── agent_skills/          ← example: injects tools + prompt
-│   ├── frontend_emitter/      ← example: websocket event bridge
-│   ├── file_permission_handler/
-│   ├── antigravity_oauth/
-│   ├── chatgpt_oauth/
-│   ├── claude_code_oauth/
-│   ├── customizable_commands/
-│   ├── universal_constructor/
-│   └── example_custom_command/
+│   ├── scheduler/             ← TUI + slash commands for scheduled tasks
+│   ├── shell_safety/          ← intercepts shell commands (LLM risk assessment)
+│   ├── agent_skills/          ← skill discovery, prompt injection, /skills TUI
+│   ├── frontend_emitter/      ← websocket event bridge for browser UIs
+│   ├── file_permission_handler/ ← rich diffs + interactive approval prompts
+│   ├── antigravity_oauth/     ← Antigravity OAuth model provider
+│   ├── chatgpt_oauth/         ← ChatGPT OAuth model provider
+│   ├── claude_code_oauth/     ← Claude Code OAuth (Sonnet 4.6, Opus 4.6, effort)
+│   ├── customizable_commands/ ← .claude/commands/, .github/prompts/ support
+│   ├── universal_constructor/ ← Helios: create any tool at runtime
+│   ├── example_custom_command/← example /slash command plugin
+│   ├── agent_registry/        ← /agents list, info, validate + duplicate detection
+│   ├── behavioral_tests/      ← behavioral test framework + descriptive metrics
+│   ├── context_monitor/       ← context window usage tracking callbacks
+│   ├── skill_browser/         ← /skills browsing command
+│   ├── mcp_progressive/       ← progressive MCP server discovery
+│   ├── claude_code_hooks/     ← Claude Code-specific lifecycle hooks
+│   ├── synthetic_status/      ← synthetic status update system
+│   ├── hook_creator/          ← hook creation UI
+│   └── hook_manager/          ← /hooks command + hooks configuration menu
+├── agents/                    ← Python agents (BaseAgent subclasses)
+│   ├── base_agent.py          ← base class with PromptAssembler integration
+│   ├── json_agent.py          ← JSON agent loader + skill_metadata auto-gen
+│   ├── agent_manager.py       ← 3-phase discovery (Python → JSON → plugin)
+│   └── pack/                  ← pack-leader sub-agents (bloodhound, husky, etc.)
 ├── command_line/              ← core UI (keep your hands off)
 └── ...
 ```

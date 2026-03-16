@@ -281,21 +281,57 @@ This is useful for managing context length when you have a long conversation his
 
 ## Available Agents
 
-### Code-Puppy 🐶 (Default)
-- **Name**: `code-puppy`
-- **Specialty**: General-purpose coding assistant
-- **Personality**: Playful, sarcastic, pedantic about code quality
-- **Tools**: Full access to all tools
-- **Best for**: All coding tasks, file management, execution
-- **Principles**: Clean, concise code following YAGNI, SRP, DRY principles
-- **File limit**: Max 600 lines per file (enforced!)
+### Core Agents
+| Agent | Display Name | Specialty |
+|-------|-------------|-----------|
+| `code-puppy` | Code-Puppy 🐶 | General-purpose coding assistant (default) |
+| `agent-creator` | Agent Creator 🏗️ | Guided JSON agent configuration builder |
+| `planning-agent` | Planning Agent 📋 | Strategic task planning & execution roadmaps |
+| `pack-leader` | Pack Leader 🐺 | Parallel workflow orchestration with critic reviews |
+| `helios` | Helios ☀️ | Universal Constructor — create any tool at runtime |
+| `scheduler-agent` | Scheduler Agent 📅 | Scheduled task management and automation |
 
-### Agent Creator 🏗️
-- **Name**: `agent-creator`
-- **Specialty**: Creating custom JSON agent configurations
-- **Tools**: File operations, reasoning
-- **Best for**: Building new specialized agents
-- **Features**: Schema validation, guided creation process
+### Code Review Agents
+| Agent | Display Name | Specialty |
+|-------|-------------|-----------|
+| `code-reviewer` | Code Reviewer 🛡️ | Holistic review: bugs, vulnerabilities, perf, design |
+| `python-reviewer` | Python Reviewer 🐍 | Idiomatic Python review with quality-first guidance |
+| `javascript-reviewer` | JavaScript Reviewer ⚡ | Modern JS patterns and runtime sanity |
+| `typescript-reviewer` | TypeScript Reviewer 🦾 | Type safety, DX, and runtime correctness |
+| `golang-reviewer` | Golang Reviewer 🦴 | Idiomatic Go review |
+| `c-reviewer` | C Reviewer 🧵 | Determinism, performance, and safety |
+| `cpp-reviewer` | C++ Reviewer 🛠️ | Modern C++ standards and safety |
+| `security-auditor` | Security Auditor 🛡️ | Risk-based security auditing |
+
+### QA & Testing Agents
+| Agent | Display Name | Specialty |
+|-------|-------------|-----------|
+| `qa-expert` | QA Expert 🐾 | Risk-based QA planning and coverage analysis |
+| `qa-kitten` | QA Kitten 🐱 | Web browser automation testing with Playwright |
+| `terminal-qa` | Terminal QA 🖥️ | Terminal/TUI application testing with visual analysis |
+
+### Specialist Agents
+| Agent | Display Name | Specialty |
+|-------|-------------|-----------|
+| `python-programmer` | Python Programmer 🐍 | Modern Python: async, data science, web, type safety |
+| `prompt-reviewer` | Prompt Reviewer 📝 | Prompt quality analysis and improvement |
+
+### Pack Agents (parallel workflow sub-agents)
+| Agent | Display Name | Role |
+|-------|-------------|------|
+| `bloodhound` | Bloodhound 🐕‍🦺 | Issue tracking — follows dependency scent |
+| `husky` | Husky 🐺 | Task executor — heavy lifting in worktrees |
+| `retriever` | Retriever 🦮 | Merge specialist — fetches completed branches |
+| `shepherd` | Shepherd 🐕 | Code review critic — quality guidance |
+| `terrier` | Terrier 🐕 | Worktree specialist — parallel development |
+| `watchdog` | Watchdog 🐕‍🦺 | QA critic — test pass guardian |
+
+### JSON Agents (user-created, in `~/.code_puppy/agents/`)
+| Agent | Display Name | Specialty |
+|-------|-------------|-----------|
+| `experience-architect` | Experience Architect 🎨 | Frontend & UX architecture, WCAG 2.2, privacy-by-design |
+| `solutions-architect` | Solutions Architect 🏛️ | Backend & infra architecture, API governance |
+| `web-puppy` | Web-Puppy 🕵️‍♂️ | Web research with source evaluation and synthesis |
 
 ## Agent Types
 
@@ -349,6 +385,10 @@ Create JSON files in your agents directory following this schema:
   "description": "What this agent does", // REQUIRED: Clear description
   "system_prompt": "Instructions...",    // REQUIRED: Agent instructions
   "tools": ["tool1", "tool2"],        // REQUIRED: Array of tool names
+  "skill_metadata": "Short expertise summary.", // OPTIONAL: ≤75 tokens
+  "skills": ["shared-skill-name"],    // OPTIONAL: Shared skill files
+  "delegation_mode": "subtask",       // OPTIONAL: "subtask" or "handoff"
+  "requires_tool_calling": true,       // OPTIONAL: Inferred true if tools array is non-empty
   "user_prompt": "How can I help?",     // OPTIONAL: Custom greeting
   "tools_config": {                    // OPTIONAL: Tool configuration
     "timeout": 60
@@ -364,6 +404,10 @@ Create JSON files in your agents directory following this schema:
 
 #### Optional Fields
 - **`display_name`**: Pretty display name (defaults to title-cased name + 🤖)
+- **`skill_metadata`**: Short expertise summary (≤75 tokens) for agent discovery. Auto-generated from `system_prompt` if omitted
+- **`skills`**: Array of shared skill file names from `~/.code_puppy/skills/` — injected into system prompt in order
+- **`delegation_mode`**: `"subtask"` (default, returns results to parent) or `"handoff"` (takes over conversation)
+- **`requires_tool_calling`**: Whether this agent needs a model with tool-calling support. Inferred `true` from `tools` array if omitted. Set to `false` explicitly for agents that can degrade gracefully without tools.
 - **`user_prompt`**: Custom user greeting
 - **`tools_config`**: Tool configuration object
 
@@ -371,18 +415,43 @@ Create JSON files in your agents directory following this schema:
 
 Agents can access these tools based on their configuration:
 
-- **`list_files`**: Directory and file listing
-- **`read_file`**: File content reading
-- **`grep`**: Text search across files
-- **`edit_file`**: File editing and creation
-- **`delete_file`**: File deletion
-- **`agent_run_shell_command`**: Shell command execution
-- **`agent_share_your_reasoning`**: Share reasoning with user
+### Core Tools
+- **`list_files`**: Directory and file listing with intelligent filtering
+- **`read_file`**: File content reading with optional line-range selection
+- **`grep`**: Recursive text search across files (ripgrep-powered)
+- **`edit_file`**: File editing and creation with diff preview
+- **`delete_file`**: File deletion with permission checks
+- **`agent_run_shell_command`**: Shell command execution with safety hooks
+- **`agent_share_your_reasoning`**: Share reasoning/thinking with user
+
+### Agent Orchestration Tools
+- **`list_agents`**: List all available agents
+- **`invoke_agent`**: Invoke a sub-agent with a prompt
+
+### User Interaction
+- **`ask_user_question`**: Interactive TUI for multi-question prompts
+
+### Skills Tools
+- **`activate_skill`**: Load and activate a skill by name
+- **`list_or_search_skills`**: Browse/search available skills
+
+### Browser Automation (30+ tools)
+Full Playwright-based browser control: navigation, element discovery, interactions, screenshots, JavaScript execution, and workflow recording. See `code_puppy/tools/browser/` for the complete set.
+
+### Terminal Automation (8 tools)
+Terminal server connection, command execution, screenshot analysis, and visual comparison. See `code_puppy/tools/browser/terminal_*.py`.
+
+### Scheduler Tools (9 tools)
+Create, manage, and monitor scheduled tasks with daemon control. See `/scheduler` command.
+
+### Universal Constructor
+- **`universal_constructor`**: Helios — create any tool at runtime
 
 ### Tool Access Examples
 - **Read-only agent**: `["list_files", "read_file", "grep"]`
 - **File editor agent**: `["list_files", "read_file", "edit_file"]`
 - **Full access agent**: All tools (like Code-Puppy)
+- **QA agent**: Core tools + browser automation + terminal tools
 
 ## System Prompt Formats
 
@@ -413,6 +482,7 @@ Agents can access these tools based on their configuration:
   "name": "python-tutor",
   "display_name": "Python Tutor 🐍",
   "description": "Teaches Python programming concepts with examples",
+  "skill_metadata": "Python tutor specializing in teaching concepts with practical examples.",
   "system_prompt": [
     "You are a patient Python programming tutor.",
     "You explain concepts clearly with practical examples.",
@@ -472,6 +542,35 @@ Agents can access these tools based on their configuration:
 ### Python Agents Directory
 - **Built-in**: `code_puppy/agents/` (in package)
 
+## Delegation Modes
+
+JSON agents support two delegation modes via the `delegation_mode` field:
+
+### Subtask Mode (Default)
+```json
+"delegation_mode": "subtask"
+```
+The agent processes a bounded task and returns results to the parent (planning-agent). The parent retains control of the conversation and synthesizes results from multiple specialists.
+
+### Handoff Mode
+```json
+"delegation_mode": "handoff"
+```
+The agent takes over the conversation for extended interactions. Use this for agents designed for direct user engagement (e.g., tutors, interactive debuggers).
+
+### State Transfer on Handoff
+When a handoff delegation occurs, the following state is transferred to the specialist:
+- ✅ **Pinned model**: The specialist uses its own pinned model (or the global default)
+- ✅ **MCP connections**: All active MCP server connections are available
+- ✅ **Conversation history**: Messages from the current session are passed through
+
+**Not transferred:**
+- ❌ Parent agent's system prompt (specialist has its own)
+- ❌ Parent agent's tool-specific state (each agent manages its own)
+
+### Multi-Specialist Rule
+When multiple specialists are needed for a single task, subtask mode is enforced for all of them regardless of their declared delegation_mode. This ensures the planning-agent can synthesize results coherently.
+
 ## Best Practices
 
 ### Naming
@@ -499,10 +598,10 @@ Agents can access these tools based on their configuration:
 ## System Architecture
 
 ### Agent Discovery
-The system automatically discovers agents by:
-1. **Python Agents**: Scanning `code_puppy/agents/` for classes inheriting from `BaseAgent`
-2. **JSON Agents**: Scanning user's agents directory for `*-agent.json` files
-3. Instantiating and registering discovered agents
+The system automatically discovers agents in three phases:
+1. **Phase 1 — Python Agents**: Scanning `code_puppy/agents/` (and sub-packages like `pack/`) for classes inheriting from `BaseAgent`
+2. **Phase 2 — JSON Agents**: Scanning `~/.code_puppy/agents/` and `<project>/.code_puppy/agents/` for `*-agent.json` files. Python agents take precedence on name collision.
+3. **Phase 3 — Plugin Agents**: Collecting agents registered by plugins via the `register_agents` lifecycle callback
 
 ### JSONAgent Implementation
 JSON agents are powered by the `JSONAgent` class (`code_puppy/agents/json_agent.py`):
@@ -691,6 +790,25 @@ Consider contributing agent templates for:
 - DevOps and deployment helpers
 - Documentation writers
 - Testing specialists
+
+---
+
+## Architecture Extensions
+
+### Hook Engine
+Code Puppy includes a hook engine compatible with Anthropic's Claude Code `.claude/settings.json` format. Hooks intercept tool calls before or after execution, enabling policy enforcement, logging, and custom automation. See `docs/HOOKS.md` for the full guide.
+
+### Prompt Assembly Pipeline
+The `PromptAssembler` (OPT-000) centralizes system prompt construction with enforced ordering: base prompt → identity → shared skills → plugin injections → puppy rules. It includes token estimation and per-component budgeting.
+
+### Model Capabilities Registry
+The `model_capabilities` module (OPT-004-B) provides tool-calling capability lookups per model type, with user overrides via `~/.code_puppy/model_capabilities.json`.
+
+### Fallback Chain Configuration
+The `fallback_config` module (OPT-006) supports configurable fallback model chains per agent via `~/.code_puppy/fallback_chains.json`, with structured event logging for debugging provider failures.
+
+### Agent Skills
+Reusable skill packages in `~/.code_puppy/skills/` that agents can dynamically discover and activate. See `docs/AGENT_SKILLS.md` for the full guide.
 
 ---
 

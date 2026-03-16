@@ -367,10 +367,12 @@ def get_available_agents() -> Dict[str, str]:
 
         try:
             if isinstance(agent_ref, str):  # JSON agent (file path)
-                agent_instance = JSONAgent(agent_ref)
+                # OPT-001-D: Lightweight metadata read — no full agent init
+                meta = JSONAgent.read_metadata(agent_ref)
+                agents[name] = meta.get("display_name", name.title())
             else:  # Python agent (class)
                 agent_instance = agent_ref()
-            agents[name] = agent_instance.display_name
+                agents[name] = agent_instance.display_name
         except Exception:
             agents[name] = name.title()  # Fallback
 
@@ -519,10 +521,18 @@ def get_agent_descriptions() -> Dict[str, str]:
 
         try:
             if isinstance(agent_ref, str):  # JSON agent (file path)
-                agent_instance = JSONAgent(agent_ref)
+                # OPT-001-D: Lightweight metadata read — no full agent init
+                meta = JSONAgent.read_metadata(agent_ref)
+                # Prefer skill_metadata (OPT-001-C)
+                descriptions[name] = meta.get("skill_metadata") or meta.get("description", "No description available")
             else:  # Python agent (class)
                 agent_instance = agent_ref()
-            descriptions[name] = agent_instance.description
+                # OPT-001-C: Prefer skill_metadata for specialist selection
+                metadata = getattr(agent_instance, "skill_metadata", None)
+                if metadata:
+                    descriptions[name] = metadata
+                else:
+                    descriptions[name] = agent_instance.description
         except Exception:
             descriptions[name] = "No description available"
 

@@ -3,6 +3,7 @@
 import asyncio
 import dataclasses
 import json
+import logging
 import math
 import pathlib
 import signal
@@ -71,6 +72,7 @@ from code_puppy.config import (
     get_value,
 )
 from code_puppy.error_logging import log_error
+from code_puppy.prompt_assembler import PromptAssembler, assemble_prompt
 from code_puppy.keymap import cancel_agent_uses_signal, get_cancel_agent_char_code
 from code_puppy.mcp_ import get_mcp_manager
 from code_puppy.messaging import (
@@ -88,6 +90,8 @@ from code_puppy.tools.agent_tools import _active_subagent_tasks
 from code_puppy.tools.command_runner import (
     is_awaiting_user_input,
 )
+
+logger = logging.getLogger(__name__)
 
 # Global flag to track delayed compaction requests
 _delayed_compaction_requested = False
@@ -187,6 +191,54 @@ class BaseAgent(ABC):
             The full system prompt including identity information.
         """
         return self.get_system_prompt() + self.get_identity_prompt()
+
+    def get_assembled_instructions(self) -> str:
+        """Assemble instructions via PromptAssembler (OPT-000-C).
+
+        Returns the fully assembled prompt string. Also logs token
+        estimation breakdown at DEBUG level (OPT-009-A).
+
+        Returns:
+            Assembled prompt string.
+        """
+        # Resolve shared skills if this is a JSON agent with skills
+        shared_skills = []
+        if hasattr(self, "skills"):
+            shared_skills = self.skills
+
+        result = PromptAssembler(self, shared_skills=shared_skills).assemble_instructions()
+
+        # Log token breakdown (OPT-009-A)
+        if result.total_tokens > 0:
+            breakdown_parts = []
+            for component, tokens in result.breakdown.items():
+                if tokens > 0:
+                    breakdown_parts.append(f"{component}={tokens}")
+            breakdown_str = ", ".join(breakdown_parts)
+            logger.debug(
+                "Prompt assembled for '%s': ~%d tokens (%s)",
+                getattr(self, "name", "unknown"),
+                result.total_tokens,
+                breakdown_str,
+            )
+
+            # OPT-009-B: Check context budget threshold
+            try:
+                from code_puppy.config import get_model_context_length
+                from code_puppy.prompt_assembler import check_context_budget
+
+                context_length = get_model_context_length()
+                within_budget, warning = check_context_budget(
+                    getattr(self, "name", "unknown"),
+                    result.total_tokens,
+                    context_length,
+                )
+                if not within_budget:
+                    logger.warning(warning)
+            except Exception:
+                pass  # Don't block agent init on budget check failure
+
+        return result.prompt
 
     @property
     @abstractmethod
@@ -1269,19 +1321,44 @@ class BaseAgent(ABC):
             )
 
             fallback_candidates: List[str] = []
-            global_candidate = get_global_model_name()
-            if global_candidate:
-                fallback_candidates.append(global_candidate)
 
-            for candidate in available_models:
-                if candidate not in fallback_candidates:
-                    fallback_candidates.append(candidate)
+            # OPT-006-B: Check for configured fallback chain first
+            try:
+                from code_puppy.fallback_config import get_fallback_chain
+
+                configured_chain = get_fallback_chain(getattr(self, "name", "unknown"))
+                if configured_chain:
+                    fallback_candidates = [m for m in configured_chain if m != requested_model_name]
+            except Exception:
+                pass  # Fall through to default candidates
+
+            # Default fallback order if no chain configured
+            if not fallback_candidates:
+                global_candidate = get_global_model_name()
+                if global_candidate:
+                    fallback_candidates.append(global_candidate)
+
+                for candidate in available_models:
+                    if candidate not in fallback_candidates:
+                        fallback_candidates.append(candidate)
 
             for candidate in fallback_candidates:
                 if not candidate or candidate == requested_model_name:
                     continue
                 try:
                     model = ModelFactory.get_model(candidate, models_config)
+                    # OPT-006-C: Log structured fallback event
+                    try:
+                        from code_puppy.fallback_config import log_fallback_event
+
+                        log_fallback_event(
+                            source_model=requested_model_name,
+                            target_model=candidate,
+                            error_reason=str(exc),
+                            agent_name=getattr(self, "name", "unknown"),
+                        )
+                    except Exception:
+                        pass
                     emit_info(
                         f"Using fallback model: {candidate}",
                         message_group=message_group,
@@ -1326,10 +1403,7 @@ class BaseAgent(ABC):
             message_group,
         )
 
-        instructions = self.get_full_system_prompt()
-        puppy_rules = self.load_puppy_rules()
-        if puppy_rules:
-            instructions += f"\n{puppy_rules}"
+        instructions = self.get_assembled_instructions()
 
         mcp_servers = self.load_mcp_servers()
 
@@ -1503,10 +1577,7 @@ class BaseAgent(ABC):
             model_name, models_config, str(uuid.uuid4())
         )
 
-        instructions = self.get_full_system_prompt()
-        puppy_rules = self.load_puppy_rules()
-        if puppy_rules:
-            instructions += f"\n{puppy_rules}"
+        instructions = self.get_assembled_instructions()
 
         mcp_servers = getattr(self, "_mcp_servers", []) or []
         model_settings = make_model_settings(resolved_model_name)
@@ -1846,10 +1917,7 @@ class BaseAgent(ABC):
         # Only prepend system prompt on first message (empty history)
         should_prepend = len(self.get_message_history()) == 0
         if should_prepend:
-            system_prompt = self.get_full_system_prompt()
-            puppy_rules = self.load_puppy_rules()
-            if puppy_rules:
-                system_prompt += f"\n{puppy_rules}"
+            system_prompt = self.get_assembled_instructions()
 
             prepared = prepare_prompt_for_model(
                 model_name=self.get_model_name(),

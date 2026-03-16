@@ -158,6 +158,19 @@ def get_enable_streaming() -> bool:
     return str(val).lower() in ("1", "true", "yes", "on")
 
 
+def get_tool_count_strict() -> bool:
+    """Return True if strict tool count enforcement is enabled (default False).
+
+    When True, agents with more than 15 tools will fail to initialize
+    instead of emitting a warning. Configurable via /set tool_count_strict true.
+    OPT-002-B.
+    """
+    val = get_value("tool_count_strict")
+    if val is None:
+        return False
+    return str(val).lower() in ("1", "true", "yes", "on")
+
+
 DEFAULT_SECTION = "puppy"
 REQUIRED_KEYS = ["puppy_name", "owner_name"]
 
@@ -307,6 +320,8 @@ def get_config_keys():
     default_keys.append("enable_streaming")
     # Add cancel agent key configuration
     default_keys.append("cancel_agent_key")
+    # Add strict tool count enforcement key (OPT-002-B)
+    default_keys.append("tool_count_strict")
     # Add banner color keys
     for banner_name in DEFAULT_BANNER_COLORS:
         default_keys.append(f"banner_color_{banner_name}")
@@ -1427,7 +1442,10 @@ DEFAULT_BANNER_COLORS = {
     "agent_response": "medium_purple4",  # Amethyst - main AI output
     "shell_command": "dark_orange3",  # Amber - system commands
     "read_file": "steel_blue",  # Steel - reading files
-    "edit_file": "dark_goldenrod",  # Gold - modifications
+    "edit_file": "dark_goldenrod",  # Gold - modifications (legacy)
+    "create_file": "dark_goldenrod",  # Gold - file creation
+    "replace_in_file": "dark_goldenrod",  # Gold - file modifications
+    "delete_snippet": "dark_goldenrod",  # Gold - snippet removal
     "grep": "grey37",  # Silver - search results
     "directory_listing": "dodger_blue2",  # Sky - navigation
     "agent_reasoning": "dark_violet",  # Violet - deep thought
@@ -1437,6 +1455,10 @@ DEFAULT_BANNER_COLORS = {
     "universal_constructor": "dark_cyan",  # Teal - constructing tools
     # Browser/Terminal tools - same color as edit_file (gold)
     "terminal_tool": "dark_goldenrod",  # Gold - browser terminal operations
+    # MCP tools - distinct from builtin tools
+    "mcp_tool_call": "dark_cyan",  # Teal - external MCP tool calls
+    # User-initiated shell pass-through (! prefix) - distinct from agent's shell_command
+    "shell_passthrough": "medium_sea_green",  # Green - user's own shell commands
 }
 
 

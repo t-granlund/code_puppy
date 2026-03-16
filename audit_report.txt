@@ -1,0 +1,454 @@
+🔍 Code Puppy Local Changes Audit
+================================================================================
+
+📊 Checking git status...
+✅ Found 11 modified files
+✅ Found 65 created files
+
+🔬 Analyzing files...
+
+📈 SUMMARY STATISTICS
+================================================================================
+Total files changed:     76
+  • Modified files:      11
+  • Created files:       65
+
+Total size:              1.46 MB (1498.0 KB)
+Estimated total lines:   ~30,678
+
+Files by category:
+  • plugins                22 files
+  • research_docs          19 files
+  • root_docs               9 files
+  • agents                  5 files
+  • core_code               5 files
+  • misc_files              5 files
+  • scripts                 4 files
+  • tests                   3 files
+  • command_line            1 files
+  • tools                   1 files
+  • mcp                     1 files
+  • examples                1 files
+
+✏️  MODIFIED FILES
+================================================================================
+📝 GENTS.md
+   Size:        0 B | Category: root_docs       | Risk: LOW
+   Purpose: Unknown purpose - needs investigation
+
+📝 README.md
+   Size:    32.7 KB | Category: root_docs       | Risk: LOW
+   Purpose: Project documentation
+
+📝 code_puppy/agents/agent_creator_agent.py
+   Size:    29.1 KB | Category: agents          | Risk: MEDIUM
+   Purpose: Agent creator implementation
+
+📝 code_puppy/agents/agent_manager.py
+   Size:    25.3 KB | Category: agents          | Risk: HIGH
+   Purpose: Agent management system
+
+📝 code_puppy/agents/agent_planning.py
+   Size:     7.5 KB | Category: agents          | Risk: MEDIUM
+   Purpose: Unknown purpose - needs investigation
+
+📝 code_puppy/agents/base_agent.py
+   Size:    87.7 KB | Category: agents          | Risk: HIGH
+   Purpose: Base agent class
+
+📝 code_puppy/agents/json_agent.py
+   Size:    15.9 KB | Category: agents          | Risk: MEDIUM
+   Purpose: JSON agent loader
+
+📝 code_puppy/command_line/config_commands.py
+   Size:    26.7 KB | Category: command_line    | Risk: MEDIUM
+   Purpose: Unknown purpose - needs investigation
+
+📝 code_puppy/config.py
+   Size:    57.7 KB | Category: core_code       | Risk: HIGH
+   Purpose: Unknown purpose - needs investigation
+
+📝 code_puppy/tools/agent_tools.py
+   Size:    28.2 KB | Category: tools           | Risk: MEDIUM
+   Purpose: Unknown purpose - needs investigation
+
+📝 tests/test_json_agents.py
+   Size:    28.4 KB | Category: tests           | Risk: LOW
+   Purpose: Tests for json_agents
+
+🆕 CREATED FILES BY CATEGORY
+================================================================================
+
+📂 CORE CODE (4 files, 50.4 KB)
+--------------------------------------------------------------------------------
+  🔹 code_puppy/claude_oauth_client.py
+     Size:    18.4 KB | Risk: MEDIUM | Claude OAuth client implementation
+  🔹 code_puppy/fallback_config.py
+     Size:     5.2 KB | Risk: MEDIUM | Model fallback configuration
+  🔹 code_puppy/model_capabilities.py
+     Size:     6.0 KB | Risk: MEDIUM | Model capability registry
+  🔹 code_puppy/prompt_assembler.py
+     Size:    20.8 KB | Risk: MEDIUM | Centralized prompt assembly (OPT-000)
+
+
+📂 EXAMPLES (1 files, 18.6 KB)
+--------------------------------------------------------------------------------
+  🔹 examples/claude_oauth_custom_tool_example.py
+     Size:    18.6 KB | Risk: NONE   | Example code/documentation
+
+
+📂 MCP (1 files, 7.1 KB)
+--------------------------------------------------------------------------------
+  🔹 code_puppy/mcp_/progressive_discovery.py
+     Size:     7.1 KB | Risk: MEDIUM | Progressive MCP server discovery
+
+
+📂 MISC FILES (5 files, 628.5 KB)
+--------------------------------------------------------------------------------
+  🔹 Log at 2026-02-16 1-16-45 PM.txt
+     Size:   291.6 KB | Risk: NONE   | Unknown purpose - needs investigation
+  🔹 Log at 2026-03-03 3-14-37 PM.txt
+     Size:   295.0 KB | Risk: NONE   | Unknown purpose - needs investigation
+  🔹 audit_report.txt
+     Size:        0 B | Risk: MEDIUM | Unknown purpose - needs investigation
+  🔹 org_d4xhyytkf4dxrytcnm25wt5p-2026_03_02-2026_03_03-per_minute-usage.csv
+     Size:     3.3 KB | Risk: NONE   | Unknown purpose - needs investigation
+  🔹 self-optimization-dashboard.html
+     Size:    38.6 KB | Risk: NONE   | Self-optimization tracking dashboard
+
+
+📂 PLUGINS (22 files, 91.0 KB)
+--------------------------------------------------------------------------------
+  🔹 code_puppy/plugins/agent_registry/__init__.py
+     Size:       74 B | Risk: LOW    | Plugin: agent_registry
+  🔹 code_puppy/plugins/agent_registry/__pycache__/__init__.cpython-311.pyc
+     Size:      267 B | Risk: LOW    | Plugin: agent_registry
+  🔹 code_puppy/plugins/agent_registry/__pycache__/register_callbacks.cpython-311.pyc
+     Size:    18.6 KB | Risk: LOW    | Plugin: agent_registry
+  🔹 code_puppy/plugins/agent_registry/register_callbacks.py
+     Size:    17.5 KB | Risk: LOW    | Plugin: agent_registry
+  🔹 code_puppy/plugins/behavioral_tests/__init__.py
+     Size:       56 B | Risk: LOW    | Plugin: behavioral_tests
+  🔹 code_puppy/plugins/behavioral_tests/__pycache__/__init__.cpython-311.pyc
+     Size:      248 B | Risk: LOW    | Plugin: behavioral_tests
+  🔹 code_puppy/plugins/behavioral_tests/__pycache__/framework.cpython-311.pyc
+     Size:    11.4 KB | Risk: LOW    | Plugin: behavioral_tests
+  🔹 code_puppy/plugins/behavioral_tests/__pycache__/register_callbacks.cpython-311.pyc
+     Size:     2.8 KB | Risk: LOW    | Plugin: behavioral_tests
+  🔹 code_puppy/plugins/behavioral_tests/__pycache__/test_cases.cpython-311.pyc
+     Size:     5.5 KB | Risk: LOW    | Tests for cases.cpython-311c
+  🔹 code_puppy/plugins/behavioral_tests/framework.py
+     Size:     6.7 KB | Risk: LOW    | Plugin: behavioral_tests
+  🔹 code_puppy/plugins/behavioral_tests/register_callbacks.py
+     Size:     1.7 KB | Risk: LOW    | Plugin: behavioral_tests
+  🔹 code_puppy/plugins/behavioral_tests/test_cases.py
+     Size:     5.7 KB | Risk: LOW    | Tests for cases
+  🔹 code_puppy/plugins/context_monitor/__init__.py
+     Size:       52 B | Risk: LOW    | Plugin: context_monitor
+  🔹 code_puppy/plugins/context_monitor/__pycache__/__init__.cpython-311.pyc
+     Size:      243 B | Risk: LOW    | Plugin: context_monitor
+  🔹 code_puppy/plugins/context_monitor/__pycache__/register_callbacks.cpython-311.pyc
+     Size:     4.5 KB | Risk: LOW    | Plugin: context_monitor
+  🔹 code_puppy/plugins/context_monitor/register_callbacks.py
+     Size:     3.4 KB | Risk: LOW    | Plugin: context_monitor
+  🔹 code_puppy/plugins/mcp_progressive/__init__.py
+     Size:       50 B | Risk: LOW    | Plugin: mcp_progressive
+  🔹 code_puppy/plugins/mcp_progressive/register_callbacks.py
+     Size:     1.3 KB | Risk: LOW    | Plugin: mcp_progressive
+  🔹 code_puppy/plugins/skill_browser/__init__.py
+     Size:       75 B | Risk: LOW    | Plugin: skill_browser
+  🔹 code_puppy/plugins/skill_browser/__pycache__/__init__.cpython-311.pyc
+     Size:      267 B | Risk: LOW    | Plugin: skill_browser
+  🔹 code_puppy/plugins/skill_browser/__pycache__/register_callbacks.cpython-311.pyc
+     Size:     6.6 KB | Risk: LOW    | Plugin: skill_browser
+  🔹 code_puppy/plugins/skill_browser/register_callbacks.py
+     Size:     4.0 KB | Risk: LOW    | Plugin: skill_browser
+
+
+📂 RESEARCH DOCS (19 files, 112.5 KB)
+--------------------------------------------------------------------------------
+  🔹 research/agent-architecture-optimization/README.md
+     Size:     2.2 KB | Risk: NONE   | Project documentation
+  🔹 research/agent-architecture-optimization/sources.md
+     Size:     6.2 KB | Risk: NONE   | Research sources and references
+  🔹 research/agent-architecture-validation/README.md
+     Size:     3.8 KB | Risk: NONE   | Project documentation
+  🔹 research/agent-architecture-validation/analysis.md
+     Size:    12.1 KB | Risk: NONE   | Research analysis results
+  🔹 research/agent-architecture-validation/raw-findings/anthropic-building-effective-agents-key-excerpts.md
+     Size:     1.9 KB | Risk: NONE   | Research documentation
+  🔹 research/agent-architecture-validation/raw-findings/anthropic-prompting-best-practices-agentic-excerpts.md
+     Size:     2.7 KB | Risk: NONE   | Research documentation
+  🔹 research/agent-architecture-validation/raw-findings/multi-agent-patterns-comparison.md
+     Size:     3.7 KB | Risk: NONE   | Research documentation
+  🔹 research/agent-architecture-validation/recommendations.md
+     Size:     8.2 KB | Risk: NONE   | Research recommendations
+  🔹 research/agent-architecture-validation/sources.md
+     Size:     6.3 KB | Risk: NONE   | Research sources and references
+  🔹 research/claude-code-oauth-authentication/ADR-001-oauth-authentication-architecture.md
+     Size:    16.0 KB | Risk: NONE   | Research documentation
+  🔹 research/claude-code-oauth-authentication/README.md
+     Size:     8.1 KB | Risk: NONE   | Project documentation
+  🔹 research/claude-code-oauth-authentication/RESEARCH.md
+     Size:    10.3 KB | Risk: NONE   | Research documentation
+  🔹 research/pydantic-ai-architecture-validation-2026/README.md
+     Size:     9.1 KB | Risk: NONE   | Project documentation
+  🔹 research/pydantic-ai-architecture-validation-2026/analysis.md
+     Size:     5.7 KB | Risk: NONE   | Research analysis results
+  🔹 research/pydantic-ai-architecture-validation-2026/raw-findings/anthropic-tool-best-practices.md
+     Size:     3.0 KB | Risk: NONE   | Research documentation
+  🔹 research/pydantic-ai-architecture-validation-2026/raw-findings/fallback-model-pr-timeline.md
+     Size:     1.8 KB | Risk: NONE   | Research documentation
+  🔹 research/pydantic-ai-architecture-validation-2026/raw-findings/mcp-spec-versions.md
+     Size:     1.6 KB | Risk: NONE   | Research documentation
+  🔹 research/pydantic-ai-architecture-validation-2026/recommendations.md
+     Size:     4.0 KB | Risk: NONE   | Research recommendations
+  🔹 research/pydantic-ai-architecture-validation-2026/sources.md
+     Size:     5.9 KB | Risk: NONE   | Research sources and references
+
+
+📂 ROOT DOCS (7 files, 154.8 KB)
+--------------------------------------------------------------------------------
+  🔹 CODE_PUPPY_OPTIMIZATION_PLAN.md
+     Size:    48.0 KB | Risk: NONE   | Optimization plan and architecture decisions
+  🔹 LOCAL_VS_PYPI.md
+     Size:    13.0 KB | Risk: NONE   | Local vs PyPI installation comparison
+  🔹 MASTER-PROMPT-SELF-OPTIMIZATION.md
+     Size:    56.0 KB | Risk: NONE   | Self-optimization master prompt
+  🔹 OAUTH_TEST_RESULTS.md
+     Size:     3.4 KB | Risk: NONE   | OAuth testing results documentation
+  🔹 VERIFY_OAUTH.md
+     Size:     4.0 KB | Risk: NONE   | OAuth verification guide
+  🔹 code-puppy-self-optimization-prompt.md
+     Size:    28.0 KB | Risk: NONE   | Self-optimization prompt template
+  🔹 examples/README.md
+     Size:     2.4 KB | Risk: NONE   | Project documentation
+
+
+📂 SCRIPTS (4 files, 29.0 KB)
+--------------------------------------------------------------------------------
+  🔹 audit_local_changes.py
+     Size:    17.4 KB | Risk: MEDIUM | Unknown purpose - needs investigation
+  🔹 check_installation.py
+     Size:     2.0 KB | Risk: MEDIUM | Installation verification script
+  🔹 test_both_models.py
+     Size:     1.7 KB | Risk: MEDIUM | Dual model testing script
+  🔹 verify_oauth_fix.py
+     Size:     7.9 KB | Risk: MEDIUM | OAuth fix verification script
+
+
+📂 TESTS (2 files, 66.9 KB)
+--------------------------------------------------------------------------------
+  🔹 tests/test_claude_oauth_integration.py
+     Size:    26.1 KB | Risk: LOW    | Tests for claude_oauth_integration
+  🔹 tests/test_prompt_assembler.py
+     Size:    40.8 KB | Risk: LOW    | Tests for prompt_assembler
+
+⚠️  CONFLICT RISK ANALYSIS
+================================================================================
+
+🔴 HIGH RISK (3 files)
+--------------------------------------------------------------------------------
+  ✏️ code_puppy/agents/agent_manager.py
+     ⚠️  Agent management system
+  ✏️ code_puppy/agents/base_agent.py
+     ⚠️  Base agent class
+  ✏️ code_puppy/config.py
+     ⚠️  Unknown purpose - needs investigation
+
+
+🟡 MEDIUM RISK (15 files)
+--------------------------------------------------------------------------------
+  🆕 audit_local_changes.py
+     ⚠️  Unknown purpose - needs investigation
+  🆕 audit_report.txt
+     ⚠️  Unknown purpose - needs investigation
+  🆕 check_installation.py
+     ⚠️  Installation verification script
+  ✏️ code_puppy/agents/agent_creator_agent.py
+     ⚠️  Agent creator implementation
+  ✏️ code_puppy/agents/agent_planning.py
+     ⚠️  Unknown purpose - needs investigation
+  ✏️ code_puppy/agents/json_agent.py
+     ⚠️  JSON agent loader
+  🆕 code_puppy/claude_oauth_client.py
+     ⚠️  Claude OAuth client implementation
+  ✏️ code_puppy/command_line/config_commands.py
+     ⚠️  Unknown purpose - needs investigation
+  🆕 code_puppy/fallback_config.py
+     ⚠️  Model fallback configuration
+  🆕 code_puppy/mcp_/progressive_discovery.py
+     ⚠️  Progressive MCP server discovery
+  🆕 code_puppy/model_capabilities.py
+     ⚠️  Model capability registry
+  🆕 code_puppy/prompt_assembler.py
+     ⚠️  Centralized prompt assembly (OPT-000)
+  ✏️ code_puppy/tools/agent_tools.py
+     ⚠️  Unknown purpose - needs investigation
+  🆕 test_both_models.py
+     ⚠️  Dual model testing script
+  🆕 verify_oauth_fix.py
+     ⚠️  OAuth fix verification script
+
+
+🟢 LOW RISK (27 files)
+--------------------------------------------------------------------------------
+  ✏️ GENTS.md
+  ✏️ README.md
+  🆕 code_puppy/plugins/agent_registry/__init__.py
+  🆕 code_puppy/plugins/agent_registry/__pycache__/__init__.cpython-311.pyc
+  🆕 code_puppy/plugins/agent_registry/__pycache__/register_callbacks.cpython-311.pyc
+  🆕 code_puppy/plugins/agent_registry/register_callbacks.py
+  🆕 code_puppy/plugins/behavioral_tests/__init__.py
+  🆕 code_puppy/plugins/behavioral_tests/__pycache__/__init__.cpython-311.pyc
+  🆕 code_puppy/plugins/behavioral_tests/__pycache__/framework.cpython-311.pyc
+  🆕 code_puppy/plugins/behavioral_tests/__pycache__/register_callbacks.cpython-311.pyc
+  🆕 code_puppy/plugins/behavioral_tests/__pycache__/test_cases.cpython-311.pyc
+  🆕 code_puppy/plugins/behavioral_tests/framework.py
+  🆕 code_puppy/plugins/behavioral_tests/register_callbacks.py
+  🆕 code_puppy/plugins/behavioral_tests/test_cases.py
+  🆕 code_puppy/plugins/context_monitor/__init__.py
+  🆕 code_puppy/plugins/context_monitor/__pycache__/__init__.cpython-311.pyc
+  🆕 code_puppy/plugins/context_monitor/__pycache__/register_callbacks.cpython-311.pyc
+  🆕 code_puppy/plugins/context_monitor/register_callbacks.py
+  🆕 code_puppy/plugins/mcp_progressive/__init__.py
+  🆕 code_puppy/plugins/mcp_progressive/register_callbacks.py
+  🆕 code_puppy/plugins/skill_browser/__init__.py
+  🆕 code_puppy/plugins/skill_browser/__pycache__/__init__.cpython-311.pyc
+  🆕 code_puppy/plugins/skill_browser/__pycache__/register_callbacks.cpython-311.pyc
+  🆕 code_puppy/plugins/skill_browser/register_callbacks.py
+  🆕 tests/test_claude_oauth_integration.py
+  ✏️ tests/test_json_agents.py
+  🆕 tests/test_prompt_assembler.py
+
+
+⚪ NONE RISK (31 files)
+--------------------------------------------------------------------------------
+  🆕 CODE_PUPPY_OPTIMIZATION_PLAN.md
+  🆕 LOCAL_VS_PYPI.md
+  🆕 Log at 2026-02-16 1-16-45 PM.txt
+  🆕 Log at 2026-03-03 3-14-37 PM.txt
+  🆕 MASTER-PROMPT-SELF-OPTIMIZATION.md
+  🆕 OAUTH_TEST_RESULTS.md
+  🆕 VERIFY_OAUTH.md
+  🆕 code-puppy-self-optimization-prompt.md
+  🆕 examples/README.md
+  🆕 examples/claude_oauth_custom_tool_example.py
+  🆕 org_d4xhyytkf4dxrytcnm25wt5p-2026_03_02-2026_03_03-per_minute-usage.csv
+  🆕 research/agent-architecture-optimization/README.md
+  🆕 research/agent-architecture-optimization/sources.md
+  🆕 research/agent-architecture-validation/README.md
+  🆕 research/agent-architecture-validation/analysis.md
+  🆕 research/agent-architecture-validation/raw-findings/anthropic-building-effective-agents-key-excerpts.md
+  🆕 research/agent-architecture-validation/raw-findings/anthropic-prompting-best-practices-agentic-excerpts.md
+  🆕 research/agent-architecture-validation/raw-findings/multi-agent-patterns-comparison.md
+  🆕 research/agent-architecture-validation/recommendations.md
+  🆕 research/agent-architecture-validation/sources.md
+  🆕 research/claude-code-oauth-authentication/ADR-001-oauth-authentication-architecture.md
+  🆕 research/claude-code-oauth-authentication/README.md
+  🆕 research/claude-code-oauth-authentication/RESEARCH.md
+  🆕 research/pydantic-ai-architecture-validation-2026/README.md
+  🆕 research/pydantic-ai-architecture-validation-2026/analysis.md
+  🆕 research/pydantic-ai-architecture-validation-2026/raw-findings/anthropic-tool-best-practices.md
+  🆕 research/pydantic-ai-architecture-validation-2026/raw-findings/fallback-model-pr-timeline.md
+  🆕 research/pydantic-ai-architecture-validation-2026/raw-findings/mcp-spec-versions.md
+  🆕 research/pydantic-ai-architecture-validation-2026/recommendations.md
+  🆕 research/pydantic-ai-architecture-validation-2026/sources.md
+  🆕 self-optimization-dashboard.html
+
+💡 RECOMMENDATIONS
+================================================================================
+
+✅ SAFE TO COMMIT (Low/No conflict risk):
+--------------------------------------------------------------------------------
+These files are safe additions that won't conflict with upstream:
+
+  • examples                1 files
+  • misc_files              4 files
+  • plugins                22 files
+  • research_docs          19 files
+  • root_docs               9 files
+  • tests                   3 files
+
+Total safe files: 58
+
+
+⚠️  REVIEW BEFORE COMMIT (Medium conflict risk):
+--------------------------------------------------------------------------------
+These files should be reviewed before committing:
+
+  • audit_local_changes.py
+    Reason: Unknown purpose - needs investigation
+  • audit_report.txt
+    Reason: Unknown purpose - needs investigation
+  • check_installation.py
+    Reason: Installation verification script
+  • code_puppy/agents/agent_creator_agent.py
+    Reason: Agent creator implementation
+  • code_puppy/agents/agent_planning.py
+    Reason: Unknown purpose - needs investigation
+  • code_puppy/agents/json_agent.py
+    Reason: JSON agent loader
+  • code_puppy/claude_oauth_client.py
+    Reason: Claude OAuth client implementation
+  • code_puppy/command_line/config_commands.py
+    Reason: Unknown purpose - needs investigation
+  • code_puppy/fallback_config.py
+    Reason: Model fallback configuration
+  • code_puppy/mcp_/progressive_discovery.py
+    Reason: Progressive MCP server discovery
+  • code_puppy/model_capabilities.py
+    Reason: Model capability registry
+  • code_puppy/prompt_assembler.py
+    Reason: Centralized prompt assembly (OPT-000)
+  • code_puppy/tools/agent_tools.py
+    Reason: Unknown purpose - needs investigation
+  • test_both_models.py
+    Reason: Dual model testing script
+  • verify_oauth_fix.py
+    Reason: OAuth fix verification script
+
+
+🔴 HIGH CONFLICT RISK - CAREFUL:
+--------------------------------------------------------------------------------
+These modified core files are likely to conflict with upstream updates:
+
+  • code_puppy/agents/agent_manager.py
+    Purpose: Agent management system
+  • code_puppy/agents/base_agent.py
+    Purpose: Base agent class
+  • code_puppy/config.py
+    Purpose: Unknown purpose - needs investigation
+
+Recommendation: Consider rebasing these changes or creating patches.
+
+
+📋 SPECIFIC RECOMMENDATIONS:
+--------------------------------------------------------------------------------
+
+1. COMMIT IN STAGES:
+   a) First commit: Safe documentation and research files
+   b) Second commit: New plugins and examples
+   c) Third commit: Test files
+   d) Fourth commit: Core modifications (carefully review each)
+
+2. CREATE FEATURE BRANCHES:
+   - Create a branch for each major feature/optimization
+   - Makes it easier to merge upstream changes
+
+3. DOCUMENT CORE CHANGES:
+   - For each modified core file, document WHY it was changed
+   - Create ADR (Architecture Decision Record) files
+
+4. CONSIDER PLUGIN-IFICATION:
+   - Some core modifications could become plugins
+   - Review: prompt_assembler, model_capabilities, fallback_config
+
+5. TRACK UPSTREAM:
+   - Regularly check for upstream updates
+   - Rebase your changes on top of upstream main
+
+
+================================================================================
+Audit complete! 🐶
+

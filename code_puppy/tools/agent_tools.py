@@ -40,6 +40,11 @@ from code_puppy.tools.subagent_context import subagent_context
 # Set to track active subagent invocation tasks
 _active_subagent_tasks: Set[asyncio.Task] = set()
 
+# OPT-007-C: Track multi-specialist invocations per parent session
+# Maps parent_session_id -> list of (agent_name, timestamp) for recent invocations
+_multi_specialist_tracker: dict[str, list[tuple[str, float]]] = {}
+_MULTI_SPECIALIST_WINDOW_SECONDS = 120  # 2 minute window for related invocations
+
 # Atomic counter for DBOS workflow IDs - ensures uniqueness even in rapid back-to-back calls
 # itertools.count() is thread-safe for next() calls
 _dbos_workflow_counter = itertools.count()
@@ -212,6 +217,7 @@ class AgentInfo(BaseModel):
     name: str
     display_name: str
     description: str
+    delegation_mode: str = "subtask"
 
 
 class ListAgentsOutput(BaseModel):
@@ -239,11 +245,7 @@ def register_list_agents(agent):
 
     @agent.tool
     def list_agents(context: RunContext) -> ListAgentsOutput:
-        """List all available sub-agents that can be invoked.
-
-        Returns:
-            ListAgentsOutput: A list of available agents with their names and display names.
-        """
+        """List all available sub-agents that can be invoked."""
         # Generate a group ID for this tool execution
         group_id = generate_group_id("list_agents")
 
@@ -252,12 +254,6 @@ def register_list_agents(agent):
         from code_puppy.config import get_banner_color
 
         list_agents_color = get_banner_color("list_agents")
-        emit_info(
-            Text.from_markup(
-                f"\n[bold white on {list_agents_color}] LIST AGENTS [/bold white on {list_agents_color}]"
-            ),
-            message_group=group_id,
-        )
 
         try:
             from code_puppy.agents import get_agent_descriptions, get_available_agents
@@ -266,22 +262,46 @@ def register_list_agents(agent):
             agents_dict = get_available_agents()
             descriptions_dict = get_agent_descriptions()
 
+            # Get delegation modes for JSON agents (OPT-007-B)
+            delegation_modes = {}
+            try:
+                from code_puppy.agents.json_agent import JSONAgent, discover_json_agents
+
+                json_agents = discover_json_agents()
+                for aname, apath in json_agents.items():
+                    meta = JSONAgent.read_metadata(apath)
+                    delegation_modes[aname] = meta.get("delegation_mode", "subtask")
+            except Exception:
+                pass
+
             # Convert to list of AgentInfo objects
             agents = [
                 AgentInfo(
                     name=name,
                     display_name=display_name,
                     description=descriptions_dict.get(name, "No description available"),
+                    delegation_mode=delegation_modes.get(name, "subtask"),
                 )
                 for name, display_name in agents_dict.items()
             ]
+
+            # Quiet output - banner and count on same line
+            agent_count = len(agents)
+            emit_info(
+                Text.from_markup(
+                    f"[bold white on {list_agents_color}] LIST AGENTS [/bold white on {list_agents_color}] "
+                    f"[dim]Found {agent_count} agent(s).[/dim]"
+                ),
+                message_group=group_id,
+            )
 
             # Accumulate output into a single string and emit once
             # Use Text.from_markup() to pass a Rich object that won't be escaped
             lines = []
             for agent_item in agents:
+                mode_tag = f" [italic]({agent_item.delegation_mode})[/italic]" if agent_item.delegation_mode != "subtask" else ""
                 lines.append(
-                    f"- [bold]{agent_item.name}[/bold]: {agent_item.display_name}\n"
+                    f"- [bold]{agent_item.name}[/bold]: {agent_item.display_name}{mode_tag}\n"
                     f"  [dim]{agent_item.description}[/dim]"
                 )
             emit_info(Text.from_markup("\n".join(lines)), message_group=group_id)
@@ -309,71 +329,8 @@ def register_invoke_agent(agent):
     ) -> AgentInvokeOutput:
         """Invoke a specific sub-agent with a given prompt.
 
-        Args:
-            agent_name: The name of the agent to invoke
-            prompt: The prompt to send to the agent
-            session_id: Optional session ID for maintaining conversation memory across invocations.
-
-                       **Session ID Format:**
-                       - Must be kebab-case (lowercase letters, numbers, hyphens only)
-                       - Should be human-readable: e.g., "implement-oauth", "review-auth"
-                       - For NEW sessions, a SHA1 hash suffix is automatically appended for uniqueness
-                       - To CONTINUE a session, use the full session_id (with hash) from the previous invocation
-                       - If None (default), auto-generates like "agent-name-session-1"
-
-                       **When to use session_id:**
-                       - **NEW SESSION**: Provide a base name like "review-auth" - we'll append a unique hash
-                       - **CONTINUE SESSION**: Use the full session_id from output (e.g., "review-auth-a3f2b1")
-                       - **ONE-OFF TASKS**: Leave as None (auto-generate)
-
-                       **Most common pattern:** Leave session_id as None (auto-generate) unless you
-                       specifically need conversational memory.
-
         Returns:
-            AgentInvokeOutput: Contains:
-                - response (str | None): The agent's response to the prompt
-                - agent_name (str): Name of the invoked agent
-                - session_id (str | None): The full session ID (with hash suffix) - USE THIS to continue the conversation!
-                - error (str | None): Error message if invocation failed
-
-        Examples:
-            # COMMON CASE: One-off invocation, no memory needed (auto-generate session)
-            result = invoke_agent(
-                "qa-expert",
-                "Review this function: def add(a, b): return a + b"
-            )
-            # result.session_id will be something like "qa-expert-session-a3f2b1"
-
-            # MULTI-TURN: Start a NEW conversation with a base session ID
-            # A hash suffix is auto-appended: "review-add-function" -> "review-add-function-a3f2b1"
-            result1 = invoke_agent(
-                "qa-expert",
-                "Review this function: def add(a, b): return a + b",
-                session_id="review-add-function"
-            )
-            # result1.session_id contains the full ID like "review-add-function-a3f2b1"
-
-            # Continue the SAME conversation using session_id from the previous result
-            result2 = invoke_agent(
-                "qa-expert",
-                "Can you suggest edge cases for that function?",
-                session_id=result1.session_id  # Use the session_id from previous output!
-            )
-
-            # Multiple INDEPENDENT reviews (each gets unique hash suffix)
-            auth_review = invoke_agent(
-                "code-reviewer",
-                "Review my authentication code",
-                session_id="auth-review"  # -> "auth-review-<hash1>"
-            )
-            # auth_review.session_id contains the full ID to continue this review
-
-            payment_review = invoke_agent(
-                "code-reviewer",
-                "Review my payment processing code",
-                session_id="payment-review"  # -> "payment-review-<hash2>"
-            )
-            # payment_review.session_id contains a different full ID
+            AgentInvokeOutput: Contains response, agent_name, session_id, and error fields.
         """
         from code_puppy.agents.agent_manager import load_agent
 
@@ -450,6 +407,61 @@ def register_invoke_agent(agent):
         )
 
         browser_session_token = set_browser_session(f"browser-{session_id}")
+
+        # OPT-007-C: Track multi-specialist invocations for override detection
+        try:
+            import time as _time
+
+            parent_id = previous_session_id or "root"
+            now = _time.time()
+
+            if parent_id not in _multi_specialist_tracker:
+                _multi_specialist_tracker[parent_id] = []
+
+            # Clean old entries outside the window
+            _multi_specialist_tracker[parent_id] = [
+                (name, ts)
+                for name, ts in _multi_specialist_tracker[parent_id]
+                if now - ts < _MULTI_SPECIALIST_WINDOW_SECONDS
+            ]
+
+            # Record this invocation
+            _multi_specialist_tracker[parent_id].append((agent_name, now))
+
+            # Check if multiple specialists are being used
+            unique_agents = set(
+                name for name, _ in _multi_specialist_tracker[parent_id]
+            )
+            if len(unique_agents) > 1:
+                import logging as _logging
+
+                _logging.getLogger(__name__).info(
+                    "Overriding delegation_mode to 'subtask' for agents %s — "
+                    "multi-specialist synthesis required (parent: %s)",
+                    sorted(unique_agents),
+                    parent_id,
+                )
+        except Exception:
+            pass  # Never block invocation on tracking failure
+
+        # OPT-007-D: Log handoff state transfer for handoff-mode agents
+        try:
+            from code_puppy.agents.json_agent import JSONAgent, discover_json_agents
+
+            json_agents = discover_json_agents()
+            if agent_name in json_agents:
+                meta = JSONAgent.read_metadata(json_agents[agent_name])
+                if meta.get("delegation_mode") == "handoff":
+                    import logging as _logging
+
+                    _logging.getLogger(__name__).info(
+                        "Handoff delegation to '%s': transferring pinned model, "
+                        "MCP connections, and %d history messages",
+                        agent_name,
+                        len(message_history),
+                    )
+        except Exception:
+            pass  # Don't block on handoff logging
 
         try:
             # Lazy import to break circular dependency with messaging module

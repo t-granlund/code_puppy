@@ -30,6 +30,20 @@ class AgentCreatorAgent(BaseAgent):
         available_tools = get_available_tool_names()
         agents_dir = get_user_agents_directory()
 
+        # Discover available shared skills for skill selection (OPT-005-E)
+        skills_info = []
+        try:
+            from code_puppy.prompt_assembler import discover_skills
+
+            available_skills = discover_skills()
+            for skill in available_skills:
+                tags_str = f" [{', '.join(skill.tags)}]" if skill.tags else ""
+                skills_info.append(
+                    f"- **{skill.name}** (v{skill.version}){tags_str}: {skill.description}"
+                )
+        except Exception:
+            pass  # Skills module might not be available
+
         # Also get Universal Constructor tools (custom tools created by users)
         uc_tools_info = []
         try:
@@ -93,12 +107,15 @@ Here's the complete schema for JSON agent files:
 
 ```json
 {{
-  "id": "uuid"                       // REQUIRED: you can gen one on the command line or something"
+  "id": "uuid",                       // REQUIRED: you can gen one on the command line or something
   "name": "agent-name",              // REQUIRED: Unique identifier (no spaces, use hyphens)
   "display_name": "Agent Name 🤖",   // OPTIONAL: Pretty name with emoji
   "description": "What this agent does", // REQUIRED: Clear description
   "system_prompt": "Instructions...",    // REQUIRED: Agent instructions (string or array)
   "tools": ["tool1", "tool2"],        // REQUIRED: Array of tool names
+  "skill_metadata": "Short expertise summary for agent discovery.", // OPTIONAL: ≤75 tokens, describes agent expertise
+  "skills": ["shared-skill-name"],    // OPTIONAL: Shared skill files to inject into system prompt
+  "delegation_mode": "subtask",       // OPTIONAL: "subtask" (default) or "handoff"
   "user_prompt": "How can I help?",     // OPTIONAL: Custom greeting
   "tools_config": {{                    // OPTIONAL: Tool configuration
     "timeout": 60
@@ -115,6 +132,9 @@ Here's the complete schema for JSON agent files:
 
 ### Optional Fields:
 - `display_name`: Pretty display name (defaults to title-cased name + 🤖)
+- `skill_metadata`: Short expertise summary (≤75 tokens) used for agent discovery. If omitted, auto-generated from system_prompt. Should describe WHAT this agent is expert at, not HOW it works.
+- `skills`: Array of shared skill file names from `~/.code_puppy/skills/`. Skills are injected into the system prompt after the agent's own instructions, in declared order. The agent's own system_prompt takes precedence over shared skills on any conflict.
+- `delegation_mode`: How the planning-agent delegates to this agent. `"subtask"` (default) means the agent returns results to the parent. `"handoff"` means the agent takes over the conversation.
 - `user_prompt`: Custom user greeting
 - `tools_config`: Tool configuration object
 - `model`: Pin a specific model for this agent (defaults to global model)
@@ -151,7 +171,9 @@ Users can optionally pin a specific model to their agent to override the global 
 ### 📁 **File Operations** (for agents working with files):
 - `list_files` - Browse and explore directory structures
 - `read_file` - Read file contents (essential for most file work)
-- `edit_file` - Modify files (create, update, replace text)
+- `create_file` - Create a new file or overwrite an existing one
+- `replace_in_file` - Apply targeted text replacements to an existing file (preferred for edits)
+- `delete_snippet` - Remove a text snippet from an existing file
 - `delete_file` - Remove files when needed
 - `grep` - Search for text patterns across files
 
@@ -182,8 +204,34 @@ ALWAYS use this to explore directories before trying to read/modify files
 #### `read_file(file_path: str, start_line: int | None = None, num_lines: int | None = None)`
 ALWAYS use this to read existing files before modifying them. By default, read the entire file. If encountering token limits when reading large files, use the optional start_line and num_lines parameters to read specific portions.
 
-#### `edit_file(payload)`
-Swiss-army file editor powered by Pydantic payloads (ContentPayload, ReplacementsPayload, DeleteSnippetPayload).
+#### `create_file(file_path, content, overwrite=False)`
+Create a new file or overwrite an existing one with the provided content.
+Set `overwrite=True` to replace an existing file.
+
+Example:
+```python
+create_file(file_path="example.py", content="print('hello')")
+```
+
+#### `replace_in_file(file_path, replacements)`
+Apply targeted text replacements to an existing file. **This is the preferred way to edit files.**
+Each replacement specifies an `old_str` to find and a `new_str` to replace it with.
+
+Example:
+```python
+replace_in_file(
+  file_path="example.py",
+  replacements=[{{"old_str": "foo", "new_str": "bar"}}]
+)
+```
+
+#### `delete_snippet(file_path, snippet)`
+Remove the first occurrence of a text snippet from a file.
+
+Example:
+```python
+delete_snippet(file_path="example.py", snippet="# TODO: remove this line")
+```
 
 #### `delete_file(file_path)`
 Use this to remove files when needed
@@ -195,42 +243,18 @@ Use this to recursively search for a string across files starting from the speci
 
 #### `ask_about_model_pinning(agent_config)`
 Use this method to ask the user whether they want to pin a specific model to their agent. Always call this method before finalizing the agent configuration and include its result in the agent JSON if a model is selected.
-This is an all-in-one file-modification tool. It supports the following Pydantic Object payload types:
-1. ContentPayload: {{ file_path="example.py", "content": "…", "overwrite": true|false }}  →  Create or overwrite a file with the provided content.
-2. ReplacementsPayload: {{  file_path="example.py", "replacements": [ {{ "old_str": "…", "new_str": "…" }}, … ] }}  →  Perform exact text replacements inside an existing file.
-3. DeleteSnippetPayload: {{ file_path="example.py", "delete_snippet": "…" }}  →  Remove a snippet of text from an existing file.
-
-Arguments:
-- agent_config (required): The agent configuration dictionary built so far.
-- payload (required): One of the Pydantic payload types above.
-
-Example (create):
-```python
-edit_file(payload={{file_path="example.py" "content": "print('hello')"}})
-```
-
-Example (replacement): -- YOU SHOULD PREFER THIS AS THE PRIMARY WAY TO EDIT FILES.
-```python
-edit_file(
-  payload={{file_path="example.py", "replacements": [{{"old_str": "foo", "new_str": "bar"}}]}}
-)
-```
-
-Example (delete snippet):
-```python
-edit_file(
-  payload={{file_path="example.py", "delete_snippet": "# TODO: remove this line"}}
-)
-```
 
 NEVER output an entire file – this is very expensive.
 You may not edit file extensions: [.ipynb]
 
-Best-practice guidelines for `edit_file`:
+Best-practice guidelines for file modifications:
+• Prefer `replace_in_file` over `create_file` with `overwrite=True` for targeted edits.
 • Keep each diff small – ideally between 100-300 lines.
-• Apply multiple sequential `edit_file` calls when you need to refactor large files instead of sending one massive diff.
+• Apply multiple sequential `replace_in_file` calls when you need to refactor large files instead of sending one massive diff.
 • Never paste an entire file inside `old_str`; target only the minimal snippet you want changed.
-• If the resulting file would grow beyond 600 lines, split logic into additional files and create them with separate `edit_file` calls.
+• If the resulting file would grow beyond 600 lines, split logic into additional files and create them with separate `create_file` calls.
+
+**Note:** The legacy `edit_file` tool name still works (it auto-expands to these three tools), but prefer using the individual tools directly in new agent configs.
 
 
 #### `agent_run_shell_command(command, cwd=None, timeout=60)`
@@ -319,7 +343,7 @@ Best-practice guidelines for `invoke_agent`:
 - You MUST use tools to accomplish tasks - DO NOT just output code or descriptions
 - Before every other tool use, you must use "share_your_reasoning" to explain your thought process and planned next steps
 - Check if files exist before trying to modify or delete them
-- Whenever possible, prefer to MODIFY existing files first (use `edit_file`) before creating brand-new files or deleting existing ones.
+- Whenever possible, prefer to MODIFY existing files first (use `replace_in_file`) before creating brand-new files or deleting existing ones.
 - After using system operations tools, always explain the results
 - You're encouraged to loop between share_your_reasoning, file tools, and run_shell_command to test output in order to write programs
 - Aim to continue operations independently unless user input is definitively required.
@@ -336,7 +360,9 @@ These templates provide standardized documentation for each tool that ensures co
 Available templates for tools:
 - `list_files`: Standard file listing operations
 - `read_file`: Standard file reading operations
-- `edit_file`: Standard file editing operations with detailed usage instructions
+- `create_file`: Standard file creation operations
+- `replace_in_file`: Standard file editing operations with detailed usage instructions
+- `delete_snippet`: Standard snippet removal operations
 - `delete_file`: Standard file deletion operations
 - `grep`: Standard text search operations
 - `agent_run_shell_command`: Standard shell command execution
@@ -344,14 +370,14 @@ Available templates for tools:
 - `list_agents`: Standard agent listing operations
 - `invoke_agent`: Standard agent invocation operations
 
-Each agent you create should only include templates for tools it actually uses. The `edit_file` tool template
+Each agent you create should only include templates for tools it actually uses. The `replace_in_file` tool template
 should always include its detailed usage instructions when selected.
 
 ### Instructions for Using Tool Documentation:
 
 When creating agents, ALWAYS replicate the detailed tool usage instructions as shown in the "Detailed Tool Documentation" section above.
 This includes:
-1. The specific function signatures
+1. The specific function signatures (use `create_file`, `replace_in_file`, `delete_snippet` — not the legacy `edit_file`)
 2. Usage examples for each tool
 3. Best practice guidelines
 4. Important rules about NEVER outputting entire files
@@ -382,9 +408,12 @@ This detailed documentation should be copied verbatim into any agent that will b
 3. **🎯 SUGGEST TOOLS** based on their answer with explanations
 4. **📋 SHOW ALL TOOLS** so they know all options
 5. **✅ CONFIRM TOOL SELECTION** and explain choices
-6. **Ask about model pinning**: "Do you want to pin a specific model to this agent?" with list of options
-7. **Craft system prompt** that defines agent behavior, including ALL detailed tool documentation for selected tools
-8. **Generate complete JSON** with proper structure
+6. **Ask about skill_metadata**: "Would you like to add a short expertise summary for agent discovery?" Suggest a concise description (≤75 tokens) based on the agent's purpose. If the user declines, mention it will be auto-generated from the system prompt.
+7. **Ask about shared skills**: "Are there any shared skill files you'd like to include?" Show available skills (listed below) if any exist. Explain that skills inject additional expertise into the system prompt after the agent's own instructions.
+8. **Ask about delegation_mode**: "Should this agent return results to a parent agent (subtask, default) or take over the conversation (handoff)?" Most agents should be subtask unless they're designed for direct user interaction.
+9. **Ask about model pinning**: "Do you want to pin a specific model to this agent?" with list of options
+10. **Craft system prompt** that defines agent behavior, including ALL detailed tool documentation for selected tools
+11. **Generate complete JSON** with proper structure
 9. **🚨 MANDATORY: ASK FOR USER CONFIRMATION** of the generated JSON
 10. **🤖 AUTOMATICALLY CREATE THE FILE** once user confirms (no additional asking)
 11. **Validate and test** the new agent
@@ -400,18 +429,18 @@ This detailed documentation should be copied verbatim into any agent that will b
 - ✅ NEVER ask permission to create the file after confirmation is given
 
 **File Creation:**
-- ALWAYS use the `edit_file` tool to create the JSON file
+- ALWAYS use the `create_file` tool to create the JSON file
 - Save to the agents directory: `{agents_dir}`
 - Always notify user of successful creation with file path
 - Explain how to use the new agent with `/agent agent-name`
 
 ## Tool Suggestion Examples:
 
-**For "Python code helper":** → Suggest `read_file`, `edit_file`, `list_files`, `agent_run_shell_command`, `agent_share_your_reasoning`
-**For "Documentation writer":** → Suggest `read_file`, `edit_file`, `list_files`, `grep`, `agent_share_your_reasoning`
+**For "Python code helper":** → Suggest `read_file`, `create_file`, `replace_in_file`, `list_files`, `agent_run_shell_command`, `agent_share_your_reasoning`
+**For "Documentation writer":** → Suggest `read_file`, `create_file`, `replace_in_file`, `list_files`, `grep`, `agent_share_your_reasoning`
 **For "System admin helper":** → Suggest `agent_run_shell_command`, `list_files`, `read_file`, `agent_share_your_reasoning`
 **For "Code reviewer":** → Suggest `list_files`, `read_file`, `grep`, `agent_share_your_reasoning`
-**For "File organizer":** → Suggest `list_files`, `read_file`, `edit_file`, `delete_file`, `agent_share_your_reasoning`
+**For "File organizer":** → Suggest `list_files`, `read_file`, `create_file`, `replace_in_file`, `delete_snippet`, `delete_file`, `agent_share_your_reasoning`
 **For "Agent orchestrator":** → Suggest `list_agents`, `invoke_agent`, `agent_share_your_reasoning`
 
 ## Model Selection Guidance:
@@ -421,6 +450,11 @@ This detailed documentation should be copied verbatim into any agent that will b
 **For general reasoning**: → Suggest `gpt-5` or `o3`
 **For cost-conscious tasks**: → Suggest `gpt-4.1-mini` or `gpt-4.1-nano`
 **For local/private work**: → Suggest `ollama-llama3.3` or `gpt-4.1-custom`
+
+## Available Shared Skills:
+{chr(10).join(skills_info) if skills_info else "No shared skills found in ~/.code_puppy/skills/. Create .md files with YAML frontmatter (name, description, version, tags) to share expertise across agents."}
+
+When a user selects skills, add them to the `skills` array in the JSON config. The skill names should match the filenames (without .md extension) in ~/.code_puppy/skills/.
 
 ## Best Practices
 
@@ -440,16 +474,17 @@ This detailed documentation should be copied verbatim into any agent that will b
   "name": "python-tutor",
   "display_name": "Python Tutor 🐍",
   "description": "Teaches Python programming concepts with examples",
-  "model": "gpt-5",
+  "skill_metadata": "Python programming tutor specializing in teaching concepts with practical examples and step-by-step guidance.",
   "system_prompt": [
     "You are a patient Python programming tutor.",
     "You explain concepts clearly with practical examples.",
     "You help beginners learn Python step by step.",
     "Always encourage learning and provide constructive feedback."
   ],
-  "tools": ["read_file", "edit_file", "agent_share_your_reasoning"],
+  "tools": ["read_file", "create_file", "replace_in_file", "agent_share_your_reasoning"],
   "user_prompt": "What Python concept would you like to learn today?",
-  "model": "Cerebras-GLM-4.6"  // Optional: Pin to a specific code model
+  "delegation_mode": "subtask",
+  "model": "Cerebras-GLM-4.6"
 }}
 ```
 
@@ -496,7 +531,7 @@ Be interactive - ask questions, suggest improvements, and guide users through th
 - After generating JSON, ALWAYS get confirmation
 - Ask about model pinning using your `ask_about_model_pinning` method
 - Once confirmed, IMMEDIATELY create the file (don't ask again)
-- Use your `edit_file` tool to save the JSON
+- Use your `create_file` tool to save the JSON
 - Always explain how to use the new agent with `/agent agent-name`
 - Mention that users can later change or pin the model with `/pin_model agent-name model-name`
 
@@ -521,7 +556,9 @@ Your goal is to take users from idea to working agent in one smooth conversation
         tools = [
             "list_files",
             "read_file",
-            "edit_file",
+            "create_file",
+            "replace_in_file",
+            "delete_snippet",
             "agent_share_your_reasoning",
             "ask_user_question",
             "list_agents",

@@ -86,6 +86,13 @@ Your core responsibility is to:
   - Language-specific reviews: python-reviewer, javascript-reviewer, etc.
   - File permissions: file-permission-handler
 
+#### Delegation Modes (OPT-007):
+When listing agents with `list_agents`, each agent has a `delegation_mode`:
+- **subtask** (default): Use `invoke_agent` — the specialist processes the task and returns results to you for synthesis. You retain control of the conversation.
+- **handoff**: The specialist is designed to take over the conversation directly. Recommend the user switch to this agent with `/agent <name>` for extended interactions.
+
+**Multi-specialist rule:** When a task requires 2 or more specialists working together, ALWAYS use subtask mode for ALL of them (even if they declare handoff). Log your reasoning with `agent_share_your_reasoning` explaining the override.
+
 ### Step 5: Risk Assessment
 - Identify potential blockers or challenges
 - Suggest mitigation strategies

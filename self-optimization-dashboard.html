@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Code Puppy Self-Optimization Dashboard 🐶</title>
+<style>
+/* ============================================================
+   CSS RESET & BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; font-size: 16px; }
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: #0b0e17;
+  color: #c8cdd8;
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+a { color: #5eead4; text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ============================================================
+   HERO HEADER
+   ============================================================ */
+.hero {
+  position: relative;
+  padding: 3rem 1.5rem 2.5rem;
+  text-align: center;
+  overflow: hidden;
+  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 40%, #172554 70%, #0f172a 100%);
+  background-size: 300% 300%;
+  animation: heroGradient 12s ease infinite;
+}
+@keyframes heroGradient {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.hero::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 30% 20%, rgba(94,234,212,.08) 0%, transparent 60%),
+              radial-gradient(ellipse at 70% 80%, rgba(168,85,247,.06) 0%, transparent 60%);
+  pointer-events: none;
+}
+.hero h1 {
+  font-size: clamp(1.6rem, 4vw, 2.6rem);
+  font-weight: 800;
+  color: #f1f5f9;
+  position: relative; z-index: 1;
+}
+.hero h1 .emoji { display: inline-block; animation: wiggle 2s ease-in-out infinite; }
+@keyframes wiggle {
+  0%,100% { transform: rotate(0deg); }
+  25% { transform: rotate(-8deg); }
+  75% { transform: rotate(8deg); }
+}
+.hero .subtitle {
+  font-size: clamp(.85rem, 2vw, 1.1rem);
+  color: #94a3b8;
+  margin-top: .4rem;
+  position: relative; z-index: 1;
+}
+.hero .date-badge {
+  display: inline-block;
+  margin-top: .8rem;
+  padding: .25rem .85rem;
+  border-radius: 9999px;
+  background: rgba(94,234,212,.12);
+  color: #5eead4;
+  font-size: .8rem;
+  font-weight: 600;
+  position: relative; z-index: 1;
+}
+/* Progress Bar */
+.progress-wrap {
+  max-width: 480px;
+  margin: 1.4rem auto 0;
+  position: relative; z-index: 1;
+}
+.progress-label {
+  display: flex; justify-content: space-between;
+  font-size: .78rem; color: #94a3b8; margin-bottom: .35rem;
+}
+.progress-bar {
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.07);
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #5eead4, #a855f7);
+  transition: width 1.2s cubic-bezier(.22,1,.36,1);
+}
+
+/* ============================================================
+   NAV TABS
+   ============================================================ */
+.tab-bar {
+  display: flex;
+  justify-content: center;
+  gap: .5rem;
+  padding: 1rem 1rem 0;
+  background: #0f1322;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  position: sticky; top: 0; z-index: 50;
+  flex-wrap: wrap;
+}
+.tab-btn {
+  padding: .55rem 1.3rem;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-size: .88rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color .25s, border-color .25s;
+  border-radius: 6px 6px 0 0;
+}
+.tab-btn:hover { color: #cbd5e1; }
+.tab-btn.active {
+  color: #5eead4;
+  border-bottom-color: #5eead4;
+  background: rgba(94,234,212,.06);
+}
+
+/* ============================================================
+   TAB PANELS
+   ============================================================ */
+.tab-panels { max-width: 1200px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+.tab-panel {
+  display: none;
+  animation: fadeUp .4s ease;
+}
+.tab-panel.active { display: block; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   SECTION HEADINGS
+   ============================================================ */
+.section-title {
+  font-size: 1.3rem; font-weight: 700; color: #e2e8f0;
+  margin-bottom: 1rem;
+  display: flex; align-items: center; gap: .5rem;
+}
+.section-title .dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  display: inline-block; flex-shrink: 0;
+}
+
+/* ============================================================
+   BEFORE / AFTER COMPARISON
+   ============================================================ */
+.ba-controls {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+.ba-toggle {
+  position: relative;
+  display: inline-flex;
+  background: rgba(255,255,255,.06);
+  border-radius: 999px;
+  padding: 3px;
+}
+.ba-toggle input { display: none; }
+.ba-toggle label {
+  padding: .45rem 1.4rem;
+  font-size: .82rem;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  border-radius: 999px;
+  transition: color .25s, background .25s;
+  position: relative; z-index: 1;
+  user-select: none;
+}
+.ba-toggle input:checked + label {
+  color: #0f172a;
+  background: #5eead4;
+}
+.ba-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
+}
+@media (max-width: 768px) {
+  .ba-grid { grid-template-columns: 1fr; }
+}
+.ba-col {
+  border-radius: 12px;
+  padding: 1.2rem;
+  transition: opacity .4s, transform .4s;
+}
+.ba-col.current {
+  background: linear-gradient(135deg, rgba(239,68,68,.06), rgba(251,146,60,.04));
+  border: 1px solid rgba(239,68,68,.18);
+}
+.ba-col.planned {
+  background: linear-gradient(135deg, rgba(94,234,212,.06), rgba(168,85,247,.04));
+  border: 1px solid rgba(94,234,212,.18);
+}
+.ba-col h3 {
+  font-size: 1rem; font-weight: 700; margin-bottom: .8rem;
+  display: flex; align-items: center; gap: .5rem;
+}
+.ba-col.current h3 { color: #f87171; }
+.ba-col.planned h3 { color: #5eead4; }
+.ba-block {
+  background: rgba(0,0,0,.25);
+  border-radius: 8px;
+  padding: .75rem .9rem;
+  margin-bottom: .65rem;
+  font-size: .78rem;
+  line-height: 1.65;
+}
+.ba-block-title {
+  font-weight: 700;
+  color: #e2e8f0;
+  margin-bottom: .3rem;
+  font-size: .82rem;
+}
+.ba-block .warn { color: #fbbf24; }
+.ba-block .ok   { color: #34d399; }
+.ba-block .info { color: #94a3b8; }
+
+/* Highlight toggle modes */
+.ba-grid.show-current .ba-col.planned { opacity: .2; transform: scale(.97); }
+.ba-grid.show-planned .ba-col.current { opacity: .2; transform: scale(.97); }
+
+/* ============================================================
+   DEPENDENCY GRAPH
+   ============================================================ */
+.dep-graph-section { margin-top: 2.5rem; }
+.dep-graph {
+  position: relative;
+  overflow-x: auto;
+  padding: 1.5rem .5rem 1rem;
+}
+.dep-row {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  margin-bottom: .75rem;
+  flex-wrap: wrap;
+}
+.dep-phase-label {
+  min-width: 120px;
+  font-size: .72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  padding: .2rem 0;
+  flex-shrink: 0;
+}
+.dep-node {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  padding: .3rem .7rem;
+  border-radius: 8px;
+  font-size: .72rem;
+  font-weight: 700;
+  white-space: nowrap;
+  border: 1px solid;
+  position: relative;
+  transition: transform .2s;
+}
+.dep-node:hover { transform: scale(1.08); }
+.dep-node.p-cyan  { background: rgba(94,234,212,.12); border-color: rgba(94,234,212,.35); color: #5eead4; }
+.dep-node.p-purple { background: rgba(168,85,247,.12); border-color: rgba(168,85,247,.35); color: #c084fc; }
+.dep-node.p-amber  { background: rgba(251,191,36,.12); border-color: rgba(251,191,36,.35); color: #fbbf24; }
+.dep-node.p-green  { background: rgba(52,211,153,.12); border-color: rgba(52,211,153,.35); color: #34d399; }
+.dep-node.p-gray   { background: rgba(148,163,184,.10); border-color: rgba(148,163,184,.25); color: #94a3b8; }
+.dep-arrow {
+  color: #475569;
+  font-size: .85rem;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   OPTIMIZATION CARDS
+   ============================================================ */
+.opt-card {
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 12px;
+  margin-bottom: .75rem;
+  overflow: hidden;
+  transition: border-color .25s, box-shadow .25s;
+}
+.opt-card:hover { border-color: rgba(255,255,255,.14); }
+.opt-card.expanded { box-shadow: 0 0 30px rgba(94,234,212,.06); }
+.opt-header {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  padding: .85rem 1rem;
+  cursor: pointer;
+  user-select: none;
+  flex-wrap: wrap;
+}
+.opt-header:hover { background: rgba(255,255,255,.02); }
+.opt-chevron {
+  transition: transform .3s;
+  color: #475569;
+  flex-shrink: 0;
+  font-size: .9rem;
+}
+.opt-card.expanded .opt-chevron { transform: rotate(90deg); }
+.opt-id {
+  font-family: 'Courier New', monospace;
+  font-size: .72rem;
+  font-weight: 700;
+  color: #94a3b8;
+  background: rgba(255,255,255,.06);
+  padding: .15rem .5rem;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.opt-title {
+  font-weight: 700;
+  color: #e2e8f0;
+  font-size: .9rem;
+  flex: 1;
+  min-width: 140px;
+}
+.badge {
+  display: inline-block;
+  padding: .12rem .55rem;
+  border-radius: 999px;
+  font-size: .65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+  flex-shrink: 0;
+}
+.badge-p0 { background: rgba(239,68,68,.18); color: #f87171; }
+.badge-p1 { background: rgba(251,191,36,.16); color: #fbbf24; }
+.badge-p2 { background: rgba(96,165,250,.16); color: #60a5fa; }
+.badge-p3 { background: rgba(148,163,184,.14); color: #94a3b8; }
+.badge-status {
+  background: rgba(255,255,255,.06);
+  color: #64748b;
+}
+.opt-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height .4s cubic-bezier(.22,1,.36,1), padding .3s;
+  padding: 0 1rem;
+}
+.opt-card.expanded .opt-body {
+  max-height: 800px;
+  padding: 0 1rem 1.1rem;
+}
+.opt-body h4 {
+  font-size: .78rem;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  margin: .8rem 0 .4rem;
+}
+.opt-body h4:first-child { margin-top: 0; }
+.subtask-list { list-style: none; }
+.subtask-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: .45rem;
+  padding: .25rem 0;
+  font-size: .82rem;
+}
+.subtask-check {
+  width: 16px; height: 16px;
+  border-radius: 4px;
+  border: 1.5px solid #475569;
+  flex-shrink: 0;
+  margin-top: 2px;
+  background: transparent;
+  transition: background .2s, border-color .2s;
+  cursor: default;
+}
+.subtask-check.done {
+  background: #34d399;
+  border-color: #34d399;
+}
+.file-pills {
+  display: flex; flex-wrap: wrap; gap: .35rem;
+}
+.file-pill {
+  font-family: 'Courier New', monospace;
+  font-size: .7rem;
+  padding: .15rem .5rem;
+  border-radius: 4px;
+  background: rgba(168,85,247,.1);
+  color: #c084fc;
+  border: 1px solid rgba(168,85,247,.2);
+}
+.opt-note {
+  font-size: .78rem;
+  color: #fbbf24;
+  background: rgba(251,191,36,.06);
+  border-left: 3px solid rgba(251,191,36,.4);
+  padding: .45rem .7rem;
+  border-radius: 0 6px 6px 0;
+  margin-top: .5rem;
+}
+.criteria-list {
+  list-style: none;
+  font-size: .82rem;
+}
+.criteria-list li { padding: .2rem 0; }
+.criteria-list li::before {
+  content: '○ ';
+  color: #5eead4;
+}
+
+/* ============================================================
+   RESEARCH CARDS
+   ============================================================ */
+.research-card {
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 12px;
+  padding: 1.1rem 1.2rem;
+  margin-bottom: .85rem;
+  transition: border-color .25s;
+}
+.research-card:hover { border-color: rgba(255,255,255,.14); }
+.research-header {
+  display: flex;
+  align-items: flex-start;
+  gap: .6rem;
+  margin-bottom: .55rem;
+  flex-wrap: wrap;
+}
+.research-header h3 {
+  font-size: .95rem; font-weight: 700; color: #e2e8f0; flex: 1; min-width: 180px;
+}
+.verdict {
+  display: inline-block;
+  padding: .15rem .65rem;
+  border-radius: 999px;
+  font-size: .7rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.verdict-confirmed  { background: rgba(52,211,153,.15); color: #34d399; }
+.verdict-caution    { background: rgba(251,191,36,.15); color: #fbbf24; }
+.verdict-info       { background: rgba(96,165,250,.15); color: #60a5fa; }
+.verdict-new        { background: rgba(168,85,247,.15); color: #c084fc; }
+.research-body {
+  font-size: .82rem;
+  color: #94a3b8;
+  line-height: 1.7;
+}
+.research-body strong { color: #cbd5e1; }
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.dash-footer {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 2.5rem;
+  border-top: 1px solid rgba(255,255,255,.06);
+}
+.footer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: .75rem;
+}
+.footer-stat {
+  text-align: center;
+  padding: .75rem .5rem;
+  background: rgba(255,255,255,.03);
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.05);
+}
+.footer-stat .num {
+  font-size: 1.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #5eead4, #a855f7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.footer-stat .lbl {
+  font-size: .72rem;
+  color: #64748b;
+  margin-top: .15rem;
+}
+.footer-updated {
+  text-align: center;
+  margin-top: 1rem;
+  font-size: .72rem;
+  color: #475569;
+}
+
+/* ============================================================
+   SCROLLBAR
+   ============================================================ */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.2); }
+
+/* ============================================================
+   PRINT
+   ============================================================ */
+@media print {
+  body { background: #fff; color: #111; }
+  .hero { background: #f0f0f0 !important; animation: none !important; }
+  .tab-bar { position: static; }
+  .tab-panel { display: block !important; page-break-inside: avoid; }
+  .opt-body { max-height: none !important; padding: 0 1rem 1rem !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- ======================= HERO ======================= -->
+<header class="hero">
+  <h1>Code Puppy Self-Optimization Dashboard <span class="emoji">🐶</span></h1>
+  <p class="subtitle">Architecture Evolution Roadmap — v0.0.425 → v1.0</p>
+  <span class="date-badge">📅 March 9, 2026</span>
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span>Overall Progress</span>
+      <span id="progress-text">0 / 35 sub-tasks</span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+  </div>
+</header>
+
+<!-- ======================= TABS ======================= -->
+<nav class="tab-bar" role="tablist">
+  <button class="tab-btn active" data-tab="before-after" role="tab">Before &amp; After</button>
+  <button class="tab-btn" data-tab="opt-queue" role="tab">Optimization Queue</button>
+  <button class="tab-btn" data-tab="research" role="tab">Research Validation</button>
+</nav>
+
+<!-- ======================= PANELS ======================= -->
+<main class="tab-panels">
+
+<!-- =============== BEFORE & AFTER =============== -->
+<section class="tab-panel active" id="panel-before-after">
+  <div class="ba-controls">
+    <div class="ba-toggle">
+      <input type="radio" name="baView" id="ba-both" value="both" checked>
+      <label for="ba-both">Both</label>
+      <input type="radio" name="baView" id="ba-current" value="current">
+      <label for="ba-current">Current</label>
+      <input type="radio" name="baView" id="ba-planned" value="planned">
+      <label for="ba-planned">Planned</label>
+    </div>
+  </div>
+
+  <div class="ba-grid" id="ba-grid">
+    <!-- CURRENT -->
+    <div class="ba-col current">
+      <h3>⛔ CURRENT STATE</h3>
+      <div class="ba-block">
+        <div class="ba-block-title">Planning Agent 📋</div>
+        <span class="info">Sees full system_prompt of all agents during selection</span>
+      </div>
+      <div class="ba-block">
+        <div class="ba-block-title">Agent Registry: _AGENT_REGISTRY</div>
+        <span class="ok">✅ Python agents auto-discovered</span><br>
+        <span class="ok">✅ JSON agents from ~/.code_puppy/</span><br>
+        <span class="ok">✅ Plugin-registered agents</span><br>
+        <span class="warn">⚠️ No /agents command</span><br>
+        <span class="warn">⚠️ No tool count limits</span><br>
+        <span class="warn">⚠️ No schema validation CLI</span>
+      </div>
+      <div class="ba-block">
+        <div class="ba-block-title">JSON Agent Schema</div>
+        <span class="info">name, description, system_prompt, tools,<br>
+        display_name, user_prompt, tools_config, model</span><br>
+        <span class="warn">⚠️ No skill_metadata</span><br>
+        <span class="warn">⚠️ No skills array</span><br>
+        <span class="warn">⚠️ No delegation_mode</span><br>
+        <span class="warn">⚠️ No requires_tool_calling</span>
+      </div>
+      <div class="ba-block">
+        <div class="ba-block-title">Model Factory</div>
+        <span class="ok">✅ Multi-provider support</span><br>
+        <span class="ok">✅ Round Robin</span><br>
+        <span class="warn">⚠️ No FallbackModel integration</span><br>
+        <span class="warn">⚠️ No capability registry</span><br>
+        <span class="warn">⚠️ No fallback chain config</span>
+      </div>
+      <div class="ba-block">
+        <div class="ba-block-title">MCP Integration</div>
+        <span class="ok">✅ Dynamic tool discovery</span><br>
+        <span class="warn">⚠️ Full schema loaded immediately</span><br>
+        <span class="warn">⚠️ No progressive discovery</span><br>
+        <span class="warn">⚠️ No token savings tracking</span>
+      </div>
+      <div class="ba-block">
+        <div class="ba-block-title">Context Management</div>
+        <span class="ok">✅ Message compaction</span><br>
+        <span class="ok">✅ Summarization agent</span><br>
+        <span class="warn">⚠️ No token budget monitoring</span><br>
+        <span class="warn">⚠️ No /context command</span>
+      </div>
+      <div class="ba-block">
+        <div class="ba-block-title">Testing</div>
+        <span class="ok">✅ 93+ test files</span><br>
+        <span class="warn">⚠️ No per-provider behavioral tests</span><br>
+        <span class="warn">⚠️ No compatibility matrix</span>
+      </div>
+    </div>
+
+    <!-- PLANNED -->
+    <div class="ba-col planned">
+      <h3>✅ PLANNED STATE</h3>
+      <div class="ba-block">
+        <div class="ba-block-title">Planning Agent 📋</div>
+        <span class="ok">✅ Sees only skill_metadata during specialist selection</span><br>
+        <span class="ok">✅ Full prompt loads on invocation only</span><br>
+        <span class="ok">✅ Respects delegation_mode</span><br>
+        <span class="ok">✅ Forces subtask for multi-specialist</span>
+      </div>
+      <div class="ba-block">
+        <div class="ba-block-title">Agent Registry: /agents command</div>
+        <span class="ok">✅ /agents list (with tool counts)</span><br>
+        <span class="ok">✅ /agents info &lt;name&gt;</span><br>
+        <span class="ok">✅ /agents validate (anti-patterns)</span><br>
+        <span class="ok">✅ Tool count guardrails (warn &gt; 15)</span><br>
+        <span class="ok">✅ Strict mode config option</span>
+      </div>
+      <div class="ba-block">
+        <div class="ba-block-title">JSON Agent Schema (EXTENDED)</div>
+        <span class="ok">+ skill_metadata (≤100 tokens)</span><br>
+        <span class="ok">+ skills[] (shared prompt files)</span><br>
+        <span class="ok">+ delegation_mode (subtask|handoff)</span><br>
+        <span class="ok">+ requires_tool_calling (bool)</span><br>
+        <span class="info">All optional, backward compatible</span>
+      </div>
+      <div class="ba-block">
+        <div class="ba-block-title">Model Factory (HARDENED)</div>
+        <span class="ok">✅ FallbackModel with chain config</span><br>
+        <span class="ok">✅ SDK retries disabled on fallback</span><br>
+        <span class="ok">✅ Fallback event logging</span><br>
+        <span class="ok">✅ Model capability registry</span><br>
+        <span class="ok">✅ /pin_model validates compat</span>
+      </div>
+      <div class="ba-block">
+        <div class="ba-block-title">MCP Integration (OPTIMIZED)</div>
+        <span class="ok">✅ Two-phase loading (meta → schema)</span><br>
+        <span class="ok">✅ On-demand schema + caching</span><br>
+        <span class="ok">✅ Per-server opt-out config</span><br>
+        <span class="ok">✅ Token savings in /mcp status</span>
+      </div>
+      <div class="ba-block">
+        <div class="ba-block-title">Context Management (MONITORED)</div>
+        <span class="ok">✅ Token estimation at agent init</span><br>
+        <span class="ok">✅ Warning at 30% budget threshold</span><br>
+        <span class="ok">✅ /context command with breakdown</span><br>
+        <span class="ok">✅ Configurable effective % (80–90)</span>
+      </div>
+      <div class="ba-block">
+        <div class="ba-block-title">Testing (COMPREHENSIVE)</div>
+        <span class="ok">✅ Per-provider behavioral tests</span><br>
+        <span class="ok">✅ 5+ test categories</span><br>
+        <span class="ok">✅ Compatibility matrix output</span><br>
+        <span class="ok">✅ /agents validate integration</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- =============== DEPENDENCY GRAPH =============== -->
+  <div class="dep-graph-section">
+    <div class="section-title"><span class="dot" style="background:#5eead4"></span> Execution Dependency Graph</div>
+    <div class="dep-graph">
+      <div class="dep-row">
+        <span class="dep-phase-label" style="color:#5eead4">Phase 1 · Foundation</span>
+        <span class="dep-node p-cyan">OPT-001 Skill Metadata</span>
+        <span class="dep-arrow">→</span>
+        <span class="dep-node p-cyan">OPT-002 Tool Guards</span>
+      </div>
+      <div class="dep-row">
+        <span class="dep-phase-label" style="color:#c084fc">Phase 2 · Core Logic</span>
+        <span class="dep-node p-purple">OPT-003 /agents CLI</span>
+        <span class="dep-arrow">→</span>
+        <span class="dep-node p-purple">OPT-004 Provider Filter</span>
+        <span class="dep-arrow">→</span>
+        <span class="dep-node p-purple">OPT-005 Shared Skills</span>
+      </div>
+      <div class="dep-row">
+        <span class="dep-phase-label" style="color:#fbbf24">Phase 3 · Resilience</span>
+        <span class="dep-node p-amber">OPT-006 FallbackModel</span>
+        <span class="dep-arrow">→</span>
+        <span class="dep-node p-amber">OPT-007 Delegation</span>
+      </div>
+      <div class="dep-row">
+        <span class="dep-phase-label" style="color:#34d399">Phase 4 · Test&nbsp;&amp;&nbsp;MCP</span>
+        <span class="dep-node p-green">OPT-008 Behavioral Tests</span>
+        <span class="dep-arrow">&amp;</span>
+        <span class="dep-node p-green">OPT-010 MCP Progressive</span>
+      </div>
+      <div class="dep-row">
+        <span class="dep-phase-label" style="color:#94a3b8">Phase 5 · Monitor</span>
+        <span class="dep-node p-gray">OPT-009 Context Budget</span>
+      </div>
+      <!-- Vertical connectors described textually -->
+      <div style="padding:.6rem 0 0 130px; font-size:.7rem; color:#475569; line-height:1.8;">
+        ↳ OPT-001 → OPT-005 (skill_metadata used by shared skills)<br>
+        ↳ OPT-002 → OPT-003 (tool counts surfaced in /agents list)<br>
+        ↳ OPT-004 → OPT-006 (capability registry feeds fallback chain)<br>
+        ↳ OPT-003 → OPT-008 (/agents validate uses behavioral tests)
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =============== OPTIMIZATION QUEUE =============== -->
+<section class="tab-panel" id="panel-opt-queue">
+  <div class="section-title"><span class="dot" style="background:#a855f7"></span> Optimization Queue (10 items)</div>
+  <div id="opt-cards"></div>
+</section>
+
+<!-- =============== RESEARCH VALIDATION =============== -->
+<section class="tab-panel" id="panel-research">
+  <div class="section-title"><span class="dot" style="background:#60a5fa"></span> Research Validation Findings</div>
+  <div id="research-cards"></div>
+</section>
+
+</main>
+
+<!-- ======================= FOOTER ======================= -->
+<footer class="dash-footer">
+  <div class="footer-grid">
+    <div class="footer-stat"><div class="num">35</div><div class="lbl">Total Sub-tasks</div></div>
+    <div class="footer-stat"><div class="num" id="footer-completed">0</div><div class="lbl">Completed</div></div>
+    <div class="footer-stat"><div class="num">3</div><div class="lbl">New Plugins</div></div>
+    <div class="footer-stat"><div class="num">1</div><div class="lbl">New Test Dir</div></div>
+    <div class="footer-stat"><div class="num">~25</div><div class="lbl">Files Modified</div></div>
+    <div class="footer-stat"><div class="num">19–27h</div><div class="lbl">Est. Effort</div></div>
+  </div>
+  <p class="footer-updated">Last updated: March 9, 2026 · Code Puppy Self-Optimization Dashboard</p>
+</footer>
+
+<script>
+/* =============================================================
+   DATA: Optimizations
+   ============================================================= */
+const OPTS = [
+  {
+    id: "OPT-001", title: "Skill Metadata Progressive Loading", priority: "P0",
+    subtasks: [
+      "A) Add skill_metadata field to JSON agent schema",
+      "B) Update planning-agent selection to use skill_metadata",
+      "C) Full prompt loads on invocation only",
+      "D) Update agent-creator wizard to generate skill_metadata",
+      "E) Update AGENTS.md documentation"
+    ],
+    files: ["json_agent.py","agent_planning.py","agent_manager.py","agent_creator_agent.py","AGENTS.md"],
+    criteria: [
+      "Planning agent never reads full system_prompt during selection",
+      "skill_metadata ≤ 100 tokens per agent",
+      "Backward compatible — agents without skill_metadata still work"
+    ],
+    deps: ["None (foundation)"],
+    note: null
+  },
+  {
+    id: "OPT-002", title: "Tool Count Guardrails", priority: "P0",
+    subtasks: [
+      "A) Tool count validation at agent init time",
+      "B) Strict mode config option (warn vs error)",
+      "C) Include tool count in agent listing output"
+    ],
+    files: ["base_agent.py","config.py","agent_registry plugin"],
+    criteria: [
+      "Warning logged when agent has > 15 tools (configurable threshold)",
+      "Strict mode blocks agent creation above threshold",
+      "Tool count visible in /agents list"
+    ],
+    deps: ["OPT-001 (for listing integration)"],
+    note: null
+  },
+  {
+    id: "OPT-003", title: "Agent Registry & Catalog", priority: "P1",
+    subtasks: [
+      "A) /agents list — tabular output with tool counts",
+      "B) /agents info <name> — detailed agent view",
+      "C) /agents validate — anti-pattern detection"
+    ],
+    files: ["New plugin: agent_registry/","agent_manager.py"],
+    criteria: [
+      "/agents list shows all registered agents with metadata",
+      "/agents info shows full schema, tools, and skills",
+      "/agents validate reports oversized prompts, high tool counts"
+    ],
+    deps: ["OPT-002 (tool counts)"],
+    note: null
+  },
+  {
+    id: "OPT-004", title: "Provider-Aware Tool Filtering", priority: "P1",
+    subtasks: [
+      "A) Add requires_tool_calling field to JSON schema",
+      "B) Build model capability registry",
+      "C) Validation on agent init + /pin_model command"
+    ],
+    files: ["json_agent.py","model_utils.py","model_factory.py","pin_command"],
+    criteria: [
+      "Agents with requires_tool_calling=true fail fast on non-TC models",
+      "Capability registry queryable by model name",
+      "/pin_model warns on incompatible agent+model combos"
+    ],
+    deps: ["OPT-002"],
+    note: null
+  },
+  {
+    id: "OPT-005", title: "Shared Skill Files", priority: "P1",
+    subtasks: [
+      "A) Skill file format + loader (Markdown with front-matter)",
+      "B) skills[] array in JSON agent schema",
+      "C) Injection into system prompt at load time",
+      "D) /shared-skills commands (list, show, validate)",
+      "E) Agent-creator wizard generates skills references"
+    ],
+    files: ["New plugin: shared_skills/","json_agent.py","agent_creator_agent.py"],
+    criteria: [
+      "Skill files loadable from ~/.code_puppy/skills/ and plugins",
+      "skills[] references resolve and inject correctly",
+      "Duplicate skill content deduplicated in prompt"
+    ],
+    deps: ["OPT-001 (skill_metadata field)"],
+    note: null
+  },
+  {
+    id: "OPT-006", title: "FallbackModel Integration Hardening", priority: "P2",
+    subtasks: [
+      "A) Audit and disable conflicting SDK retries on fallback providers",
+      "B) Configurable fallback chain in models.json",
+      "C) Fallback event logging (which model failed, which took over)"
+    ],
+    files: ["model_factory.py","config.py"],
+    criteria: [
+      "No double-retry when FallbackModel switches providers",
+      "Fallback chain definable per-model in config",
+      "Fallback events visible in debug logs and /status"
+    ],
+    deps: ["OPT-004 (capability registry)"],
+    note: "SDK retry conflict CONFIRMED by Pydantic AI issue #3267. Fix merged Nov 2025 (PR #3294)."
+  },
+  {
+    id: "OPT-007", title: "Planning-Agent Delegation Improvements", priority: "P2",
+    subtasks: [
+      "A) Add delegation_mode field (subtask | handoff)",
+      "B) Planning-agent respects delegation_mode per specialist",
+      "C) Multi-specialist selection forces subtask mode"
+    ],
+    files: ["json_agent.py","agent_planning.py","agent_tools.py"],
+    criteria: [
+      "delegation_mode=handoff transfers full context",
+      "delegation_mode=subtask (default) sends scoped request",
+      "Selecting 2+ specialists auto-forces subtask mode"
+    ],
+    deps: ["OPT-001"],
+    note: null
+  },
+  {
+    id: "OPT-008", title: "Per-Provider Behavioral Test Framework", priority: "P2",
+    subtasks: [
+      "A) Test fixture framework with provider parameterization",
+      "B) 5+ behavioral test categories (tool calling, streaming, retries, context, structured output)",
+      "C) /agents validate integration — run behavioral suite"
+    ],
+    files: ["New directory: tests/behavioral/"],
+    criteria: [
+      "Tests parameterized across OpenAI, Anthropic, Google providers",
+      "Compatibility matrix generated as test artifact",
+      "/agents validate can trigger behavioral subset"
+    ],
+    deps: ["OPT-003 (/agents validate)"],
+    note: null
+  },
+  {
+    id: "OPT-009", title: "Context Budget Monitoring", priority: "P3",
+    subtasks: [
+      "A) Token estimation at agent initialization",
+      "B) Warning emitted when remaining budget < 30%",
+      "C) /context command showing token breakdown"
+    ],
+    files: ["New plugin: context_monitor/"],
+    criteria: [
+      "Token estimate within ±10% of actual",
+      "Warning fires reliably at threshold",
+      "/context shows system prompt, tools, history, remaining"
+    ],
+    deps: ["None (independent)"],
+    note: "Updated guidance: design for 80–90% effective context with proper structuring. Keep 50–65% as conservative fallback. Threshold should be configurable."
+  },
+  {
+    id: "OPT-010", title: "MCP Progressive Discovery", priority: "P3",
+    subtasks: [
+      "A) Two-phase loading: tool names/descriptions first, full schema on demand",
+      "B) On-demand schema fetching + LRU caching",
+      "C) Per-server opt-out configuration",
+      "D) Token savings reporting in /mcp status"
+    ],
+    files: ["mcp_/manager.py","mcp_/registry.py","config.py"],
+    criteria: [
+      "Initial tool load transfers < 50% of current tokens",
+      "Schema cache hit rate > 80% in typical session",
+      "Per-server opt-out works without restart",
+      "/mcp status shows estimated token savings"
+    ],
+    deps: ["None (independent)"],
+    note: "NOT supported natively in MCP spec — this is a client-side optimization using cursor-based pagination and listChanged notifications."
+  }
+];
+
+/* =============================================================
+   DATA: Research Findings
+   ============================================================= */
+const RESEARCH = [
+  {
+    title: "FallbackModel SDK Retry Conflict",
+    verdict: "CONFIRMED", verdictClass: "verdict-confirmed", icon: "✅",
+    body: `Pydantic AI <strong>issue #3267</strong> documents OpenAI SDK <code>DEFAULT_MAX_RETRIES=2</code> conflicting with FallbackModel. Fix merged Nov 2025 (<strong>PR #3294</strong>). OPT-006 plan is validated — set <code>max_retries=0</code> on providers when using fallback chains.`
+  },
+  {
+    title: "Tool Count Threshold of 15",
+    verdict: "DIRECTIONALLY CORRECT", verdictClass: "verdict-caution", icon: "⚠️",
+    body: `No specific "15 tool" threshold published by Anthropic or OpenAI. Anthropic's guidance is qualitative: <strong>"consolidate related operations"</strong> and <strong>"description quality matters more than count."</strong> New "Tool Search" feature in Anthropic API suggests they expect large tool sets. <strong>Recommendation:</strong> Keep guardrail as a configurable warning, not a hard rule. Default to 15 but make it adjustable.`
+  },
+  {
+    title: "MCP Progressive Discovery",
+    verdict: "CLIENT-SIDE ONLY", verdictClass: "verdict-info", icon: "ℹ️",
+    body: `MCP spec (2025-11-25) has cursor-based pagination on <code>tools/list</code> and <code>listChanged</code> notifications, but <strong>NO lazy/progressive schema loading</strong>. Code Puppy's approach is a valid client-side workaround that should yield meaningful token savings.`
+  },
+  {
+    title: '"Anthropic Agent Skills" Pattern',
+    verdict: "REFRAME NEEDED", verdictClass: "verdict-caution", icon: "⚠️",
+    body: `Anthropic has <strong>NO published pattern called "Agent Skills."</strong> The concept aligns with their <strong>orchestrator-worker pattern</strong> and OpenAI's <code>agent.as_tool()</code>. <strong>Recommendation:</strong> Reframe OPT-001 as "orchestrator-worker context optimization" rather than claiming a named pattern.`
+  },
+  {
+    title: "Effective Context 50–65%",
+    verdict: "OUTDATED FOR CURRENT MODELS", verdictClass: "verdict-caution", icon: "⚠️",
+    body: `Claude 4.6/4.5 have improved context awareness. Quality depends on <strong>STRUCTURE not capacity</strong>. Updated guidance: Design for <strong>~80–90%</strong> with proper structuring. Keep 50–65% as conservative fallback for legacy deployments. OPT-009 should make the threshold configurable.`
+  },
+  {
+    title: "Subtask vs Handoff Patterns",
+    verdict: "FULLY VALIDATED", verdictClass: "verdict-confirmed", icon: "✅",
+    body: `Industry consensus across <strong>Anthropic</strong> (orchestrator-workers), <strong>OpenAI</strong> (manager <code>as_tool</code>), and <strong>Pydantic AI</strong> (agent delegation). Subtask is the correct default for coding agents. OPT-007 delegation_mode design is well-grounded.`
+  },
+  {
+    title: "Prompt Caching Opportunity",
+    verdict: "NEW OPTIMIZATION", verdictClass: "verdict-new", icon: "💡",
+    body: `Anthropic's prompt caching (auto 5-min TTL, <strong>90% cost reduction</strong> on cached reads) is not in the current plan. Estimated <strong>40–60% cost reduction</strong> on input tokens for repeated agent invocations. <strong>Recommend adding as OPT-011</strong> in a future planning cycle.`
+  }
+];
+
+/* =============================================================
+   RENDER: Optimization Cards
+   ============================================================= */
+(function renderOptCards() {
+  const wrap = document.getElementById("opt-cards");
+  const priorityClass = { P0: "badge-p0", P1: "badge-p1", P2: "badge-p2", P3: "badge-p3" };
+
+  wrap.innerHTML = OPTS.map(o => `
+    <div class="opt-card" data-id="${o.id}">
+      <div class="opt-header" onclick="toggleCard(this)">
+        <span class="opt-chevron">▶</span>
+        <span class="opt-id">${o.id}</span>
+        <span class="opt-title">${o.title}</span>
+        <span class="badge ${priorityClass[o.priority]}">${o.priority}</span>
+        <span class="badge badge-status">NOT STARTED</span>
+      </div>
+      <div class="opt-body">
+        <h4>Sub-tasks</h4>
+        <ul class="subtask-list">
+          ${o.subtasks.map(s => `<li><span class="subtask-check"></span><span>${s}</span></li>`).join("")}
+        </ul>
+        <h4>Files Affected</h4>
+        <div class="file-pills">
+          ${o.files.map(f => `<span class="file-pill">${f}</span>`).join("")}
+        </div>
+        <h4>Acceptance Criteria</h4>
+        <ul class="criteria-list">
+          ${o.criteria.map(c => `<li>${c}</li>`).join("")}
+        </ul>
+        <h4>Dependencies</h4>
+        <ul class="criteria-list">
+          ${o.deps.map(d => `<li>${d}</li>`).join("")}
+        </ul>
+        ${o.note ? `<div class="opt-note">📝 ${o.note}</div>` : ""}
+      </div>
+    </div>
+  `).join("");
+})();
+
+/* =============================================================
+   RENDER: Research Cards
+   ============================================================= */
+(function renderResearch() {
+  const wrap = document.getElementById("research-cards");
+  wrap.innerHTML = RESEARCH.map(r => `
+    <div class="research-card">
+      <div class="research-header">
+        <h3>${r.icon} ${r.title}</h3>
+        <span class="verdict ${r.verdictClass}">${r.verdict}</span>
+      </div>
+      <div class="research-body">${r.body}</div>
+    </div>
+  `).join("");
+})();
+
+/* =============================================================
+   INTERACTIVITY
+   ============================================================= */
+
+/* Tab switching */
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("panel-" + btn.dataset.tab).classList.add("active");
+  });
+});
+
+/* Card expand/collapse */
+function toggleCard(header) {
+  const card = header.closest(".opt-card");
+  card.classList.toggle("expanded");
+}
+
+/* Before/After toggle */
+document.querySelectorAll('input[name="baView"]').forEach(radio => {
+  radio.addEventListener("change", () => {
+    const grid = document.getElementById("ba-grid");
+    grid.classList.remove("show-current", "show-planned");
+    if (radio.value === "current") grid.classList.add("show-current");
+    if (radio.value === "planned") grid.classList.add("show-planned");
+  });
+});
+
+/* Animate progress bar on load */
+window.addEventListener("DOMContentLoaded", () => {
+  const completed = 0;
+  const total = 35;
+  const pct = total > 0 ? (completed / total) * 100 : 0;
+  setTimeout(() => {
+    document.getElementById("progress-fill").style.width = pct + "%";
+  }, 400);
+});
+
+/* Keyboard: Escape closes all cards */
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") {
+    document.querySelectorAll(".opt-card.expanded").forEach(c => c.classList.remove("expanded"));
+  }
+});
+</script>
+</body>
+</html>

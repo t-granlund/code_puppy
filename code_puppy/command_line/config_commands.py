@@ -358,6 +358,39 @@ def handle_pin_model_command(command: str) -> bool:
                 emit_info(f"  {name} ({path})")
         return True
 
+    # OPT-004-C: Validate tool-calling compatibility before pinning
+    try:
+        from code_puppy.model_capabilities import supports_tool_calling
+
+        if is_json_agent:
+            from code_puppy.agents.json_agent import JSONAgent
+
+            agent_meta = JSONAgent.read_metadata(json_agents[agent_name])
+            needs_tools = agent_meta.get("requires_tool_calling", False)
+        else:
+            needs_tools = False  # Python agents manage their own tools
+
+        if needs_tools:
+            tool_support = supports_tool_calling(model_name)
+            if tool_support is False:
+                emit_error(
+                    f"Model '{model_name}' does not support tool calling, "
+                    f"but agent '{agent_name}' requires it. "
+                    f"Choose a different model or set requires_tool_calling: false "
+                    f"in the agent config."
+                )
+                return True
+            elif tool_support is None:
+                emit_warning(
+                    f"Tool-calling support unknown for model '{model_name}'. "
+                    f"Agent '{agent_name}' requires tool calling. "
+                    f"Add this model to ~/.code_puppy/model_capabilities.json to configure."
+                )
+    except Exception as e:
+        # Don't block pinning on validation errors
+        import logging
+        logging.getLogger(__name__).debug("Tool-calling validation skipped: %s", e)
+
     # Handle different agent types
     try:
         if is_json_agent:
