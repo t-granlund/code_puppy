@@ -9,18 +9,7 @@
 [![Python](https://img.shields.io/badge/Python-3.11%2B-blue?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 [![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen?style=for-the-badge&logo=github)](https://github.com/mpfaffenberger/code_puppy/actions)
-[![Tests](https://img.shields.io/badge/Tests-102%2F110%20Passing-success?style=for-the-badge&logo=pytest)](https://github.com/mpfaffenberger/code_puppy/tests)
-[![Production Ready](https://img.shields.io/badge/Wiggum%20Loop-Production%20Ready%20✅-brightgreen?style=for-the-badge)](WIGGUM-LOOP-CERTIFICATION.md)
-
-[![OpenAI](https://img.shields.io/badge/OpenAI-GPT--5.2--Codex-orange?style=flat-square&logo=openai)](https://openai.com)
-[![Gemini](https://img.shields.io/badge/Google-Gemini%203-blue?style=flat-square&logo=google)](https://ai.google.dev/)
-[![Anthropic](https://img.shields.io/badge/Anthropic-Claude%204.5-orange?style=flat-square&logo=anthropic)](https://anthropic.com)
-[![Cerebras](https://img.shields.io/badge/Cerebras-GLM%204.7-red?style=flat-square)](https://cerebras.ai)
-[![Z.AI](https://img.shields.io/badge/Z.AI-GLM%204.7-purple?style=flat-square)](https://z.ai/)
-[![Synthetic](https://img.shields.io/badge/Synthetic-Kimi%20K2.5-green?style=flat-square)](https://synthetic.new)
-[![DeepSeek](https://img.shields.io/badge/DeepSeek-R1--0528-teal?style=flat-square)](https://deepseek.com)
-[![MiniMax](https://img.shields.io/badge/MiniMax-M2.1-cyan?style=flat-square)](https://minimax.chat)
-[![GitHub Models](https://img.shields.io/badge/GitHub%20Models-8%20Models-black?style=flat-square&logo=github)](https://docs.github.com/en/github-models)
+[![Tests](https://img.shields.io/badge/Tests-Passing-success?style=for-the-badge&logo=pytest)](https://github.com/mpfaffenberger/code_puppy/tests)
 
 [![100% Open Source](https://img.shields.io/badge/100%25-Open%20Source-blue?style=for-the-badge)](https://github.com/mpfaffenberger/code_puppy)
 [![Pydantic AI](https://img.shields.io/badge/Pydantic-AI-success?style=for-the-badge)](https://github.com/pydantic/pydantic-ai)
@@ -53,16 +42,14 @@
     - If you pick the ox, better slam that back button in your browser.
 
 
-Code Puppy implements the **BART System (Belief-Augmented Reasoning & Tasking)** - a Traycer-style architecture that separates the "Belief State" (Truth) from the "Execution State" (Code). It's an AI-powered code generation agent designed to understand programming tasks, generate high-quality code with bidirectional verification, similar to tools like Windsurf and Cursor but with transparent architecture.
+Code Puppy is an AI-powered code generation agent, designed to understand programming tasks, generate high-quality code, and explain its reasoning similar to tools like Windsurf and Cursor.
 
 
 ## Quick start
 
 ```bash
 uvx code-puppy -i
-```
-
-**Got just one API key?** See the [Single-Model Setup Guide](docs/SINGLE-MODEL-SETUP.md) - works with OpenAI, Anthropic, or even free [GitHub Models](docs/GITHUB-MODELS-INTEGRATION.md)!
+````
 
 ## Installation
 
@@ -183,94 +170,6 @@ Please review this code for security issues." > .claude/commands/review.md
 - Anthropic key (for Claude models)
 - Ollama endpoint available
 
-## Advanced Features (February 2026)
-
-### Context Compaction (pydantic-ai #4137 Compatible)
-
-Automatic context compaction when token usage exceeds thresholds:
-
-```python
-from code_puppy.core import AdvancedCompactionSettings, MessageCompactor
-
-settings = AdvancedCompactionSettings(
-    token_threshold=80_000,
-    protected_tokens=30_000,  # Keep last N tokens uncompacted
-    summarization_model="anthropic:claude-haiku-4-5",
-    strategy="hybrid",  # summarization, truncation, or hybrid
-)
-
-compactor = MessageCompactor(settings)
-compacted_messages = await compactor.compact(messages, context)
-```
-
-**Features**: Tool call pairing, protected tokens, pre/post hooks, ThinkingPart preservation.
-
-### Human-in-the-Loop (HITL) Tool Approval
-
-Require human approval for sensitive operations:
-
-```python
-from code_puppy.core import requires_approval, RiskLevel
-
-@requires_approval(risk_level=RiskLevel.HIGH, reason="Deletes files permanently")
-async def delete_file(path: str) -> str:
-    """Delete a file (requires human approval)."""
-    ...
-```
-
-Pre-configured dangerous tools: `delete_file` (HIGH), `run_command` (MEDIUM), `modify_system_config` (CRITICAL).
-
-### Skills Metadata (YAML Frontmatter)
-
-Define skills with structured metadata:
-
-```markdown
----
-name: code-review
-description: Python code quality review
-triggers:
-  - "review"
-  - "check code"
-tags: ["python", "quality"]
-priority: 10
----
-
-# Code Review Skill
-...
-```
-
-```python
-from code_puppy.core import get_skill_registry
-
-registry = get_skill_registry()
-skill = registry.find_by_trigger("review")
-```
-
-### GitMCP Documentation Access
-
-Access GitHub repository documentation via MCP:
-
-```python
-from code_puppy.mcp_ import GitMCPClient
-
-client = GitMCPClient(owner="pydantic", repo="pydantic-ai")
-docs = await client.fetch_documentation()  # llms.txt or README.md
-results = await client.search_documentation("agent")
-```
-
-### GitHub API Client (Python Octokit)
-
-Full GitHub REST and GraphQL API support:
-
-```python
-from code_puppy.api import create_github_client
-
-async with create_github_client(token="ghp_...") as client:
-    user = await client.rest.users.get_authenticated()
-    repos = await client.rest.repos.list_for_user("octocat")
-    result = await client.graphql("{ viewer { login } }")
-```
-
 ## Agent Rules
 We support AGENT.md files for defining coding standards and styles that your code should comply with. These rules can cover various aspects such as formatting, naming conventions, and even design guidelines.
 
@@ -383,14 +282,6 @@ This is useful for managing context length when you have a long conversation his
 - **Best for**: All coding tasks, file management, execution
 - **Principles**: Clean, concise code following YAGNI, SRP, DRY principles
 - **File limit**: Max 600 lines per file (enforced!)
-
-### Epistemic Architect 🧠 (Enterprise Planning)
-- **Name**: `epistemic-architect`
-- **Specialty**: Evidence-based project planning and structured software development
-- **Tools**: Full discovery, lens evaluation, gap analysis, build execution
-- **Best for**: Complex enterprise projects, compliance-driven development, cross-team coordination
-- **Features**: 14-stage pipeline, 7 Expert Lenses, 6 Quality Gates, Pre-Flight Auth verification
-- **Documentation**: [Full Guide](docs/EPISTEMIC.md) | [Interactive Manual](docs/interactive-manual/epistemic-architect-diagram.html)
 
 ### Agent Creator 🏗️
 - **Name**: `agent-creator`
@@ -799,132 +690,6 @@ Consider contributing agent templates for:
 - DevOps and deployment helpers
 - Documentation writers
 - Testing specialists
-
----
-
-## 🧠 Epistemic Agent Runtime (EAR)
-
-Code Puppy includes the **Epistemic Agent Runtime** — a structured methodology for building software through evidence-based reasoning.
-
-### Core Concept
-
-> **Write down what you believe, how confident you are, and how you'd prove yourself wrong.**
-
-Everything else — lenses, gates, the Ralph loop — is machinery to make that practice systematic.
-
-### 🏢 Enterprise Use Cases
-
-The Epistemic Architect agent is ideal for software teams working on complex enterprise projects:
-
-| Scenario | How EAR Helps |
-|----------|---------------|
-| **New Microservice Architecture** | Surfaces hidden integration assumptions, validates API contracts across teams before code |
-| **Legacy System Modernization** | Tracks migration risks, establishes rollback checkpoints, documents technical debt |
-| **Compliance-Driven Development** | Pre-flight auth verification ensures credentials exist before automation; audit trails via epistemic state |
-| **Cross-Team Platform Development** | 7 Expert Lenses provide structured review (security, UX, systems engineering) before implementation |
-| **MVP/Proof of Concept** | 6 Quality Gates ensure testability and reversibility before building |
-
-**Example: Enterprise API Platform**
-```
-Problem: Building a multi-tenant billing API with SOC2 compliance requirements
-
-Epistemic Architect workflow:
-1. Philosophy Lens → Identifies hidden assumption: "all tenants have USD pricing"  
-2. Safety Lens → Flags abuse vector: rate limiting per-tenant vs global
-3. Systems Lens → Surfaces service boundary: billing ⟷ identity ⟷ usage tracking
-4. Pre-Flight Auth → Verifies Stripe API key, database credentials before autonomous build
-5. Build with Wiggum → Checkpointed execution with rollback capability
-```
-
-**Example: Healthcare Data Pipeline**
-```
-Problem: HIPAA-compliant analytics pipeline with 5 data sources
-
-Epistemic Architect value:
-- Gap Analysis identifies critical: "No BAA for third-party geocoding API"
-- Evidence tracking: logs confidence levels for each compliance requirement
-- Checkpoint-based build: stops at Stage 7 if PHI credentials unverified
-```
-
-### Quick Start
-
-```text
-/agent epistemic-architect    # Switch to epistemic planning agent
-/epistemic start my-project   # Begin a planning session
-```
-
-### The 13-Stage Pipeline
-
-| Stage | What Happens |
-|-------|--------------|
-| 0-1 | Philosophical foundation, epistemic state creation |
-| 2-4 | Lens evaluation, gap analysis, goal emergence |
-| 5-6 | MVP planning, spec generation |
-| 7 | Pre-Flight Auth (verify credentials before autonomous execution) |
-| 8 | Build execution with checkpoints |
-| 9-13 | Improvement audit loop (repeats) |
-
-### Commands
-
-| Command | Description |
-|---------|-------------|
-| `/epistemic start <name>` | Start planning session |
-| `/epistemic status` | Show current stage |
-| `/epistemic gaps` | Show identified gaps |
-| `/lens <name>` | Apply expert lens (philosophy, data, safety, etc.) |
-| `/ralph` | Execute Ralph Loop (Observe → Orient → Decide → Act) |
-| `/wiggum` | Start autonomous execution (Phase 2) |
-
-📖 Full documentation: [docs/EPISTEMIC.md](docs/EPISTEMIC.md)
-
----
-
-## 🛡️ Token Management & Safeguards
-
-Code Puppy includes comprehensive safeguards for token-efficient operations:
-
-### Cerebras Token Efficiency
-
-```text
-/agent pack-leader-cerebras-efficient   # Token-conscious agent
-/truncate 6                              # Keep history lean
-```
-
-See [docs/CEREBRAS.md](docs/CEREBRAS.md) for usage guide.
-
-### AUDIT-1.1 Safeguard Modules
-
-| Module | Purpose |
-|--------|---------|
-| `io_budget_enforcer` | Provider-aware token limits (50K input for Cerebras) |
-| `shell_governor` | Output truncation (160 lines), secret redaction |
-| `token_telemetry` | Usage ledger, burn rate alerts, daily budgets |
-| `safe_patch` | Unsafe pattern detection, syntax validation |
-| `router_hooks` | Task-based model routing hints |
-
-📖 Full documentation: [docs/AUDIT-1.1-SAFEGUARDS.md](docs/AUDIT-1.1-SAFEGUARDS.md)
-
----
-
-## Known Issues
-
-⚠️ **Antigravity Claude Models - Tool Usage Bug**
-
-Antigravity Claude models (`antigravity-claude-opus-4-5-thinking-*`, `antigravity-claude-sonnet-4-5-thinking-*`) currently have an issue with tool usage in multi-turn conversations. The system automatically routes around these models to Synthetic/ChatGPT alternatives.
-
-**What works:** Text-only conversations, single-turn tool calls, Antigravity Gemini models  
-**What's affected:** Multi-turn tool usage with conversation history  
-**Workaround:** Active - failover chains bypass Antigravity Claude models  
-
-📖 Full details: [KNOWN-ISSUES.md](KNOWN-ISSUES.md)
-
-✅ **Recent Enhancements**
-
-**Agent Delegation**: Epistemic Architect now properly delegates work to specialist agents through OODA loop phases (Observe → Orient → Decide → Act), enabling dynamic model switching and parallel execution.
-
-📖 Documentation: 
-- [DELEGATION-ENHANCEMENTS.md](DELEGATION-ENHANCEMENTS.md) - Full delegation enhancement details
-- [SESSION-2026-01-30-BUGFIXES.md](SESSION-2026-01-30-BUGFIXES.md) - Complete session summary
 
 ---
 
