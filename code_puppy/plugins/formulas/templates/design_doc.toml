@@ -1,0 +1,61 @@
+# Design Document Formula
+# Creates comprehensive design documentation
+
+description = "Create thorough design documentation for a feature"
+formula = "design-doc"
+version = 1
+
+[vars.feature]
+description = "Feature name"
+required = true
+
+[vars.scope]
+description = "Scope (mvp, v1, v2)"
+default = "mvp"
+
+[[steps]]
+id = "research"
+title = "Research existing solutions"
+description = "Research how similar problems are solved elsewhere"
+
+[[steps]]
+id = "requirements"
+title = "Define requirements"
+description = "List functional and non-functional requirements"
+needs = ["research"]
+
+[[steps]]
+id = "constraints"
+title = "Identify constraints"
+description = "Document technical, business, and time constraints"
+needs = ["research"]
+
+[[steps]]
+id = "approaches"
+title = "Explore approaches"
+description = "Brainstorm 2-3 possible approaches"
+needs = ["requirements", "constraints"]
+
+[[steps]]
+id = "compare"
+title = "Compare approaches"
+description = "Trade-off analysis of each approach"
+needs = ["approaches"]
+
+[[steps]]
+id = "decide"
+title = "Make decision"
+description = "Select approach with justification"
+needs = ["compare"]
+
+[[steps]]
+id = "write-doc"
+title = "Write design doc"
+description = "Create DESIGN.md with all sections"
+needs = ["decide"]
+
+[[steps]]
+id = "review"
+title = "Self-review"
+description = "Review doc for completeness and clarity"
+needs = ["write-doc"]

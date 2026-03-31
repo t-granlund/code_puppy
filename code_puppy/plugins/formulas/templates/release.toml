@@ -1,0 +1,61 @@
+# Release Formula
+# Standard release process
+
+description = "Standard release process with verification"
+formula = "release"
+version = 1
+
+[vars.version]
+description = "Semantic version to release (e.g., 1.2.0)"
+required = true
+
+[vars.release_notes]
+description = "Path to release notes file"
+required = false
+
+[[steps]]
+id = "pre-check"
+title = "Pre-release checks"
+description = "Ensure working directory is clean and on main branch"
+
+[[steps]]
+id = "bump-version"
+title = "Bump version"
+description = "Update version strings in relevant files"
+needs = ["pre-check"]
+
+[[steps]]
+id = "update-changelog"
+title = "Update changelog"
+description = "Add version entry to CHANGELOG.md"
+needs = ["bump-version"]
+
+[[steps]]
+id = "run-tests"
+title = "Run tests"
+description = "Execute full test suite"
+needs = ["bump-version"]
+
+[[steps]]
+id = "build"
+title = "Build artifacts"
+description = "Build release artifacts"
+needs = ["run-tests"]
+
+[[steps]]
+id = "create-tag"
+title = "Create release tag"
+description = "Create annotated git tag"
+needs = ["build", "update-changelog"]
+
+[[steps]]
+id = "push-tag"
+title = "Push tag"
+description = "Push tag to remote"
+needs = ["create-tag"]
+
+[[steps]]
+id = "create-release"
+title = "Create GitHub release"
+description = "Create release with notes and artifacts"
+needs = ["push-tag"]

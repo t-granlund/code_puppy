@@ -1,0 +1,65 @@
+# Code Review Formula
+# Reviews code changes against project standards
+
+description = "Comprehensive code review process"
+formula = "code-review"
+version = 1
+
+[vars.author]
+description = "GitHub username of PR author"
+required = true
+
+[vars.pr_number]
+description = "Pull request number"
+required = true
+
+[vars.focus_areas]
+description = "Comma-separated focus areas (security, perf, api, tests)"
+default = "security,api,tests"
+
+[[steps]]
+id = "checkout-pr"
+title = "Checkout PR branch"
+description = "Fetch and checkout the PR branch for review"
+
+[[steps]]
+id = "analyze-changes"
+title = "Analyze changes"
+description = "Review diff and identify key changes"
+needs = ["checkout-pr"]
+
+[[steps]]
+id = "check-standards"
+title = "Check project standards"
+description = "Verify code follows project conventions"
+needs = ["analyze-changes"]
+
+[[steps]]
+id = "security-review"
+title = "Security review"
+description = "Check for security issues and vulnerabilities"
+needs = ["analyze-changes"]
+
+[[steps]]
+id = "api-review"
+title = "API review"
+description = "Review API changes for backwards compatibility"
+needs = ["analyze-changes"]
+
+[[steps]]
+id = "test-review"
+title = "Test coverage review"
+description = "Verify adequate test coverage for changes"
+needs = ["analyze-changes"]
+
+[[steps]]
+id = "write-feedback"
+title = "Write review feedback"
+description = "Compile findings into review comments"
+needs = ["check-standards", "security-review", "api-review", "test-review"]
+
+[[steps]]
+id = "submit-review"
+title = "Submit review"
+description = "Post review comments to GitHub"
+needs = ["write-feedback"]

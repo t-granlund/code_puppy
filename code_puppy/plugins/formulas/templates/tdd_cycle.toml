@@ -1,0 +1,61 @@
+# TDD Cycle Formula
+# Complete test-driven development cycle
+
+description = "Full TDD cycle: Red, Green, Refactor"
+formula = "tdd-cycle"
+version = 1
+
+[vars.feature]
+description = "Feature to implement"
+required = true
+
+[vars.test_framework]
+description = "Test framework to use"
+default = "pytest"
+
+[[steps]]
+id = "understand"
+title = "Understand requirements"
+description = "Read feature description and understand what needs to be built"
+
+[[steps]]
+id = "write-test"
+title = "Write failing test (Red)"
+description = "Write a test that defines the expected behavior"
+needs = ["understand"]
+
+[[steps]]
+id = "run-test-red"
+title = "Run test (expect failure)"
+description = "Verify the test fails as expected"
+needs = ["write-test"]
+
+[[steps]]
+id = "implement"
+title = "Implement feature (Green)"
+description = "Write minimal code to make test pass"
+needs = ["run-test-red"]
+
+[[steps]]
+id = "run-test-green"
+title = "Run test (expect success)"
+description = "Verify the test now passes"
+needs = ["implement"]
+
+[[steps]]
+id = "refactor"
+title = "Refactor"
+description = "Clean up code while keeping tests green"
+needs = ["run-test-green"]
+
+[[steps]]
+id = "final-verify"
+title = "Final verification"
+description = "Run full test suite to ensure no regressions"
+needs = ["refactor"]
+
+[[steps]]
+id = "commit"
+title = "Commit changes"
+description = "Commit with descriptive message"
+needs = ["final-verify"]
