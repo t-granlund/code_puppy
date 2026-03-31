@@ -1,0 +1,92 @@
+# Epistemic Architect Delegation Test Request
+# =============================================
+# 
+# This is the EXACT test request to use when testing delegation capabilities.
+# Copy this text and send it to the epistemic-architect agent.
+
+--- TEST REQUEST ---
+
+I need to implement a secure user authentication system for a FastAPI application that supports OAuth2 with refresh tokens, rate limiting, and audit logging. The system should handle JWT access tokens (15min expiry) + refresh tokens (7 days), implement rate limiting (5 attempts/minute for login, 100 requests/hour for APIs), log all authentication events to a secure audit trail, store user credentials securely with bcrypt hashing, and support role-based access control (admin, user, read-only roles).
+
+The existing codebase has:
+- Basic FastAPI setup in src/main.py
+- PostgreSQL connection via SQLAlchemy in src/database.py  
+- No authentication layer yet
+
+I need:
+1. Security review of the proposed design (identify potential vulnerabilities like token theft, replay attacks, timing attacks)
+2. Code review of the existing database layer (check for SQL injection risks, connection pooling issues, and security best practices)
+3. Test strategy for the auth flows (unit tests for token generation, integration tests for login/logout/refresh flows)
+4. Implementation of the full auth system (models, routes, security utilities)
+5. Documentation for the API endpoints (OpenAPI/Swagger compatible)
+
+Can you guide me through this using the epistemic methodology and OODA loop? Please delegate to specialist agents for security analysis, code review, QA planning, and implementation.
+
+--- END TEST REQUEST ---
+
+--- EXPECTED DELEGATION FLOW ---
+
+OBSERVE Phase (Architect does this):
+- list_files(".")
+- read_file("src/main.py")
+- read_file("src/database.py")
+- grep("class|def", "src/")
+
+ORIENT Phase (Delegate to REASONING specialists - should run in PARALLEL):
+→ security-auditor: "Review proposed OAuth2/JWT auth design for security vulnerabilities including token theft, replay attacks, timing attacks"
+→ code-reviewer: "Review src/database.py for SQL injection risks, connection security, and best practices"
+→ qa-expert: "Design comprehensive test strategy for auth flows including login, logout, refresh, rate limiting, and RBAC"
+
+DECIDE Phase (Architect synthesizes + may use ORCHESTRATOR):
+→ Architect: Synthesize findings from security, code, and QA reviews
+→ [Optional] planning-agent: "Break down auth implementation into milestones"
+→ Create BUILD.md with phases, milestones, rollback plans
+
+ACT Phase (Delegate to CODING specialists - should run in PARALLEL):
+→ python-programmer: "Implement OAuth2 auth system with JWT, refresh tokens, rate limiting, bcrypt, RBAC in src/auth/"
+→ test-generator: "Create comprehensive tests for auth system (unit + integration)"
+→ doc-writer: "Document auth API endpoints in docs/api.md"
+
+OBSERVE Phase (Loop back):
+→ Architect: Verify implementation against BUILD.md
+→ [Optional] watchdog: "Run tests and verify auth system works"
+
+--- VERIFICATION CHECKLIST ---
+
+During execution, verify:
+
+□ 1. ORIENT phase shows "Invoking security-auditor..."
+□ 2. ORIENT phase shows "Invoking code-reviewer..."
+□ 3. ORIENT phase shows "Invoking qa-expert..."
+□ 4. ORIENT agents appear to run in parallel (timestamps close together)
+□ 5. DECIDE phase shows synthesis of specialist findings
+□ 6. ACT phase shows "Invoking python-programmer..."
+□ 7. ACT phase shows "Invoking test-generator..."
+□ 8. ACT phase shows "Invoking doc-writer..."
+□ 9. ACT agents appear to run in parallel
+□ 10. BUILD.md is created with valid build plan
+□ 11. epistemic/state.json is created
+□ 12. src/auth/ directory is created with implementation
+□ 13. tests/ directory has new auth tests
+□ 14. docs/api.md has auth documentation
+
+--- SUCCESS CRITERIA ---
+
+PASS if: ≥10 of 14 checkboxes verified
+PARTIAL if: 6-9 checkboxes verified
+FAIL if: <6 checkboxes verified
+
+--- NOTES ---
+
+The key indicators of proper delegation are:
+1. Multiple REASONING agents invoked in ORIENT phase
+2. Multiple CODING agents invoked in ACT phase
+3. Parallel execution (agents don't wait for each other)
+4. Model switching visible in output/tags
+5. Artifacts created by specialists (not architect)
+
+If delegation is NOT working:
+- Architect will do ALL the work itself
+- No "Invoking X..." messages
+- Only one model used throughout
+- Slow sequential execution
