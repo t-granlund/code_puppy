@@ -10,4 +10,46 @@ from code_puppy.bridges.go_binary_manager import (
     BinaryInfo,
 )
 
-__all__ = ["GoBinaryManager", "BinaryConfig", "BinaryInfo"]
+from code_puppy.bridges.dolt_client import (
+    DoltClient,
+    DoltError,
+    DoltNotInitializedError,
+    DoltBranchError,
+    DoltSQLServerError,
+    # Pydantic models
+    DoltBranch,
+    DoltCommit,
+    DoltStatus,
+    DoltDiffLine,
+    DoltTableDiff,
+    DoltSchemaColumn,
+    DoltTableSchema,
+    DoltMergeResult,
+    DoltSQLResult,
+    DoltServerInfo,
+)
+
+__all__ = [
+    # Binary Manager
+    "GoBinaryManager",
+    "BinaryConfig",
+    "BinaryInfo",
+    # Dolt Client
+    "DoltClient",
+    # Exceptions
+    "DoltError",
+    "DoltNotInitializedError",
+    "DoltBranchError",
+    "DoltSQLServerError",
+    # Models
+    "DoltBranch",
+    "DoltCommit",
+    "DoltStatus",
+    "DoltDiffLine",
+    "DoltTableDiff",
+    "DoltSchemaColumn",
+    "DoltTableSchema",
+    "DoltMergeResult",
+    "DoltSQLResult",
+    "DoltServerInfo",
+]
