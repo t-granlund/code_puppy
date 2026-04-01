@@ -23,14 +23,17 @@ class DoltError(Exception):
 
 class DoltNotInitializedError(DoltError):
     """Raised when dolt repository is not initialized."""
+
     pass
 
 
 class DoltBranchError(DoltError):
     """Raised when a branch operation fails."""
+
     pass
 
 
 class DoltSQLServerError(DoltError):
     """Raised when SQL server operation fails."""
+
     pass

@@ -88,7 +88,10 @@ class DoltSQLServerManager:
 
             await asyncio.sleep(check_interval)
 
-        return False, f"Server health check timeout after {timeout}s. Last error: {last_error}"
+        return (
+            False,
+            f"Server health check timeout after {timeout}s. Last error: {last_error}",
+        )
 
     async def start(
         self,
@@ -126,9 +129,12 @@ class DoltSQLServerManager:
 
         args = [
             "sql-server",
-            "--port", str(port),
-            "--host", host,
-            "-u", user,
+            "--port",
+            str(port),
+            "--host",
+            host,
+            "-u",
+            user,
         ]
 
         if password:

@@ -78,15 +78,19 @@ class DiffOperations:
                     lines=[],
                 )
             elif line.startswith("+") and not line.startswith("+++"):
-                current_lines.append(DoltDiffLine(
-                    type="added",
-                    content=line[1:],
-                ))
+                current_lines.append(
+                    DoltDiffLine(
+                        type="added",
+                        content=line[1:],
+                    )
+                )
             elif line.startswith("-") and not line.startswith("---"):
-                current_lines.append(DoltDiffLine(
-                    type="removed",
-                    content=line[1:],
-                ))
+                current_lines.append(
+                    DoltDiffLine(
+                        type="removed",
+                        content=line[1:],
+                    )
+                )
 
         if current_table:
             current_table.lines = current_lines

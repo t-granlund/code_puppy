@@ -16,7 +16,6 @@ from code_puppy.bridges.dolt_client import (
     DoltNotInitializedError,
     DoltBranchError,
     DoltSQLServerError,
-    # Pydantic models
     DoltBranch,
     DoltCommit,
     DoltStatus,
@@ -29,6 +28,15 @@ from code_puppy.bridges.dolt_client import (
     DoltServerInfo,
 )
 
+from code_puppy.bridges.gastown_client import (
+    GastownClient,
+    GastownConfig,
+    GastownError,
+    GastownNotInstalledError,
+    GastownCommandError,
+    GastownParseError,
+)
+
 __all__ = [
     # Binary Manager
     "GoBinaryManager",
@@ -36,12 +44,10 @@ __all__ = [
     "BinaryInfo",
     # Dolt Client
     "DoltClient",
-    # Exceptions
     "DoltError",
     "DoltNotInitializedError",
     "DoltBranchError",
     "DoltSQLServerError",
-    # Models
     "DoltBranch",
     "DoltCommit",
     "DoltStatus",
@@ -52,4 +58,11 @@ __all__ = [
     "DoltMergeResult",
     "DoltSQLResult",
     "DoltServerInfo",
+    # Gastown Client
+    "GastownClient",
+    "GastownConfig",
+    "GastownError",
+    "GastownNotInstalledError",
+    "GastownCommandError",
+    "GastownParseError",
 ]

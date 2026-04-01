@@ -36,10 +36,10 @@ class TableOperations:
         if isinstance(schema, list):
             # Build CREATE TABLE from columns
             columns_sql = ", ".join(
-                f"{col.name} {col.type}" +
-                (" NOT NULL" if not col.nullable else "") +
-                (f" DEFAULT {col.default}" if col.default else "") +
-                (" PRIMARY KEY" if col.primary_key else "")
+                f"{col.name} {col.type}"
+                + (" NOT NULL" if not col.nullable else "")
+                + (f" DEFAULT {col.default}" if col.default else "")
+                + (" PRIMARY KEY" if col.primary_key else "")
                 for col in schema
             )
             query = f"CREATE TABLE {name} ({columns_sql})"
@@ -185,22 +185,26 @@ class TableOperations:
                     default = None
                     is_pk = "PRIMARY KEY" in col_type
 
-                    col_type = col_type.replace("NOT NULL", "").replace(
-                        "PRIMARY KEY", ""
-                    ).strip()
+                    col_type = (
+                        col_type.replace("NOT NULL", "")
+                        .replace("PRIMARY KEY", "")
+                        .strip()
+                    )
 
                     if "DEFAULT" in col_type:
                         type_parts = col_type.split("DEFAULT")
                         col_type = type_parts[0].strip()
                         default = type_parts[1].strip() if len(type_parts) > 1 else None
 
-                    columns.append(DoltSchemaColumn(
-                        name=col_name,
-                        type=col_type,
-                        nullable=nullable,
-                        default=default,
-                        primary_key=is_pk,
-                    ))
+                    columns.append(
+                        DoltSchemaColumn(
+                            name=col_name,
+                            type=col_type,
+                            nullable=nullable,
+                            default=default,
+                            primary_key=is_pk,
+                        )
+                    )
 
         if current_table:
             schemas[current_table] = DoltTableSchema(

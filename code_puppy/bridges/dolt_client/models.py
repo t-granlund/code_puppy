@@ -20,7 +20,9 @@ class DoltCommit(BaseModel):
     """Represents a Dolt commit."""
 
     commit_hash: str = Field(description="Commit hash")
-    parent_hashes: List[str] = Field(default_factory=list, description="Parent commit hashes")
+    parent_hashes: List[str] = Field(
+        default_factory=list, description="Parent commit hashes"
+    )
     author: str = Field(description="Commit author")
     email: str = Field(description="Author email")
     date: datetime = Field(description="Commit date")
@@ -30,9 +32,15 @@ class DoltCommit(BaseModel):
 class DoltStatus(BaseModel):
     """Represents the working tree status."""
 
-    staged_tables: Dict[str, str] = Field(default_factory=dict, description="Tables staged for commit")
-    unstaged_tables: Dict[str, str] = Field(default_factory=dict, description="Modified but not staged")
-    untracked_tables: List[str] = Field(default_factory=list, description="New tables not tracked")
+    staged_tables: Dict[str, str] = Field(
+        default_factory=dict, description="Tables staged for commit"
+    )
+    unstaged_tables: Dict[str, str] = Field(
+        default_factory=dict, description="Modified but not staged"
+    )
+    untracked_tables: List[str] = Field(
+        default_factory=list, description="New tables not tracked"
+    )
     branch: str = Field(description="Current branch name")
     ahead: int = Field(default=0, description="Commits ahead of remote")
     behind: int = Field(default=0, description="Commits behind remote")
@@ -65,23 +73,33 @@ class DoltSchemaColumn(BaseModel):
     type: str = Field(description="SQL data type")
     nullable: bool = Field(default=True, description="Whether column allows NULL")
     default: Optional[str] = Field(default=None, description="Default value")
-    primary_key: bool = Field(default=False, description="Whether column is primary key")
+    primary_key: bool = Field(
+        default=False, description="Whether column is primary key"
+    )
 
 
 class DoltTableSchema(BaseModel):
     """Represents a table schema."""
 
     table_name: str = Field(description="Name of the table")
-    columns: List[DoltSchemaColumn] = Field(default_factory=list, description="Table columns")
-    primary_key: List[str] = Field(default_factory=list, description="Primary key column names")
+    columns: List[DoltSchemaColumn] = Field(
+        default_factory=list, description="Table columns"
+    )
+    primary_key: List[str] = Field(
+        default_factory=list, description="Primary key column names"
+    )
 
 
 class DoltMergeResult(BaseModel):
     """Represents the result of a merge operation."""
 
     success: bool = Field(description="Whether merge succeeded")
-    fast_forward: bool = Field(default=False, description="Was this a fast-forward merge")
-    conflicts: List[str] = Field(default_factory=list, description="Tables with conflicts")
+    fast_forward: bool = Field(
+        default=False, description="Was this a fast-forward merge"
+    )
+    conflicts: List[str] = Field(
+        default_factory=list, description="Tables with conflicts"
+    )
     message: str = Field(default="", description="Status message")
 
 
@@ -89,10 +107,14 @@ class DoltSQLResult(BaseModel):
     """Represents the result of a SQL query."""
 
     success: bool = Field(description="Whether query succeeded")
-    rows: List[Dict[str, Any]] = Field(default_factory=list, description="Query results")
+    rows: List[Dict[str, Any]] = Field(
+        default_factory=list, description="Query results"
+    )
     columns: List[str] = Field(default_factory=list, description="Column names")
     rows_affected: int = Field(default=0, description="Number of rows affected")
-    execution_time_ms: Optional[int] = Field(default=None, description="Query execution time")
+    execution_time_ms: Optional[int] = Field(
+        default=None, description="Query execution time"
+    )
     error: Optional[str] = Field(default=None, description="Error message if failed")
 
 

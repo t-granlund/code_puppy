@@ -36,11 +36,13 @@ class BranchOperations:
             if len(parts) >= 2:
                 branch_name = parts[0]
                 commit_hash = parts[1] if len(parts) > 1 else ""
-                branches.append(DoltBranch(
-                    name=branch_name,
-                    hash=commit_hash,
-                    current=is_current,
-                ))
+                branches.append(
+                    DoltBranch(
+                        name=branch_name,
+                        hash=commit_hash,
+                        current=is_current,
+                    )
+                )
 
         return branches
 

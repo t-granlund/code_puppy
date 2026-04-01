@@ -81,9 +81,7 @@ class DoltClient:
             if "dolt" not in result.lower():
                 raise DoltError("dolt CLI not properly installed")
         except FileNotFoundError:
-            raise DoltError(
-                "dolt CLI not found. Install from https://www.dolthub.com/"
-            )
+            raise DoltError("dolt CLI not found. Install from https://www.dolthub.com/")
 
     async def _ensure_init(self) -> None:
         """Ensure repository is initialized."""
@@ -179,9 +177,7 @@ class DoltClient:
             return stdout
 
         except FileNotFoundError:
-            raise DoltError(
-                "dolt CLI not found. Is Dolt installed and in PATH?"
-            )
+            raise DoltError("dolt CLI not found. Is Dolt installed and in PATH?")
 
     def _parse_commit(self, data: Dict[str, Any]) -> DoltCommit:
         """Parse commit data into DoltCommit."""

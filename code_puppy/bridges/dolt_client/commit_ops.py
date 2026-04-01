@@ -127,7 +127,11 @@ class CommitOperations:
                     )
                 except ValueError:
                     current_commit["date"] = datetime.now()
-            elif line and not line.startswith("Merge:") and "message" not in current_commit:
+            elif (
+                line
+                and not line.startswith("Merge:")
+                and "message" not in current_commit
+            ):
                 current_commit["message"] = line
 
         if current_commit:
