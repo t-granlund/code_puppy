@@ -31,13 +31,13 @@ import asyncio
 import json
 import logging
 import shutil
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
 
@@ -340,8 +340,8 @@ class GastownClient:
         gt_path = shutil.which(self.config.gt_path)
         if not gt_path:
             raise GastownNotInstalledError(
-                f"Gastown CLI (gt) not found. "
-                f"Please install from https://github.com/steveyegge/gastown"
+                "Gastown CLI (gt) not found. "
+                "Please install from https://github.com/steveyegge/gastown"
             )
         
         self._gt_path = gt_path
@@ -473,8 +473,11 @@ class GastownClient:
             Created Convoy instance.
         """
         if isinstance(priority, str):
-            priority = ConvoyPriority(priority.lower())
-        
+            try:
+                priority = ConvoyPriority(priority.lower())
+            except ValueError:
+                raise GastownError(f"Invalid priority: {priority}")
+
         args = ["convoy", "create", name]
         args.extend(["--priority", priority.value])
         
@@ -656,8 +659,11 @@ class GastownClient:
             Created Polecat instance.
         """
         if isinstance(role, str):
-            role = PolecatRole(role.lower())
-        
+            try:
+                role = PolecatRole(role.lower())
+            except ValueError:
+                raise GastownError(f"Invalid role: {role}")
+
         args = ["polecat", "spawn", name]
         args.extend(["--role", role.value])
         
@@ -1062,12 +1068,15 @@ class GastownClient:
             Sent Mail instance.
         """
         if isinstance(priority, str):
-            priority = MailPriority(priority.lower())
-        
+            try:
+                priority = MailPriority(priority.lower())
+            except ValueError:
+                raise GastownError(f"Invalid priority: {priority}")
+
         args = ["mail", "send", to_agent]
         args.extend(["--subject", subject])
         args.extend(["--body", body])
-        
+
         if from_agent:
             args.extend(["--from", from_agent])
         
@@ -1170,8 +1179,11 @@ class GastownClient:
             ```
         """
         if isinstance(severity, str):
-            severity = EscalationSeverity(severity.lower())
-        
+            try:
+                severity = EscalationSeverity(severity.lower())
+            except ValueError:
+                raise GastownError(f"Invalid severity: {severity}")
+
         args = ["escalate", issue_id]
         args.extend(["--severity", severity.value])
         args.extend(["--message", message])
