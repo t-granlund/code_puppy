@@ -1,8 +1,9 @@
 """Polecat (agent) operations mixin for GastownClient."""
 
-from typing import List, Optional, Union
+from typing import Optional, Union
 
-from code_puppy.bridges.gastown_client.exceptions import GastownError, GastownParseError
+from code_puppy.bridges.gastown_client.exceptions import GastownParseError
+from code_puppy.bridges.gastown_client.helpers import coerce_enum, parse_model_list
 from code_puppy.bridges.gastown_client.models import Polecat, PolecatRole, PolecatState
 
 
@@ -35,13 +36,9 @@ class PolecatMixin:
         Returns:
             Created Polecat instance.
         """
-        if isinstance(role, str):
-            try:
-                role = PolecatRole(role.lower())
-            except ValueError:
-                raise GastownError(f"Invalid role: {role}")
+        role = coerce_enum(role, PolecatRole, "role")
 
-        args = ["polecat", "spawn", name]
+        args = ["polecat", "spawn"]
         args.extend(["--role", role.value])
 
         if rig_id:
@@ -65,22 +62,15 @@ class PolecatMixin:
             elif value is not None:
                 args.extend([f"--{key.replace('_', '-')}", str(value)])
 
+        args.append("--")
+        args.append(name)
+
         result = await self._run_command(args)
 
         if result.parsed_output:
             return Polecat.model_validate(result.parsed_output)
 
-        return Polecat(
-            id="",
-            name=name,
-            role=role,
-            state=PolecatState.SPAWNING,
-            rig_id=rig_id,
-            specialty=specialty,
-            runtime=runtime,
-            bead_id=bead_id,
-            convoy_id=convoy_id,
-        )
+        raise GastownParseError("Failed to parse polecat spawn response")
 
     async def polecat_status(self, name_or_id: str) -> Polecat:
         """Get polecat status.
@@ -91,7 +81,7 @@ class PolecatMixin:
         Returns:
             Polecat instance with current status.
         """
-        result = await self._run_command(["polecat", "status", name_or_id])
+        result = await self._run_command(["polecat", "status", "--", name_or_id])
 
         if result.parsed_output:
             return Polecat.model_validate(result.parsed_output)
@@ -102,7 +92,7 @@ class PolecatMixin:
         self,
         state: Optional[Union[PolecatState, str]] = None,
         rig_id: Optional[str] = None,
-    ) -> List[Polecat]:
+    ) -> list[Polecat]:
         """List all polecats.
 
         Args:
@@ -124,16 +114,7 @@ class PolecatMixin:
 
         result = await self._run_command(args)
 
-        if result.parsed_output:
-            if isinstance(result.parsed_output, list):
-                return [Polecat.model_validate(item) for item in result.parsed_output]
-            elif "polecats" in result.parsed_output:
-                return [
-                    Polecat.model_validate(item)
-                    for item in result.parsed_output["polecats"]
-                ]
-
-        return []
+        return parse_model_list(result, Polecat, "polecats")
 
     async def polecat_archive(self, name_or_id: str) -> Polecat:
         """Archive a polecat.
@@ -144,16 +125,12 @@ class PolecatMixin:
         Returns:
             Updated Polecat instance.
         """
-        result = await self._run_command(["polecat", "archive", name_or_id])
+        result = await self._run_command(["polecat", "archive", "--", name_or_id])
 
         if result.parsed_output:
             return Polecat.model_validate(result.parsed_output)
 
-        return Polecat(
-            id=name_or_id,
-            name=name_or_id,
-            state=PolecatState.ARCHIVED,
-        )
+        raise GastownParseError(f"Failed to parse polecat archive for {name_or_id}")
 
     async def polecat_pause(self, name_or_id: str) -> Polecat:
         """Pause a polecat.
@@ -164,7 +141,7 @@ class PolecatMixin:
         Returns:
             Updated Polecat instance.
         """
-        result = await self._run_command(["polecat", "pause", name_or_id])
+        result = await self._run_command(["polecat", "pause", "--", name_or_id])
 
         if result.parsed_output:
             return Polecat.model_validate(result.parsed_output)
@@ -180,7 +157,7 @@ class PolecatMixin:
         Returns:
             Updated Polecat instance.
         """
-        result = await self._run_command(["polecat", "resume", name_or_id])
+        result = await self._run_command(["polecat", "resume", "--", name_or_id])
 
         if result.parsed_output:
             return Polecat.model_validate(result.parsed_output)

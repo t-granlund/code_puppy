@@ -1,6 +1,6 @@
 """Utility methods mixin for GastownClient."""
 
-from typing import Any, Dict
+from typing import Any
 
 from code_puppy.bridges.gastown_client.exceptions import GastownNotInstalledError
 
@@ -37,13 +37,13 @@ class UtilityMixin:
         except GastownNotInstalledError:
             return False
 
-    async def health_check(self) -> Dict[str, Any]:
+    async def health_check(self) -> dict[str, Any]:
         """Perform a health check on Gastown.
 
         Returns:
             Health check results.
         """
-        health = {
+        health: dict[str, Any] = {
             "available": False,
             "version": None,
             "error": None,

@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import shlex
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
@@ -33,7 +34,6 @@ class GastownConfig:
     """Configuration for Gastown client."""
 
     gt_path: str = "gt"
-    town_dir: Optional[Path] = None
     default_timeout: float = 30.0
     json_output: bool = True
 
@@ -118,8 +118,8 @@ class GastownClient(
             cmd.append("--json")
         cmd.extend(args)
 
-        cmd_str = " ".join(cmd)
-        logger.debug(f"Running: {cmd_str}")
+        cmd_str = shlex.join(cmd)
+        logger.debug("Running: %s", cmd_str)
 
         try:
             proc = await asyncio.create_subprocess_exec(
@@ -142,7 +142,7 @@ class GastownClient(
                 try:
                     parsed_output = json.loads(stdout)
                 except json.JSONDecodeError as e:
-                    logger.warning(f"Failed to parse JSON output: {e}")
+                    logger.warning("Failed to parse JSON output: %s", e)
 
             result = CommandResult(
                 command=cmd_str,
@@ -168,6 +168,11 @@ class GastownClient(
             return result
 
         except asyncio.TimeoutError:
+            try:
+                proc.kill()
+                await proc.wait()
+            except ProcessLookupError:
+                pass
             error_msg = (
                 f"Command timed out after {timeout or self.config.default_timeout}s"
             )

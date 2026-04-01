@@ -1,8 +1,9 @@
 """Escalation handling mixin for GastownClient."""
 
-from typing import List, Optional, Union
+from typing import Optional, Union
 
-from code_puppy.bridges.gastown_client.exceptions import GastownError, GastownParseError
+from code_puppy.bridges.gastown_client.exceptions import GastownParseError
+from code_puppy.bridges.gastown_client.helpers import coerce_enum, parse_model_list
 from code_puppy.bridges.gastown_client.models import Escalation, EscalationSeverity
 
 
@@ -37,37 +38,30 @@ class EscalationMixin:
             )
             ```
         """
-        if isinstance(severity, str):
-            try:
-                severity = EscalationSeverity(severity.lower())
-            except ValueError:
-                raise GastownError(f"Invalid severity: {severity}")
+        severity = coerce_enum(severity, EscalationSeverity, "severity")
 
-        args = ["escalate", issue_id]
+        args = ["escalate"]
         args.extend(["--severity", severity.value])
         args.extend(["--message", message])
 
         if from_agent:
             args.extend(["--from", from_agent])
 
+        args.append("--")
+        args.append(issue_id)
+
         result = await self._run_command(args)
 
         if result.parsed_output:
             return Escalation.model_validate(result.parsed_output)
 
-        return Escalation(
-            id="",
-            issue_id=issue_id,
-            severity=severity,
-            message=message,
-            from_agent=from_agent,
-        )
+        raise GastownParseError(f"Failed to parse escalation for {issue_id}")
 
     async def escalation_list(
         self,
         severity: Optional[Union[EscalationSeverity, str]] = None,
         resolved: Optional[bool] = None,
-    ) -> List[Escalation]:
+    ) -> list[Escalation]:
         """List escalations.
 
         Args:
@@ -89,18 +83,7 @@ class EscalationMixin:
 
         result = await self._run_command(args)
 
-        if result.parsed_output:
-            if isinstance(result.parsed_output, list):
-                return [
-                    Escalation.model_validate(item) for item in result.parsed_output
-                ]
-            elif "escalations" in result.parsed_output:
-                return [
-                    Escalation.model_validate(item)
-                    for item in result.parsed_output["escalations"]
-                ]
-
-        return []
+        return parse_model_list(result, Escalation, "escalations")
 
     async def escalation_resolve(
         self,
@@ -118,13 +101,16 @@ class EscalationMixin:
         Returns:
             Updated Escalation instance.
         """
-        args = ["escalation", "resolve", escalation_id]
+        args = ["escalation", "resolve"]
 
         if resolution_notes:
             args.extend(["--notes", resolution_notes])
 
         if resolved_by:
             args.extend(["--by", resolved_by])
+
+        args.append("--")
+        args.append(escalation_id)
 
         result = await self._run_command(args)
 

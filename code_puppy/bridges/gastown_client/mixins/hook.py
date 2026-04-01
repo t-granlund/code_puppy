@@ -1,8 +1,9 @@
 """Hook management mixin for GastownClient."""
 
-from typing import List, Optional, Union
+from typing import Optional, Union
 
 from code_puppy.bridges.gastown_client.exceptions import GastownParseError
+from code_puppy.bridges.gastown_client.helpers import parse_model_list
 from code_puppy.bridges.gastown_client.models import Hook, HookState
 
 
@@ -13,7 +14,7 @@ class HookMixin:
         self,
         rig_id: Optional[str] = None,
         state: Optional[Union[HookState, str]] = None,
-    ) -> List[Hook]:
+    ) -> list[Hook]:
         """List all hooks.
 
         Args:
@@ -35,15 +36,7 @@ class HookMixin:
 
         result = await self._run_command(args)
 
-        if result.parsed_output:
-            if isinstance(result.parsed_output, list):
-                return [Hook.model_validate(item) for item in result.parsed_output]
-            elif "hooks" in result.parsed_output:
-                return [
-                    Hook.model_validate(item) for item in result.parsed_output["hooks"]
-                ]
-
-        return []
+        return parse_model_list(result, Hook, "hooks")
 
     async def hook_create(
         self,
@@ -65,7 +58,7 @@ class HookMixin:
         Returns:
             Created Hook instance.
         """
-        args = ["hook", "create", name]
+        args = ["hook", "create"]
         args.extend(["--rig", rig_id])
         args.extend(["--branch", base_branch])
 
@@ -78,18 +71,15 @@ class HookMixin:
             elif value is not None:
                 args.extend([f"--{key.replace('_', '-')}", str(value)])
 
+        args.append("--")
+        args.append(name)
+
         result = await self._run_command(args)
 
         if result.parsed_output:
             return Hook.model_validate(result.parsed_output)
 
-        return Hook(
-            id="",
-            name=name,
-            rig_id=rig_id,
-            base_branch=base_branch,
-            agent_id=agent_id,
-        )
+        raise GastownParseError("Failed to parse hook create response")
 
     async def hook_status(self, name_or_id: str) -> Hook:
         """Get hook status.
@@ -100,7 +90,7 @@ class HookMixin:
         Returns:
             Hook instance with current status.
         """
-        result = await self._run_command(["hook", "status", name_or_id])
+        result = await self._run_command(["hook", "status", "--", name_or_id])
 
         if result.parsed_output:
             return Hook.model_validate(result.parsed_output)
@@ -116,13 +106,9 @@ class HookMixin:
         Returns:
             Updated Hook instance.
         """
-        result = await self._run_command(["hook", "archive", name_or_id])
+        result = await self._run_command(["hook", "archive", "--", name_or_id])
 
         if result.parsed_output:
             return Hook.model_validate(result.parsed_output)
 
-        return Hook(
-            id=name_or_id,
-            name=name_or_id,
-            state=HookState.ARCHIVED,
-        )
+        raise GastownParseError(f"Failed to parse hook archive for {name_or_id}")

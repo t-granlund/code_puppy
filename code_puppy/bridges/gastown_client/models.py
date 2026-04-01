@@ -1,10 +1,14 @@
 """Pydantic models and enums for Gastown Client."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, List, Optional
 
 from pydantic import BaseModel, Field
+
+
+def _utcnow() -> datetime:
+    return datetime.now(timezone.utc)
 
 
 # ============================================================================
@@ -127,7 +131,7 @@ class Convoy(BaseModel):
     auto_close: bool = True
     is_mountain: bool = False
     max_stall_minutes: int = 30
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=_utcnow)
     started_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
     created_by: Optional[str] = None
@@ -148,7 +152,7 @@ class Polecat(BaseModel):
     runtime: str = "claude"
     bead_id: Optional[str] = None
     convoy_id: Optional[str] = None
-    spawned_at: datetime = Field(default_factory=datetime.now)
+    spawned_at: datetime = Field(default_factory=_utcnow)
     activated_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
     last_heartbeat: Optional[datetime] = None
@@ -170,7 +174,7 @@ class Rig(BaseModel):
     beads_project: Optional[str] = None
     agent_ids: List[str] = Field(default_factory=list)
     crew_ids: List[str] = Field(default_factory=list)
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=_utcnow)
     last_active: Optional[datetime] = None
 
 
@@ -189,7 +193,7 @@ class Hook(BaseModel):
     context_files: List[str] = Field(default_factory=list)
     mail_inbox: List[str] = Field(default_factory=list)
     mail_sent: List[str] = Field(default_factory=list)
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=_utcnow)
     last_commit: Optional[datetime] = None
     last_activity: Optional[datetime] = None
     commit_count: int = 0
@@ -211,7 +215,7 @@ class Mail(BaseModel):
     rig_id: Optional[str] = None
     status: MailStatus = MailStatus.DRAFT
     priority: MailPriority = MailPriority.NORMAL
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=_utcnow)
     sent_at: Optional[datetime] = None
     read_at: Optional[datetime] = None
     delivery_attempts: int = 0
@@ -226,7 +230,7 @@ class Escalation(BaseModel):
     severity: EscalationSeverity
     message: str
     from_agent: Optional[str] = None
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=_utcnow)
     resolved_at: Optional[datetime] = None
     resolved_by: Optional[str] = None
     resolution_notes: Optional[str] = None
@@ -239,6 +243,6 @@ class CommandResult(BaseModel):
     exit_code: int
     stdout: str
     stderr: str
-    parsed_output: Optional[Dict[str, Any]] = None
+    parsed_output: dict[str, Any] | list[Any] | None = None
     success: bool = True
     error_message: Optional[str] = None

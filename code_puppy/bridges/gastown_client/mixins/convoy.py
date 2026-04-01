@@ -1,8 +1,9 @@
 """Convoy management mixin for GastownClient."""
 
-from typing import List, Optional, Union
+from typing import Optional, Union
 
-from code_puppy.bridges.gastown_client.exceptions import GastownError, GastownParseError
+from code_puppy.bridges.gastown_client.exceptions import GastownParseError
+from code_puppy.bridges.gastown_client.helpers import coerce_enum, parse_model_list
 from code_puppy.bridges.gastown_client.models import Convoy, ConvoyPriority, ConvoyState
 
 
@@ -13,7 +14,7 @@ class ConvoyMixin:
         self,
         name: str,
         priority: Union[ConvoyPriority, str] = ConvoyPriority.NORMAL,
-        bead_ids: Optional[List[str]] = None,
+        bead_ids: Optional[list[str]] = None,
         rig_id: Optional[str] = None,
         notify_human: bool = False,
         require_human_review: bool = False,
@@ -35,13 +36,9 @@ class ConvoyMixin:
         Returns:
             Created Convoy instance.
         """
-        if isinstance(priority, str):
-            try:
-                priority = ConvoyPriority(priority.lower())
-            except ValueError:
-                raise GastownError(f"Invalid priority: {priority}")
+        priority = coerce_enum(priority, ConvoyPriority, "priority")
 
-        args = ["convoy", "create", name]
+        args = ["convoy", "create"]
         args.extend(["--priority", priority.value])
 
         if bead_ids:
@@ -66,28 +63,21 @@ class ConvoyMixin:
             elif value is not None:
                 args.extend([f"--{key.replace('_', '-')}", str(value)])
 
+        args.append("--")
+        args.append(name)
+
         result = await self._run_command(args)
 
         if result.parsed_output:
             return Convoy.model_validate(result.parsed_output)
 
-        return Convoy(
-            id="",
-            name=name,
-            state=ConvoyState.FORMING,
-            priority=priority,
-            bead_ids=bead_ids or [],
-            rig_id=rig_id,
-            notify_human=notify_human,
-            require_human_review=require_human_review,
-            is_mountain=is_mountain,
-        )
+        raise GastownParseError("Failed to parse convoy create response")
 
     async def convoy_list(
         self,
         state: Optional[Union[ConvoyState, str]] = None,
         rig_id: Optional[str] = None,
-    ) -> List[Convoy]:
+    ) -> list[Convoy]:
         """List all convoys.
 
         Args:
@@ -109,16 +99,7 @@ class ConvoyMixin:
 
         result = await self._run_command(args)
 
-        if result.parsed_output:
-            if isinstance(result.parsed_output, list):
-                return [Convoy.model_validate(item) for item in result.parsed_output]
-            elif "convoys" in result.parsed_output:
-                return [
-                    Convoy.model_validate(item)
-                    for item in result.parsed_output["convoys"]
-                ]
-
-        return []
+        return parse_model_list(result, Convoy, "convoys")
 
     async def convoy_status(self, name_or_id: str) -> Convoy:
         """Get convoy status.
@@ -129,7 +110,7 @@ class ConvoyMixin:
         Returns:
             Convoy instance with current status.
         """
-        result = await self._run_command(["convoy", "status", name_or_id])
+        result = await self._run_command(["convoy", "status", "--", name_or_id])
 
         if result.parsed_output:
             return Convoy.model_validate(result.parsed_output)
@@ -145,16 +126,12 @@ class ConvoyMixin:
         Returns:
             Updated Convoy instance.
         """
-        result = await self._run_command(["convoy", "archive", name_or_id])
+        result = await self._run_command(["convoy", "archive", "--", name_or_id])
 
         if result.parsed_output:
             return Convoy.model_validate(result.parsed_output)
 
-        return Convoy(
-            id=name_or_id,
-            name=name_or_id,
-            state=ConvoyState.ARCHIVED,
-        )
+        raise GastownParseError(f"Failed to parse convoy archive for {name_or_id}")
 
     async def convoy_add_bead(self, convoy_id: str, bead_id: str) -> Convoy:
         """Add a bead to a convoy.
@@ -166,7 +143,7 @@ class ConvoyMixin:
         Returns:
             Updated Convoy instance.
         """
-        result = await self._run_command(["convoy", "add", convoy_id, bead_id])
+        result = await self._run_command(["convoy", "add", "--", convoy_id, bead_id])
 
         if result.parsed_output:
             return Convoy.model_validate(result.parsed_output)
@@ -182,7 +159,7 @@ class ConvoyMixin:
         Returns:
             Updated Convoy instance.
         """
-        result = await self._run_command(["convoy", "dispatch", convoy_id])
+        result = await self._run_command(["convoy", "dispatch", "--", convoy_id])
 
         if result.parsed_output:
             return Convoy.model_validate(result.parsed_output)

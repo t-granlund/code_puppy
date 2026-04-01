@@ -1,15 +1,16 @@
 """Rig management mixin for GastownClient."""
 
-from typing import List, Optional
+from typing import Optional
 
 from code_puppy.bridges.gastown_client.exceptions import GastownParseError
-from code_puppy.bridges.gastown_client.models import Rig, RigState
+from code_puppy.bridges.gastown_client.helpers import parse_model_list
+from code_puppy.bridges.gastown_client.models import Rig
 
 
 class RigMixin:
     """Rig management operations."""
 
-    async def rig_list(self) -> List[Rig]:
+    async def rig_list(self) -> list[Rig]:
         """List all rigs.
 
         Returns:
@@ -17,15 +18,7 @@ class RigMixin:
         """
         result = await self._run_command(["rig", "list"])
 
-        if result.parsed_output:
-            if isinstance(result.parsed_output, list):
-                return [Rig.model_validate(item) for item in result.parsed_output]
-            elif "rigs" in result.parsed_output:
-                return [
-                    Rig.model_validate(item) for item in result.parsed_output["rigs"]
-                ]
-
-        return []
+        return parse_model_list(result, Rig, "rigs")
 
     async def rig_status(self, name_or_id: str) -> Rig:
         """Get rig status.
@@ -36,7 +29,7 @@ class RigMixin:
         Returns:
             Rig instance with current status.
         """
-        result = await self._run_command(["rig", "status", name_or_id])
+        result = await self._run_command(["rig", "status", "--", name_or_id])
 
         if result.parsed_output:
             return Rig.model_validate(result.parsed_output)
@@ -63,7 +56,7 @@ class RigMixin:
         Returns:
             Created Rig instance.
         """
-        args = ["rig", "create", name]
+        args = ["rig", "create"]
 
         if repo_url:
             args.extend(["--repo", repo_url])
@@ -80,18 +73,15 @@ class RigMixin:
             elif value is not None:
                 args.extend([f"--{key.replace('_', '-')}", str(value)])
 
+        args.append("--")
+        args.append(name)
+
         result = await self._run_command(args)
 
         if result.parsed_output:
             return Rig.model_validate(result.parsed_output)
 
-        return Rig(
-            id="",
-            name=name,
-            repo_url=repo_url,
-            local_path=local_path,
-            runtime_provider=runtime_provider,
-        )
+        raise GastownParseError("Failed to parse rig create response")
 
     async def rig_archive(self, name_or_id: str) -> Rig:
         """Archive a rig.
@@ -102,13 +92,9 @@ class RigMixin:
         Returns:
             Updated Rig instance.
         """
-        result = await self._run_command(["rig", "archive", name_or_id])
+        result = await self._run_command(["rig", "archive", "--", name_or_id])
 
         if result.parsed_output:
             return Rig.model_validate(result.parsed_output)
 
-        return Rig(
-            id=name_or_id,
-            name=name_or_id,
-            state=RigState.ARCHIVED,
-        )
+        raise GastownParseError(f"Failed to parse rig archive for {name_or_id}")

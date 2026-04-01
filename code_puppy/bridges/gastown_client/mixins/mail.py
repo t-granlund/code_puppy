@@ -1,8 +1,9 @@
 """Mail operations mixin for GastownClient."""
 
-from typing import List, Optional, Union
+from typing import Optional, Union
 
-from code_puppy.bridges.gastown_client.exceptions import GastownError, GastownParseError
+from code_puppy.bridges.gastown_client.exceptions import GastownParseError
+from code_puppy.bridges.gastown_client.helpers import coerce_enum, parse_model_list
 from code_puppy.bridges.gastown_client.models import Mail, MailPriority, MailStatus
 
 
@@ -35,13 +36,9 @@ class MailMixin:
         Returns:
             Sent Mail instance.
         """
-        if isinstance(priority, str):
-            try:
-                priority = MailPriority(priority.lower())
-            except ValueError:
-                raise GastownError(f"Invalid priority: {priority}")
+        priority = coerce_enum(priority, MailPriority, "priority")
 
-        args = ["mail", "send", to_agent]
+        args = ["mail", "send"]
         args.extend(["--subject", subject])
         args.extend(["--body", body])
 
@@ -57,6 +54,9 @@ class MailMixin:
         if convoy_id:
             args.extend(["--convoy", convoy_id])
 
+        args.append("--")
+        args.append(to_agent)
+
         result = await self._run_command(args)
 
         if result.parsed_output:
@@ -68,7 +68,7 @@ class MailMixin:
         self,
         agent_id: Optional[str] = None,
         status: Optional[Union[MailStatus, str]] = None,
-    ) -> List[Mail]:
+    ) -> list[Mail]:
         """List mail messages.
 
         Args:
@@ -90,15 +90,7 @@ class MailMixin:
 
         result = await self._run_command(args)
 
-        if result.parsed_output:
-            if isinstance(result.parsed_output, list):
-                return [Mail.model_validate(item) for item in result.parsed_output]
-            elif "mail" in result.parsed_output:
-                return [
-                    Mail.model_validate(item) for item in result.parsed_output["mail"]
-                ]
-
-        return []
+        return parse_model_list(result, Mail, "mail")
 
     async def mail_read(self, mail_id: str) -> Mail:
         """Read a mail message.
@@ -109,7 +101,7 @@ class MailMixin:
         Returns:
             Mail instance.
         """
-        result = await self._run_command(["mail", "read", mail_id])
+        result = await self._run_command(["mail", "read", "--", mail_id])
 
         if result.parsed_output:
             return Mail.model_validate(result.parsed_output)
