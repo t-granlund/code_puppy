@@ -17,7 +17,7 @@ import shutil
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Any, Optional
+from typing import Optional
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -346,9 +346,7 @@ class GoBinaryManager:
                 cmd.extend(config.install_args)
 
             emit_info(f"Installing {config.display_name} via npm...")
-            returncode, stdout, stderr = await self._run_subprocess(
-                cmd, timeout=120.0
-            )
+            returncode, stdout, stderr = await self._run_subprocess(cmd, timeout=120.0)
 
             if returncode != 0:
                 emit_error(f"npm install failed: {stderr}")
@@ -374,7 +372,9 @@ class GoBinaryManager:
         """
         # TODO: Implement GitHub release download
         # This would require platform detection, asset download, extraction
-        emit_warning(f"GitHub release installation not yet implemented for {config.name}")
+        emit_warning(
+            f"GitHub release installation not yet implemented for {config.name}"
+        )
         return False
 
     def get_binary_path(self, name: str) -> Optional[Path]:
@@ -548,7 +548,9 @@ class GoBinaryManager:
             cmd, cwd=cwd, env=env, timeout=timeout, capture_output=capture_output
         )
 
-    async def check_version_compatibility(self, name: str) -> tuple[bool, Optional[str]]:
+    async def check_version_compatibility(
+        self, name: str
+    ) -> tuple[bool, Optional[str]]:
         """Check if installed version meets minimum requirements.
 
         Args:
