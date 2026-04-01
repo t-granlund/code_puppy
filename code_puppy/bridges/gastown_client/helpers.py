@@ -36,3 +36,16 @@ def parse_model_list(
     if isinstance(data, dict) and key in data:
         return [model.model_validate(item) for item in data[key]]
     return []
+
+
+def validate_options(options: dict, allowlist: frozenset[str], context: str) -> None:
+    """Raise on unrecognised ``**options`` keys.
+
+    Args:
+        options: The kwargs dict to check.
+        allowlist: Permitted key names.
+        context: Label used in the error message (e.g. "convoy_create").
+    """
+    bad = set(options) - allowlist
+    if bad:
+        raise GastownError(f"Unknown {context} options: {', '.join(sorted(bad))}")

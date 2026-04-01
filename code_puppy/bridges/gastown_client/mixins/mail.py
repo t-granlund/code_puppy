@@ -3,8 +3,21 @@
 from typing import Optional, Union
 
 from code_puppy.bridges.gastown_client.exceptions import GastownParseError
-from code_puppy.bridges.gastown_client.helpers import coerce_enum, parse_model_list
+from code_puppy.bridges.gastown_client.helpers import (
+    coerce_enum,
+    parse_model_list,
+    validate_options,
+)
 from code_puppy.bridges.gastown_client.models import Mail, MailPriority, MailStatus
+
+_MAIL_SEND_OPTIONS: frozenset[str] = frozenset(
+    {
+        "cc_agents",
+        "thread_id",
+        "in_reply_to",
+        "rig_id",
+    }
+)
 
 
 class MailMixin:
@@ -31,11 +44,12 @@ class MailMixin:
             priority: Mail priority.
             bead_id: Related bead ID.
             convoy_id: Related convoy ID.
-            **options: Additional options.
+            **options: Additional options (cc_agents, thread_id, in_reply_to, rig_id).
 
         Returns:
             Sent Mail instance.
         """
+        validate_options(options, _MAIL_SEND_OPTIONS, "mail_send")
         priority = coerce_enum(priority, MailPriority, "priority")
 
         args = ["mail", "send"]

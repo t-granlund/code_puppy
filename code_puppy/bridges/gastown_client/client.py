@@ -28,6 +28,24 @@ from code_puppy.bridges.gastown_client.models import CommandResult
 
 logger = logging.getLogger(__name__)
 
+# ---------------------------------------------------------------------------
+# Timeout bounds – keeps callers from accidentally passing 0 or 999_999.
+# ---------------------------------------------------------------------------
+_MIN_TIMEOUT: float = 1.0
+_MAX_TIMEOUT: float = 300.0
+
+
+def _clamp_timeout(
+    explicit: Optional[float],
+    default: float,
+) -> float:
+    """Return a timeout clamped to [_MIN_TIMEOUT, _MAX_TIMEOUT].
+
+    If *explicit* is ``None``, *default* is used instead.
+    """
+    value = explicit if explicit is not None else default
+    return max(_MIN_TIMEOUT, min(value, _MAX_TIMEOUT))
+
 
 @dataclass
 class GastownConfig:
@@ -36,6 +54,7 @@ class GastownConfig:
     gt_path: str = "gt"
     default_timeout: float = 30.0
     json_output: bool = True
+    max_concurrent: int = 8
 
 
 class GastownClient(
@@ -67,6 +86,7 @@ class GastownClient(
         self.config = config or GastownConfig()
         self._gt_path: Optional[str] = None
         self._version: Optional[str] = None
+        self._semaphore = asyncio.Semaphore(self.config.max_concurrent)
 
     async def _find_gt(self) -> str:
         """Find the gt executable.
@@ -111,6 +131,8 @@ class GastownClient(
         Raises:
             GastownCommandError: If the command fails.
         """
+        effective_timeout = _clamp_timeout(timeout, self.config.default_timeout)
+
         gt_path = await self._find_gt()
 
         cmd = [gt_path]
@@ -121,73 +143,73 @@ class GastownClient(
         cmd_str = shlex.join(cmd)
         logger.debug("Running: %s", cmd_str)
 
-        try:
-            proc = await asyncio.create_subprocess_exec(
-                *cmd,
-                cwd=cwd,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
-            )
-
-            stdout_bytes, stderr_bytes = await asyncio.wait_for(
-                proc.communicate(),
-                timeout=timeout or self.config.default_timeout,
-            )
-
-            stdout = stdout_bytes.decode("utf-8", errors="replace")
-            stderr = stderr_bytes.decode("utf-8", errors="replace")
-
-            parsed_output = None
-            if capture_json and stdout.strip():
-                try:
-                    parsed_output = json.loads(stdout)
-                except json.JSONDecodeError as e:
-                    logger.warning("Failed to parse JSON output: %s", e)
-
-            result = CommandResult(
-                command=cmd_str,
-                exit_code=proc.returncode or 0,
-                stdout=stdout,
-                stderr=stderr,
-                parsed_output=parsed_output,
-                success=proc.returncode == 0,
-            )
-
-            if proc.returncode != 0:
-                error_msg = (
-                    stderr.strip() or f"Command failed with exit code {proc.returncode}"
+        async with self._semaphore:
+            try:
+                proc = await asyncio.create_subprocess_exec(
+                    *cmd,
+                    cwd=cwd,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
                 )
-                result.error_message = error_msg
+
+                stdout_bytes, stderr_bytes = await asyncio.wait_for(
+                    proc.communicate(),
+                    timeout=effective_timeout,
+                )
+
+                stdout = stdout_bytes.decode("utf-8", errors="replace")
+                stderr = stderr_bytes.decode("utf-8", errors="replace")
+
+                parsed_output = None
+                if capture_json and stdout.strip():
+                    try:
+                        parsed_output = json.loads(stdout)
+                    except json.JSONDecodeError as e:
+                        logger.warning("Failed to parse JSON output: %s", e)
+
+                result = CommandResult(
+                    command=cmd_str,
+                    exit_code=proc.returncode or 0,
+                    stdout=stdout,
+                    stderr=stderr,
+                    parsed_output=parsed_output,
+                    success=proc.returncode == 0,
+                )
+
+                if proc.returncode != 0:
+                    error_msg = (
+                        stderr.strip()
+                        or f"Command failed with exit code {proc.returncode}"
+                    )
+                    result.error_message = error_msg
+                    raise GastownCommandError(
+                        message=error_msg,
+                        command=cmd_str,
+                        exit_code=proc.returncode or -1,
+                        stderr=stderr,
+                    )
+
+                return result
+
+            except asyncio.TimeoutError:
+                try:
+                    proc.kill()
+                    await proc.wait()
+                except ProcessLookupError:
+                    pass
+                error_msg = f"Command timed out after {effective_timeout}s"
                 raise GastownCommandError(
                     message=error_msg,
                     command=cmd_str,
-                    exit_code=proc.returncode or -1,
-                    stderr=stderr,
+                    exit_code=-1,
+                    stderr="Timeout",
                 )
-
-            return result
-
-        except asyncio.TimeoutError:
-            try:
-                proc.kill()
-                await proc.wait()
-            except ProcessLookupError:
-                pass
-            error_msg = (
-                f"Command timed out after {timeout or self.config.default_timeout}s"
-            )
-            raise GastownCommandError(
-                message=error_msg,
-                command=cmd_str,
-                exit_code=-1,
-                stderr="Timeout",
-            )
-        except GastownCommandError:
-            raise
-        except Exception as e:
-            raise GastownCommandError(
-                message=str(e),
-                command=cmd_str,
-                exit_code=-1,
-                stderr=str(e),
-            )
+            except GastownCommandError:
+                raise
+            except Exception as e:
+                raise GastownCommandError(
+                    message=str(e),
+                    command=cmd_str,
+                    exit_code=-1,
+                    stderr=str(e),
+                )

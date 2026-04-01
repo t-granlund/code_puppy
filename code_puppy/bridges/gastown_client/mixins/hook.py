@@ -3,8 +3,14 @@
 from typing import Optional, Union
 
 from code_puppy.bridges.gastown_client.exceptions import GastownParseError
-from code_puppy.bridges.gastown_client.helpers import parse_model_list
+from code_puppy.bridges.gastown_client.helpers import parse_model_list, validate_options
 from code_puppy.bridges.gastown_client.models import Hook, HookState
+
+_HOOK_CREATE_OPTIONS: frozenset[str] = frozenset(
+    {
+        "context_files",
+    }
+)
 
 
 class HookMixin:
@@ -53,11 +59,13 @@ class HookMixin:
             rig_id: Associated rig ID.
             base_branch: Base branch for the worktree.
             agent_id: Agent to assign to this hook.
-            **options: Additional options.
+            **options: Additional options (context_files).
 
         Returns:
             Created Hook instance.
         """
+        validate_options(options, _HOOK_CREATE_OPTIONS, "hook_create")
+
         args = ["hook", "create"]
         args.extend(["--rig", rig_id])
         args.extend(["--branch", base_branch])

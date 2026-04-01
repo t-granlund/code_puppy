@@ -3,8 +3,17 @@
 from typing import Optional
 
 from code_puppy.bridges.gastown_client.exceptions import GastownParseError
-from code_puppy.bridges.gastown_client.helpers import parse_model_list
+from code_puppy.bridges.gastown_client.helpers import parse_model_list, validate_options
 from code_puppy.bridges.gastown_client.models import Rig
+
+_RIG_CREATE_OPTIONS: frozenset[str] = frozenset(
+    {
+        "max_polecats",
+        "auto_spawn_witness",
+        "hooks_enabled",
+        "beads_project",
+    }
+)
 
 
 class RigMixin:
@@ -51,11 +60,13 @@ class RigMixin:
             repo_url: Repository URL.
             local_path: Local path to repository.
             runtime_provider: Default runtime provider.
-            **options: Additional options.
+            **options: Additional options (max_polecats, auto_spawn_witness, hooks_enabled, beads_project).
 
         Returns:
             Created Rig instance.
         """
+        validate_options(options, _RIG_CREATE_OPTIONS, "rig_create")
+
         args = ["rig", "create"]
 
         if repo_url:

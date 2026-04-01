@@ -3,8 +3,19 @@
 from typing import Optional, Union
 
 from code_puppy.bridges.gastown_client.exceptions import GastownParseError
-from code_puppy.bridges.gastown_client.helpers import coerce_enum, parse_model_list
+from code_puppy.bridges.gastown_client.helpers import (
+    coerce_enum,
+    parse_model_list,
+    validate_options,
+)
 from code_puppy.bridges.gastown_client.models import Convoy, ConvoyPriority, ConvoyState
+
+_CONVOY_CREATE_OPTIONS: frozenset[str] = frozenset(
+    {
+        "auto_close",
+        "max_stall_minutes",
+    }
+)
 
 
 class ConvoyMixin:
@@ -31,11 +42,12 @@ class ConvoyMixin:
             notify_human: Whether to notify human on completion.
             require_human_review: Whether to require human review.
             is_mountain: Enable mountain mode for autonomous execution.
-            **options: Additional options.
+            **options: Additional options (auto_close, max_stall_minutes).
 
         Returns:
             Created Convoy instance.
         """
+        validate_options(options, _CONVOY_CREATE_OPTIONS, "convoy_create")
         priority = coerce_enum(priority, ConvoyPriority, "priority")
 
         args = ["convoy", "create"]
