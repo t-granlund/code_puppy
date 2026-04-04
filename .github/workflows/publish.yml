@@ -97,9 +97,6 @@ jobs:
       - name: Setup uv virtual environment
         run: uv venv
 
-      - name: Bump version
-        run: uv version --bump patch
-
       - name: Build package
         run: |
           uv build
