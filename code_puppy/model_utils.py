@@ -89,13 +89,28 @@ def prepare_prompt_for_model(
     Returns:
         PreparedPrompt with instructions and user_prompt ready for the model.
     """
-    # Check for plugin-registered system prompt handlers first
+    # Check for plugin-registered prompt handlers first (new hook),
+    # then fall back to legacy system-prompt hook for compatibility.
     from code_puppy import callbacks
 
-    results = callbacks.on_get_model_system_prompt(
+    new_hook_results = callbacks.on_prepare_model_prompt(
+        model_name,
+        system_prompt,
+        user_prompt,
+        prepend_system_to_user,
+    )
+    for result in new_hook_results:
+        if result and isinstance(result, dict) and result.get("handled"):
+            return PreparedPrompt(
+                instructions=result.get("instructions", system_prompt),
+                user_prompt=result.get("user_prompt", user_prompt),
+                is_claude_code=result.get("is_claude_code", False),
+            )
+
+    legacy_results = callbacks.on_get_model_system_prompt(
         model_name, system_prompt, user_prompt
     )
-    for result in results:
+    for result in legacy_results:
         if result and isinstance(result, dict) and result.get("handled"):
             return PreparedPrompt(
                 instructions=result.get("instructions", system_prompt),

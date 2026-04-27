@@ -29,6 +29,7 @@ PhaseType = Literal[
     "register_agents",
     "register_model_type",
     "get_model_system_prompt",
+    "prepare_model_prompt",
     "agent_run_start",
     "agent_run_end",
     "register_mcp_catalog_servers",
@@ -66,6 +67,7 @@ _callbacks: Dict[PhaseType, List[CallbackFunc]] = {
     "register_agents": [],
     "register_model_type": [],
     "get_model_system_prompt": [],
+    "prepare_model_prompt": [],
     "agent_run_start": [],
     "agent_run_end": [],
     "register_mcp_catalog_servers": [],
@@ -490,6 +492,27 @@ def on_get_model_system_prompt(
     """
     return _trigger_callbacks_sync(
         "get_model_system_prompt", model_name, default_system_prompt, user_prompt
+    )
+
+
+def on_prepare_model_prompt(
+    model_name: str,
+    system_prompt: str,
+    user_prompt: str,
+    prepend_system_to_user: bool = True,
+) -> List[Dict[str, Any]]:
+    """Allow plugins to prepare model-specific prompts before fallback handling.
+
+    Newer plugins (e.g. claude_code_oauth) register against this hook.
+    Returns callback results (dicts or None), same contract as
+    ``on_get_model_system_prompt``.
+    """
+    return _trigger_callbacks_sync(
+        "prepare_model_prompt",
+        model_name,
+        system_prompt,
+        user_prompt,
+        prepend_system_to_user,
     )
 
 
