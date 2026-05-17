@@ -1,0 +1,1543 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Code Puppy · HTT internal mockup</title>
+    <meta
+      name="description"
+      content="Interactive mockup of the Code Puppy internal web app for HTT Brands."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* ============================================================
+         HTT BRANDS · DESIGN TOKENS
+         Parent brand palette: red + yellow + white, pink + maroon.
+         Hex values are a confident interpretation (the HTT parent
+         brand book defines colors by name, not hex — §6 of the
+         master brand book).
+         ============================================================ */
+      :root {
+        --htt-red:        #D6373F;
+        --htt-red-dark:   #B02932;
+        --htt-red-soft:   #FBE9EA;
+        --htt-yellow:     #F4C12F;
+        --htt-yellow-soft:#FCF1CE;
+        --htt-maroon:     #5C1A22;
+        --htt-maroon-2:   #7A2630;
+        --htt-pink:       #F2B5BC;
+        --htt-pink-soft:  #FBE5E8;
+        --htt-white:      #FFFFFF;
+        --htt-cream:      #FAF5EE;
+        --htt-cream-2:    #F3EBDC;
+        --htt-ink:        #1F1316;
+        --htt-ink-2:      #4B3E42;
+        --htt-ink-3:      #8A7C82;
+        --htt-line:       #ECE2D2;
+        --htt-line-2:     #D8C9B3;
+        --htt-ok:         #2F8F5B;
+        --htt-ok-soft:    #E2F1E8;
+        --htt-warn:       #B6731F;
+        --htt-warn-soft:  #FCEFD5;
+        --htt-danger:     #B53227;
+        --htt-danger-soft:#FBE3E1;
+
+        --radius:    10px;
+        --radius-md: 14px;
+        --radius-lg: 20px;
+        --shadow-sm: 0 1px 0 rgba(92, 26, 34, 0.05),
+                     0 1px 2px rgba(92, 26, 34, 0.06);
+        --shadow:    0 8px 24px -12px rgba(92, 26, 34, 0.18),
+                     0 2px 6px rgba(92, 26, 34, 0.06);
+        --shadow-lg: 0 24px 48px -24px rgba(92, 26, 34, 0.28),
+                     0 8px 20px -10px rgba(92, 26, 34, 0.12);
+
+        --font:  "Montserrat", system-ui, -apple-system, "Segoe UI",
+                 Roboto, sans-serif;
+        --mono:  "JetBrains Mono", ui-monospace, SFMono-Regular,
+                 Menlo, Consolas, monospace;
+      }
+
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+
+      body {
+        font-family: var(--font);
+        font-size: 14px;
+        color: var(--htt-ink);
+        background: var(--htt-cream);
+        background-image:
+          radial-gradient(900px 500px at 100% -10%,
+            rgba(244, 193, 47, 0.18), transparent 60%),
+          radial-gradient(700px 400px at -5% 110%,
+            rgba(214, 55, 63, 0.10), transparent 60%);
+        min-height: 100vh;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+      }
+
+      button { font-family: inherit; cursor: pointer; }
+      ::selection { background: var(--htt-pink); color: var(--htt-maroon); }
+
+      /* ============================================================
+         APP SHELL
+         ============================================================ */
+      .app {
+        display: grid;
+        grid-template-rows: 56px 1fr;
+        height: 100vh;
+        min-height: 640px;
+      }
+
+      /* ----- top bar ----- */
+      .topbar {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: 0 22px;
+        background: var(--htt-white);
+        border-bottom: 1px solid var(--htt-line);
+        position: relative;
+        z-index: 10;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .brand-htt {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        background: var(--htt-maroon);
+        color: var(--htt-white);
+        border-radius: 6px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        font-size: 11px;
+      }
+      .brand-htt svg { display: block; }
+      .brand-divider {
+        width: 1px;
+        height: 18px;
+        background: var(--htt-line-2);
+      }
+      .brand-product {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 700;
+        font-size: 15px;
+        color: var(--htt-maroon);
+        letter-spacing: -0.01em;
+      }
+      .brand-product .paw {
+        width: 22px; height: 22px;
+        background: var(--htt-yellow);
+        border-radius: 6px;
+        display: grid; place-items: center;
+        font-size: 13px;
+      }
+      .brand-tag {
+        font-weight: 500;
+        font-size: 11px;
+        color: var(--htt-ink-3);
+        padding: 3px 8px;
+        background: var(--htt-cream-2);
+        border-radius: 999px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .top-spacer { flex: 1; }
+
+      .env-switch {
+        display: inline-flex;
+        background: var(--htt-cream-2);
+        padding: 3px;
+        border-radius: 999px;
+        border: 1px solid var(--htt-line);
+      }
+      .env-btn {
+        appearance: none;
+        border: none;
+        background: transparent;
+        color: var(--htt-ink-2);
+        font-size: 11.5px;
+        font-weight: 600;
+        padding: 5px 12px;
+        border-radius: 999px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+      .env-btn.active.dev {
+        background: var(--htt-white);
+        color: var(--htt-maroon);
+        box-shadow: var(--shadow-sm);
+      }
+      .env-btn.active.prod {
+        background: var(--htt-red);
+        color: var(--htt-white);
+        box-shadow: 0 2px 8px -2px rgba(214, 55, 63, 0.55);
+      }
+
+      .user-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 4px 10px 4px 4px;
+        border-radius: 999px;
+        background: var(--htt-cream);
+        border: 1px solid var(--htt-line);
+      }
+      .avatar {
+        width: 30px; height: 30px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--htt-yellow),
+                                            var(--htt-red));
+        color: var(--htt-white);
+        display: grid; place-items: center;
+        font-weight: 700;
+        font-size: 12px;
+      }
+      .user-meta { line-height: 1.1; }
+      .user-name { font-weight: 600; font-size: 12.5px; }
+      .user-sub  { font-size: 10.5px; color: var(--htt-ink-3); }
+
+      /* ============================================================
+         BODY GRID — sidebar + chat
+         ============================================================ */
+      .body {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        min-height: 0;
+      }
+
+      /* ----- sidebar ----- */
+      .sidebar {
+        background: var(--htt-white);
+        border-right: 1px solid var(--htt-line);
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        overflow: hidden;
+      }
+      .sidebar-pad { padding: 16px 14px; }
+
+      .btn {
+        appearance: none;
+        border: none;
+        font: inherit;
+        font-weight: 600;
+        padding: 10px 14px;
+        border-radius: var(--radius);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: background 140ms ease, color 140ms ease,
+                    transform 140ms ease, box-shadow 140ms ease;
+      }
+      .btn:hover { transform: translateY(-1px); }
+      .btn.primary {
+        background: var(--htt-red);
+        color: var(--htt-white);
+        box-shadow: 0 6px 14px -6px rgba(214, 55, 63, 0.55);
+        width: 100%;
+        justify-content: center;
+      }
+      .btn.primary:hover { background: var(--htt-red-dark); }
+      .btn.ghost {
+        background: transparent;
+        color: var(--htt-maroon);
+      }
+      .btn.ghost:hover { background: var(--htt-pink-soft); }
+
+      .group-label {
+        font-size: 10.5px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--htt-ink-3);
+        padding: 14px 14px 6px;
+      }
+
+      .conv-list {
+        list-style: none;
+        margin: 0;
+        padding: 0 8px;
+        overflow-y: auto;
+        flex: 1;
+      }
+      .conv-item {
+        appearance: none;
+        border: 1px solid transparent;
+        background: transparent;
+        text-align: left;
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: var(--radius);
+        color: var(--htt-ink);
+        font: inherit;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        transition: background 140ms ease, border-color 140ms ease;
+      }
+      .conv-item:hover {
+        background: var(--htt-cream);
+      }
+      .conv-item.active {
+        background: var(--htt-pink-soft);
+        border-color: var(--htt-pink);
+      }
+      .conv-title {
+        font-size: 13px;
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .conv-sub {
+        font-size: 11.5px;
+        color: var(--htt-ink-3);
+      }
+
+      .settings {
+        border-top: 1px solid var(--htt-line);
+        padding: 8px;
+      }
+      .setting {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 12px;
+        border-radius: var(--radius);
+      }
+      .setting:hover { background: var(--htt-cream); cursor: pointer; }
+      .setting .k {
+        font-size: 11.5px;
+        color: var(--htt-ink-3);
+      }
+      .setting .v {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--htt-maroon);
+      }
+      .setting .v.with-dot::before {
+        content: "";
+        display: inline-block;
+        width: 7px; height: 7px;
+        background: var(--htt-ok);
+        border-radius: 50%;
+        margin-right: 6px;
+        vertical-align: middle;
+      }
+
+      .sidebar-footer {
+        padding: 12px 16px;
+        border-top: 1px solid var(--htt-line);
+        font-size: 11px;
+        color: var(--htt-ink-3);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .heart {
+        color: var(--htt-red);
+        font-weight: 700;
+      }
+
+      /* ============================================================
+         CHAT COLUMN
+         ============================================================ */
+      .chat {
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        min-height: 0;
+        background: var(--htt-cream);
+      }
+
+      .chat-header {
+        padding: 16px 28px 14px;
+        background: var(--htt-white);
+        border-bottom: 1px solid var(--htt-line);
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .chat-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--htt-ink);
+        letter-spacing: -0.01em;
+      }
+      .chat-meta-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: var(--htt-cream-2);
+        color: var(--htt-ink-2);
+        font-size: 11.5px;
+        font-weight: 500;
+      }
+      .chip.dev   { background: var(--htt-yellow-soft); color: #7A5710; }
+      .chip.prod  { background: var(--htt-red-soft);    color: var(--htt-red-dark); }
+      .chip.model { background: var(--htt-pink-soft);   color: var(--htt-maroon); }
+      .chip svg   { display: block; }
+
+      .header-actions { margin-left: auto; display: flex; gap: 8px; }
+      .icon-btn {
+        appearance: none;
+        border: 1px solid var(--htt-line);
+        background: var(--htt-white);
+        width: 34px; height: 34px;
+        border-radius: 8px;
+        display: grid; place-items: center;
+        color: var(--htt-ink-2);
+        transition: background 140ms ease, color 140ms ease;
+      }
+      .icon-btn:hover { background: var(--htt-pink-soft); color: var(--htt-maroon); }
+
+      /* ----- transcript ----- */
+      .transcript {
+        overflow-y: auto;
+        padding: 24px 28px 12px;
+        scroll-behavior: smooth;
+      }
+      .transcript-inner {
+        max-width: 880px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      /* ----- system divider ----- */
+      .sys-divider {
+        text-align: center;
+        font-size: 11px;
+        color: var(--htt-ink-3);
+        position: relative;
+        margin: 4px 0;
+      }
+      .sys-divider::before, .sys-divider::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        width: 80px;
+        height: 1px;
+        background: var(--htt-line-2);
+      }
+      .sys-divider::before { left: calc(50% - 110px); }
+      .sys-divider::after  { right: calc(50% - 110px); }
+
+      /* ----- messages ----- */
+      .msg {
+        display: grid;
+        grid-template-columns: 32px 1fr;
+        gap: 14px;
+        animation: rise 320ms ease both;
+      }
+      @keyframes rise {
+        from { opacity: 0; transform: translateY(6px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+      .msg-av {
+        width: 32px; height: 32px;
+        border-radius: 8px;
+        display: grid; place-items: center;
+        font-weight: 700;
+        font-size: 12px;
+      }
+      .msg.user .msg-av {
+        background: var(--htt-maroon);
+        color: var(--htt-white);
+      }
+      .msg.agent .msg-av {
+        background: var(--htt-yellow);
+        color: var(--htt-maroon);
+      }
+      .msg-body { min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+      .msg-who {
+        font-size: 11.5px;
+        font-weight: 700;
+        color: var(--htt-maroon);
+        letter-spacing: 0.02em;
+      }
+      .msg-who .ts {
+        color: var(--htt-ink-3);
+        font-weight: 500;
+        margin-left: 8px;
+      }
+      .bubble {
+        background: var(--htt-white);
+        border: 1px solid var(--htt-line);
+        border-radius: var(--radius-md);
+        padding: 14px 16px;
+        line-height: 1.55;
+        font-size: 14px;
+        color: var(--htt-ink);
+        box-shadow: var(--shadow-sm);
+      }
+      .msg.user .bubble {
+        background: var(--htt-pink-soft);
+        border-color: var(--htt-pink);
+      }
+      .bubble p { margin: 0 0 8px; }
+      .bubble p:last-child { margin: 0; }
+      .bubble code {
+        font-family: var(--mono);
+        font-size: 12.5px;
+        background: var(--htt-cream-2);
+        border: 1px solid var(--htt-line);
+        padding: 1px 6px;
+        border-radius: 5px;
+        color: var(--htt-maroon);
+      }
+
+      /* ----- streaming caret ----- */
+      .caret {
+        display: inline-block;
+        width: 7px; height: 14px;
+        background: var(--htt-red);
+        vertical-align: -2px;
+        margin-left: 2px;
+        animation: blink 1s steps(2, end) infinite;
+      }
+      @keyframes blink { 50% { opacity: 0; } }
+
+      /* ============================================================
+         AGENT EXTRAS — plan, tool calls, diffs, approvals
+         ============================================================ */
+      .plan {
+        background: linear-gradient(180deg,
+                    var(--htt-yellow-soft), var(--htt-white));
+        border: 1px solid var(--htt-yellow);
+        border-radius: var(--radius-md);
+        padding: 14px 16px;
+      }
+      .plan-head {
+        display: flex; gap: 8px; align-items: center;
+        font-size: 12px; font-weight: 700;
+        color: #7A5710;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      .plan ol {
+        margin: 8px 0 0;
+        padding-left: 22px;
+        line-height: 1.55;
+      }
+      .plan li { margin-bottom: 4px; color: var(--htt-ink); }
+
+      /* tool call card */
+      .tool {
+        border: 1px solid var(--htt-line);
+        background: var(--htt-white);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+      }
+      .tool-head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        background: var(--htt-cream);
+        border-bottom: 1px solid var(--htt-line);
+        font-size: 12.5px;
+      }
+      .tool-icon {
+        width: 22px; height: 22px;
+        border-radius: 6px;
+        display: grid; place-items: center;
+        background: var(--htt-pink-soft);
+        color: var(--htt-maroon);
+        flex-shrink: 0;
+      }
+      .tool-name {
+        font-family: var(--mono);
+        font-weight: 600;
+        color: var(--htt-maroon);
+      }
+      .tool-arg {
+        font-family: var(--mono);
+        color: var(--htt-ink-2);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-width: 0;
+      }
+      .tool-status {
+        margin-left: auto;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 2px 8px;
+        border-radius: 999px;
+        flex-shrink: 0;
+      }
+      .tool-status.ok       { background: var(--htt-ok-soft);   color: var(--htt-ok); }
+      .tool-status.running  { background: var(--htt-yellow-soft); color: #7A5710; }
+      .tool-status.allowed  { background: var(--htt-ok-soft);   color: var(--htt-ok); }
+      .tool-status.blocked  { background: var(--htt-danger-soft); color: var(--htt-danger); }
+      .tool-status.pending  { background: var(--htt-cream-2);   color: var(--htt-ink-2); }
+      .tool-body {
+        padding: 12px 14px;
+        font-family: var(--mono);
+        font-size: 12px;
+        line-height: 1.55;
+        color: var(--htt-ink-2);
+      }
+      .tool-body.empty { display: none; }
+
+      .spinner {
+        width: 12px; height: 12px;
+        border: 2px solid var(--htt-yellow);
+        border-top-color: transparent;
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+        display: inline-block;
+        margin-right: 4px;
+        vertical-align: -2px;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+
+      /* diff card */
+      .diff {
+        border: 1px solid var(--htt-line);
+        background: var(--htt-white);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+      }
+      .diff-head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        background: var(--htt-cream);
+        border-bottom: 1px solid var(--htt-line);
+        font-size: 12.5px;
+      }
+      .diff-file {
+        font-family: var(--mono);
+        font-weight: 600;
+        color: var(--htt-maroon);
+      }
+      .diff-stats {
+        font-size: 11px;
+        color: var(--htt-ink-3);
+      }
+      .diff-stats .plus { color: var(--htt-ok); font-weight: 600; }
+      .diff-stats .minus { color: var(--htt-danger); font-weight: 600; }
+      .diff-actions { margin-left: auto; display: flex; gap: 6px; }
+      .mini {
+        appearance: none;
+        border: 1px solid var(--htt-line-2);
+        background: var(--htt-white);
+        color: var(--htt-ink);
+        font: inherit;
+        font-size: 11.5px;
+        font-weight: 600;
+        padding: 4px 10px;
+        border-radius: 6px;
+      }
+      .mini.accept {
+        background: var(--htt-ok);
+        color: var(--htt-white);
+        border-color: var(--htt-ok);
+      }
+      .mini.reject:hover { background: var(--htt-danger-soft); color: var(--htt-danger); }
+      .mini:hover { background: var(--htt-cream); }
+      .mini.accept:hover { background: #266F47; }
+
+      .diff-body {
+        font-family: var(--mono);
+        font-size: 12px;
+        line-height: 1.55;
+        padding: 8px 0;
+        max-height: 280px;
+        overflow-y: auto;
+      }
+      .diff-row {
+        display: grid;
+        grid-template-columns: 36px 1fr;
+        padding: 0 14px 0 0;
+      }
+      .diff-row .ln {
+        color: var(--htt-ink-3);
+        text-align: right;
+        padding-right: 10px;
+        user-select: none;
+      }
+      .diff-row.add { background: rgba(47, 143, 91, 0.08); }
+      .diff-row.del { background: rgba(181, 50, 39, 0.07); }
+      .diff-row.add .code::before { content: "+ "; color: var(--htt-ok); }
+      .diff-row.del .code::before { content: "− "; color: var(--htt-danger); }
+      .diff-row .code { color: var(--htt-ink); white-space: pre; }
+
+      /* approval card (e.g. shell command) */
+      .approval {
+        border: 1px solid var(--htt-yellow);
+        background: linear-gradient(180deg,
+                    var(--htt-yellow-soft), var(--htt-white));
+        border-radius: var(--radius-md);
+        padding: 14px 16px;
+      }
+      .approval-head {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        font-weight: 700;
+        font-size: 13px;
+        color: #7A5710;
+        margin-bottom: 8px;
+      }
+      .approval-cmd {
+        font-family: var(--mono);
+        background: var(--htt-white);
+        border: 1px solid var(--htt-line);
+        padding: 8px 10px;
+        border-radius: 8px;
+        font-size: 12.5px;
+        color: var(--htt-ink);
+      }
+      .approval-meta {
+        font-size: 11.5px;
+        color: var(--htt-ink-2);
+        margin-top: 8px;
+      }
+      .approval-actions {
+        margin-top: 10px;
+        display: flex; gap: 8px;
+      }
+      .mini.allow {
+        background: var(--htt-red);
+        color: var(--htt-white);
+        border-color: var(--htt-red);
+      }
+      .mini.allow:hover { background: var(--htt-red-dark); }
+
+      /* policy banner */
+      .policy-banner {
+        display: flex;
+        gap: 10px;
+        padding: 10px 12px;
+        background: var(--htt-pink-soft);
+        border: 1px dashed var(--htt-pink);
+        border-radius: 10px;
+        font-size: 12.5px;
+        color: var(--htt-maroon);
+      }
+      .policy-banner b { color: var(--htt-maroon-2); }
+
+      /* ============================================================
+         COMPOSER
+         ============================================================ */
+      .composer-wrap {
+        padding: 14px 28px 18px;
+        background: linear-gradient(180deg, transparent, var(--htt-cream));
+      }
+      .composer {
+        max-width: 880px;
+        margin: 0 auto;
+        background: var(--htt-white);
+        border: 1px solid var(--htt-line);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow);
+        padding: 10px 10px 8px;
+        transition: border-color 140ms ease, box-shadow 140ms ease;
+      }
+      .composer:focus-within {
+        border-color: var(--htt-red);
+        box-shadow: 0 0 0 4px rgba(214, 55, 63, 0.12),
+                    var(--shadow);
+      }
+      .composer textarea {
+        width: 100%;
+        border: none;
+        outline: none;
+        resize: none;
+        font: inherit;
+        font-size: 14px;
+        line-height: 1.5;
+        padding: 8px 8px 4px;
+        color: var(--htt-ink);
+        background: transparent;
+        min-height: 44px;
+      }
+      .composer textarea::placeholder { color: var(--htt-ink-3); }
+
+      .composer-bottom {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 4px 0;
+      }
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 10px;
+        background: var(--htt-cream);
+        border: 1px solid var(--htt-line);
+        border-radius: 999px;
+        font-size: 11.5px;
+        font-weight: 500;
+        color: var(--htt-ink-2);
+      }
+      .pill svg { display: block; }
+      .pill.live::before {
+        content: "";
+        width: 6px; height: 6px;
+        background: var(--htt-ok);
+        border-radius: 50%;
+        box-shadow: 0 0 0 3px var(--htt-ok-soft);
+      }
+      .composer-spacer { flex: 1; }
+      .send-btn {
+        appearance: none;
+        border: none;
+        background: var(--htt-red);
+        color: var(--htt-white);
+        font: inherit;
+        font-weight: 700;
+        font-size: 12.5px;
+        padding: 8px 14px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        box-shadow: 0 6px 14px -6px rgba(214, 55, 63, 0.55);
+        transition: transform 140ms ease, background 140ms ease;
+      }
+      .send-btn:hover { background: var(--htt-red-dark); transform: translateY(-1px); }
+      .send-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+      .hint {
+        text-align: center;
+        font-size: 11px;
+        color: var(--htt-ink-3);
+        margin-top: 8px;
+      }
+      .hint kbd {
+        font-family: var(--mono);
+        font-size: 10.5px;
+        background: var(--htt-white);
+        border: 1px solid var(--htt-line-2);
+        border-bottom-width: 2px;
+        padding: 1px 6px;
+        border-radius: 5px;
+        color: var(--htt-maroon);
+      }
+
+      /* ============================================================
+         RESPONSIVE
+         ============================================================ */
+      @media (max-width: 880px) {
+        .body { grid-template-columns: 1fr; }
+        .sidebar { display: none; }
+        .chat-header { padding: 14px 16px; }
+        .transcript, .composer-wrap { padding-left: 16px; padding-right: 16px; }
+        .chat-title { font-size: 15px; }
+      }
+
+      /* ============================================================
+         DEMO REPLAY OVERLAY BUTTON
+         ============================================================ */
+      .replay {
+        position: fixed;
+        right: 22px;
+        bottom: 22px;
+        background: var(--htt-maroon);
+        color: var(--htt-white);
+        border: none;
+        border-radius: 999px;
+        padding: 12px 18px;
+        font: inherit;
+        font-weight: 700;
+        font-size: 12.5px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: var(--shadow-lg);
+        cursor: pointer;
+        z-index: 20;
+        transition: background 140ms ease, transform 140ms ease;
+      }
+      .replay:hover { background: var(--htt-maroon-2); transform: translateY(-2px); }
+      .replay .heart-i {
+        width: 14px; height: 14px;
+        background: var(--htt-red);
+        clip-path: path("M7 12.5 L1.5 7 a3.5 3.5 0 1 1 5.5 -4.5 a3.5 3.5 0 1 1 5.5 4.5 z");
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <!-- =================== TOP BAR =================== -->
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-htt" aria-label="HTT Brands">
+            <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+              <path
+                d="M7 12.3 L1.6 7.1 a3.3 3.3 0 1 1 5.4 -4.3 a3.3 3.3 0 1 1 5.4 4.3 z"
+                fill="#F4C12F"
+              />
+            </svg>
+            HTT
+          </div>
+          <span class="brand-divider"></span>
+          <div class="brand-product">
+            <span class="paw" aria-hidden="true">&#128021;</span>
+            Code Puppy
+          </div>
+          <span class="brand-tag">internal preview</span>
+        </div>
+
+        <span class="top-spacer"></span>
+
+        <div class="env-switch" role="tablist" aria-label="Environment">
+          <button class="env-btn dev active" data-env="dev" role="tab">Dev</button>
+          <button class="env-btn prod" data-env="prod" role="tab">Prod</button>
+        </div>
+
+        <div class="user-chip" title="Signed in via Entra ID">
+          <div class="avatar">TG</div>
+          <div class="user-meta">
+            <div class="user-name">Tyler Granlund</div>
+            <div class="user-sub">IT · cp-users</div>
+          </div>
+        </div>
+      </header>
+
+      <!-- =================== BODY =================== -->
+      <div class="body">
+        <!-- =================== SIDEBAR =================== -->
+        <aside class="sidebar">
+          <div class="sidebar-pad">
+            <button class="btn primary" id="new-chat">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M7 2v10M2 7h10" stroke="currentColor"
+                      stroke-width="2" stroke-linecap="round" />
+              </svg>
+              New conversation
+            </button>
+          </div>
+
+          <div class="group-label">Today</div>
+          <ul class="conv-list">
+            <li>
+              <button class="conv-item active">
+                <span class="conv-title">Refactor auth middleware</span>
+                <span class="conv-sub">5 tool calls &middot; 2 edits</span>
+              </button>
+            </li>
+            <li>
+              <button class="conv-item">
+                <span class="conv-title">Wire policy.yaml to Bishops site</span>
+                <span class="conv-sub">3 tool calls</span>
+              </button>
+            </li>
+          </ul>
+
+          <div class="group-label">Earlier</div>
+          <ul class="conv-list" style="flex:0 0 auto;">
+            <li>
+              <button class="conv-item">
+                <span class="conv-title">Frenchies booking form a11y pass</span>
+                <span class="conv-sub">yesterday</span>
+              </button>
+            </li>
+            <li>
+              <button class="conv-item">
+                <span class="conv-title">TLL gift-card webhook</span>
+                <span class="conv-sub">2 days ago</span>
+              </button>
+            </li>
+            <li>
+              <button class="conv-item">
+                <span class="conv-title">Crown booking sync investigation</span>
+                <span class="conv-sub">last week</span>
+              </button>
+            </li>
+          </ul>
+
+          <div class="settings">
+            <div class="group-label" style="padding:0 4px 6px;">Settings</div>
+            <div class="setting">
+              <span class="k">Provider</span>
+              <span class="v with-dot">Azure OpenAI · GPT-4o</span>
+            </div>
+            <div class="setting">
+              <span class="k">Posture</span>
+              <span class="v" id="setting-env">Dev (permissive)</span>
+            </div>
+            <div class="setting">
+              <span class="k">Tools enabled</span>
+              <span class="v">9 of 14</span>
+            </div>
+          </div>
+
+          <div class="sidebar-footer">
+            <span>Built by HTT IT with</span>
+            <span class="heart">&#9829;</span>
+            <span>in Dallas</span>
+          </div>
+        </aside>
+
+        <!-- =================== CHAT =================== -->
+        <section class="chat">
+          <header class="chat-header">
+            <div>
+              <div class="chat-title">Refactor auth middleware</div>
+              <div class="chat-meta-row" style="margin-top:6px;">
+                <span class="chip model">
+                  <svg width="10" height="10" viewBox="0 0 10 10">
+                    <circle cx="5" cy="5" r="4" fill="currentColor" opacity=".2"/>
+                    <circle cx="5" cy="5" r="2" fill="currentColor"/>
+                  </svg>
+                  Azure OpenAI · GPT-4o
+                </span>
+                <span class="chip dev" id="chip-env">Dev posture · shell + edits allowed</span>
+                <span class="chip">~3,420 tokens</span>
+              </div>
+            </div>
+            <div class="header-actions">
+              <button class="icon-btn" title="Rename">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M2 11l8-8 1 1-8 8H2v-1z M9 3l1 1"
+                        stroke="currentColor" stroke-width="1.5"
+                        stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </button>
+              <button class="icon-btn" title="Share read-only">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <circle cx="10" cy="3" r="2" stroke="currentColor"/>
+                  <circle cx="4"  cy="7" r="2" stroke="currentColor"/>
+                  <circle cx="10" cy="11" r="2" stroke="currentColor"/>
+                  <path d="M5.7 6 L8.3 4 M5.7 8 L8.3 10" stroke="currentColor"/>
+                </svg>
+              </button>
+            </div>
+          </header>
+
+          <div class="transcript" id="transcript">
+            <div class="transcript-inner" id="transcript-inner">
+              <div class="sys-divider">Today &middot; 9:42 AM</div>
+
+              <!-- ===== seed user message ===== -->
+              <div class="msg user">
+                <div class="msg-av">TG</div>
+                <div class="msg-body">
+                  <div class="msg-who">You <span class="ts">9:42 AM</span></div>
+                  <div class="bubble">
+                    <p>
+                      Refactor <code>auth/middleware.py</code> to call our new
+                      <code>core.policy</code> layer instead of the inline
+                      allow-list, and add a couple of tests so we know it's
+                      blocking the right things. Keep the public function
+                      signature the same.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ===== seed agent reply (multiple parts) ===== -->
+              <div class="msg agent">
+                <div class="msg-av">cp</div>
+                <div class="msg-body">
+                  <div class="msg-who">Code Puppy <span class="ts">9:42 AM</span></div>
+
+                  <div class="bubble">
+                    <p>
+                      Got it &mdash; happy to take this one. Here's how I'd
+                      like to work through it:
+                    </p>
+                  </div>
+
+                  <div class="plan">
+                    <div class="plan-head">
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <path d="M2 7 L6 11 L12 3" stroke="currentColor"
+                              stroke-width="2" stroke-linecap="round"
+                              stroke-linejoin="round"/>
+                      </svg>
+                      Plan
+                    </div>
+                    <ol>
+                      <li>Read <code>auth/middleware.py</code> and
+                          <code>core/policy.py</code> to understand the
+                          current behavior.</li>
+                      <li>Refactor the middleware to call
+                          <code>policy.evaluate(request, action)</code>.</li>
+                      <li>Add tests for an allowed action and a blocked
+                          shell command.</li>
+                      <li>Run <code>pytest auth/</code> to confirm green.</li>
+                    </ol>
+                  </div>
+
+                  <div class="tool">
+                    <div class="tool-head">
+                      <div class="tool-icon">
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                          <path d="M2 2h6l2 2v6H2z" stroke="currentColor"
+                                stroke-width="1.5" stroke-linejoin="round"/>
+                          <path d="M8 2v2h2" stroke="currentColor" stroke-width="1.5"/>
+                        </svg>
+                      </div>
+                      <span class="tool-name">read_file</span>
+                      <span class="tool-arg">auth/middleware.py</span>
+                      <span class="tool-status ok">allowed &middot; 24 KB</span>
+                    </div>
+                  </div>
+
+                  <div class="tool">
+                    <div class="tool-head">
+                      <div class="tool-icon">
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                          <path d="M2 2h6l2 2v6H2z" stroke="currentColor"
+                                stroke-width="1.5" stroke-linejoin="round"/>
+                          <path d="M8 2v2h2" stroke="currentColor" stroke-width="1.5"/>
+                        </svg>
+                      </div>
+                      <span class="tool-name">read_file</span>
+                      <span class="tool-arg">core/policy.py</span>
+                      <span class="tool-status ok">allowed &middot; 9 KB</span>
+                    </div>
+                  </div>
+
+                  <div class="bubble">
+                    <p>
+                      The current middleware hand-rolls its own allow-list of
+                      paths and methods. <code>core.policy.evaluate</code>
+                      already accepts a <code>Request</code> plus an
+                      <code>Action</code> and returns a
+                      <code>Decision</code> with an audit reason &mdash; that's
+                      a cleaner fit. Here's the edit:
+                    </p>
+                  </div>
+
+                  <!-- ===== diff card ===== -->
+                  <div class="diff">
+                    <div class="diff-head">
+                      <span class="diff-file">auth/middleware.py</span>
+                      <span class="diff-stats">
+                        <span class="plus">+18</span>
+                        <span class="minus">&minus;24</span>
+                      </span>
+                      <span class="tool-status ok">edit ready</span>
+                      <div class="diff-actions">
+                        <button class="mini reject">Reject</button>
+                        <button class="mini accept">Accept</button>
+                      </div>
+                    </div>
+                    <div class="diff-body">
+                      <div class="diff-row del"><div class="ln">12</div><div class="code">from auth.allowlist import ALLOWED_PATHS</div></div>
+                      <div class="diff-row add"><div class="ln">12</div><div class="code">from core.policy import evaluate, Action</div></div>
+                      <div class="diff-row"><div class="ln">13</div><div class="code"></div></div>
+                      <div class="diff-row"><div class="ln">14</div><div class="code">def authorize(request):</div></div>
+                      <div class="diff-row del"><div class="ln">15</div><div class="code">    if request.path not in ALLOWED_PATHS:</div></div>
+                      <div class="diff-row del"><div class="ln">16</div><div class="code">        log.warning("blocked", path=request.path)</div></div>
+                      <div class="diff-row del"><div class="ln">17</div><div class="code">        return Response(status=403)</div></div>
+                      <div class="diff-row add"><div class="ln">15</div><div class="code">    decision = evaluate(request, Action.from_request(request))</div></div>
+                      <div class="diff-row add"><div class="ln">16</div><div class="code">    if not decision.allowed:</div></div>
+                      <div class="diff-row add"><div class="ln">17</div><div class="code">        log.warning("blocked", reason=decision.reason)</div></div>
+                      <div class="diff-row add"><div class="ln">18</div><div class="code">        return Response(status=403, body=decision.safe_message)</div></div>
+                      <div class="diff-row"><div class="ln">19</div><div class="code">    return None  # allow downstream handler</div></div>
+                    </div>
+                  </div>
+
+                  <!-- ===== shell approval ===== -->
+                  <div class="approval" id="approval-card">
+                    <div class="approval-head">
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M8 1 L15 14 H1 z" stroke="currentColor"
+                              stroke-width="1.5" stroke-linejoin="round"/>
+                        <path d="M8 6 V9 M8 11 V11.5" stroke="currentColor" stroke-width="1.5"/>
+                      </svg>
+                      Approve shell command?
+                    </div>
+                    <div class="approval-cmd">
+                      $ pytest auth/ -q
+                    </div>
+                    <div class="approval-meta">
+                      Posture <b>Dev</b> permits this. In <b>Prod</b> this
+                      would auto-block &mdash; only <code>git</code>,
+                      <code>ls</code>, <code>cat</code> and <code>pytest</code>
+                      are on the prod allow-list.
+                    </div>
+                    <div class="approval-actions">
+                      <button class="mini reject" data-approval="block">Block</button>
+                      <button class="mini allow" data-approval="allow">Allow once</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- =================== COMPOSER =================== -->
+          <div class="composer-wrap">
+            <div class="composer">
+              <textarea
+                id="composer"
+                rows="2"
+                placeholder="Ask Code Puppy to make a change, run a test, or explain something…"
+              ></textarea>
+              <div class="composer-bottom">
+                <span class="pill live">live</span>
+                <span class="pill" title="What the agent can do right now">
+                  <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+                    <circle cx="5.5" cy="5.5" r="4" stroke="currentColor"/>
+                    <path d="M5.5 3 V6 L7 7" stroke="currentColor" stroke-linecap="round"/>
+                  </svg>
+                  edits · shell · web read
+                </span>
+                <span class="composer-spacer"></span>
+                <button class="send-btn" id="send">
+                  Send
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <path d="M2 6 H10 M6 2 L10 6 L6 10" stroke="currentColor"
+                          stroke-width="2" stroke-linecap="round"
+                          stroke-linejoin="round"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div class="hint">
+              <kbd>&#8984;</kbd> + <kbd>Enter</kbd> to send &middot;
+              every action is logged to Azure Log Analytics
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <button class="replay" id="replay">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <path d="M2 7 a5 5 0 1 0 1.5 -3.5" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round"/>
+        <path d="M2 2 V4.5 H4.5" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Replay demo
+    </button>
+
+    <script>
+      // ===========================================================
+      //  Mockup interactivity — env switch, approval card, composer
+      //  simulation, replay. No real network calls.
+      // ===========================================================
+      (function () {
+        const $  = (s, r = document) => r.querySelector(s);
+        const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+
+        // ---------- env switch ----------
+        const envButtons = $$(".env-btn");
+        const chipEnv    = $("#chip-env");
+        const settingEnv = $("#setting-env");
+
+        function setEnv(env) {
+          envButtons.forEach((b) =>
+            b.classList.toggle("active", b.dataset.env === env),
+          );
+          if (env === "prod") {
+            chipEnv.textContent = "Prod posture · Azure OpenAI only · vetted shell";
+            chipEnv.classList.remove("dev");
+            chipEnv.classList.add("prod");
+            settingEnv.textContent = "Prod (locked down)";
+          } else {
+            chipEnv.textContent = "Dev posture · shell + edits allowed";
+            chipEnv.classList.remove("prod");
+            chipEnv.classList.add("dev");
+            settingEnv.textContent = "Dev (permissive)";
+          }
+        }
+        envButtons.forEach((b) =>
+          b.addEventListener("click", () => setEnv(b.dataset.env)),
+        );
+
+        // ---------- approval card buttons ----------
+        const approval = $("#approval-card");
+        if (approval) {
+          approval.addEventListener("click", (e) => {
+            const btn = e.target.closest("[data-approval]");
+            if (!btn) return;
+            const decision = btn.dataset.approval;
+            approval.outerHTML =
+              decision === "allow"
+                ? renderShellAllowed()
+                : renderShellBlocked();
+            scrollToBottom();
+          });
+        }
+
+        function renderShellAllowed() {
+          return `
+            <div class="tool">
+              <div class="tool-head">
+                <div class="tool-icon">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <path d="M2 2 L6 6 L2 10" stroke="currentColor" stroke-width="1.5"
+                          stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M7 10 H10" stroke="currentColor" stroke-width="1.5"
+                          stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <span class="tool-name">run_shell</span>
+                <span class="tool-arg">pytest auth/ -q</span>
+                <span class="tool-status ok">3 passed in 0.42s</span>
+              </div>
+              <div class="tool-body">
+                <span style="color: var(--htt-ok); font-weight:600;">...</span>
+                <br/>3 passed, 0 failed in 0.42s
+              </div>
+            </div>
+            <div class="bubble" style="margin-top:8px;">
+              <p>
+                All three tests pass. Summary of what changed:
+              </p>
+              <p>
+                &middot; <code>auth/middleware.py</code> now delegates to
+                <code>core.policy.evaluate</code> and returns the
+                policy's <em>safe message</em> instead of a bare 403.<br/>
+                &middot; Added <code>tests/auth/test_middleware_policy.py</code>
+                with one allow case and one shell-block case.<br/>
+                &middot; No public signature change &mdash; downstream
+                callers don't need updates.
+              </p>
+              <p>
+                Want me to open a PR, or would you like to review the
+                diff once more first?
+              </p>
+            </div>`;
+        }
+
+        function renderShellBlocked() {
+          return `
+            <div class="tool">
+              <div class="tool-head">
+                <div class="tool-icon">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <circle cx="6" cy="6" r="4.5" stroke="currentColor"/>
+                    <path d="M3 9 L9 3" stroke="currentColor" stroke-width="1.5"/>
+                  </svg>
+                </div>
+                <span class="tool-name">run_shell</span>
+                <span class="tool-arg">pytest auth/ -q</span>
+                <span class="tool-status blocked">blocked by you</span>
+              </div>
+              <div class="tool-body">
+                Skipped at your request. Policy still permitted this
+                action — see audit log entry
+                <code>cp-2026-05-17-09:43:11</code>.
+              </div>
+            </div>
+            <div class="bubble" style="margin-top:8px;">
+              <p>
+                No worries &mdash; I'll hold off on running the tests.
+                The edits are still staged; let me know when you'd
+                like to run them yourself or want me to try again.
+              </p>
+            </div>`;
+        }
+
+        // ---------- composer / replay simulation ----------
+        const composer  = $("#composer");
+        const sendBtn   = $("#send");
+        const inner     = $("#transcript-inner");
+        const transcript = $("#transcript");
+
+        function scrollToBottom() {
+          requestAnimationFrame(() => {
+            transcript.scrollTop = transcript.scrollHeight;
+          });
+        }
+
+        function addNode(html) {
+          const tmp = document.createElement("div");
+          tmp.innerHTML = html.trim();
+          const node = tmp.firstChild;
+          inner.appendChild(node);
+          scrollToBottom();
+          return node;
+        }
+
+        function nowStamp() {
+          const d = new Date();
+          let h = d.getHours();
+          const m = d.getMinutes().toString().padStart(2, "0");
+          const ampm = h >= 12 ? "PM" : "AM";
+          h = h % 12 || 12;
+          return `${h}:${m} ${ampm}`;
+        }
+
+        function userBubble(text) {
+          return `
+            <div class="msg user">
+              <div class="msg-av">TG</div>
+              <div class="msg-body">
+                <div class="msg-who">You <span class="ts">${nowStamp()}</span></div>
+                <div class="bubble"><p>${escapeHtml(text)}</p></div>
+              </div>
+            </div>`;
+        }
+
+        function agentShell(initialHtml) {
+          return `
+            <div class="msg agent">
+              <div class="msg-av">cp</div>
+              <div class="msg-body">
+                <div class="msg-who">Code Puppy <span class="ts">${nowStamp()}</span></div>
+                ${initialHtml}
+              </div>
+            </div>`;
+        }
+
+        function escapeHtml(s) {
+          return s
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+        }
+
+        async function typeInto(el, text, speed = 18) {
+          for (let i = 0; i < text.length; i++) {
+            el.textContent += text[i];
+            scrollToBottom();
+            await wait(speed + (text[i] === " " ? 0 : Math.random() * 12));
+          }
+        }
+        const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+        let busy = false;
+
+        async function simulate(userText) {
+          if (busy) return;
+          busy = true;
+          sendBtn.disabled = true;
+
+          // user message
+          addNode(userBubble(userText));
+          await wait(350);
+
+          // agent shell with streaming bubble
+          const agent = addNode(
+            agentShell(`
+              <div class="bubble" id="streamer">
+                <p id="stream-p"></p>
+              </div>
+            `),
+          );
+          const streamP = agent.querySelector("#stream-p");
+          streamP.innerHTML = "";
+          const caret = document.createElement("span");
+          caret.className = "caret";
+          streamP.appendChild(document.createTextNode(""));
+          streamP.appendChild(caret);
+
+          const intro =
+            "Sure thing — let me poke around the repo and see what we're working with.";
+          // Type before the caret
+          const textNode = streamP.firstChild;
+          for (const ch of intro) {
+            textNode.textContent += ch;
+            scrollToBottom();
+            await wait(16 + Math.random() * 14);
+          }
+          await wait(250);
+
+          // tool: read_file (running -> ok)
+          const tool1 = document.createElement("div");
+          tool1.innerHTML = `
+            <div class="tool" style="margin-top:8px;">
+              <div class="tool-head">
+                <div class="tool-icon">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <path d="M2 2h6l2 2v6H2z" stroke="currentColor" stroke-width="1.5"/>
+                    <path d="M8 2v2h2" stroke="currentColor" stroke-width="1.5"/>
+                  </svg>
+                </div>
+                <span class="tool-name">read_file</span>
+                <span class="tool-arg">README.md</span>
+                <span class="tool-status running">
+                  <span class="spinner"></span>running
+                </span>
+              </div>
+            </div>`;
+          agent.querySelector(".msg-body").appendChild(tool1.firstElementChild);
+          scrollToBottom();
+          await wait(700);
+          const status = agent.querySelectorAll(".tool-status.running")[0];
+          if (status) {
+            status.className = "tool-status ok";
+            status.textContent = "allowed · 4 KB";
+          }
+
+          // wrap up
+          await wait(350);
+          caret.remove();
+
+          const wrap = document.createElement("div");
+          wrap.innerHTML = `
+            <div class="bubble" style="margin-top:8px;">
+              <p>
+                Skimmed the README so I have the lay of the land.
+                What would you like me to do next &mdash; open a
+                file, run a test, or sketch a change?
+              </p>
+            </div>`;
+          agent.querySelector(".msg-body").appendChild(wrap.firstElementChild);
+          scrollToBottom();
+
+          busy = false;
+          sendBtn.disabled = false;
+        }
+
+        sendBtn.addEventListener("click", () => {
+          const v = composer.value.trim();
+          if (!v) return;
+          composer.value = "";
+          simulate(v);
+        });
+
+        composer.addEventListener("keydown", (e) => {
+          if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+            e.preventDefault();
+            sendBtn.click();
+          }
+        });
+
+        // ---------- replay demo ----------
+        const replayBtn = $("#replay");
+        replayBtn.addEventListener("click", () => {
+          // jump back to the seed
+          composer.value =
+            "Refactor auth/middleware.py to use core.policy and add tests.";
+          composer.focus();
+          transcript.scrollTo({ top: 0, behavior: "smooth" });
+        });
+
+        // ---------- init ----------
+        setEnv("dev");
+        scrollToBottom();
+      })();
+    </script>
+  </body>
+</html>
