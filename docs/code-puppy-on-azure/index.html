@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Code Puppy on Azure · HTT initiative</title>
+    <meta
+      name="description"
+      content="Landing page for the Code Puppy on Azure internal initiative — playbook + product mockup."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --htt-red:        #D6373F;
+        --htt-red-dark:   #B02932;
+        --htt-yellow:     #F4C12F;
+        --htt-yellow-soft:#FCF1CE;
+        --htt-maroon:     #5C1A22;
+        --htt-maroon-2:   #7A2630;
+        --htt-pink:       #F2B5BC;
+        --htt-pink-soft:  #FBE5E8;
+        --htt-cream:      #FAF5EE;
+        --htt-cream-2:    #F3EBDC;
+        --htt-ink:        #1F1316;
+        --htt-ink-2:      #4B3E42;
+        --htt-ink-3:      #8A7C82;
+        --htt-line:       #ECE2D2;
+        --htt-line-2:     #D8C9B3;
+        --htt-ok:         #2F8F5B;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body {
+        font-family: "Montserrat", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        color: var(--htt-ink);
+        background: var(--htt-cream);
+        background-image:
+          radial-gradient(900px 500px at 100% -10%,
+            rgba(244, 193, 47, 0.20), transparent 60%),
+          radial-gradient(700px 400px at -5% 110%,
+            rgba(214, 55, 63, 0.10), transparent 60%);
+        min-height: 100vh;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .wrap {
+        max-width: 1080px;
+        margin: 0 auto;
+        padding: 48px 28px 64px;
+      }
+
+      .top {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 40px;
+      }
+      .brand-htt {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        background: var(--htt-maroon);
+        color: #fff;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+      }
+      .brand-htt svg { display: block; }
+      .brand-divider { width: 1px; height: 18px; background: var(--htt-line-2); }
+      .brand-product {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 700;
+        font-size: 16px;
+        color: var(--htt-maroon);
+        letter-spacing: -0.01em;
+      }
+      .brand-product .paw {
+        width: 24px; height: 24px;
+        background: var(--htt-yellow);
+        border-radius: 7px;
+        display: grid; place-items: center;
+        font-size: 14px;
+      }
+
+      .hero {
+        margin-bottom: 36px;
+      }
+      .kicker {
+        display: inline-block;
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--htt-maroon);
+        background: var(--htt-pink-soft);
+        border: 1px solid var(--htt-pink);
+        padding: 4px 10px;
+        border-radius: 999px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        margin-bottom: 18px;
+      }
+      h1 {
+        margin: 0 0 14px;
+        font-size: clamp(30px, 4vw, 44px);
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        line-height: 1.1;
+        color: var(--htt-ink);
+      }
+      h1 .grad {
+        background: linear-gradient(120deg, var(--htt-red), var(--htt-maroon-2));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      .lede {
+        font-size: 16px;
+        line-height: 1.55;
+        color: var(--htt-ink-2);
+        max-width: 680px;
+      }
+      .lede a { color: var(--htt-maroon); }
+
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+        margin-top: 32px;
+      }
+      .card {
+        background: #fff;
+        border: 1px solid var(--htt-line);
+        border-radius: 18px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        box-shadow:
+          0 1px 0 rgba(92, 26, 34, 0.05),
+          0 12px 32px -20px rgba(92, 26, 34, 0.25);
+        transition: transform 200ms ease, box-shadow 200ms ease,
+                    border-color 200ms ease;
+      }
+      .card:hover {
+        transform: translateY(-3px);
+        box-shadow:
+          0 1px 0 rgba(92, 26, 34, 0.06),
+          0 20px 48px -20px rgba(92, 26, 34, 0.32);
+        border-color: var(--htt-pink);
+      }
+      .card a.card-link {
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+      .preview {
+        height: 180px;
+        background: var(--htt-cream-2);
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* preview 1 — playbook (dark) */
+      .preview.dark {
+        background:
+          radial-gradient(500px 280px at 20% 30%,
+            rgba(124, 92, 255, 0.5), transparent 60%),
+          radial-gradient(400px 240px at 90% 80%,
+            rgba(94, 234, 212, 0.3), transparent 65%),
+          #0b0f1d;
+      }
+      .preview.dark::after {
+        content: "01 · 02 · 03 · 04";
+        position: absolute;
+        bottom: 14px; left: 16px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        color: #5eead4;
+        letter-spacing: 0.1em;
+      }
+      .preview.dark::before {
+        content: "Architecture · Setup · Guardrails · CI/CD";
+        position: absolute;
+        top: 14px; left: 16px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #e6eaf6;
+      }
+
+      /* preview 2 — mockup (light HTT) */
+      .preview.light {
+        background:
+          radial-gradient(400px 220px at 100% 0%,
+            rgba(244, 193, 47, 0.40), transparent 60%),
+          radial-gradient(300px 200px at 0% 100%,
+            rgba(214, 55, 63, 0.18), transparent 60%),
+          var(--htt-cream);
+      }
+      .preview.light::before {
+        content: "🐕  Code Puppy";
+        position: absolute;
+        top: 14px; left: 16px;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--htt-maroon);
+      }
+      .preview.light::after {
+        content: "chat · diffs · approvals";
+        position: absolute;
+        bottom: 14px; left: 16px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        color: var(--htt-maroon-2);
+        letter-spacing: 0.06em;
+      }
+      .mini-pill {
+        position: absolute;
+        right: 16px; top: 16px;
+        padding: 4px 10px;
+        background: #fff;
+        color: var(--htt-maroon);
+        border-radius: 999px;
+        font-size: 10.5px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        border: 1px solid var(--htt-line);
+      }
+      .mini-pill.dark {
+        background: rgba(94, 234, 212, 0.12);
+        color: #5eead4;
+        border-color: rgba(94, 234, 212, 0.3);
+      }
+
+      .card-body {
+        padding: 22px 22px 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        flex: 1;
+      }
+      .tag-row { display: flex; gap: 6px; flex-wrap: wrap; }
+      .tag {
+        font-size: 10.5px;
+        font-weight: 600;
+        padding: 3px 8px;
+        border-radius: 999px;
+        background: var(--htt-cream-2);
+        color: var(--htt-ink-2);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+      .card h3 {
+        margin: 4px 0 4px;
+        font-size: 19px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        color: var(--htt-maroon);
+      }
+      .card p {
+        margin: 0;
+        color: var(--htt-ink-2);
+        font-size: 14px;
+        line-height: 1.55;
+      }
+      .card-foot {
+        margin-top: 14px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .open {
+        font-weight: 700;
+        font-size: 13px;
+        color: var(--htt-red);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .open svg { transition: transform 200ms ease; }
+      .card:hover .open svg { transform: translateX(3px); }
+      .path {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        color: var(--htt-ink-3);
+      }
+
+      /* index strip */
+      .strip {
+        margin-top: 44px;
+        background: #fff;
+        border: 1px solid var(--htt-line);
+        border-radius: 18px;
+        padding: 22px 24px;
+      }
+      .strip h2 {
+        margin: 0 0 14px;
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--htt-ink-3);
+      }
+      .meta-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+      }
+      .meta-grid .k {
+        font-size: 11.5px;
+        color: var(--htt-ink-3);
+        margin-bottom: 4px;
+      }
+      .meta-grid .v {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--htt-ink);
+      }
+      .meta-grid .v code {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12.5px;
+        background: var(--htt-cream-2);
+        padding: 1px 6px;
+        border-radius: 5px;
+        color: var(--htt-maroon);
+      }
+
+      .foot {
+        margin-top: 36px;
+        font-size: 12px;
+        color: var(--htt-ink-3);
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .heart { color: var(--htt-red); font-weight: 700; }
+
+      @media (max-width: 720px) {
+        .cards { grid-template-columns: 1fr; }
+        .meta-grid { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="top">
+        <div class="brand-htt">
+          <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+            <path
+              d="M7 12.3 L1.6 7.1 a3.3 3.3 0 1 1 5.4 -4.3 a3.3 3.3 0 1 1 5.4 4.3 z"
+              fill="#F4C12F"
+            />
+          </svg>
+          HTT
+        </div>
+        <span class="brand-divider"></span>
+        <div class="brand-product">
+          <span class="paw">&#128021;</span>
+          Code Puppy on Azure
+        </div>
+      </div>
+
+      <section class="hero">
+        <span class="kicker">Internal initiative · IT</span>
+        <h1>
+          One folder, two artifacts &mdash;<br/>
+          everything for
+          <span class="grad">Code Puppy on Azure</span>.
+        </h1>
+        <p class="lede">
+          We're hosting the open-source <em>Code Puppy</em> agent inside our
+          Azure tenant with an internal web UI on top. This folder is the
+          single home for the supporting materials: a clickable playbook
+          that explains the architecture and rollout, and a branded product
+          mockup that shows what the app will feel like in your hands.
+        </p>
+      </section>
+
+      <div class="cards">
+        <article class="card">
+          <a class="card-link" href="./playbook/index.html">
+            <div class="preview dark">
+              <span class="mini-pill dark">playbook</span>
+            </div>
+            <div class="card-body">
+              <div class="tag-row">
+                <span class="tag">Architecture</span>
+                <span class="tag">Setup</span>
+                <span class="tag">Guardrails</span>
+                <span class="tag">CI/CD</span>
+              </div>
+              <h3>The Playbook</h3>
+              <p>
+                Four-section visual explainer for devs, DevOps and security.
+                System diagram, seven-step setup timeline, dev-vs-prod
+                capability matrix, and the full CI/CD pipeline.
+              </p>
+              <div class="card-foot">
+                <span class="path">./playbook/</span>
+                <span class="open">
+                  Open
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M3 7h8 M8 4l3 3-3 3" stroke="currentColor"
+                          stroke-width="2" stroke-linecap="round"
+                          stroke-linejoin="round"/>
+                  </svg>
+                </span>
+              </div>
+            </div>
+          </a>
+        </article>
+
+        <article class="card">
+          <a class="card-link" href="./mockup/index.html">
+            <div class="preview light">
+              <span class="mini-pill">mockup</span>
+            </div>
+            <div class="card-body">
+              <div class="tag-row">
+                <span class="tag">HTT brand</span>
+                <span class="tag">Chat UI</span>
+                <span class="tag">Interactive</span>
+              </div>
+              <h3>The Product Mockup</h3>
+              <p>
+                Working simulation of the actual app &mdash; HTT-branded
+                chat surface with a sample agent run in progress: plan
+                card, tool calls, diff viewer, shell-approval gate, and a
+                composer you can type into.
+              </p>
+              <div class="card-foot">
+                <span class="path">./mockup/</span>
+                <span class="open">
+                  Open
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M3 7h8 M8 4l3 3-3 3" stroke="currentColor"
+                          stroke-width="2" stroke-linecap="round"
+                          stroke-linejoin="round"/>
+                  </svg>
+                </span>
+              </div>
+            </div>
+          </a>
+        </article>
+      </div>
+
+      <section class="strip">
+        <h2>At a glance</h2>
+        <div class="meta-grid">
+          <div>
+            <div class="k">Owner</div>
+            <div class="v">HTT IT &middot; Tyler Granlund</div>
+          </div>
+          <div>
+            <div class="k">Status</div>
+            <div class="v">Preview &mdash; pre-implementation</div>
+          </div>
+          <div>
+            <div class="k">Hosting</div>
+            <div class="v">Static &mdash; open any <code>index.html</code></div>
+          </div>
+          <div>
+            <div class="k">Audience</div>
+            <div class="v">Devs, DevOps, security, brand stakeholders</div>
+          </div>
+          <div>
+            <div class="k">Brand reference</div>
+            <div class="v">HTT Brands Master Brand Book, &sect;1 (parent)</div>
+          </div>
+          <div>
+            <div class="k">Underlying tool</div>
+            <div class="v"><code>code-puppy</code> (open source)</div>
+          </div>
+        </div>
+      </section>
+
+      <div class="foot">
+        <span>Packaged by HTT IT</span>
+        <span class="heart">&#9829;</span>
+        <span>Dallas, TX &middot; May 2026</span>
+      </div>
+    </div>
+  </body>
+</html>
