@@ -13,19 +13,22 @@ python3 -m http.server 8084
 
 Or just open `index.html` directly — Reveal, fonts, and theme all load from CDN/local.
 
-## Structure (43 slides, 8 acts)
+## Structure (45 slides, 8 acts) — DS v2 "Cornerstone+"
 
 | Act | Slides | What happens |
 |-----|--------|--------------|
 | 0 · Cold open | 1–2 | Title + "who here has felt it?" audience hook |
-| I · 1895 | 3–6 | Lumière brothers, Gorky quote, Méliès' cut, "not a play" |
-| II · The Panic Pattern | 7–9 | Timeline: film / Vitaphone / recording ban / Novachord ban; fear vs. art |
+| I · 1895 | 3–6 | Lumière brothers, Gorky quote, Méliès' cut (FPO still), "not a play" |
+| II · The Panic Pattern | 7–9 | Panic rail: 1896 film / 1927 Vitaphone / 1942 Petrillo ban / 1969 Moog ban; fear vs. art |
 | III · Chaplin | 10–21 | 13 years of refusal → The Great Dictator speech, **verbatim, one beat per slide (I–VIII)** |
-| IV · The Sine Wave | 22–25 | Pomplamoose rebuild cycles; SVG wave; "change is not death" |
-| V · 2026 | 26–29 | The slop phase, consent/theft, mass disruption stats, permission to feel conflicted |
-| VI · Why humans win | 30–32 | Risk / Scarcity / Connection; the 1959 thought experiment |
-| VII · The Answer | 33–39 | **Code-Puppy University** — thesis, two personas, the stack (Puppy OS / Code-Puppy / University), founding curriculum (5 schools), terminal mock, who it's for |
-| VIII · The Ask | 40–43 | Three charter commitments, Chaplin bookend, thank-you |
+| IV · The Sine Wave | 22–25 | Pomplamoose rebuild cycles; animated stroke-draw SVG wave; "change is not death" |
+| V · 2026 | 26–31 | Slop phase, consent/theft, stat wall, **Fireship beat: the moat is gone + asteroid→soil**, permission to feel conflicted |
+| VI · Why humans win | 32–34 | Risk / Scarcity / Connection pillars; the 1959 thought experiment |
+| VII · The Answer | 35–41 | **Code-Puppy University** — thesis, two personas, the stack (Puppy OS / Code-Puppy / University), founding curriculum (5 schools), self-typing terminal, who it's for |
+| VIII · The Ask | 42–45 | Three charter commitments (ledger), Chaplin bookend, thank-you |
+
+Design system: see `DESIGN.md` (four archetypes, act-color discipline, motion budget).
+Fact audit: see `FACTCHECK.md` (verified 2026-07-30; v2 text reflects corrections).
 
 ## The Chaplin requirement
 
@@ -64,11 +67,15 @@ Source Serif 4 (quotes + Chaplin). Dark mode with luminous accents, per slide-pu
 - Code-Puppy University and Puppy OS are presented as founding concepts — this deck is
   intentionally their charter document. No prior CPU artifacts existed on disk as of
   2026-07-28 (full-machine search performed).
-- Historical anchors (Lumière 1895, Gorky 1896, Méliès 1902, Jazz Singer 1927, Petrillo
-  recording ban, Novachord 1939, 22K theater musicians, Baumol cost disease, 1991 ASOL
-  crisis, 2008 Stanford GSB 46/63 deficits) are as cited in Conte's talk.
+- Historical anchors (Lumière 1895, Gorky 1896, Méliès 1902, Jazz Singer 1927, ~20K
+  theater musicians, Petrillo recording ban 1942–44, Moog union ban late 1960s, Baumol
+  cost disease, 1992 ASOL/Wolf report, Flanagan 2012) — corrected vs. Conte's compressed
+  telling; see FACTCHECK.md.
+- Fireship beat (slides 29–30): The Code Report, July 29 2026 — "the moat was coding
+  itself"; execution at $20/month; asteroid → soil (distribution, branding, taste).
 
 ## Slide-puppy notes
 
-Design system: slide-puppy DS v1 / Cornerstone conventions, Code-Puppy brand binding.
+Design system: DS v2 "Cornerstone+" (DESIGN.md), Code-Puppy brand binding.
 Reveal.js 5.1.0 via CDN. Auto-animate pairs on title/Chaplin/reveal sequences.
+Two sanctioned animations: sine stroke-draw (Act IV), terminal type-in (Act VII).
