@@ -1,59 +1,24 @@
 /* ============================================================
-   THE GREAT ADPUPPYTION — DS v2 "Cornerstone+"
-   Four archetypes: STATEMENT · SPLIT · STAGE · LEDGER
-   Brand tokens from code_puppy field-guide. Dark canvas,
-   luminous act-color discipline, wow-is-scarcity motion budget.
+   THEME — DS v2 "Cornerstone+" component layer
+   Consumes tokens.css ONLY. Organization:
+     1 base · 2 utilities · 3 archetypes (STATEMENT/SPLIT/STAGE/
+       LEDGER) · 4 components (by category) · 5 chrome
+   Rules: no hardcoded colors/sizes (tokens.css owns values);
+   one accent hue per slide via .act-* scoping; cards/tables
+   exist ONLY inside LEDGER; images ONLY in SPLIT/STAGE (.duo).
    ============================================================ */
 
-:root {
-  /* Layer 1 — primitives (Code-Puppy field-guide palette) */
-  --cp-ink-950: #06090d;
-  --cp-ink-900: #0b0f14;
-  --cp-ink-800: #111821;
-  --cp-ink-700: #151e28;
-  --cp-ink-600: #233040;
-  --cp-ink-500: #334459;
+@import url("tokens.css");
 
-  --cp-text: #e8eef4;
-  --cp-text-soft: #9fb0c3;
-  --cp-text-muted: #6b7d91;
-
-  --cp-gold: #f5b94d;   /* creator / brand primary */
-  --cp-sky: #6cb6ff;    /* builder / technical */
-  --cp-mint: #4cc46a;   /* hope / recovery */
-  --cp-violet: #b692f6; /* creative / weird */
-  --cp-coral: #ff7b72;  /* alarm / disruption */
-
-  /* Layer 2 — semantic */
-  --surface-canvas: var(--cp-ink-900);
-  --surface-elev: var(--cp-ink-800);
-  --surface-card: var(--cp-ink-700);
-  --line: var(--cp-ink-600);
-  --line-light: var(--cp-ink-500);
-  --ink-primary: var(--cp-text);
-  --ink-soft: var(--cp-text-soft);
-  --ink-muted: var(--cp-text-muted);
-  --accent-creator: var(--cp-gold);
-  --accent-builder: var(--cp-sky);
-  --accent-hope: var(--cp-mint);
-  --accent-weird: var(--cp-violet);
-  --accent-alarm: var(--cp-coral);
-
-  --sans: "Inter", -apple-system, "Segoe UI", sans-serif;
-  --display: "Space Grotesk", "Inter", sans-serif;
-  --mono: "JetBrains Mono", "SF Mono", Menlo, monospace;
-  --serif: "Source Serif 4", Georgia, serif;
-
-  --act: var(--accent-creator); /* per-act accent; overridden by .act-* */
-}
-
-/* Per-act accent scoping — one hue per slide, enforced by cascade */
+/* Per-act accent scoping — one hue per slide, enforced by cascade.
+   Default --act is gold (acts 0/3/7/8); others opt in via class. */
+:root { --act: var(--act-0); }
 .act-sky    { --act: var(--accent-builder); }
 .act-coral  { --act: var(--accent-alarm); }
 .act-mint   { --act: var(--accent-hope); }
 .act-violet { --act: var(--accent-weird); }
 
-/* ---------- Reveal base ---------- */
+/* ──────────── 1 · BASE ──────────── */
 .reveal { font-family: var(--sans); font-size: 30px; color: var(--ink-primary); }
 .reveal-viewport {
   background: var(--surface-canvas);
@@ -67,15 +32,17 @@
   line-height: 1.05; text-transform: none; color: var(--ink-primary);
   margin: 0 0 0.5em;
 }
-.reveal h1 { font-size: 2.6em; }
-.reveal h2 { font-size: 1.9em; }
-.reveal h3 { font-size: 1.3em; }
+.reveal h1 { font-size: var(--type-h1); }
+.reveal h2 { font-size: var(--type-h2); }
+.reveal h3 { font-size: var(--type-h3); }
 .reveal p { line-height: 1.55; margin: 0 0 0.8em; }
 .reveal small { color: var(--ink-muted); }
+.reveal ul { margin: 0.4em 0 0.8em 1.1em; }
+.reveal li { margin-bottom: 0.35em; line-height: 1.45; }
 
-/* ---------- Utility ---------- */
+/* ──────────── 2 · UTILITIES ──────────── */
 .eyebrow {
-  font-family: var(--mono); font-size: 0.52em; letter-spacing: 0.35em;
+  font-family: var(--mono); font-size: var(--type-micro); letter-spacing: 0.35em;
   text-transform: uppercase; color: var(--act); margin-bottom: 1.2em;
 }
 .gold { color: var(--accent-creator); } .sky { color: var(--accent-builder); }
@@ -86,122 +53,39 @@
 .center h1, .center h2 { margin-left: auto; margin-right: auto; }
 
 .megaword {
-  font-family: var(--display); font-size: 3.4em; font-weight: 700;
+  font-family: var(--display); font-size: var(--type-mega); font-weight: 700;
   letter-spacing: -0.03em; line-height: 1.0;
 }
-.bigstat { font-family: var(--display); font-size: 4.2em; font-weight: 700; line-height: 1; }
+.bigstat { font-family: var(--display); font-size: var(--type-stat); font-weight: 700; line-height: 1; }
 
-/* ---------- Archetype 1 · STATEMENT ---------- */
+/* ──────────── 3 · ARCHETYPES ──────────── */
+
+/* 3.1 STATEMENT — the shout: eyebrow + one typographic object, nothing else */
 .reveal .slides section.statement {
   display: flex !important; flex-direction: column; justify-content: center;
-  min-height: 92vh;
+  min-height: var(--statement-height);
 }
 .reveal .slides section.statement.center > * { margin-left: auto; margin-right: auto; }
 .statement .megaword { margin-top: 0.1em; }
 
-/* ---------- Archetype 2 · SPLIT ---------- */
+/* Back-compat: vcenter == statement (load-bearing specificity fix) */
+.reveal .slides section.vcenter {
+  display: flex !important; flex-direction: column; justify-content: center;
+  min-height: var(--statement-height);
+}
+.reveal .slides section.vcenter.center > * { margin-left: auto; margin-right: auto; }
+
+/* 3.2 SPLIT — the whisper: prose left, ONE artifact right (quote XOR image) */
 .split { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 1.4em; align-items: center; }
-.split .artifact {
-  border-left: 2px solid var(--act);
-  padding-left: 1.1em;
-}
-.split .artifact img { width: 100%; border-radius: 10px; display: block; }
+.split .artifact { border-left: 2px solid var(--act); padding-left: 1.1em; }
+.split .artifact img { width: 100%; border-radius: var(--radius-media); display: block; }
 
-/* Duotone asset treatment — grayscale + act-color multiply */
-.duo { position: relative; overflow: hidden; border-radius: 10px; }
-.duo img { filter: grayscale(1) contrast(1.1) brightness(0.9); display: block; width: 100%; }
-.duo::after {
-  content: ""; position: absolute; inset: 0;
-  background: var(--act); mix-blend-mode: multiply; opacity: 0.35;
-}
-.duo::before {
-  content: ""; position: absolute; inset: 0; z-index: 1;
-  background: linear-gradient(160deg, transparent 55%, rgba(6,9,13,0.75));
-}
-
-/* Pull quote — borderless, rule + serif */
-.pullquote {
-  font-family: var(--serif); font-size: 1.1em; font-style: italic;
-  line-height: 1.5; color: var(--ink-primary);
-}
-.pullquote .attr {
-  display: block; font-family: var(--mono); font-style: normal;
-  font-size: 0.5em; letter-spacing: 0.2em; text-transform: uppercase;
-  color: var(--ink-muted); margin-top: 1em;
-}
-
-/* Chaplin — sacred text */
-.chaplin {
-  font-family: var(--serif); font-size: 1.5em; line-height: 1.65;
-  color: var(--ink-primary); max-width: 22em;
-}
-.chaplin .beat { color: var(--accent-creator); }
-.chaplin-slide .eyebrow { margin-bottom: 0.8em; }
-.reveal .slides section.chaplin-slide { min-height: 92vh; }
-.reveal .slides section.chaplin-slide .chaplin { margin-left: auto; margin-right: auto; }
-
-/* ---------- Archetype 3 · STAGE ---------- */
-.stage { min-height: 92vh; display: flex !important; flex-direction: column; justify-content: center; }
+/* 3.3 STAGE — the artifact IS the slide: full-bleed inside frame margins */
+.stage { min-height: var(--statement-height); display: flex !important; flex-direction: column; justify-content: center; }
 .stage .canvas { margin-top: 0.6em; }
 
-/* Timeline — horizontal rail, not cards */
-.rail { position: relative; padding-top: 3.2em; }
-.rail::before {
-  content: ""; position: absolute; top: 1.15em; left: 0; right: 0;
-  height: 2px; background: linear-gradient(90deg,
-    var(--accent-alarm), var(--accent-builder), var(--accent-weird), var(--accent-hope));
-  opacity: 0.5;
-}
-.rail .nodes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1em; }
-.rail .node { position: relative; }
-.rail .node::before {
-  content: ""; position: absolute; top: -2.25em; left: 0.1em;
-  width: 11px; height: 11px; border-radius: 50%;
-  background: var(--node, var(--act)); box-shadow: 0 0 14px var(--node, var(--act));
-}
-.rail .node.n-coral { --node: var(--accent-alarm); }
-.rail .node.n-sky { --node: var(--accent-builder); }
-.rail .node.n-violet { --node: var(--accent-weird); }
-.rail .node.n-mint { --node: var(--accent-hope); }
-.rail .tyear {
-  font-family: var(--display); font-size: 1.5em; font-weight: 700;
-  color: var(--node, var(--ink-primary)); display: block; margin-bottom: 0.2em;
-}
-.rail .node p { font-size: 0.62em; line-height: 1.45; color: var(--ink-soft); margin: 0 0 0.4em; }
-.rail .node strong { color: var(--ink-primary); }
-
-/* Stat wall — big numbers, hairline separation, no boxes */
-.statwall { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8em; }
-.statwall .stat { border-top: 2px solid var(--act); padding-top: 0.5em; }
-.statwall .stat p { font-size: 0.66em; margin-top: 0.5em; }
-
-/* Sine wave — animated stroke draw */
-.sinewrap svg { width: 100%; height: auto; display: block; }
-.sinewrap .draw { stroke-dasharray: 2600; stroke-dashoffset: 2600; }
-.reveal .present .sinewrap .draw { animation: drawline 2.2s cubic-bezier(0.4, 0, 0.2, 1) 0.3s forwards; }
-@keyframes drawline { to { stroke-dashoffset: 0; } }
-
-/* Terminal — the meta-wow: lines reveal on slide entry */
-.termmock {
-  background: var(--cp-ink-950); border: 1px solid var(--line);
-  border-radius: 12px; font-family: var(--mono); font-size: 0.62em;
-  padding: 1.2em 1.4em; line-height: 1.75; color: var(--ink-soft);
-}
-.termmock .prompt { color: var(--accent-creator); }
-.termmock .cmd { color: var(--ink-primary); }
-.termmock .ok { color: var(--accent-hope); }
-.termmock .line { display: block; overflow: hidden; white-space: nowrap; width: 0; }
-/* both fill modes: hold 0-width until delay elapses, hold 100% after */
-.reveal .present .termmock .line { animation: typein 0.01s linear both; animation-delay: var(--d, 0s); }
-@keyframes typein { to { width: 100%; } }
-.termmock .caret::after {
-  content: "▋"; color: var(--accent-creator);
-  animation: blink 1s steps(1) infinite;
-}
-@keyframes blink { 50% { opacity: 0; } }
-
-/* ---------- Archetype 4 · LEDGER ---------- */
-.reveal table.puptable { width: 100%; border-collapse: collapse; font-size: 0.66em; }
+/* 3.4 LEDGER — structured data; the ONLY home of tables/cards */
+.reveal table.puptable { width: 100%; border-collapse: collapse; font-size: var(--type-small); }
 .reveal table.puptable th {
   font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.15em;
   font-size: 0.8em; color: var(--ink-muted);
@@ -214,31 +98,121 @@
 .reveal table.puptable tr:hover td { background: rgba(245, 185, 77, 0.04); }
 .reveal table.puptable td strong { color: var(--ink-primary); }
 
-/* Charter — ledger-flat columns, hairlines + numerals, no boxes */
 .charter { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.1em; }
 .charter .commit { border-top: 3px solid var(--act); padding-top: 0.6em; }
-.charter .commit p { font-size: 0.66em; margin-top: 0.6em; }
-.charter .num {
-  font-family: var(--display); font-size: 2.6em; font-weight: 700;
-  color: var(--act); line-height: 1;
+.charter .commit p { font-size: var(--type-small); margin-top: 0.6em; }
+.charter .num { font-family: var(--display); font-size: 2.6em; font-weight: 700; color: var(--act); line-height: 1; }
+
+/* ──────────── 4 · COMPONENTS (by category) ──────────── */
+
+/* 4.1 quotes */
+.pullquote {
+  font-family: var(--serif); font-size: var(--type-quote); font-style: italic;
+  line-height: 1.5; color: var(--ink-primary);
+}
+.pullquote .attr {
+  display: block; font-family: var(--mono); font-style: normal;
+  font-size: var(--type-micro); letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--ink-muted); margin-top: 1em;
 }
 
-/* Personas — gradient wash panels (kept from v1, de-carded) */
-.persona { border-radius: 16px; padding: 1.1em 1.3em; border: 1px solid var(--line); }
-.persona.creative { background: linear-gradient(160deg, rgba(245,185,77,0.10), var(--surface-card)); border-color: rgba(245,185,77,0.4); }
-.persona.technical { background: linear-gradient(160deg, rgba(108,182,255,0.10), var(--surface-card)); border-color: rgba(108,182,255,0.4); }
+/* 4.2 sacred text (Chaplin) */
+.chaplin {
+  font-family: var(--serif); font-size: var(--type-chaplin); line-height: 1.65;
+  color: var(--ink-primary); max-width: 22em;
+}
+.chaplin .beat { color: var(--accent-creator); }
+.chaplin-slide .eyebrow { margin-bottom: 0.8em; }
+.reveal .slides section.chaplin-slide { min-height: var(--statement-height); }
+.reveal .slides section.chaplin-slide .chaplin { margin-left: auto; margin-right: auto; }
+
+/* 4.3 media — duotone FPO treatment (grayscale + act-color multiply) */
+.duo { position: relative; overflow: hidden; border-radius: var(--radius-media); }
+.duo img { filter: grayscale(1) contrast(1.1) brightness(0.9); display: block; width: 100%; }
+.duo::after {
+  content: ""; position: absolute; inset: 0;
+  background: var(--act); mix-blend-mode: multiply; opacity: var(--duotone-wash);
+}
+.duo::before {
+  content: ""; position: absolute; inset: 0; z-index: 1;
+  background: linear-gradient(160deg, transparent 55%, rgba(6, 9, 13, 0.75));
+}
+
+/* 4.4 data-viz: panic rail (timeline) */
+.rail { position: relative; padding-top: 3.2em; }
+.rail::before {
+  content: ""; position: absolute; top: 1.15em; left: 0; right: 0;
+  height: 2px; background: linear-gradient(90deg,
+    var(--accent-alarm), var(--accent-builder), var(--accent-weird), var(--accent-hope));
+  opacity: 0.5;
+}
+.rail .nodes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1em; }
+.rail .node { position: relative; }
+.rail .node::before {
+  content: ""; position: absolute; top: -2.25em; left: 0.1em;
+  width: 11px; height: 11px; border-radius: 50%;
+  background: var(--node, var(--act));
+  box-shadow: 0 0 var(--glow-node) var(--node, var(--act));
+}
+.rail .node.n-coral { --node: var(--accent-alarm); }
+.rail .node.n-sky { --node: var(--accent-builder); }
+.rail .node.n-violet { --node: var(--accent-weird); }
+.rail .node.n-mint { --node: var(--accent-hope); }
+.rail .tyear {
+  font-family: var(--display); font-size: 1.5em; font-weight: 700;
+  color: var(--node, var(--ink-primary)); display: block; margin-bottom: 0.2em;
+}
+.rail .node p { font-size: 0.62em; line-height: 1.45; color: var(--ink-soft); margin: 0 0 0.4em; }
+.rail .node strong { color: var(--ink-primary); }
+
+/* 4.5 data-viz: stat wall (numbers + hairlines, no boxes) */
+.statwall { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gap-grid); }
+.statwall .stat { border-top: 2px solid var(--act); padding-top: 0.5em; }
+.statwall .stat p { font-size: var(--type-small); margin-top: 0.5em; }
+
+/* 4.6 data-viz: sine wave (animated stroke-draw — motion slot #1) */
+.sinewrap svg { width: 100%; height: auto; display: block; }
+.sinewrap .draw { stroke-dasharray: 2600; stroke-dashoffset: 2600; }
+.reveal .present .sinewrap .draw {
+  animation: drawline var(--motion-draw) cubic-bezier(0.4, 0, 0.2, 1) 0.3s forwards;
+}
+@keyframes drawline { to { stroke-dashoffset: 0; } }
+
+/* 4.7 terminal (self-typing — motion slot #2) */
+.termmock {
+  background: var(--cp-ink-950); border: 1px solid var(--line);
+  border-radius: 12px; font-family: var(--mono); font-size: 0.62em;
+  padding: 1.2em 1.4em; line-height: 1.75; color: var(--ink-soft);
+}
+.termmock .prompt { color: var(--accent-creator); }
+.termmock .cmd { color: var(--ink-primary); }
+.termmock .ok { color: var(--accent-hope); }
+.termmock .line { display: block; overflow: hidden; white-space: nowrap; width: 0; }
+.reveal .present .termmock .line { animation: typein 0.01s linear both; animation-delay: var(--d, 0s); }
+@keyframes typein { to { width: 100%; } }
+.termmock .caret::after {
+  content: "▋"; color: var(--accent-creator);
+  animation: blink 1s steps(1) infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+/* 4.8 personas (gradient wash panels) */
+.persona { border-radius: var(--radius-panel); padding: 1.1em 1.3em; border: 1px solid var(--line); }
+.persona.creative { background: linear-gradient(160deg, rgba(245, 185, 77, 0.10), var(--surface-card)); border-color: rgba(245, 185, 77, 0.4); }
+.persona.technical { background: linear-gradient(160deg, rgba(108, 182, 255, 0.10), var(--surface-card)); border-color: rgba(108, 182, 255, 0.4); }
 .persona h3 { margin-bottom: 0.2em; }
 
-/* Stack rows — the three-layer stack, pill + one-liner */
+/* 4.9 stack rows (the three-layer stack) */
 .stackrow { display: flex; align-items: center; gap: 1.2em; padding: 0.75em 0; border-bottom: 1px solid var(--line); }
 .stackrow:last-child { border-bottom: none; }
 .stackrow .pill { min-width: 11em; text-align: center; }
 .stackrow p { font-size: 0.7em; margin: 0; }
 
+/* 4.10 pills (labels) */
 .pill {
-  display: inline-block; font-family: var(--mono); font-size: 0.5em;
+  display: inline-block; font-family: var(--mono); font-size: var(--type-micro);
   letter-spacing: 0.12em; text-transform: uppercase;
-  border: 1px solid var(--line-light); border-radius: 999px;
+  border: 1px solid var(--line-light); border-radius: var(--radius-pill);
   padding: 0.45em 1.1em; color: var(--ink-soft);
 }
 .pill.gold { border-color: var(--accent-creator); color: var(--accent-creator); }
@@ -247,29 +221,18 @@
 .pill.mint { border-color: var(--accent-hope); color: var(--accent-hope); }
 .pill.coral { border-color: var(--accent-alarm); color: var(--accent-alarm); }
 
-/* Moat ledger — the Fireship beat */
+/* 4.11 moat ledger (the Fireship beat) */
 .moats { display: grid; grid-template-columns: 1fr 1fr; gap: 1.4em; align-items: end; }
-.moats .price {
-  font-family: var(--display); font-size: 3.4em; font-weight: 700; line-height: 1;
-}
+.moats .price { font-family: var(--display); font-size: var(--type-mega); font-weight: 700; line-height: 1; }
 .moats .lbl {
-  font-family: var(--mono); font-size: 0.5em; letter-spacing: 0.2em;
+  font-family: var(--mono); font-size: var(--type-micro); letter-spacing: 0.2em;
   text-transform: uppercase; color: var(--ink-muted); margin-top: 0.6em;
 }
 .moats .then { border-top: 2px solid var(--accent-alarm); padding-top: 0.5em; }
 .moats .now { border-top: 2px solid var(--accent-hope); padding-top: 0.5em; }
 
-/* ---------- Chrome ---------- */
+/* ──────────── 5 · CHROME ──────────── */
 .reveal .slide-number { font-family: var(--mono); font-size: 14px; color: var(--ink-muted); background: transparent; }
 .reveal .progress { color: var(--act, var(--accent-creator)); height: 4px; }
-.reveal ul { margin: 0.4em 0 0.8em 1.1em; }
-.reveal li { margin-bottom: 0.35em; line-height: 1.45; }
 .reveal .slides section .fragment.fade-up { transform: translateY(24px); }
 .reveal .slides section .fragment.fade-up.visible { transform: translateY(0); }
-
-/* Back-compat: vcenter maps onto statement behavior (load-bearing fix) */
-.reveal .slides section.vcenter {
-  display: flex !important; flex-direction: column; justify-content: center;
-  min-height: 92vh;
-}
-.reveal .slides section.vcenter.center > * { margin-left: auto; margin-right: auto; }

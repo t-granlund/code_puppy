@@ -1,8 +1,8 @@
 # STATE — pick up here
 
-**Last saved:** 2026-07-30 by code-puppy-8aaf0e
-**Status:** v2 — DS "Cornerstone+" overhaul complete, QA'd headless (45 slides @1440×810).
-Fireship beat integrated. Fact-check pass done + staged in FACTCHECK.md (applied).
+**Last saved:** 2026-07-30 (evening) by code-puppy-8aaf0e
+**Status:** v2.1 — DS "Cornerstone+" refactored into token/component architecture,
+42-test compliance suite green, headless QA re-verified post-refactor.
 
 ## How to resume
 
@@ -16,12 +16,17 @@ python3 -m http.server 8084   # then open http://localhost:8084/
 - `DESIGN.md` — DS v2 spec: four archetypes (STATEMENT/SPLIT/STAGE/LEDGER),
   act→color discipline, type scale, motion budget, asset pipeline. **Read first
   before editing slides.**
-- `FACTCHECK.md` — web-puppy verified claims table. v2 slide text already
-  reflects the corrections (Petrillo 1942, Moog 1969, ~20K musicians,
-  Karen X. Cheng, Flanagan 2012). Keep it as the audit trail.
+- `components.json` — machine-readable DS registry. Natural-language prompts
+  map to tokens/classes via its `prompt_guide`. Keep in sync with deck edits
+  (test_registry.py enforces).
+- `FACTCHECK.md` — web-puppy verified claims table; corrections applied.
+- `tokens.css` — SINGLE SOURCE OF TRUTH for every color/size/motion value.
+  Prompt-driven edits land here (e.g. "recolor Act II" → edit `--act-2`).
+- `theme.css` — component layer. Consumes tokens only; zero hardcoded hex
+  (test_tokens.py enforces).
 - `README.md` — structure + provenance.
 - `index.html` — all 45 slides, 8 acts.
-- `theme.css` — DS v2 "Cornerstone+".
+- `tests/` — 42-test compliance suite. Run: `/opt/homebrew/bin/pytest tests/ -q`
 
 ## Hard requirements (do not break)
 
@@ -50,6 +55,16 @@ Stack: **Puppy OS** (front door) → **Code-Puppy** (engine, real, MIT) →
 **University** (bridge; this deck is its charter).
 5 schools: New Medium / Agentic Craft for Creatives / Creative Direction for
 Engineers / The Rebuild Practice / Ethics, Consent & Credit.
+
+## Test suite (tests/ — 42 tests, all green)
+
+| Module | Guards |
+|--------|--------|
+| `test_structure.py` | 45-slide count, registry coverage, archetype legality (no tables outside LEDGER, images only in SPLIT/STAGE with .duo), single-hue rule with sanctioned exceptions, motion budget = exactly 2 |
+| `test_chaplin.py` | Speech verbatim vs transcript (word-level), one beat per slide, I–VIII eyebrows, slide-44 bookend, serif treatment |
+| `test_content.py` | Fact-check locks (1942 Petrillo, Moog-not-Novachord, ~20K, 1992 Wolf, Flanagan, Karen X. Cheng), Fireship beat + attribution, CPU framing phrases, act markers |
+| `test_tokens.py` | Brand palette exact hex, semantic→primitive wiring, act map completeness, zero hardcoded hex in theme.css, type floors (0.52em micro), WCAG contrast ≥4.5 body / ≥3.0 accents+muted |
+| `test_registry.py` | components.json schema, 4 archetypes, component categories, registry↔deck consistency, per-slide act classes (slide_classes map), motion slots = 2 |
 
 ## QA tooling
 
