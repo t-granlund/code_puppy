@@ -1,0 +1,286 @@
+/* ============================================================
+   THE GREAT ADPUPPYTION — Code-Puppy theme
+   Brand tokens extracted from code_puppy docs/field-guide
+   (github.com/mpfaffenberger/code_puppy)
+   Dark canvas, luminous accents, presentation scale.
+   ============================================================ */
+
+:root {
+  /* Layer 1 — primitives (Code-Puppy field-guide palette) */
+  --cp-ink-950: #06090d;
+  --cp-ink-900: #0b0f14;
+  --cp-ink-800: #111821;
+  --cp-ink-700: #151e28;
+  --cp-ink-600: #233040;
+  --cp-ink-500: #334459;
+
+  --cp-text: #e8eef4;
+  --cp-text-soft: #9fb0c3;
+  --cp-text-muted: #6b7d91;
+
+  --cp-gold: #f5b94d;   /* primary accent — the puppy golden */
+  --cp-sky: #6cb6ff;    /* tech / builder */
+  --cp-mint: #4cc46a;   /* hope / go */
+  --cp-violet: #b692f6; /* creative / weird */
+  --cp-coral: #ff7b72;  /* danger / disruption */
+
+  /* Layer 2 — semantic */
+  --surface-canvas: var(--cp-ink-900);
+  --surface-elev: var(--cp-ink-800);
+  --surface-card: var(--cp-ink-700);
+  --line: var(--cp-ink-600);
+  --line-light: var(--cp-ink-500);
+  --ink-primary: var(--cp-text);
+  --ink-soft: var(--cp-text-soft);
+  --ink-muted: var(--cp-text-muted);
+  --accent-creator: var(--cp-gold);
+  --accent-builder: var(--cp-sky);
+  --accent-hope: var(--cp-mint);
+  --accent-weird: var(--cp-violet);
+  --accent-alarm: var(--cp-coral);
+
+  --sans: "Inter", -apple-system, "Segoe UI", sans-serif;
+  --display: "Space Grotesk", "Inter", sans-serif;
+  --mono: "JetBrains Mono", "SF Mono", Menlo, monospace;
+  --serif: "Source Serif 4", Georgia, serif;
+}
+
+/* ---------- Reveal base ---------- */
+.reveal {
+  font-family: var(--sans);
+  font-size: 30px;
+  color: var(--ink-primary);
+}
+.reveal-viewport {
+  background: var(--surface-canvas);
+  background-image:
+    radial-gradient(1200px 800px at 85% -10%, rgba(108, 182, 255, 0.07), transparent 60%),
+    radial-gradient(1000px 700px at -10% 110%, rgba(245, 185, 77, 0.06), transparent 60%);
+}
+.reveal .slides section {
+  text-align: left;
+  padding: 0 1.2rem;
+}
+.reveal h1, .reveal h2, .reveal h3 {
+  font-family: var(--display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  text-transform: none;
+  color: var(--ink-primary);
+  margin: 0 0 0.5em;
+}
+.reveal h1 { font-size: 2.6em; }
+.reveal h2 { font-size: 1.9em; }
+.reveal h3 { font-size: 1.3em; }
+.reveal p { line-height: 1.55; margin: 0 0 0.8em; }
+.reveal small { color: var(--ink-muted); }
+
+/* ---------- Utility classes ---------- */
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 0.52em;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--accent-creator);
+  margin-bottom: 1.2em;
+}
+.eyebrow.sky { color: var(--accent-builder); }
+.eyebrow.violet { color: var(--accent-weird); }
+.eyebrow.coral { color: var(--accent-alarm); }
+.eyebrow.mint { color: var(--accent-hope); }
+
+.gold { color: var(--accent-creator); }
+.sky { color: var(--accent-builder); }
+.mint { color: var(--accent-hope); }
+.violet { color: var(--accent-weird); }
+.coral { color: var(--accent-alarm); }
+.muted { color: var(--ink-muted); }
+.soft { color: var(--ink-soft); }
+
+.center { text-align: center; }
+.center h1, .center h2, .center h3 { margin-left: auto; margin-right: auto; }
+
+/* Giant display statements */
+.megaword {
+  font-family: var(--display);
+  font-size: 3.4em;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.0;
+}
+.bigstat {
+  font-family: var(--display);
+  font-size: 4.2em;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* ---------- Cards ---------- */
+.card {
+  background: var(--surface-card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 0.9em 1.1em;
+}
+.card.gold-border { border-color: var(--accent-creator); box-shadow: 0 0 40px rgba(245,185,77,0.12); }
+.card.sky-border { border-color: var(--accent-builder); box-shadow: 0 0 40px rgba(108,182,255,0.12); }
+.card.violet-border { border-color: var(--accent-weird); box-shadow: 0 0 40px rgba(182,146,246,0.12); }
+
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7em; }
+.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.6em; }
+
+/* ---------- Timeline (history of disruption) ---------- */
+.timeline { display: flex; gap: 0.55em; align-items: stretch; }
+.timeline .tcol {
+  flex: 1;
+  background: var(--surface-card);
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--accent-creator);
+  border-radius: 12px;
+  padding: 0.65em 0.7em;
+  font-size: 0.62em;
+  line-height: 1.4;
+}
+.timeline .tcol.t-sky { border-top-color: var(--accent-builder); }
+.timeline .tcol.t-violet { border-top-color: var(--accent-weird); }
+.timeline .tcol.t-coral { border-top-color: var(--accent-alarm); }
+.timeline .tcol.t-mint { border-top-color: var(--accent-hope); }
+.timeline .tyear {
+  font-family: var(--display);
+  font-size: 1.7em;
+  font-weight: 700;
+  color: var(--ink-primary);
+  display: block;
+  margin-bottom: 0.15em;
+}
+.timeline .tcol p { font-size: 0.92em; margin: 0 0 0.35em; color: var(--ink-soft); }
+.timeline .tcol strong { color: var(--ink-primary); }
+
+/* ---------- Quotes ---------- */
+.pullquote {
+  font-family: var(--serif);
+  font-size: 1.25em;
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--ink-primary);
+  border-left: 5px solid var(--accent-creator);
+  padding-left: 0.9em;
+}
+.pullquote .attr {
+  display: block;
+  font-family: var(--mono);
+  font-style: normal;
+  font-size: 0.5em;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-top: 1em;
+}
+
+/* Chaplin — the sacred text treatment */
+.chaplin {
+  font-family: var(--serif);
+  font-size: 1.5em;
+  line-height: 1.65;
+  color: var(--ink-primary);
+  max-width: 22em;
+}
+.chaplin .beat { color: var(--accent-creator); }
+.chaplin-slide .eyebrow { margin-bottom: 0.8em; }
+
+/* ---------- Sine wave hero ---------- */
+.sinewrap svg { width: 100%; height: auto; display: block; }
+
+/* ---------- Table ---------- */
+.reveal table.puptable { width: 100%; border-collapse: collapse; font-size: 0.62em; }
+.reveal table.puptable th {
+  font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.15em;
+  font-size: 0.8em; color: var(--ink-muted);
+  border-bottom: 2px solid var(--line-light); padding: 0.5em 0.6em; text-align: left;
+}
+.reveal table.puptable td {
+  border-bottom: 1px solid var(--line); padding: 0.55em 0.6em;
+  color: var(--ink-soft); line-height: 1.35; vertical-align: top;
+}
+.reveal table.puptable td strong { color: var(--ink-primary); }
+
+/* ---------- Curriculum pills ---------- */
+.pill {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 0.5em;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: 1px solid var(--line-light);
+  border-radius: 999px;
+  padding: 0.45em 1.1em;
+  margin: 0.2em 0.15em;
+  color: var(--ink-soft);
+}
+.pill.gold { border-color: var(--accent-creator); color: var(--accent-creator); }
+.pill.sky { border-color: var(--accent-builder); color: var(--accent-builder); }
+.pill.violet { border-color: var(--accent-weird); color: var(--accent-weird); }
+.pill.mint { border-color: var(--accent-hope); color: var(--accent-hope); }
+.pill.coral { border-color: var(--accent-alarm); color: var(--accent-alarm); }
+
+/* ---------- Paw logo mark ---------- */
+.pawmark {
+  display: inline-flex; align-items: center; gap: 0.35em;
+  font-family: var(--display); font-weight: 700; letter-spacing: -0.02em;
+}
+.pawmark svg { height: 1em; width: auto; }
+
+/* ---------- Fragment reveal polish ---------- */
+.reveal .slides section .fragment.fade-up { transform: translateY(24px); }
+.reveal .slides section .fragment.fade-up.visible { transform: translateY(0); }
+
+/* ---------- Slide number / footer ---------- */
+.reveal .slide-number {
+  font-family: var(--mono);
+  font-size: 14px;
+  color: var(--ink-muted);
+  background: transparent;
+}
+.reveal .progress { color: var(--accent-creator); height: 4px; }
+
+/* Lists */
+.reveal ul { margin: 0.4em 0 0.8em 1.1em; }
+.reveal li { margin-bottom: 0.35em; line-height: 1.45; }
+
+/* Two-persona split */
+.persona { border-radius: 16px; padding: 1em 1.2em; border: 1px solid var(--line); }
+.persona.creative { background: linear-gradient(160deg, rgba(245,185,77,0.10), var(--surface-card)); border-color: rgba(245,185,77,0.4); }
+.persona.technical { background: linear-gradient(160deg, rgba(108,182,255,0.10), var(--surface-card)); border-color: rgba(108,182,255,0.4); }
+.persona h3 { margin-bottom: 0.2em; }
+
+/* Terminal mock */
+.termmock {
+  background: var(--cp-ink-950);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  font-family: var(--mono);
+  font-size: 0.58em;
+  padding: 1em 1.2em;
+  line-height: 1.7;
+  color: var(--ink-soft);
+}
+.termmock .prompt { color: var(--accent-creator); }
+.termmock .cmd { color: var(--ink-primary); }
+.termmock .ok { color: var(--accent-hope); }
+
+/* Vertically center helper — must beat Reveal's own section layout */
+.reveal .slides section.vcenter {
+  display: flex !important;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 92vh;
+}
+.reveal .slides section.vcenter.center > * { margin-left: auto; margin-right: auto; }
+
+/* Chaplin slides: bigger, sacred, centered */
+.reveal .slides section.chaplin-slide { min-height: 92vh; }
+.reveal .slides section.chaplin-slide .chaplin { margin-left: auto; margin-right: auto; }
+
+/* Tighten act-break megaword slides */
+.reveal .slides section .megaword { margin-top: 0.1em; }
