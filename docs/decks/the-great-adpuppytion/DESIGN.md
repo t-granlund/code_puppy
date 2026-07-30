@@ -3,6 +3,23 @@
 Design system + layout architecture for the Code-Puppy University founding deck.
 Supersedes the informal v1 conventions. Locked 2026-07-30.
 
+## Architecture (prompt-addressable)
+
+```
+tokens.css      §1 brand primitives → §2 semantic → §3 role accents →
+                §4 act map → §5 type families → §6 type scale →
+                §7 space/geometry → §8 motion → §9 glow
+components.json machine-readable registry + prompt_guide (natural-language
+                edits map to a token or class; tests enforce sync)
+theme.css       component layer — consumes tokens ONLY (no hardcoded values)
+index.html      45 slides; every slide is exactly one archetype
+tests/          42-test compliance suite (see STATE.md)
+```
+
+Natural-language edit examples: "make Act II sky" → `--act-2: var(--accent-builder)`
+in tokens.css §4. "Bigger Chaplin text" → `--type-chaplin`. "Slower sine draw" →
+`--motion-draw`. Nothing else needs touching.
+
 ## Principles (in priority order)
 
 1. **Simple** — one idea per slide, ruthlessly. If a slide needs a fourth element,
