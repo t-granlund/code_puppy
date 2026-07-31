@@ -11,7 +11,7 @@ import unicodedata
 
 ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII"]
 SPEECH_SLIDES = list(range(13, 21))  # 13..20 inclusive
-BOOKEND_SLIDE = 44
+BOOKEND_SLIDE = 56
 
 # The eight beats as they appear in the transcript's wording
 # (docs/jack-conte-sxsw.md, the talk's Great Dictator reading).
