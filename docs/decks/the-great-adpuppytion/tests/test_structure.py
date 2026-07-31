@@ -6,10 +6,10 @@ import re
 ACCENT_CLASSES = {"gold", "sky", "mint", "violet", "coral"}
 ARCHETYPE_CLASSES = {"statement", "split", "stage"}
 
-# Sanctioned multi-hue slides: panic rail (8), charter (43), personas (37),
-# stat walls (28, 33 — each stat carries its own accent by design),
-# the stack (38 — three pills, one hue per layer)
-MULTI_HUE_ALLOWED = {8, 28, 33, 37, 38, 43}
+# Sanctioned multi-hue slides: panic rail (8), charter (55), personas (37),
+# stat walls (28, 33, 43, 47, 52 — each stat carries its own accent by design),
+# the stacks (38 three-pill, 46 pack ladder), MVV closer (53 — four-hue sequence)
+MULTI_HUE_ALLOWED = {8, 28, 33, 37, 38, 43, 46, 47, 52, 53, 55}
 # Sanctioned animated moments (motion budget = 2)
 ANIMATED_ALLOWED = {23, 40}
 
@@ -38,13 +38,13 @@ def accent_hues(section):
 
 class TestDeckShape:
     def test_slide_count(self, slides, registry):
-        assert len(slides) == 45
+        assert len(slides) == 57
         reg_max = max(s for act in registry["acts"].values() for s in act["slides"])
-        assert reg_max == 45, "registry acts must cover all 45 slides"
+        assert reg_max == 57, "registry acts must cover all 57 slides"
 
     def test_registry_covers_every_slide(self, slides, registry):
         covered = {s for act in registry["acts"].values() for s in act["slides"]}
-        assert covered == set(range(1, 46))
+        assert covered == set(range(1, 58))
 
     def test_reveal_config_unchanged(self, soup):
         script = soup.find_all("script")[-1].string
@@ -64,9 +64,15 @@ class TestArchetypes:
             )
 
     def test_images_only_in_split_or_stage(self, slides):
+        # slide 50 exception: the brand logo on a STATEMENT is the Code-Puppy
+        # era reveal — a typographic object, not an image (no .duo by design)
+        LOGO_EXCEPTION = {50}
         for i, s in enumerate(slides, 1):
             imgs = s.find_all("img")
             if not imgs:
+                continue
+            if i in LOGO_EXCEPTION:
+                assert all("code-puppy-" in (im.get("src") or "") for im in imgs)
                 continue
             assert classes_of(s) & {"split", "stage"} or s.select(".split"), (
                 f"slide {i}: image outside SPLIT/STAGE archetype"
@@ -77,7 +83,7 @@ class TestArchetypes:
                 )
 
     def test_tables_only_in_ledger_slides(self, slides, registry):
-        ledger_slides = {39, 43}  # the two sanctioned LEDGER uses
+        ledger_slides = {39, 55}  # the two sanctioned LEDGER uses
         for i, s in enumerate(slides, 1):
             if s.find("table"):
                 assert i in ledger_slides, f"slide {i}: table outside LEDGER"
