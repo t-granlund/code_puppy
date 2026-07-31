@@ -65,5 +65,45 @@ class TestCorrectedFacts:
 class TestActCoverage:
     def test_act_eyebrows_present(self, slides):
         text = all_text(slides)
-        for act in ("Act I", "Act II", "Act III", "Act IV", "Act V", "Act VI", "Act VII", "Act VIII"):
+        for act in ("Act I", "Act II", "Act III", "Act IV", "Act V", "Act VI",
+                    "Act VII", "Act VIII", "Act IX", "Act X"):
             assert act in text, f"missing {act} marker"
+
+
+class TestWalmartActs:
+    """Act IX/X fact locks — research-verified (~/research/walmart-cpu-curriculum)."""
+
+    def test_internal_university_facts(self, slides):
+        text = all_text(slides)
+        assert "200K+" in text and "900%" in text, "Marketplace seller stats"
+        assert "Pactum" in text and "64%" in text, "GNFR negotiation case"
+        assert "350 acres" in text and "mass-timber" in text
+        assert "Gensler" in text, "campus architects credited"
+
+    def test_pack_ladder_intact(self, slides):
+        text = all_text(slides)
+        for level in ("L1 · Puppy", "L2 · Good Boy/Girl", "L3 · Top Dog",
+                      "L4 · Alpha", "L5 · Pack Leader"):
+            assert level in text, f"missing ladder rung {level}"
+        assert "Wiggum Loop" in text and "Naming Ceremony" in text
+
+    def test_generational_bridge_facts(self, slides):
+        text = all_text(slides)
+        assert "Surgeon General" in text and "61%" in text, "loneliness stats sourced"
+
+    def test_external_university_facts(self, slides):
+        text = all_text(slides)
+        assert "Ledger" in text and "bikeable" in text
+        assert "2029" in text and "Bjarke" not in text or "BIG" in text
+        assert "Walton" in text, "STEM school is Walton-family philanthropy"
+
+    def test_franchising_facts(self, slides):
+        text = all_text(slides)
+        assert "$936B" in text and "IFA" in text
+        assert "Roark" in text and "YEB" in text, "School of Rock: Roark/YEB (not 'W Capital')"
+        assert "Riverside" in text and "Franworth" in text and "Lash Lounge" in text
+
+    def test_verified_corrections_hold(self, slides):
+        text = all_text(slides)
+        assert "W Capital" not in text, "misremembered PE name must not appear"
+        assert "Voices of GNFR" not in text, "unverifiable internal program"
