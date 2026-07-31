@@ -47,22 +47,24 @@
       "rail": { "class": "rail", "archetypes": ["stage"], "nodes": 4, "node_colors": ["n-coral", "n-sky", "n-violet", "n-mint"], "slides": [8] },
       "statwall": { "class": "statwall", "archetypes": ["stage"], "columns": 3, "slides": [28, 33] },
       "sinewave": { "class": "sinewrap", "archetypes": ["stage"], "animated": true, "motion_slot": 1, "slides": [23] },
-      "moats": { "class": "moats", "archetypes": ["stage"], "slides": [29], "notes": "Fireship beat: .then coral / .now mint price ledger" }
+      "moats": { "class": "moats", "archetypes": ["stage"], "slides": [29], "notes": "Fireship beat: .then coral / .now mint price ledger" },
+      "statwall-internal": { "class": "statwall", "archetypes": ["stage"], "slides": [43, 47, 52], "notes": "Act IX/X stat walls: silos, generational divide, franchising" }
     },
     "interactive": {
       "terminal": { "class": "termmock", "archetypes": ["stage"], "animated": true, "motion_slot": 2, "slides": [40], "notes": "lines reveal via --d stagger; caret blinks" }
     },
     "structure": {
       "persona": { "class": "persona", "variants": ["creative", "technical"], "archetypes": ["split"], "slides": [37] },
-      "stackrow": { "class": "stackrow", "archetypes": ["split"], "slides": [38], "notes": "pill + one-liner rows for the 3-layer stack" },
+      "stackrow": { "class": "stackrow", "archetypes": ["split", "stage"], "slides": [38, 46], "notes": "pill + one-liner rows; 3-layer stack + L1–L5 pack ladder" },
       "puptable": { "class": "puptable", "archetypes": ["ledger"], "slides": [39] },
-      "charter": { "class": "charter", "archetypes": ["ledger"], "slides": [43], "notes": "three .commit columns, .num big numerals" }
+      "charter": { "class": "charter", "archetypes": ["ledger"], "slides": [55], "notes": "three .commit columns, .num big numerals" }
     },
     "labels": {
       "pill": { "class": "pill", "variants": ["gold", "sky", "violet", "mint", "coral"] }
     },
     "media": {
-      "duotone": { "class": "duo", "archetypes": ["split", "stage"], "token": "--duotone-wash", "slides": [5], "notes": "grayscale + act-color multiply; FPO placehold.co until licensed" }
+      "duotone": { "class": "duo", "archetypes": ["split", "stage"], "token": "--duotone-wash", "slides": [5, 49], "notes": "grayscale + act-color multiply; FPO placehold.co until licensed" },
+      "logo": { "class": "logo-mark", "implemented_as": "plain img src=assets/code-puppy-logo.png", "archetypes": ["statement"], "slides": [50], "notes": "Code-Puppy era moment — typographic object, sanctioned .duo exception" }
     }
   },
 
@@ -75,7 +77,9 @@
     "5": { "name": "2026", "hue": "alarm → weird", "class": "act-coral / act-violet", "slide_classes": { "26": "act-coral", "27": "act-violet", "28": "act-coral", "29": "act-coral", "30": "act-violet", "31": "act-violet" }, "slides": [26, 27, 28, 29, 30, 31] },
     "6": { "name": "Why humans win", "hue": "weird (violet)", "class": "act-violet", "slides": [32, 33, 34] },
     "7": { "name": "The answer (CPU)", "hue": "creator (gold)", "slides": [35, 36, 37, 38, 39, 40, 41] },
-    "8": { "name": "The ask", "hue": "sequenced", "slides": [42, 43, 44, 45] }
+    "8": { "name": "The ask", "hue": "sequenced", "slides": [54, 55, 56, 57] },
+    "9": { "name": "The internal university (Walmart)", "hue": "builder→alarm→hope", "slide_classes": { "42": "act-sky", "43": "act-coral", "44": "act-mint", "45": "act-sky", "47": "act-violet" }, "slides": [42, 43, 44, 45, 46, 47] },
+    "10": { "name": "Beyond the walls", "hue": "hope→builder→alarm", "slide_classes": { "48": "act-mint", "49": "act-mint", "51": "act-sky", "52": "act-coral" }, "slides": [48, 49, 50, 51, 52, 53] }
   },
 
   "locks": {

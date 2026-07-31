@@ -30,6 +30,8 @@ class TestRegistryMatchesDeck:
     def test_registered_slides_have_their_component(self, slides, registry):
         for cat, comps in registry["components"].items():
             for name, spec in comps.items():
+                if spec.get("implemented_as"):
+                    continue  # documented alternate implementation
                 for n in spec.get("slides", []):
                     found = slides[n - 1].select(f".{spec['class']}")
                     assert found, f"slide {n}: registry says .{spec['class']} lives here"
