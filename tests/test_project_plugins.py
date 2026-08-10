@@ -302,6 +302,20 @@ class TestGetProjectPluginsDirectory:
             assert result is not None
             assert result == plugins_dir
 
+    def test_returns_none_when_cwd_is_home(self, tmp_path: Path):
+        """When CWD is HOME, .code_puppy/plugins IS the user plugin dir —
+        no project tier, so user plugins aren't trust-gated."""
+        import code_puppy.plugins as plugins_module
+
+        plugins_dir = tmp_path / ".code_puppy" / "plugins"
+        plugins_dir.mkdir(parents=True)
+
+        with (
+            patch("code_puppy.plugins.Path.cwd", return_value=tmp_path),
+            patch.object(plugins_module, "USER_PLUGINS_DIR", plugins_dir),
+        ):
+            assert get_project_plugins_directory() is None
+
 
 # ---------------------------------------------------------------------------
 # 8. load_plugin_callbacks() includes "project" key in result dict

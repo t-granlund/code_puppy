@@ -432,11 +432,18 @@ def get_project_plugins_directory() -> Path | None:
     Does NOT create the directory if it doesn't exist — the team must create it
     intentionally.
 
+    When CWD is the user's home directory, ``<CWD>/.code_puppy/plugins`` IS the
+    user plugins directory. Treating it as the project tier would trust-gate the
+    user's own personal plugins, so in that case there is no project tier.
+
     Returns:
         Path to the project's plugins directory if it exists, or None.
     """
     project_plugins_dir = Path.cwd() / ".code_puppy" / "plugins"
     if project_plugins_dir.is_dir():
+        # Home-dir collision: this path is the user plugin dir, not a project.
+        if project_plugins_dir.resolve() == USER_PLUGINS_DIR.resolve():
+            return None
         return project_plugins_dir
     return None
 
