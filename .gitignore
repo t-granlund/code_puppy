@@ -50,3 +50,8 @@ code_puppy/bundled_skills/
 
 # Local git worktrees
 .worktrees/
+
+# Field guide generated artifacts (rebuilt by docs/generate-field-guide.py)
+docs/field-guide/data.js
+docs/field-guide-flat.html
+docs/field-guide/changelog.js
