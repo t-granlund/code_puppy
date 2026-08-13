@@ -269,9 +269,7 @@ def _get_plugins() -> list[dict]:
         readme = item / "README.md"
         desc = ""
         if readme.exists():
-            desc = _first_sentence(
-                readme.read_text(encoding="utf-8", errors="replace").lstrip("# ")
-            )
+            desc = _first_sentence(readme.read_text(encoding="utf-8", errors="replace").lstrip("# "))
 
         files = [
             f.name
@@ -430,28 +428,6 @@ def _inline_script_block(content: str) -> str:
     return content.replace("</script>", "<\\/script>")
 
 
-_PYTHONISH_ESCAPE_RE = re.compile(r"\\([xXuU])([0-9a-fA-F])")
-
-
-def _neutralize_escapes(node):
-    """Recursively double backslashes that start python-style escapes.
-
-    READMEs and git-log excerpts sometimes contain sequences like ``\\x03``
-    (Ctrl+C) or ``\\U0001f3a8`` as literal text. In JSON they survive as
-    written, but inside an HTML ``<script>`` the browser's JS parser
-    re-interprets them as real escape sequences, corrupting the data blob
-    (this silently emptied DATA.plugins in the flat HTML). Escaping the
-    backslash makes both the JSON and JS parsers see inert text instead.
-    """
-    if isinstance(node, str):
-        return _PYTHONISH_ESCAPE_RE.sub(lambda m: "\\" + m.group(0), node)
-    if isinstance(node, list):
-        return [_neutralize_escapes(item) for item in node]
-    if isinstance(node, dict):
-        return {key: _neutralize_escapes(value) for key, value in node.items()}
-    return node
-
-
 def _write_flat_html(data: dict) -> Path:
     """Write a single self-contained HTML file with all CSS/JS/data inlined."""
     flat_path = DOCS_DIR / "field-guide-flat.html"
@@ -459,22 +435,28 @@ def _write_flat_html(data: dict) -> Path:
     html_template = (OUTPUT_DIR / "index.html").read_text()
     app_js = (OUTPUT_DIR / "app.js").read_text()
     changelog_js = (OUTPUT_DIR / "changelog.js").read_text()
-    data_js = "window.FIELD_GUIDE_DATA = " + json.dumps(data, indent=2, ensure_ascii=True) + ";\n"
+    data_js = "window.FIELD_GUIDE_DATA = " + json.dumps(data, indent=2, ensure_ascii=False) + ";\n"
 
-    # Inline data.js / app.js / changelog.js. Use a zero-arg function as the
-    # replacement so re.sub does NOT interpret backslashes in the payload
-    # (data_js legitimately contains \uXXXX escapes now; re.sub would crash).
-    def _inline(pattern: str, payload: str) -> None:
-        nonlocal html_template
-        html_template = re.sub(
-            pattern,
-            lambda _m, _p=payload: f'<script>\n{_inline_script_block(_p)}\n</script>',
-            html_template,
-        )
+    # Inline data.js
+    html_template = re.sub(
+        r'<script\s+src="data\.js"></script>',
+        f'<script>\n{_inline_script_block(data_js)}\n</script>',
+        html_template,
+    )
 
-    _inline(r'<script\s+src="data\.js"></script>', data_js)
-    _inline(r'<script\s+src="app\.js"></script>', app_js)
-    _inline(r'<script\s+src="changelog\.js"></script>', changelog_js)
+    # Inline app.js
+    html_template = re.sub(
+        r'<script\s+src="app\.js"></script>',
+        f'<script>\n{_inline_script_block(app_js)}\n</script>',
+        html_template,
+    )
+
+    # Inline changelog.js so the flat file is fully self-contained
+    html_template = re.sub(
+        r'<script\s+src="changelog\.js"></script>',
+        f'<script>\n{_inline_script_block(changelog_js)}\n</script>',
+        html_template,
+    )
 
     # Remove external Google Fonts links for a fully offline file
     html_template = re.sub(
@@ -543,13 +525,10 @@ def main() -> None:
         },
     }
 
-    # Clean up ANSI/OSC noise that might leak in from imports, then
-    # neutralize backslash-escape sequences everywhere in the data so the
-    # browser's <script> parser can't reinterpret them (was killing flat HTML).
+    # Clean up ANSI/OSC noise that might leak in from imports
     data = json.loads(_strip_ansi_osc(json.dumps(data)))
-    data = _neutralize_escapes(data)
 
-    js = "window.FIELD_GUIDE_DATA = " + json.dumps(data, indent=2, ensure_ascii=True) + ";\n"
+    js = "window.FIELD_GUIDE_DATA = " + json.dumps(data, indent=2, ensure_ascii=False) + ";\n"
     OUTPUT_FILE.write_text(js)
     print(f"Generated {OUTPUT_FILE} ({len(js):,} chars)")
 
