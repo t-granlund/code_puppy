@@ -1,8 +1,8 @@
 window.FIELD_GUIDE_DATA = {
   "meta": {
-    "generatedAt": "2026-08-16T05:43:51.705821+00:00",
+    "generatedAt": "2026-08-16T05:46:02.990895+00:00",
     "repoPath": "/Users/tygranlund/code_puppy",
-    "repoHead": "1dc8e07a",
+    "repoHead": "fb410ed5",
     "branch": "main",
     "currentVersion": "code-puppy v0.0.720",
     "sourceUrl": "https://github.com/mpfaffenberger/code_puppy"
@@ -10,9 +10,9 @@ window.FIELD_GUIDE_DATA = {
   "stats": {
     "tools": 59,
     "agents": 21,
-    "plugins": 56,
-    "skills": 1,
-    "commitsLast2Months": 600,
+    "plugins": 57,
+    "skills": 2,
+    "commitsLast2Months": 602,
     "releases": 3
   },
   "tools": [
@@ -1879,6 +1879,30 @@ window.FIELD_GUIDE_DATA = {
       "hasSkill": false
     },
     {
+      "name": "i_have_adhd",
+      "tier": "user",
+      "description": "i-have-adhd (Code Puppy port)  ADHD-friendly output mode, ported from [ayghri/i-have-adhd](https://github.com/ayghri/i-have-adhd) (MIT).",
+      "hooks": [
+        "custom_command",
+        "custom_command_help",
+        "load_prompt",
+        "register_skills"
+      ],
+      "hasCustomCommand": true,
+      "files": [
+        {
+          "name": "__init__.py",
+          "lines": 0
+        },
+        {
+          "name": "register_callbacks.py",
+          "lines": 141
+        }
+      ],
+      "hasReadme": true,
+      "hasSkill": true
+    },
+    {
       "name": "meta_oauth",
       "tier": "core-package",
       "description": "Callbacks for Meta Muse OAuth authentication and model registration.",
@@ -2789,6 +2813,12 @@ window.FIELD_GUIDE_DATA = {
       "source": "core-package",
       "description": "How Code Puppy itself is built — its internal architecture, structure, codebase layout, and source modules. Explains agents, tools, the plugin/callback hook system, models, MCP, sessions and history/context windows, skills (including skill namespaces for large catalogs), slash commands, config, messaging/UI, system-prompt assembly, and i18n. Activate for ANY question about how Code Puppy works internally, why it behaves a certain way, where something lives in the code, how a feature is implemented, or how to navigate, debug, or extend the codebase (add a tool, agent, plugin, command, skill, model, or MCP server).",
       "path": "/Users/tygranlund/.local/share/uv/tools/code-puppy/lib/python3.14/site-packages/code_puppy_core_plugins/code_puppy_agent/SKILL.md"
+    },
+    {
+      "name": "i-have-adhd",
+      "source": "plugin",
+      "description": "Shape output for a reader with ADHD: lead with the next action, number multi-step work, restate state across turns, suppress tangents, give specific time estimates, make wins visible. Invoke with /adhd on; stays on until /adhd off.",
+      "path": "/Users/tygranlund/.code_puppy/plugins/i_have_adhd/SKILL.md"
     }
   ],
   "sdlc": [
@@ -2854,12 +2884,28 @@ window.FIELD_GUIDE_DATA = {
     }
   ],
   "changelog": {
-    "total_commits": 600,
+    "total_commits": 602,
     "releases": [
       {
         "month": "2026-08",
-        "commit_count": 180,
+        "commit_count": 182,
         "commits": [
+          {
+            "hash": "fb410ed5a848d7a3a75db1d25255d8ab96c1307e",
+            "short_hash": "fb410ed5",
+            "subject": "docs(field-guide): regenerate after core-plugins package scan support",
+            "author": "Tyler Granlund",
+            "date": "2026-08-16",
+            "month": "2026-08"
+          },
+          {
+            "hash": "4c49e04c1f7e093e968598aa57749efa3a243de2",
+            "short_hash": "4c49e04c",
+            "subject": "feat(field-guide): scan installed core-plugins package + user plugins",
+            "author": "Tyler Granlund",
+            "date": "2026-08-16",
+            "month": "2026-08"
+          },
           {
             "hash": "d6ebab2d80de4303b2253563af72da5783803610",
             "short_hash": "d6ebab2d",
@@ -2921,22 +2967,6 @@ window.FIELD_GUIDE_DATA = {
             "short_hash": "6377759c",
             "subject": "fix: quiet optional skill catalog startup",
             "author": "TJ Webb",
-            "date": "2026-08-14",
-            "month": "2026-08"
-          },
-          {
-            "hash": "1505636ca7e4e1156cb976d8b9ef85a776c0f8b3",
-            "short_hash": "1505636c",
-            "subject": "chore: bump version [ci skip]",
-            "author": "github-actions[bot]",
-            "date": "2026-08-14",
-            "month": "2026-08"
-          },
-          {
-            "hash": "9ff9698e04e5b420c17c1e8dc6114601d1455d68",
-            "short_hash": "9ff9698e",
-            "subject": "Merge pull request #765 from mpfaffenberger/fix/759-rich-theme-hex",
-            "author": "Mike Pfaffenberger",
             "date": "2026-08-14",
             "month": "2026-08"
           }
@@ -3116,6 +3146,20 @@ window.FIELD_GUIDE_DATA = {
       }
     ],
     "commits": [
+      {
+        "hash": "fb410ed5a848d7a3a75db1d25255d8ab96c1307e",
+        "short_hash": "fb410ed5",
+        "subject": "docs(field-guide): regenerate after core-plugins package scan support",
+        "author": "Tyler Granlund",
+        "date": "2026-08-16"
+      },
+      {
+        "hash": "4c49e04c1f7e093e968598aa57749efa3a243de2",
+        "short_hash": "4c49e04c",
+        "subject": "feat(field-guide): scan installed core-plugins package + user plugins",
+        "author": "Tyler Granlund",
+        "date": "2026-08-16"
+      },
       {
         "hash": "1dc8e07ae6e39577eddbe44402597bdf04f5be71",
         "short_hash": "1dc8e07a",
