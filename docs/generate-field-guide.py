@@ -436,10 +436,11 @@ def _get_skills() -> list[dict]:
         if name in seen:
             continue
         seen.add(name)
-        if "/code_puppy_core_plugins/" in str(path):
+        path_str = str(path)
+        if "/code_puppy_core_plugins/" in path_str:
             source = "core-package"
-        elif "code_puppy" in str(path) and "/plugins/" in str(path):
-            source = "plugin"
+        elif path_str.startswith(str(REPO_ROOT)):
+            source = "builtin"
         else:
             source = "user"
         body_intro = ""
@@ -450,12 +451,20 @@ def _get_skills() -> list[dict]:
             if line and not line.startswith("#"):
                 body_intro = line
                 break
+        if path_str.startswith(str(REPO_ROOT)):
+            rel = str(path.relative_to(REPO_ROOT))
+        elif source == "core-package":
+            rel = "code_puppy_core_plugins/" + "/".join(
+                path_str.split("/code_puppy_core_plugins/")[-1].split("/")
+            )
+        else:
+            rel = str(path)
         skills.append(
             {
                 "name": name,
                 "source": source,
                 "description": meta.get("description", body_intro),
-                "path": str(path.relative_to(REPO_ROOT)) if str(path).startswith(str(REPO_ROOT)) else str(path),
+                "path": rel,
             }
         )
     return sorted(skills, key=lambda s: s["name"])
