@@ -435,6 +435,9 @@ function renderPlugins() {
         const badge = el("span", "badge", "/cmd");
         head.appendChild(badge);
       }
+      if (p.tier) {
+        head.appendChild(el("span", "badge", p.tier));
+      }
       card.appendChild(head);
       if (p.description) card.appendChild(el("p", "", p.description));
 
@@ -444,8 +447,11 @@ function renderPlugins() {
         meta.appendChild(tag);
       });
       (p.files || []).slice(0, 5).forEach((f) => {
-        if (f === "register_callbacks.py") return; // implied
-        meta.appendChild(el("span", "tag", f));
+        // Files are {name, lines} objects (older data.js used plain strings).
+        const fname = typeof f === "string" ? f : f.name;
+        if (fname === "register_callbacks.py") return; // implied
+        const label = typeof f === "string" ? fname : `${fname} (${f.lines})`;
+        meta.appendChild(el("span", "tag", label));
       });
       if (meta.children.length) card.appendChild(meta);
       grid.appendChild(card);
