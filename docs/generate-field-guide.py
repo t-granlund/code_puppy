@@ -29,6 +29,46 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 DOCS_DIR = REPO_ROOT / "docs"
 OUTPUT_DIR = DOCS_DIR / "field-guide"
 OUTPUT_FILE = OUTPUT_DIR / "data.js"
+USER_PLUGINS_DIR = Path.home() / ".code_puppy" / "plugins"
+
+
+def _find_installed_core_plugins_dir() -> Path | None:
+    """Locate the installed code_puppy_core_plugins package.
+
+    Upstream moved builtin plugins out of this repo into the
+    ``code-puppy-core-plugins`` companion package (visible in site-packages
+    of the uv tool install). Guide completeness depends on scanning it.
+    """
+    try:
+        result = subprocess.run(
+            [
+                "/opt/homebrew/bin/uv",
+                "tool",
+                "run",
+                "--from",
+                "code-puppy",
+                "python",
+                "-c",
+                "import code_puppy_core_plugins, pathlib; "
+                "print(pathlib.Path(code_puppy_core_plugins.__file__).parent)",
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=120,
+        )
+        if result.returncode == 0:
+            candidate = Path(result.stdout.strip().splitlines()[-1])
+            if candidate.is_dir():
+                return candidate
+    except Exception:
+        pass
+    # Last-ditch: glob the known uv tools layout.
+    uv_site = Path.home() / ".local" / "share" / "uv" / "tools"
+    for candidate in sorted(uv_site.glob("code-puppy/lib/*/site-packages/code_puppy_core_plugins")):
+        if candidate.is_dir():
+            return candidate
+    return None
 
 
 def _run(cmd: list[str], cwd: Path | None = None, check: bool = True) -> str:
@@ -258,39 +298,98 @@ def _scan_plugin_register_callbacks(register_file: Path) -> dict:
     }
 
 
-def _get_plugins() -> list[dict]:
-    """Deep-extract builtin plugins: purpose, hooks, commands, and files."""
-    plugins_dir = REPO_ROOT / "code_puppy" / "plugins"
-    plugins: list[dict] = []
-    for item in sorted(plugins_dir.iterdir()):
-        if not item.is_dir() or item.name.startswith("_") or item.name == "__pycache__":
-            continue
+def _scan_plugin_dir(item: Path, tier: str) -> dict | None:
+    """Extract one plugin's metadata from a directory. Returns None if not a plugin."""
+    if not item.is_dir() or item.name.startswith("_") or item.name == "__pycache__":
+        return None
 
-        readme = item / "README.md"
-        desc = ""
-        if readme.exists():
-            desc = _first_sentence(readme.read_text(encoding="utf-8", errors="replace").lstrip("# "))
+    # A plugin must have a register_callbacks.py somewhere to do anything.
+    if not (item / "register_callbacks.py").exists():
+        return None
 
-        files = [
-            f.name
-            for f in sorted(item.iterdir())
-            if f.is_file() and f.suffix == ".py"
-        ]
-
-        register = item / "register_callbacks.py"
-        meta = _scan_plugin_register_callbacks(register) if register.exists() else {"hooks": [], "hasCustomCommand": False}
-
-        plugins.append(
-            {
-                "name": item.name,
-                "description": desc,
-                "hooks": meta["hooks"],
-                "hasCustomCommand": meta["hasCustomCommand"],
-                "files": files,
-                "hasReadme": readme.exists(),
-            }
+    readme = item / "README.md"
+    desc = ""
+    if readme.exists():
+        desc = _first_sentence(
+            readme.read_text(encoding="utf-8", errors="replace").lstrip("# ")
         )
-    return plugins
+    if not desc:
+        # Fall back to the register_callbacks module docstring.
+        try:
+            tree = ast.parse(
+                (item / "register_callbacks.py").read_text(
+                    encoding="utf-8", errors="replace"
+                )
+            )
+            desc = _first_sentence(ast.get_docstring(tree) or "")
+        except Exception:
+            pass
+
+    files = []
+    for f in sorted(item.iterdir()):
+        if f.is_file() and f.suffix == ".py":
+            try:
+                files.append({"name": f.name, "lines": sum(1 for _ in f.open(errors="replace"))})
+            except Exception:
+                files.append({"name": f.name, "lines": 0})
+
+    meta = _scan_plugin_register_callbacks(item / "register_callbacks.py")
+
+    return {
+        "name": item.name,
+        "tier": tier,
+        "description": desc,
+        "hooks": meta["hooks"],
+        "hasCustomCommand": meta["hasCustomCommand"],
+        "files": files,
+        "hasReadme": readme.exists(),
+        "hasSkill": (item / "SKILL.md").exists(),
+    }
+
+
+def _get_plugins() -> list[dict]:
+    """Deep-extract plugins from all three tiers: builtin-shim, installed
+    core-plugins package, and user plugins. Dedupes by name with the
+    richest record winning."""
+    by_name: dict[str, dict] = {}
+
+    def absorb(item: Path, tier: str) -> None:
+        record = _scan_plugin_dir(item, tier)
+        if record is None:
+            return
+        existing = by_name.get(record["name"])
+        if existing is None:
+            by_name[record["name"]] = record
+            return
+        # Prefer the record with actual content (repo dirs are often stubs
+        # since the core-plugins exodus, while the installed package has the
+        # real code — and vice versa for files still living in the repo).
+        existing_richness = len(existing["files"]) + len(existing["hooks"])
+        new_richness = len(record["files"]) + len(record["hooks"])
+        if new_richness > existing_richness:
+            record["tier"] = f"{tier} (also in {existing['tier']})"
+            by_name[record["name"]] = record
+        else:
+            existing["tier"] = f"{existing['tier']} (also in {tier})"
+
+    repo_plugins = REPO_ROOT / "code_puppy" / "plugins"
+    if repo_plugins.is_dir():
+        for item in sorted(repo_plugins.iterdir()):
+            absorb(item, "builtin")
+
+    core_pkg = _find_installed_core_plugins_dir()
+    if core_pkg is None:
+        print("Warning: installed code_puppy_core_plugins package not found; "
+              "plugin extraction may be incomplete")
+    else:
+        for item in sorted(core_pkg.iterdir()):
+            absorb(item, "core-package")
+
+    if USER_PLUGINS_DIR.is_dir():
+        for item in sorted(USER_PLUGINS_DIR.iterdir()):
+            absorb(item, "user")
+
+    return sorted(by_name.values(), key=lambda p: p["name"])
 
 
 def _extract_frontmatter(text: str) -> dict:
@@ -310,14 +409,24 @@ def _extract_frontmatter(text: str) -> dict:
 
 
 def _get_skills() -> list[dict]:
-    """Discover skills from plugin SKILL.md files and user skills dir."""
+    """Discover skills from all SKILL.md sources: repo plugins, the
+    installed core-plugins package, and the user skills/plugins dirs."""
     skills: list[dict] = []
     seen: set[str] = set()
 
-    plugin_skills = sorted((REPO_ROOT / "code_puppy" / "plugins").rglob("SKILL.md"))
-    user_skills = sorted((Path.home() / ".code_puppy" / "skills").rglob("SKILL.md"))
+    roots: list[Path] = [REPO_ROOT / "code_puppy" / "plugins"]
+    core_pkg = _find_installed_core_plugins_dir()
+    if core_pkg is not None:
+        roots.append(core_pkg)
+    roots.append(Path.home() / ".code_puppy" / "skills")
+    roots.append(USER_PLUGINS_DIR)
 
-    for path in plugin_skills + user_skills:
+    paths: list[Path] = []
+    for root in roots:
+        if root.is_dir():
+            paths.extend(sorted(root.rglob("SKILL.md")))
+
+    for path in paths:
         try:
             text = path.read_text(encoding="utf-8", errors="replace")
         except Exception:
@@ -327,7 +436,12 @@ def _get_skills() -> list[dict]:
         if name in seen:
             continue
         seen.add(name)
-        source = "plugin" if "code_puppy" in str(path) and "/plugins/" in str(path) else "user"
+        if "/code_puppy_core_plugins/" in str(path):
+            source = "core-package"
+        elif "code_puppy" in str(path) and "/plugins/" in str(path):
+            source = "plugin"
+        else:
+            source = "user"
         body_intro = ""
         # First non-frontmatter, non-heading line as a fallback description.
         body = re.sub(r"^---.*?---", "", text, flags=re.S).strip()
