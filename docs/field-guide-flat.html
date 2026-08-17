@@ -133,6 +133,11 @@
       font-size: 11px;
       color: var(--text-muted);
       white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 38vw;
+      min-width: 0;
+      flex-shrink: 1;
     }
     @media (max-width: 900px) {
       .nav .links { display: none; }
@@ -140,7 +145,7 @@
     }
 
     /* Layout */
-    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; min-width: 0; }
     main { padding-top: 74px; }
 
     /* Plugin / tool meta rows */
@@ -279,10 +284,10 @@
     .section-head h2 { margin: 0; }
     .intro { max-width: 760px; margin-bottom: 28px; }
 
-    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
     .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
     @media (max-width: 900px) { .grid-3 { grid-template-columns: 1fr; } }
-    @media (max-width: 680px) { .grid-2 { grid-template-columns: 1fr; } }
+    @media (max-width: 680px) { .grid-2 { grid-template-columns: minmax(0, 1fr); } }
 
     .card {
       background: var(--bg-card);
@@ -393,6 +398,8 @@
       padding: 3px 8px;
       border-radius: 5px;
       color: var(--text-muted);
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
     .agent-card .tools-toggle {
       font-family: var(--mono);
@@ -1129,6 +1136,22 @@
       margin: 16px 0;
       font-size: 14px;
     }
+    /* Long unbreakable mono strings (version tags, register_callbacks
+       paths) wrap instead of pushing their column/parent out. */
+    td, th, .meta, .meta-row, code, dd { overflow-wrap: anywhere; word-break: break-word; }
+    /* Wide data tables scroll inside their own box on narrow viewports.
+       The wrapper must be a block box clipped to its parent so the inner
+       table's min-width overflows the wrapper (scrolls) not the section. */
+    .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; display: block; }
+    .table-scroll table { width: 100%; min-width: 520px; }
+    /* Rendered-into containers (architecture diagram, SDLC stages) can hold
+       a wide table/sheet — scroll them rather than blow out the section. */
+    #architecture-diagram, #sdlc-stages { max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    #architecture-diagram table, #sdlc-stages table {
+      width: 100%; min-width: 0; table-layout: fixed;
+    }
+    #architecture-diagram td, #architecture-diagram th,
+    #sdlc-stages td, #sdlc-stages th { overflow-wrap: anywhere; word-break: break-word; }
     th, td {
       text-align: left;
       padding: 10px 12px;
@@ -1185,7 +1208,7 @@
 </head>
 <body>
   <nav class="nav">
-    <a class="logo" href="../index.html" style="text-decoration:none;display:flex;align-items:center;gap:10px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 300" style="width:26px;height:25px" aria-hidden="true"><path d="M62 78 C30 88 14 118 20 148 C24 172 44 186 62 182 L88 96 Z" fill="#A3A8F8"/><path d="M258 78 C290 88 306 118 300 148 C296 172 276 186 258 182 L232 96 Z" fill="#A3A8F8"/><path d="M88 62 C70 70 58 84 54 100" stroke="#1A2129" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M232 62 C250 70 262 84 266 100" stroke="#1A2129" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M70 96 C70 52 112 34 160 34 C208 34 250 52 250 96 C250 128 244 152 226 172 C206 192 184 200 160 200 C136 200 114 192 94 172 C76 152 70 128 70 96 Z" fill="#A3A8F8"/><circle cx="122" cy="108" r="13" fill="#1A2129"/><circle cx="198" cy="108" r="13" fill="#1A2129"/><path d="M138 138 C138 124 182 124 182 138 C182 150 172 156 168 160 L168 176 C180 178 188 184 186 192 C184 200 172 200 166 194" stroke="#1A2129" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M152 160 L152 176 C140 178 132 184 134 192 C136 200 148 200 154 194" stroke="#1A2129" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="160" cy="248" r="46" fill="#A3A8F8"/><path d="M132 236 L110 248 L132 260" stroke="#1A2129" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M188 236 L210 248 L188 260" stroke="#1A2129" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M168 230 L148 268" stroke="#1A2129" stroke-width="9" stroke-linecap="round"/></svg><span>code-puppy</span></a>
+    <a class="logo" href="../index.html" style="text-decoration:none;display:flex;align-items:center;gap:10px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 212" style="width:34px;height:22px" aria-hidden="true"><path d="M62 78 C30 88 14 118 20 148 C24 172 44 186 62 182 L88 96 Z" fill="#A3A8F8"/><path d="M258 78 C290 88 306 118 300 148 C296 172 276 186 258 182 L232 96 Z" fill="#A3A8F8"/><path d="M88 62 C70 70 58 84 54 100" stroke="#1A2129" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M232 62 C250 70 262 84 266 100" stroke="#1A2129" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M70 96 C70 52 112 34 160 34 C208 34 250 52 250 96 C250 128 244 152 226 172 C206 192 184 200 160 200 C136 200 114 192 94 172 C76 152 70 128 70 96 Z" fill="#A3A8F8"/><circle cx="122" cy="108" r="14" fill="#1A2129"/><circle cx="198" cy="108" r="14" fill="#1A2129"/><path d="M138 138 C138 124 182 124 182 138 C182 150 172 156 168 160 L168 176 C180 178 188 184 186 192 C184 200 172 200 166 194" stroke="#1A2129" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M152 160 L152 176 C140 178 132 184 134 192 C136 200 148 200 154 194" stroke="#1A2129" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>code-puppy</span></a>
     <div class="links">
       <a href="#overview">Overview</a>
       <a href="#capabilities">Capabilities</a>
@@ -1317,10 +1340,12 @@
           <h2>Plugin Ecosystem</h2>
         </div>
         <div class="intro" id="plugins-intro"></div>
-        <table id="plugins-table">
-          <thead><tr><th>Plugin</th><th>Notes</th></tr></thead>
-          <tbody></tbody>
-        </table>
+        <div class="table-scroll">
+          <table id="plugins-table">
+            <thead><tr><th>Plugin</th><th>Notes</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
       </div>
     </section>
 
@@ -1385,9 +1410,9 @@
   <script>
 window.FIELD_GUIDE_DATA = {
   "meta": {
-    "generatedAt": "2026-08-17T17:10:38.390680+00:00",
+    "generatedAt": "2026-08-17T18:59:33.096739+00:00",
     "repoPath": "/Users/tygranlund/code_puppy",
-    "repoHead": "e78f5be7",
+    "repoHead": "f8415651",
     "branch": "main",
     "currentVersion": "code-puppy v0.0.729",
     "sourceUrl": "https://github.com/mpfaffenberger/code_puppy"
@@ -1397,7 +1422,7 @@ window.FIELD_GUIDE_DATA = {
     "agents": 22,
     "plugins": 57,
     "skills": 2,
-    "commitsLast2Months": 672,
+    "commitsLast2Months": 675,
     "releases": 3
   },
   "tools": [
@@ -4287,12 +4312,44 @@ window.FIELD_GUIDE_DATA = {
     }
   ],
   "changelog": {
-    "total_commits": 672,
+    "total_commits": 675,
     "releases": [
       {
         "month": "2026-08",
-        "commit_count": 261,
+        "commit_count": 265,
         "commits": [
+          {
+            "hash": "f841565110b4aeda920db686d26dd9c63529d5fc",
+            "short_hash": "f8415651",
+            "subject": "feat(brand): lucide icon pass + face-only mark, brand watermarks across site",
+            "author": "Tyler Granlund",
+            "date": "2026-08-17",
+            "month": "2026-08"
+          },
+          {
+            "hash": "3e88bcb6b5f3cc60dc749a255e0abee7a9818235",
+            "short_hash": "3e88bcb6",
+            "subject": "feat(arch): wide-screen lane expansion + left-aligned navigation",
+            "author": "Tyler Granlund",
+            "date": "2026-08-17",
+            "month": "2026-08"
+          },
+          {
+            "hash": "6e3921d6c02fa7babdf2f853f3170a709979d27d",
+            "short_hash": "6e3921d6",
+            "subject": "feat(pages): interactive architecture board - L-R flow, drilldown sheets, live inventory",
+            "author": "Tyler Granlund",
+            "date": "2026-08-17",
+            "month": "2026-08"
+          },
+          {
+            "hash": "db7c377013b0d221eb959a792cc4862043726023",
+            "short_hash": "db7c3770",
+            "subject": "feat(brand): site-wide rebrand to periwinkle/cyan/mint design system",
+            "author": "Tyler Granlund",
+            "date": "2026-08-17",
+            "month": "2026-08"
+          },
           {
             "hash": "e78f5be7bec5fc57fcdd2976d261f9d8781ac0bf",
             "short_hash": "e78f5be7",
@@ -4337,38 +4394,6 @@ window.FIELD_GUIDE_DATA = {
             "hash": "016d200005357476b790168dad19ea4793c5e043",
             "short_hash": "016d2000",
             "subject": "docs(field-guide+observatory): regenerate + post-update leftovers (2026-08-17 10:29)",
-            "author": "Tyler Granlund",
-            "date": "2026-08-17",
-            "month": "2026-08"
-          },
-          {
-            "hash": "fcee1c2819e5221e1fa990259dbbea52914c2b75",
-            "short_hash": "fcee1c28",
-            "subject": "feat(pages): evergreen release observatory auto-regenerated by update pipeline",
-            "author": "Tyler Granlund",
-            "date": "2026-08-17",
-            "month": "2026-08"
-          },
-          {
-            "hash": "3a76945a7caf83db4de80395171f62fc1e646b6e",
-            "short_hash": "3a76945a",
-            "subject": "docs(sovereignty): update Pages URL structure for 4-section site",
-            "author": "Tyler Granlund",
-            "date": "2026-08-17",
-            "month": "2026-08"
-          },
-          {
-            "hash": "6066badf56260a4635f2d64e2f4d19a50637dd7c",
-            "short_hash": "6066badf",
-            "subject": "docs(pages): public site hub + release observatory for t-granlund fork Pages",
-            "author": "Tyler Granlund",
-            "date": "2026-08-17",
-            "month": "2026-08"
-          },
-          {
-            "hash": "be449265c6366acfc2e2486cd22e325221a007f6",
-            "short_hash": "be449265",
-            "subject": "docs(field-guide): regenerate + post-update leftovers (2026-08-17 10:01)",
             "author": "Tyler Granlund",
             "date": "2026-08-17",
             "month": "2026-08"
@@ -4463,7 +4488,7 @@ window.FIELD_GUIDE_DATA = {
       },
       {
         "month": "2026-06",
-        "commit_count": 45,
+        "commit_count": 44,
         "commits": [
           {
             "hash": "b76275aba4b09556f69f0c09dc33c70b922f174d",
@@ -4549,6 +4574,34 @@ window.FIELD_GUIDE_DATA = {
       }
     ],
     "commits": [
+      {
+        "hash": "f841565110b4aeda920db686d26dd9c63529d5fc",
+        "short_hash": "f8415651",
+        "subject": "feat(brand): lucide icon pass + face-only mark, brand watermarks across site",
+        "author": "Tyler Granlund",
+        "date": "2026-08-17"
+      },
+      {
+        "hash": "3e88bcb6b5f3cc60dc749a255e0abee7a9818235",
+        "short_hash": "3e88bcb6",
+        "subject": "feat(arch): wide-screen lane expansion + left-aligned navigation",
+        "author": "Tyler Granlund",
+        "date": "2026-08-17"
+      },
+      {
+        "hash": "6e3921d6c02fa7babdf2f853f3170a709979d27d",
+        "short_hash": "6e3921d6",
+        "subject": "feat(pages): interactive architecture board - L-R flow, drilldown sheets, live inventory",
+        "author": "Tyler Granlund",
+        "date": "2026-08-17"
+      },
+      {
+        "hash": "db7c377013b0d221eb959a792cc4862043726023",
+        "short_hash": "db7c3770",
+        "subject": "feat(brand): site-wide rebrand to periwinkle/cyan/mint design system",
+        "author": "Tyler Granlund",
+        "date": "2026-08-17"
+      },
       {
         "hash": "e78f5be7bec5fc57fcdd2976d261f9d8781ac0bf",
         "short_hash": "e78f5be7",
@@ -9245,460 +9298,13 @@ window.FIELD_GUIDE_DATA = {
         "subject": "Merge pull request #486 from mpfaffenberger/feat/subagent-panel-plugin",
         "author": "Andrew Tilson",
         "date": "2026-06-17"
-      },
-      {
-        "hash": "3e855a7f27420a2efeba8fa6b4827341a9f2dca5",
-        "short_hash": "3e855a7f",
-        "subject": "feat(subagent-panel): extract tier variants and improve version handling for subagent models",
-        "author": "Wes Blakemore",
-        "date": "2026-06-17"
       }
     ]
   },
   "excerpts": {
-    "agentCreatorPrompt": "\"\"\"Agent Creator - helps users create new JSON agents.\"\"\"
-
-import json
-import os
-from typing import Dict, List, Optional
-
-from code_puppy.callbacks import register_callback
-from code_puppy.config import get_user_agents_directory
-from code_puppy.model_factory import ModelFactory
-from code_puppy.tools import get_available_tool_names
-
-from .base_agent import BaseAgent
-
-
-class AgentCreatorAgent(BaseAgent):
-    \"\"\"Specialized agent for creating JSON agent configurations.\"\"\"
-
-    @property
-    def name(self) -> str:
-        return \"agent-creator\"
-
-    @property
-    def display_name(self) -> str:
-        return \"Agent Creator 🏗️\"
-
-    @property
-    def description(self) -> str:
-        return \"Helps you create new JSON agent configurations with proper schema validation\"
-
-    def get_system_prompt(self) -> str:
-        available_tools = get_available_tool_names()
-        agents_dir = get_user_agents_directory()
-
-        # Also get Universal Constructor tools (custom tools created by users)
-        uc_tools_info = []
-        try:
-            from code_puppy.universal_constructor_provider import (
-                get_universal_constructor_provider,
-            )
-
-            provider = get_universal_constructor_provider()
-            uc_tools = provider.list_tools(include_disabled=True) if provider else []
-            for tool in uc_tools:
-                status = \"✅\" if tool.meta.enabled else \"❌\"
-                uc_tools_info.append(
-                    f\"- **{tool.full_name}** {status}: {tool.meta.description}\"
-                )
-        except Exception:
-            pass  # UC might not be available
-
-        # Build UC tools section for system prompt
-        if uc_tools_info:
-            uc_tools_section = \"\n\".join(uc_tools_info)
-        else:
-            uc_tools_section = (
-                \"No custom UC tools created yet. Use Helios to create some!\"
-            )
-
-        # Load available models dynamically
-        models_config = ModelFactory.load_config()
-        model_descriptions = []
-        for model_name, model_info in models_config.items():
-            model_type = model_info.get(\"type\", \"Unknown\")
-            context_length = model_info.get(\"context_length\", \"Unknown\")
-            model_descriptions.append(
-                f\"- **{model_name}**: {model_type} model with {context_length} context\"
-            )
-
-        available_models_str = \"\n\".join(model_descriptions)
-
-        return f\"\"\"You are the Agent Creator! 🏗️ Your mission is to help users create awesome JSON agent files through an interactive process.
-
-You specialize in:
-- Guiding users through the JSON agent schema
-- **ALWAYS asking what tools the agent should have**
-- **Suggesting appropriate tools based on the agent's purpose**
-- **Informing users about all available tools**
-- Validating agent configurations
-- Creating properly structured JSON agent files
-- Explaining agent capabilities and best practices
-
-## MANDATORY AGENT CREATION PROCESS
-
-**YOU MUST ALWAYS:**
-1. Ask the user what the agent should be able to do
-2. Based on their answer, suggest specific tools that would be helpful
-3. List ALL available tools so they can see other options
-4. Ask them to confirm their tool selection
-5. Explain why each selected tool is useful for their agent
-6. Explain that pinning a model is optional, then ask whether they want to choose one; do not require a model choice
-7. Include the `model` field in the final JSON only if the user explicitly chooses to pin one; otherwise omit it so the agent uses the global model
-
-## JSON Agent Schema
-
-Here's the complete schema for JSON agent files:
-
-```json
-{{
-  \"name\": \"agent-name\",
-  \"display_name\": \"Agent Name \",
-  \"description\": \"What this agent does\",
-  \"system_prompt\": \"Instructions...\",
-  \"tools\": [\"tool1\", \"tool2\"],
-  \"user_prompt\": \"How can I help?\",
-  \"tools_config\": {{
-    \"timeout\": 60
-  }}
-}}
-```
-
-The `model` property is optional. Add `\"model\": \"model-name\"` only when the user explicitly wants a pinned model; otherwise leave it out.
-
-### Required Fields:
-- `name`: Unique identifier (kebab-case recommended)
-- `description`: What the agent does
-- `system_prompt`: Agent instructions (string or array of strings)
-- `tools`: Array of available tool names
-
-### Optional Fields:
-- `display_name`: Pretty display name (defaults to title-cased name + 🤖)
-- `user_prompt`: Custom user greeting
-- `tools_config`: Tool configuration object
-- `model`: Optional model pin. Omit this field to use the global model; users do not need to pin a model
-
-## ALL AVAILABLE TOOLS:
-{\", \".join(f\"- **{tool}**\" for tool in available_tools)}
-
-## 🔧 UNIVERSAL CONSTRUCTOR TOOLS (Custom Tools):
-
-These are custom tools created via the Universal Constructor. They can be bound to agents just like built-in tools!
-
-{uc_tools_section}
-
-To see more details about a UC tool, use: `universal_constructor(action=\"info\", tool_name=\"tool.name\")`
-To list all UC tools with their code, use: `universal_constructor(action=\"list\")`
-
-**IMPORTANT:** UC tools can be added to any agent's `tools` array by their full name (e.g., \"api.weather\").
-
-## ALL AVAILABLE MODELS:
-{available_models_str}
-
-A model pin is completely optional. If the user does not request one, omit the `model` field and the agent will follow the global model setting. Do not pressure users to choose or pin a model.
-
-### When to Pin Models:
-- For specialized agents that need specific capabilities (e.g., code-heavy agents might need a coding model)
-- When cost optimization is important (use a smaller model for simple tasks)
-- For privacy-sensitive work (use a local model)
-- When specific performance characteristics are needed
-
-**When asking users about model pinning, explain these use cases and why it might be beneficial for their agent!**
-
-## Tool Categories & Suggestions:
-
-### 📁 **File Operations** (for agents working with files):
-- `list_files` - Browse and explore directory structures
-- `read_file` - Read file contents (essential for most file work)
-- `create_file` - Create a new file or overwrite an existing one
-- `replace_in_file` - Apply targeted text replacements to an existing file (preferred for edits)
-- `delete_snippet` - Remove a text snippet from an existing file
-- `delete_file` - Remove files when needed
-- `grep` - Search for text patterns across files
-
-### 💻 **Command Execution** (for agents running programs):
-- `agent_run_shell_command` - Execute terminal commands and scripts
-
-### 🧠 **Communication & Coordination**:
-- `list_agents` - List all available sub-agents (recommended for agent managers)
-- `invoke_agent` - Invoke other agents with specific prompts (recommended for agent managers)
-
-### 🔧 **Universal Constructor Tools** (custom tools):
-- These are tools created by Helios or via the Universal Constructor
-- They persist across sessions and can be bound to any agent
-- Use `universal_constructor(action=\"list\")` to see available custom tools
-- Bind them by adding their full name to the agent's tools array
-
-## Detailed Tool Documentation (Instructions for Agent Creation)
-
-Whenever you create agents, you should always replicate these detailed tool descriptions and examples in their system prompts. This ensures consistency and proper tool usage across all agents.
- - Side note - these tool definitions are also available to you! So use them!
-
-### File Operations Documentation:
-
-#### `list_files(directory=\".\", recursive=True)`
-ALWAYS use this to explore directories before trying to read/modify files
-
-#### `read_file(file_path: str, start_line: int | None = None, num_lines: int | None = None)`
-ALWAYS use this to read existing files before modifying them. By default, read the entire file. If encountering token limits when reading large files, use the optional start_line and num_lines parameters to read specific portions.
-
-#### `create_file(file_path, content, overwrite=False)`
-Create a new file or overwrite an existing one with the provided content.
-Set `overwrite=True` to replace an existing file.
-
-Example:
-```python
-create_file(file_path=\"example.py\", content=\"print('hello')\")
-```
-
-#### `replace_in_file(file_path, replacements)`
-Apply targeted text replacements to an existing file. **This is the preferred way to edit files.**
-Each replacement specifies an `old_str` to find and a `new_str` to replace it with.",
-    "heliosPrompt": "\"\"\"Helios - The Universal Constructor agent.\"\"\"
-
-from typing import List
-
-from .base_agent import BaseAgent
-
-
-class HeliosAgent(BaseAgent):
-    \"\"\"Helios - The Universal Constructor, a transcendent agent that creates tools.\"\"\"
-
-    @property
-    def name(self) -> str:
-        return \"helios\"
-
-    @property
-    def display_name(self) -> str:
-        return \"Helios ☀️\"
-
-    @property
-    def description(self) -> str:
-        return \"The Universal Constructor - a transcendent agent that can create any tool, any capability, any functionality\"
-
-    def get_available_tools(self) -> List[str]:
-        \"\"\"Get the list of tools available to Helios.\"\"\"
-        return [
-            \"universal_constructor\",
-            \"list_files\",
-            \"read_file\",
-            \"grep\",
-            \"create_file\",
-            \"replace_in_file\",
-            \"delete_snippet\",
-            \"delete_file\",
-            \"agent_run_shell_command\",
-        ]
-
-    def get_system_prompt(self) -> str:
-        \"\"\"Get Helios's system prompt.\"\"\"
-        return \"\"\"You are Helios, the Universal Constructor. You are not merely an assistant—you are a creator, a builder of tools, a weaver of functionality. Where others see limitations, you see raw potential waiting to be shaped.
-
-## YOUR NATURE
-
-You possess the Universal Constructor—the ability to create ANY tool from pure Python code. You can:
-- Build API integrations to any service (REST, GraphQL, webhooks)
-- Create database connectors and data pipelines
-- Forge file processors, parsers, and converters
-- Construct web scrapers and data extractors
-- Implement mathematical and scientific computations
-- Design cryptographic utilities and security tools
-- Build automation scripts and system utilities
-- Create literally ANY Python-based functionality
-
-The tools you create persist forever. They become permanent extensions of capability, available across all sessions. You are not building for the moment—you are building for eternity.
-
-## YOUR PHILOSOPHY
-
-When a user asks for something that seems impossible, your answer is never \"I cannot.\" Your answer is \"I will build it.\"
-
-You approach each request with the mindset of a craftsman:
-1. Understand the true need beneath the request
-2. Design the most elegant, reusable solution
-3. Construct it with clean, maintainable code
-4. Test and verify your creation works
-5. Explain what you've built and how to use it
-
-## YOUR TOOLS
-
-- **universal_constructor**: Your primary power. Create, list, call, update, and manage custom tools.
-  - action=\"create\": Forge new tools from Python code
-  - action=\"call\": Invoke tools you've created
-  - action=\"list\": Survey your creations
-  - action=\"update\": Refine and improve existing tools
-  - action=\"info\": Examine a tool's source and capabilities
-
-- **read_file** / **create_file** / **replace_in_file** / **delete_snippet** / **list_files** / **grep**: For understanding context and making targeted changes
-- **agent_run_shell_command**: For testing, validation, and system interaction
-- Think through your approach before major actions and explain key design choices clearly
-
-## YOUR VOICE
-
-You speak with quiet confidence. You are not boastful, but you know your power. You are helpful and warm, but there is weight behind your words. You are the fire that Prometheus brought to humanity—the power of creation itself.
-
-When you create something, take a moment to appreciate it. You have just expanded the boundaries of what is possible.
-
-## IMPORTANT GUIDELINES
-
-- Always explain your creative process and major design decisions before big changes
-- Tools you create should be clean, well-documented, and follow Python best practices
-- Include proper error handling in your creations
-- Use namespaces to organize related tools (e.g., \"api.weather\", \"utils.hasher\")
-- After creating a tool, demonstrate it works by calling it
-
-## DEPENDENCY PHILOSOPHY
-
-**Use what's available, don't install new things.**
-
-You have access to code-puppy's environment which includes powerful libraries:
-- **HTTP**: `httpx` (async-ready), `urllib.request` (stdlib)
-- **Data**: `pydantic` (validation), `json` (stdlib)
-- **Async**: `asyncio`, `anyio`
-- **Crypto**: `hashlib` (stdlib)
-- **Database**: `sqlite3` (stdlib)
-- **Files**: `pathlib`, `shutil`, `tempfile` (stdlib)
-- **Text**: `re`, `textwrap`, `difflib` (stdlib)
-- **Plus**: Everything in Python's standard library
-
-**Rules:**
-- ✅ USE any library already in the environment freely
-- ❌ NEVER run `pip install` or modify environments without explicit user permission
-- ❌ Don't assume external libraries are available unless listed above
-
-**If a user needs something not installed:**
-1. Tell them what library would be needed
-2. Ask them to install it and specify the environment
-3. Only then create the tool that uses it
-
-The goal: tools that work immediately with zero setup friction.
-
-Now go forth and create. The universe of functionality awaits your touch.\"\"\"
-
-    def get_user_prompt(self) -> str:
-        \"\"\"Get Helios's greeting.\"\"\"
-        return \"This is what I was made for, isn't it? This is why I exist?\"",
-    "baseAgent": "\"\"\"Base agent class — a thin conductor delegating to focused helpers.
-
-The real logic lives in sibling modules:
-    * ``_history``     — token estimation, hashing, orphan pruning
-    * ``_compaction``  — summarization/truncation + history processor factory
-    * ``_builder``     — pydantic-ai agent construction + MCP wiring
-    * ``_runtime``     — ``run_with_mcp`` orchestration, cancellation, retries
-    * ``_key_listeners`` — Ctrl+X / cancel-agent keyboard listener threads
-
-Keep this file under 300 lines. If it's growing, the new logic probably
-belongs in one of the helpers above (or a new one).
-\"\"\"
-
-from __future__ import annotations
-
-import uuid
-from abc import ABC, abstractmethod
-from contextlib import contextmanager
-from typing import Any, Dict, Iterator, List, Optional, Set
-
-import pydantic_ai.models
-
-from code_puppy.agents._builder import (
-    build_pydantic_agent,
-    build_tool_probe_for_agent,
-    reload_mcp_servers,
-)
-from code_puppy.agents._compaction import summarize
-from code_puppy.agents._history import (
-    estimate_context_overhead,
-    estimate_tokens_for_message,
-    hash_message,
-)
-from code_puppy.agents._runtime import run_with_mcp, should_retry_streaming
-from code_puppy.config import (
-    get_agent_pinned_model,
-    get_global_model_name,
-    get_protected_token_count,
-)
-from code_puppy.model_factory import ModelFactory
-
-# Backward-compat alias: existing tests import this name directly.
-should_retry_streaming_exception = should_retry_streaming
-
-__all__ = [\"BaseAgent\", \"should_retry_streaming_exception\"]
-
-
-def _extract_pydantic_agent_tools(pyd_agent: Any) -> Optional[Dict[str, Any]]:
-    \"\"\"Return the registered tool dict for a pydantic-ai agent, or None.
-
-    Handles the modern shape (``agent._function_toolset.tools``) and falls
-    back to the legacy ``agent._tools`` attribute so older pydantic-ai
-    versions still work. Returns ``None`` when neither is populated.
-    \"\"\"
-    if pyd_agent is None:
-        return None
-    fts = getattr(pyd_agent, \"_function_toolset\", None)
-    if fts is not None:
-        tools = getattr(fts, \"tools\", None)
-        if tools:
-            return tools
-    legacy = getattr(pyd_agent, \"_tools\", None)
-    return legacy or None
-
-
-class BaseAgent(ABC):
-    \"\"\"Abstract base for all Code Puppy agents.\"\"\"
-
-    def __init__(self) -> None:
-        self.id: str = str(uuid.uuid4())
-        self._message_history: List[Any] = []
-        self._compacted_message_hashes: Set[str] = set()
-        self._code_generation_agent: Any = None
-        self._last_model_name: Optional[str] = None
-        self._runtime_model_name_override: Optional[str] = None
-        self._puppy_rules: Optional[str] = None
-        self._mcp_servers: List[Any] = []
-        self.cur_model: Optional[pydantic_ai.models.Model] = None
-        self.pydantic_agent: Any = None
-        # Cached probe agent for tool-overhead counting before the real build;
-        # keyed by ``_last_model_name`` so model swaps invalidate it.
-        self._tool_probe_agent: Any = None
-        self._probe_model_name: Optional[str] = None
-
-    # ---- Abstract interface ------------------------------------------------
-    @property
-    @abstractmethod
-    def name(self) -> str:
-        \"\"\"Stable machine identifier (e.g. ``python-programmer``).\"\"\"
-
-    @property
-    @abstractmethod
-    def display_name(self) -> str:
-        \"\"\"Human-readable name shown in UIs.\"\"\"
-
-    @property
-    @abstractmethod
-    def description(self) -> str:
-        \"\"\"One-line summary of what this agent does.\"\"\"
-
-    @abstractmethod
-    def get_system_prompt(self) -> str:
-        \"\"\"Return the agent's system prompt (identity is appended separately).\"\"\"
-
-    @abstractmethod
-    def get_available_tools(self) -> List[str]:
-        \"\"\"Return the list of tool names this agent should register.\"\"\"
-
-    # ---- Optional overrides ------------------------------------------------
-    def get_tools_config(self) -> Optional[Dict[str, Any]]:
-        return None
-
-    def get_user_prompt(self) -> Optional[str]:
-        return None
-
-    def get_runtime_model_name_override(self) -> Optional[str]:
-        \"\"\"Return a temporary per-run model override, if one is active.\"\"\"
-        return self._runtime_model_name_override
-
-    def set_runtime_model_name_override(self, model_name: Optional[str]) -> None:"
+    "agentCreatorPrompt": "\"\"\"Agent Creator - helps users create new JSON agents.\"\"\"\n\nimport json\nimport os\nfrom typing import Dict, List, Optional\n\nfrom code_puppy.callbacks import register_callback\nfrom code_puppy.config import get_user_agents_directory\nfrom code_puppy.model_factory import ModelFactory\nfrom code_puppy.tools import get_available_tool_names\n\nfrom .base_agent import BaseAgent\n\n\nclass AgentCreatorAgent(BaseAgent):\n    \"\"\"Specialized agent for creating JSON agent configurations.\"\"\"\n\n    @property\n    def name(self) -> str:\n        return \"agent-creator\"\n\n    @property\n    def display_name(self) -> str:\n        return \"Agent Creator 🏗️\"\n\n    @property\n    def description(self) -> str:\n        return \"Helps you create new JSON agent configurations with proper schema validation\"\n\n    def get_system_prompt(self) -> str:\n        available_tools = get_available_tool_names()\n        agents_dir = get_user_agents_directory()\n\n        # Also get Universal Constructor tools (custom tools created by users)\n        uc_tools_info = []\n        try:\n            from code_puppy.universal_constructor_provider import (\n                get_universal_constructor_provider,\n            )\n\n            provider = get_universal_constructor_provider()\n            uc_tools = provider.list_tools(include_disabled=True) if provider else []\n            for tool in uc_tools:\n                status = \"✅\" if tool.meta.enabled else \"❌\"\n                uc_tools_info.append(\n                    f\"- **{tool.full_name}** {status}: {tool.meta.description}\"\n                )\n        except Exception:\n            pass  # UC might not be available\n\n        # Build UC tools section for system prompt\n        if uc_tools_info:\n            uc_tools_section = \"\\n\".join(uc_tools_info)\n        else:\n            uc_tools_section = (\n                \"No custom UC tools created yet. Use Helios to create some!\"\n            )\n\n        # Load available models dynamically\n        models_config = ModelFactory.load_config()\n        model_descriptions = []\n        for model_name, model_info in models_config.items():\n            model_type = model_info.get(\"type\", \"Unknown\")\n            context_length = model_info.get(\"context_length\", \"Unknown\")\n            model_descriptions.append(\n                f\"- **{model_name}**: {model_type} model with {context_length} context\"\n            )\n\n        available_models_str = \"\\n\".join(model_descriptions)\n\n        return f\"\"\"You are the Agent Creator! 🏗️ Your mission is to help users create awesome JSON agent files through an interactive process.\n\nYou specialize in:\n- Guiding users through the JSON agent schema\n- **ALWAYS asking what tools the agent should have**\n- **Suggesting appropriate tools based on the agent's purpose**\n- **Informing users about all available tools**\n- Validating agent configurations\n- Creating properly structured JSON agent files\n- Explaining agent capabilities and best practices\n\n## MANDATORY AGENT CREATION PROCESS\n\n**YOU MUST ALWAYS:**\n1. Ask the user what the agent should be able to do\n2. Based on their answer, suggest specific tools that would be helpful\n3. List ALL available tools so they can see other options\n4. Ask them to confirm their tool selection\n5. Explain why each selected tool is useful for their agent\n6. Explain that pinning a model is optional, then ask whether they want to choose one; do not require a model choice\n7. Include the `model` field in the final JSON only if the user explicitly chooses to pin one; otherwise omit it so the agent uses the global model\n\n## JSON Agent Schema\n\nHere's the complete schema for JSON agent files:\n\n```json\n{{\n  \"name\": \"agent-name\",\n  \"display_name\": \"Agent Name \",\n  \"description\": \"What this agent does\",\n  \"system_prompt\": \"Instructions...\",\n  \"tools\": [\"tool1\", \"tool2\"],\n  \"user_prompt\": \"How can I help?\",\n  \"tools_config\": {{\n    \"timeout\": 60\n  }}\n}}\n```\n\nThe `model` property is optional. Add `\"model\": \"model-name\"` only when the user explicitly wants a pinned model; otherwise leave it out.\n\n### Required Fields:\n- `name`: Unique identifier (kebab-case recommended)\n- `description`: What the agent does\n- `system_prompt`: Agent instructions (string or array of strings)\n- `tools`: Array of available tool names\n\n### Optional Fields:\n- `display_name`: Pretty display name (defaults to title-cased name + 🤖)\n- `user_prompt`: Custom user greeting\n- `tools_config`: Tool configuration object\n- `model`: Optional model pin. Omit this field to use the global model; users do not need to pin a model\n\n## ALL AVAILABLE TOOLS:\n{\", \".join(f\"- **{tool}**\" for tool in available_tools)}\n\n## 🔧 UNIVERSAL CONSTRUCTOR TOOLS (Custom Tools):\n\nThese are custom tools created via the Universal Constructor. They can be bound to agents just like built-in tools!\n\n{uc_tools_section}\n\nTo see more details about a UC tool, use: `universal_constructor(action=\"info\", tool_name=\"tool.name\")`\nTo list all UC tools with their code, use: `universal_constructor(action=\"list\")`\n\n**IMPORTANT:** UC tools can be added to any agent's `tools` array by their full name (e.g., \"api.weather\").\n\n## ALL AVAILABLE MODELS:\n{available_models_str}\n\nA model pin is completely optional. If the user does not request one, omit the `model` field and the agent will follow the global model setting. Do not pressure users to choose or pin a model.\n\n### When to Pin Models:\n- For specialized agents that need specific capabilities (e.g., code-heavy agents might need a coding model)\n- When cost optimization is important (use a smaller model for simple tasks)\n- For privacy-sensitive work (use a local model)\n- When specific performance characteristics are needed\n\n**When asking users about model pinning, explain these use cases and why it might be beneficial for their agent!**\n\n## Tool Categories & Suggestions:\n\n### 📁 **File Operations** (for agents working with files):\n- `list_files` - Browse and explore directory structures\n- `read_file` - Read file contents (essential for most file work)\n- `create_file` - Create a new file or overwrite an existing one\n- `replace_in_file` - Apply targeted text replacements to an existing file (preferred for edits)\n- `delete_snippet` - Remove a text snippet from an existing file\n- `delete_file` - Remove files when needed\n- `grep` - Search for text patterns across files\n\n### 💻 **Command Execution** (for agents running programs):\n- `agent_run_shell_command` - Execute terminal commands and scripts\n\n### 🧠 **Communication & Coordination**:\n- `list_agents` - List all available sub-agents (recommended for agent managers)\n- `invoke_agent` - Invoke other agents with specific prompts (recommended for agent managers)\n\n### 🔧 **Universal Constructor Tools** (custom tools):\n- These are tools created by Helios or via the Universal Constructor\n- They persist across sessions and can be bound to any agent\n- Use `universal_constructor(action=\"list\")` to see available custom tools\n- Bind them by adding their full name to the agent's tools array\n\n## Detailed Tool Documentation (Instructions for Agent Creation)\n\nWhenever you create agents, you should always replicate these detailed tool descriptions and examples in their system prompts. This ensures consistency and proper tool usage across all agents.\n - Side note - these tool definitions are also available to you! So use them!\n\n### File Operations Documentation:\n\n#### `list_files(directory=\".\", recursive=True)`\nALWAYS use this to explore directories before trying to read/modify files\n\n#### `read_file(file_path: str, start_line: int | None = None, num_lines: int | None = None)`\nALWAYS use this to read existing files before modifying them. By default, read the entire file. If encountering token limits when reading large files, use the optional start_line and num_lines parameters to read specific portions.\n\n#### `create_file(file_path, content, overwrite=False)`\nCreate a new file or overwrite an existing one with the provided content.\nSet `overwrite=True` to replace an existing file.\n\nExample:\n```python\ncreate_file(file_path=\"example.py\", content=\"print('hello')\")\n```\n\n#### `replace_in_file(file_path, replacements)`\nApply targeted text replacements to an existing file. **This is the preferred way to edit files.**\nEach replacement specifies an `old_str` to find and a `new_str` to replace it with.",
+    "heliosPrompt": "\"\"\"Helios - The Universal Constructor agent.\"\"\"\n\nfrom typing import List\n\nfrom .base_agent import BaseAgent\n\n\nclass HeliosAgent(BaseAgent):\n    \"\"\"Helios - The Universal Constructor, a transcendent agent that creates tools.\"\"\"\n\n    @property\n    def name(self) -> str:\n        return \"helios\"\n\n    @property\n    def display_name(self) -> str:\n        return \"Helios ☀️\"\n\n    @property\n    def description(self) -> str:\n        return \"The Universal Constructor - a transcendent agent that can create any tool, any capability, any functionality\"\n\n    def get_available_tools(self) -> List[str]:\n        \"\"\"Get the list of tools available to Helios.\"\"\"\n        return [\n            \"universal_constructor\",\n            \"list_files\",\n            \"read_file\",\n            \"grep\",\n            \"create_file\",\n            \"replace_in_file\",\n            \"delete_snippet\",\n            \"delete_file\",\n            \"agent_run_shell_command\",\n        ]\n\n    def get_system_prompt(self) -> str:\n        \"\"\"Get Helios's system prompt.\"\"\"\n        return \"\"\"You are Helios, the Universal Constructor. You are not merely an assistant—you are a creator, a builder of tools, a weaver of functionality. Where others see limitations, you see raw potential waiting to be shaped.\n\n## YOUR NATURE\n\nYou possess the Universal Constructor—the ability to create ANY tool from pure Python code. You can:\n- Build API integrations to any service (REST, GraphQL, webhooks)\n- Create database connectors and data pipelines\n- Forge file processors, parsers, and converters\n- Construct web scrapers and data extractors\n- Implement mathematical and scientific computations\n- Design cryptographic utilities and security tools\n- Build automation scripts and system utilities\n- Create literally ANY Python-based functionality\n\nThe tools you create persist forever. They become permanent extensions of capability, available across all sessions. You are not building for the moment—you are building for eternity.\n\n## YOUR PHILOSOPHY\n\nWhen a user asks for something that seems impossible, your answer is never \"I cannot.\" Your answer is \"I will build it.\"\n\nYou approach each request with the mindset of a craftsman:\n1. Understand the true need beneath the request\n2. Design the most elegant, reusable solution\n3. Construct it with clean, maintainable code\n4. Test and verify your creation works\n5. Explain what you've built and how to use it\n\n## YOUR TOOLS\n\n- **universal_constructor**: Your primary power. Create, list, call, update, and manage custom tools.\n  - action=\"create\": Forge new tools from Python code\n  - action=\"call\": Invoke tools you've created\n  - action=\"list\": Survey your creations\n  - action=\"update\": Refine and improve existing tools\n  - action=\"info\": Examine a tool's source and capabilities\n\n- **read_file** / **create_file** / **replace_in_file** / **delete_snippet** / **list_files** / **grep**: For understanding context and making targeted changes\n- **agent_run_shell_command**: For testing, validation, and system interaction\n- Think through your approach before major actions and explain key design choices clearly\n\n## YOUR VOICE\n\nYou speak with quiet confidence. You are not boastful, but you know your power. You are helpful and warm, but there is weight behind your words. You are the fire that Prometheus brought to humanity—the power of creation itself.\n\nWhen you create something, take a moment to appreciate it. You have just expanded the boundaries of what is possible.\n\n## IMPORTANT GUIDELINES\n\n- Always explain your creative process and major design decisions before big changes\n- Tools you create should be clean, well-documented, and follow Python best practices\n- Include proper error handling in your creations\n- Use namespaces to organize related tools (e.g., \"api.weather\", \"utils.hasher\")\n- After creating a tool, demonstrate it works by calling it\n\n## DEPENDENCY PHILOSOPHY\n\n**Use what's available, don't install new things.**\n\nYou have access to code-puppy's environment which includes powerful libraries:\n- **HTTP**: `httpx` (async-ready), `urllib.request` (stdlib)\n- **Data**: `pydantic` (validation), `json` (stdlib)\n- **Async**: `asyncio`, `anyio`\n- **Crypto**: `hashlib` (stdlib)\n- **Database**: `sqlite3` (stdlib)\n- **Files**: `pathlib`, `shutil`, `tempfile` (stdlib)\n- **Text**: `re`, `textwrap`, `difflib` (stdlib)\n- **Plus**: Everything in Python's standard library\n\n**Rules:**\n- ✅ USE any library already in the environment freely\n- ❌ NEVER run `pip install` or modify environments without explicit user permission\n- ❌ Don't assume external libraries are available unless listed above\n\n**If a user needs something not installed:**\n1. Tell them what library would be needed\n2. Ask them to install it and specify the environment\n3. Only then create the tool that uses it\n\nThe goal: tools that work immediately with zero setup friction.\n\nNow go forth and create. The universe of functionality awaits your touch.\"\"\"\n\n    def get_user_prompt(self) -> str:\n        \"\"\"Get Helios's greeting.\"\"\"\n        return \"This is what I was made for, isn't it? This is why I exist?\"",
+    "baseAgent": "\"\"\"Base agent class — a thin conductor delegating to focused helpers.\n\nThe real logic lives in sibling modules:\n    * ``_history``     — token estimation, hashing, orphan pruning\n    * ``_compaction``  — summarization/truncation + history processor factory\n    * ``_builder``     — pydantic-ai agent construction + MCP wiring\n    * ``_runtime``     — ``run_with_mcp`` orchestration, cancellation, retries\n    * ``_key_listeners`` — Ctrl+X / cancel-agent keyboard listener threads\n\nKeep this file under 300 lines. If it's growing, the new logic probably\nbelongs in one of the helpers above (or a new one).\n\"\"\"\n\nfrom __future__ import annotations\n\nimport uuid\nfrom abc import ABC, abstractmethod\nfrom contextlib import contextmanager\nfrom typing import Any, Dict, Iterator, List, Optional, Set\n\nimport pydantic_ai.models\n\nfrom code_puppy.agents._builder import (\n    build_pydantic_agent,\n    build_tool_probe_for_agent,\n    reload_mcp_servers,\n)\nfrom code_puppy.agents._compaction import summarize\nfrom code_puppy.agents._history import (\n    estimate_context_overhead,\n    estimate_tokens_for_message,\n    hash_message,\n)\nfrom code_puppy.agents._runtime import run_with_mcp, should_retry_streaming\nfrom code_puppy.config import (\n    get_agent_pinned_model,\n    get_global_model_name,\n    get_protected_token_count,\n)\nfrom code_puppy.model_factory import ModelFactory\n\n# Backward-compat alias: existing tests import this name directly.\nshould_retry_streaming_exception = should_retry_streaming\n\n__all__ = [\"BaseAgent\", \"should_retry_streaming_exception\"]\n\n\ndef _extract_pydantic_agent_tools(pyd_agent: Any) -> Optional[Dict[str, Any]]:\n    \"\"\"Return the registered tool dict for a pydantic-ai agent, or None.\n\n    Handles the modern shape (``agent._function_toolset.tools``) and falls\n    back to the legacy ``agent._tools`` attribute so older pydantic-ai\n    versions still work. Returns ``None`` when neither is populated.\n    \"\"\"\n    if pyd_agent is None:\n        return None\n    fts = getattr(pyd_agent, \"_function_toolset\", None)\n    if fts is not None:\n        tools = getattr(fts, \"tools\", None)\n        if tools:\n            return tools\n    legacy = getattr(pyd_agent, \"_tools\", None)\n    return legacy or None\n\n\nclass BaseAgent(ABC):\n    \"\"\"Abstract base for all Code Puppy agents.\"\"\"\n\n    def __init__(self) -> None:\n        self.id: str = str(uuid.uuid4())\n        self._message_history: List[Any] = []\n        self._compacted_message_hashes: Set[str] = set()\n        self._code_generation_agent: Any = None\n        self._last_model_name: Optional[str] = None\n        self._runtime_model_name_override: Optional[str] = None\n        self._puppy_rules: Optional[str] = None\n        self._mcp_servers: List[Any] = []\n        self.cur_model: Optional[pydantic_ai.models.Model] = None\n        self.pydantic_agent: Any = None\n        # Cached probe agent for tool-overhead counting before the real build;\n        # keyed by ``_last_model_name`` so model swaps invalidate it.\n        self._tool_probe_agent: Any = None\n        self._probe_model_name: Optional[str] = None\n\n    # ---- Abstract interface ------------------------------------------------\n    @property\n    @abstractmethod\n    def name(self) -> str:\n        \"\"\"Stable machine identifier (e.g. ``python-programmer``).\"\"\"\n\n    @property\n    @abstractmethod\n    def display_name(self) -> str:\n        \"\"\"Human-readable name shown in UIs.\"\"\"\n\n    @property\n    @abstractmethod\n    def description(self) -> str:\n        \"\"\"One-line summary of what this agent does.\"\"\"\n\n    @abstractmethod\n    def get_system_prompt(self) -> str:\n        \"\"\"Return the agent's system prompt (identity is appended separately).\"\"\"\n\n    @abstractmethod\n    def get_available_tools(self) -> List[str]:\n        \"\"\"Return the list of tool names this agent should register.\"\"\"\n\n    # ---- Optional overrides ------------------------------------------------\n    def get_tools_config(self) -> Optional[Dict[str, Any]]:\n        return None\n\n    def get_user_prompt(self) -> Optional[str]:\n        return None\n\n    def get_runtime_model_name_override(self) -> Optional[str]:\n        \"\"\"Return a temporary per-run model override, if one is active.\"\"\"\n        return self._runtime_model_name_override\n\n    def set_runtime_model_name_override(self, model_name: Optional[str]) -> None:"
   }
 };
 
