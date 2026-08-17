@@ -4,16 +4,17 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Last Two Months — Code Puppy Release Observatory</title>
+<link rel="icon" type="image/svg+xml" href="../assets/puppy.svg" />
 <meta name="description" content="Curated deep-dives on the notable Code Puppy updates of the last two months — what each is, what it does, and why it matters — plus a full index of every minor change and bug fix." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
   :root {
-    --bg: #0b0f14; --bg-elev: #111821; --bg-card: #151e28;
-    --border: #233040; --border-light: #334459;
-    --text: #e8eef4; --text-soft: #9fb0c3; --text-muted: #6b7d91;
-    --accent: #f5b94d; --accent-2: #6cb6ff; --accent-3: #4cc46a; --accent-4: #b692f6; --danger: #ff7b72;
+    --bg: #1A2129; --bg-elev: #202834; --bg-card: #232D3A;
+    --border: rgba(255,255,255,.09); --border-light: rgba(255,255,255,.16);
+    --text: #F4F7FB; --text-soft: #AAB6C4; --text-muted: #7E8B99;
+    --accent: #A3A8F8; --accent-2: #5CF2F2; --accent-3: #61E887; --accent-4: #C5C9FB; --danger: #8A8FF0;
     --radius: 14px; --radius-sm: 8px;
     --shadow: 0 24px 80px -28px rgba(0,0,0,0.6);
     --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -24,14 +25,14 @@
   body { margin:0; background:var(--bg); color:var(--text); font-family:var(--sans); font-size:15px; line-height:1.7; -webkit-font-smoothing:antialiased; }
   a { color:var(--accent-2); text-decoration:none; } a:hover { text-decoration:underline; }
   code, .mono { font-family:var(--mono); }
-  code { background:rgba(108,182,255,.10); color:var(--accent-2); padding:2px 6px; border-radius:5px; font-size:.92em; }
+  code { background:rgba(92,242,242,.10); color:var(--accent-2); padding:2px 6px; border-radius:5px; font-size:.92em; }
   h1,h2,h3,h4 { margin:0; line-height:1.3; }
   p { margin:0 0 12px; color:var(--text-soft); }
   .wrap { max-width:860px; margin:0 auto; padding:0 24px; }
 
   .nav { position:sticky; top:0; z-index:100; display:flex; align-items:center; gap:14px; padding:14px 24px; background:rgba(11,15,20,.85); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); }
   .nav .logo { display:flex; align-items:center; gap:12px; }
-  .nav .logo .paw { width:36px; height:36px; background:linear-gradient(135deg,var(--accent),var(--accent-4)); border-radius:10px; display:grid; place-items:center; font-size:20px; font-family:var(--mono); font-weight:700; color:#1a1510; }
+  .nav .logo .paw { width:38px; height:36px; object-fit:contain; }
   .nav .logo b { font-size:16px; font-weight:700; }
   .nav .links { margin-left:auto; display:flex; gap:10px; }
   .nav .links a { font-family:var(--mono); font-size:12.5px; color:var(--text-soft); padding:7px 14px; border-radius:8px; border:1px solid transparent; }
@@ -96,7 +97,7 @@
 </head>
 <body>
 <nav class="nav">
-  <a href="../index.html" class="logo" style="text-decoration:none;"><div class="paw"></div><b>Code Puppy</b></a>
+  <a href="../index.html" class="logo" style="text-decoration:none;color:inherit"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 300" style="width:38px;height:36px" aria-hidden="true"><path d="M62 78 C30 88 14 118 20 148 C24 172 44 186 62 182 L88 96 Z" fill="#A3A8F8"/><path d="M258 78 C290 88 306 118 300 148 C296 172 276 186 258 182 L232 96 Z" fill="#A3A8F8"/><path d="M88 62 C70 70 58 84 54 100" stroke="#1A2129" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M232 62 C250 70 262 84 266 100" stroke="#1A2129" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M70 96 C70 52 112 34 160 34 C208 34 250 52 250 96 C250 128 244 152 226 172 C206 192 184 200 160 200 C136 200 114 192 94 172 C76 152 70 128 70 96 Z" fill="#A3A8F8"/><circle cx="122" cy="108" r="13" fill="#1A2129"/><circle cx="198" cy="108" r="13" fill="#1A2129"/><path d="M138 138 C138 124 182 124 182 138 C182 150 172 156 168 160 L168 176 C180 178 188 184 186 192 C184 200 172 200 166 194" stroke="#1A2129" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M152 160 L152 176 C140 178 132 184 134 192 C136 200 148 200 154 194" stroke="#1A2129" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="160" cy="248" r="46" fill="#A3A8F8"/><path d="M132 236 L110 248 L132 260" stroke="#1A2129" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M188 236 L210 248 L188 260" stroke="#1A2129" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M168 230 L148 268" stroke="#1A2129" stroke-width="9" stroke-linecap="round"/></svg><b>Code Puppy</b></a>
   <div class="links">
     <a href="../index.html">Hub</a>
     <a href="../field-guide/">Field Guide</a>
@@ -114,7 +115,7 @@
     <p class="lede">Everything notable that shipped in code-puppy over the past 60 days, with plain-language breakdowns of what it is, what it does, and why it matters — plus a complete index of the smaller work.</p>
     <div class="statline">
       <!-- AUTO-BEGIN:stats -->
-      <div class="s"><div class="n">671</div><div class="t">commits</div></div>
+      <div class="s"><div class="n">672</div><div class="t">commits</div></div>
       <div class="s"><div class="n">90</div><div class="t">features</div></div>
       <div class="s"><div class="n">121</div><div class="t">bug fixes</div></div>
       <div class="s"><div class="n">59</div><div class="t">tools</div></div>
@@ -422,6 +423,7 @@
         <span class="count">feat + refactor + docs + chore highlights</span>
         <ul>
           <!-- AUTO-BEGIN:minor-list -->
+          <li><span class="h">e78f5be7</span><span class="d">· 08-17</span> · regenerate + post-update leftovers (2026-08-17 12:00)</li>
           <li><span class="h">ffb4bd89</span><span class="d">· 08-17</span> · regenerate + post-update leftovers (2026-08-17 10:48)</li>
           <li><span class="h">7252ee53</span><span class="d">· 08-17</span> · profile backup now automated; curation cadence + restore path</li>
           <li><span class="h">016d2000</span><span class="d">· 08-17</span> · regenerate + post-update leftovers (2026-08-17 10:29)</li>
@@ -439,7 +441,6 @@
           <li><span class="h">eb3780da</span><span class="d">· 08-16</span> · regenerate with corrected skill labels</li>
           <li><span class="h">f98458f2</span><span class="d">· 08-16</span> · regenerate with user plugins + i_have_adhd; app.js tier badges</li>
           <li><span class="h">bcce3696</span><span class="d">· 08-16</span> · regenerate after core-plugins package scan support</li>
-          <li><span class="h">a5261fa5</span><span class="d">· 08-16</span> · trim verbose comments and test prose</li>
       <!-- AUTO-END:minor-list -->
         </ul>
       </div>

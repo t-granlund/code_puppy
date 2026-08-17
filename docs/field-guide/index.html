@@ -4,25 +4,26 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Code Puppy Field Guide & Release Observatory</title>
+  <link rel="icon" type="image/svg+xml" href="assets/puppy.svg" />
   <meta name="description" content="Interactive local guide to the Code Puppy repo: tools, agents, plugins, architecture, and recent release evolution." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg: #0b0f14;
-      --bg-elev: #111821;
-      --bg-card: #151e28;
-      --border: #233040;
-      --border-light: #334459;
-      --text: #e8eef4;
-      --text-soft: #9fb0c3;
-      --text-muted: #6b7d91;
-      --accent: #f5b94d;
-      --accent-2: #6cb6ff;
-      --accent-3: #4cc46a;
-      --accent-4: #b692f6;
-      --danger: #ff7b72;
+      --bg: #1A2129;
+      --bg-elev: #202834;
+      --bg-card: #232D3A;
+      --border: rgba(255,255,255,.09);
+      --border-light: rgba(255,255,255,.16);
+      --text: #F4F7FB;
+      --text-soft: #AAB6C4;
+      --text-muted: #7E8B99;
+      --accent: #A3A8F8;
+      --accent-2: #5CF2F2;
+      --accent-3: #61E887;
+      --accent-4: #C5C9FB;
+      --danger: #8A8FF0;
       --radius: 14px;
       --radius-sm: 8px;
       --shadow: 0 24px 80px -28px rgba(0,0,0,0.6);
@@ -46,14 +47,14 @@
     a:hover { text-decoration: underline; }
     code, .mono { font-family: var(--mono); }
     code {
-      background: rgba(108,182,255,.10);
+      background: rgba(92,242,242,.10);
       color: var(--accent-2);
       padding: 2px 6px;
       border-radius: 5px;
       font-size: 0.92em;
     }
     pre {
-      background: #0a0f14;
+      background: #151C24;
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
       padding: 16px;
@@ -79,7 +80,7 @@
       align-items: center;
       gap: 14px;
       padding: 10px 24px;
-      background: rgba(11,15,20,.88);
+      background: rgba(26,33,41,.85);
       backdrop-filter: blur(14px);
       border-bottom: 1px solid var(--border);
     }
@@ -226,8 +227,8 @@
     }
     .btn:hover { background: var(--bg-elev); text-decoration: none; }
     .btn.primary {
-      background: linear-gradient(180deg, rgba(245,185,77,.18), rgba(245,185,77,.06));
-      border-color: rgba(245,185,77,.45);
+      background: linear-gradient(180deg, rgba(163,168,248,.18), rgba(163,168,248,.06));
+      border-color: rgba(163,168,248,.45);
       color: var(--accent);
     }
     .btn.primary:hover { border-color: var(--accent); }
@@ -306,7 +307,7 @@
       justify-content: center;
       font-size: 18px;
       margin-bottom: 14px;
-      background: rgba(108,182,255,.10);
+      background: rgba(92,242,242,.10);
     }
 
     /* Tool explorer */
@@ -329,8 +330,8 @@
     }
     .chip:hover { border-color: var(--border-light); color: var(--text); }
     .chip.active {
-      background: rgba(245,185,77,.12);
-      border-color: rgba(245,185,77,.45);
+      background: rgba(163,168,248,.12);
+      border-color: rgba(163,168,248,.45);
       color: var(--accent);
     }
     .tool-grid {
@@ -408,8 +409,8 @@
       transition: all .15s ease;
     }
     .agent-card .tools-toggle:hover {
-      background: rgba(245,185,77,.08);
-      border-color: rgba(245,185,77,.35);
+      background: rgba(163,168,248,.08);
+      border-color: rgba(163,168,248,.35);
       color: var(--accent);
     }
     .agent-card .tools-extra {
@@ -429,7 +430,7 @@
 
     /* Prompt boxes */
     .prompt-box {
-      background: #0a0f14;
+      background: #151C24;
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
       max-height: 340px;
@@ -667,12 +668,12 @@
       color: var(--text-muted);
       flex: none;
     }
-    .kind-feature { background: rgba(76,196,106,.12); border-color: rgba(76,196,106,.4); color: #4cc46a; }
-    .kind-fix { background: rgba(255,123,114,.12); border-color: rgba(255,123,114,.4); color: #ff7b72; }
-    .kind-refactor { background: rgba(182,146,246,.12); border-color: rgba(182,146,246,.4); color: #b692f6; }
-    .kind-docs { background: rgba(108,182,255,.12); border-color: rgba(108,182,255,.4); color: #6cb6ff; }
+    .kind-feature { background: rgba(97,232,135,.12); border-color: rgba(97,232,135,.4); color: #61E887; }
+    .kind-fix { background: rgba(138,143,240,.12); border-color: rgba(138,143,240,.4); color: #8A8FF0; }
+    .kind-refactor { background: rgba(197,201,251,.12); border-color: rgba(197,201,251,.4); color: #C5C9FB; }
+    .kind-docs { background: rgba(92,242,242,.12); border-color: rgba(92,242,242,.4); color: #5CF2F2; }
     .kind-ci { background: rgba(159,176,195,.12); border-color: rgba(159,176,195,.4); color: #9fb0c3; }
-    .kind-release { background: rgba(245,185,77,.12); border-color: rgba(245,185,77,.4); color: var(--accent); }
+    .kind-release { background: rgba(163,168,248,.12); border-color: rgba(163,168,248,.4); color: var(--accent); }
     .kind-chore { background: rgba(107,125,145,.12); border-color: rgba(107,125,145,.4); color: #6b7d91; }
     .release-hidden { display: none; }
     .show-more-wrap {
@@ -705,13 +706,13 @@
       white-space: nowrap;
     }
     .impact-major {
-      background: rgba(245,185,77,.15);
-      border-color: rgba(245,185,77,.5);
+      background: rgba(163,168,248,.15);
+      border-color: rgba(163,168,248,.5);
       color: var(--accent);
     }
     .impact-notable {
-      background: rgba(108,182,255,.12);
-      border-color: rgba(108,182,255,.4);
+      background: rgba(92,242,242,.12);
+      border-color: rgba(92,242,242,.4);
       color: var(--accent-2);
     }
     .impact-routine {
@@ -774,12 +775,12 @@
       padding: 14px;
     }
     .hero-major {
-      border-color: rgba(245,185,77,.45);
-      background: rgba(245,185,77,.06);
+      border-color: rgba(163,168,248,.45);
+      background: rgba(163,168,248,.06);
     }
     .hero-notable {
-      border-color: rgba(108,182,255,.35);
-      background: rgba(108,182,255,.05);
+      border-color: rgba(92,242,242,.35);
+      background: rgba(92,242,242,.05);
     }
     .hero-header {
       display: flex;
@@ -828,7 +829,7 @@
       margin-right: 6px;
       flex: none;
     }
-    .impact-dot.major { background: var(--accent); box-shadow: 0 0 0 2px rgba(245,185,77,.25); }
+    .impact-dot.major { background: var(--accent); box-shadow: 0 0 0 2px rgba(163,168,248,.25); }
     .impact-dot.notable { background: var(--accent-2); }
     .impact-dot.routine { background: var(--text-muted); }
 
@@ -861,11 +862,11 @@
       color: var(--text-soft);
       background: var(--bg-elev);
     }
-    .cat-major { background: rgba(245,185,77,.15); border-color: rgba(245,185,77,.4); color: var(--accent); }
-    .cat-feature { background: rgba(76,196,106,.12); border-color: rgba(76,196,106,.4); color: #4cc46a; }
-    .cat-fix { background: rgba(255,123,114,.12); border-color: rgba(255,123,114,.4); color: #ff7b72; }
-    .cat-refactor { background: rgba(182,146,246,.12); border-color: rgba(182,146,246,.4); color: #b692f6; }
-    .cat-docs { background: rgba(108,182,255,.12); border-color: rgba(108,182,255,.4); color: #6cb6ff; }
+    .cat-major { background: rgba(163,168,248,.15); border-color: rgba(163,168,248,.4); color: var(--accent); }
+    .cat-feature { background: rgba(97,232,135,.12); border-color: rgba(97,232,135,.4); color: #61E887; }
+    .cat-fix { background: rgba(138,143,240,.12); border-color: rgba(138,143,240,.4); color: #8A8FF0; }
+    .cat-refactor { background: rgba(197,201,251,.12); border-color: rgba(197,201,251,.4); color: #C5C9FB; }
+    .cat-docs { background: rgba(92,242,242,.12); border-color: rgba(92,242,242,.4); color: #5CF2F2; }
     .cat-ci { background: rgba(159,176,195,.12); border-color: rgba(159,176,195,.4); color: #9fb0c3; }
     .cat-chore { background: rgba(107,125,145,.12); border-color: rgba(107,125,145,.4); color: #6b7d91; }
 
@@ -1019,7 +1020,7 @@
       line-height: 1.5;
     }
     .commit-body-pre {
-      background: #0a0f14;
+      background: #151C24;
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
       padding: 12px;
@@ -1119,8 +1120,8 @@
       letter-spacing: 0;
     }
     .category-filter-bar .chip.active {
-      background: rgba(245,185,77,.12);
-      border-color: rgba(245,185,77,.45);
+      background: rgba(163,168,248,.12);
+      border-color: rgba(163,168,248,.45);
       color: var(--accent);
     }
 
@@ -1153,7 +1154,7 @@
 
     /* Search results highlight */
     mark {
-      background: rgba(245,185,77,.35);
+      background: rgba(163,168,248,.35);
       color: var(--text);
       border-radius: 3px;
       padding: 1px 2px;
@@ -1187,7 +1188,7 @@
 </head>
 <body>
   <nav class="nav">
-    <div class="logo"> code-puppy</div>
+    <a class="logo" href="../index.html" style="text-decoration:none;display:flex;align-items:center;gap:10px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 300" style="width:26px;height:25px" aria-hidden="true"><path d="M62 78 C30 88 14 118 20 148 C24 172 44 186 62 182 L88 96 Z" fill="#A3A8F8"/><path d="M258 78 C290 88 306 118 300 148 C296 172 276 186 258 182 L232 96 Z" fill="#A3A8F8"/><path d="M88 62 C70 70 58 84 54 100" stroke="#1A2129" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M232 62 C250 70 262 84 266 100" stroke="#1A2129" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M70 96 C70 52 112 34 160 34 C208 34 250 52 250 96 C250 128 244 152 226 172 C206 192 184 200 160 200 C136 200 114 192 94 172 C76 152 70 128 70 96 Z" fill="#A3A8F8"/><circle cx="122" cy="108" r="13" fill="#1A2129"/><circle cx="198" cy="108" r="13" fill="#1A2129"/><path d="M138 138 C138 124 182 124 182 138 C182 150 172 156 168 160 L168 176 C180 178 188 184 186 192 C184 200 172 200 166 194" stroke="#1A2129" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M152 160 L152 176 C140 178 132 184 134 192 C136 200 148 200 154 194" stroke="#1A2129" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="160" cy="248" r="46" fill="#A3A8F8"/><path d="M132 236 L110 248 L132 260" stroke="#1A2129" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M188 236 L210 248 L188 260" stroke="#1A2129" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M168 230 L148 268" stroke="#1A2129" stroke-width="9" stroke-linecap="round"/></svg><span>code-puppy</span></a>
     <div class="links">
       <a href="#overview">Overview</a>
       <a href="#capabilities">Capabilities</a>
