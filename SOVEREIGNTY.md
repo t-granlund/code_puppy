@@ -37,6 +37,13 @@ cd ~/code_puppy
 
 # 3. Quarterly (or when version bumps): rebuild offline insurance
 /opt/homebrew/bin/uv build --out-dir dist/
+
+# 4. Every few weeks: Release Observatory curation pass.
+#    Auto-detected 'narrative pending' cards accumulate on the Pages site;
+#    promote the good ones into curated deep-dives in pages-hub/updates.html.
+    
+# 5. On machine replacement: restore profile from
+git clone git@github.com:t-granlund/code-puppy-profile-backup.git ~/.code_puppy
 ```
 
 ## If the Public Repo Goes Away
@@ -64,7 +71,7 @@ cd ~/code_puppy && git remote remove origin
 
 ## What's NOT Yet Backed Up
 
-- `~/.code_puppy/` — your agents, plugins, kennel memory (SQLite), sessions, and config. If the Mac dies, this custom state goes with it. Consider a separate private backup (e.g., `~/.code_puppy` as a second repo, or a tarball in cloud storage).
+- ~~`~/.code_puppy/`~~ — **Now backed up** to private repo `t-granlund/code-puppy-profile-backup` on every update run (whitelist: agents, plugins, kennel memory, skills, commands, scripts, config + credentials). Note the repo contains API keys — keep it private, restrict collaborators.
 - `dist/` wheels older than today's rebuild. Rotate them or keep only the latest.
 
 ## Residual Risk
