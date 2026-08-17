@@ -28,8 +28,9 @@ jobs:
         run: |
           mkdir -p _site
 
-          # 1. Landing hub at the root
+          # 1. Landing hub at the root + shared assets (logo, favicon)
           cp pages-hub/index.html _site/
+          cp -r pages-hub/assets _site/
           # Inject live platform stats from the field guide data into the hub
           node - <<'EOF'
           const fs = require('fs');
