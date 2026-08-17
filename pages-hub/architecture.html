@@ -34,7 +34,7 @@
   .nav .gh:hover{color:var(--text)}
   @media(max-width:860px){.nav .links{display:none}}
 
-  .hero{text-align:center;padding:72px 24px 40px}
+  .hero{text-align:center;padding:72px 24px 40px;overflow:hidden;position:relative}
   .kicker{display:inline-block;font-size:11.5px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--peri);border:1px solid var(--line-2);padding:7px 16px;border-radius:980px;background:rgba(163,168,248,.06)}
   .hero h1{font-size:clamp(40px,5.6vw,68px);font-weight:800;letter-spacing:-.033em;line-height:1.04;margin-top:20px}
   .hero h1 .g{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
@@ -112,6 +112,13 @@
   .sheet .chips{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
   .sheet .chip{font-family:var(--mono);font-size:10px;border:1px solid var(--line);border-radius:980px;padding:3px 9px;color:var(--t3)}
 
+  .n-ic{display:grid;place-items:center;width:28px;height:28px;border-radius:8px;margin-bottom:10px;color:var(--peri);background:rgba(163,168,248,.09);border:1px solid rgba(163,168,248,.22)}
+  .n-ic.c{color:var(--cyan);background:rgba(92,242,242,.08);border-color:rgba(92,242,242,.22)}
+  .n-ic.m{color:var(--mint);background:rgba(97,232,135,.08);border-color:rgba(97,232,135,.22)}
+  .n-ic.pl{color:var(--peri-l);background:rgba(197,201,251,.09);border-color:rgba(197,201,251,.22)}
+  .watermark{position:absolute;top:40px;right:-60px;width:340px;opacity:.05;pointer-events:none;z-index:0}
+  @media(max-width:900px){.watermark{display:none}}
+  main,.hero{position:relative;z-index:1}
   footer{border-top:1px solid var(--line);padding:24px 32px 40px;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
   footer p{font-size:11.5px;color:var(--t3);max-width:580px;margin:0}
   @media(prefers-reduced-motion:reduce){.arrow::after{animation:none}}
@@ -119,7 +126,7 @@
 </head>
 <body>
 <nav class="nav">
-  <a class="brand" href="../index.html"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 300" style="width:22px;height:21px" aria-hidden="true"><path d="M62 78 C30 88 14 118 20 148 C24 172 44 186 62 182 L88 96 Z" fill="#A3A8F8"/><path d="M258 78 C290 88 306 118 300 148 C296 172 276 186 258 182 L232 96 Z" fill="#A3A8F8"/><path d="M88 62 C70 70 58 84 54 100" stroke="#1A2129" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M232 62 C250 70 262 84 266 100" stroke="#1A2129" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M70 96 C70 52 112 34 160 34 C208 34 250 52 250 96 C250 128 244 152 226 172 C206 192 184 200 160 200 C136 200 114 192 94 172 C76 152 70 128 70 96 Z" fill="#A3A8F8"/><circle cx="122" cy="108" r="13" fill="#1A2129"/><circle cx="198" cy="108" r="13" fill="#1A2129"/><path d="M138 138 C138 124 182 124 182 138 C182 150 172 156 168 160 L168 176 C180 178 188 184 186 192 C184 200 172 200 166 194" stroke="#1A2129" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M152 160 L152 176 C140 178 132 184 134 192 C136 200 148 200 154 194" stroke="#1A2129" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="160" cy="248" r="46" fill="#A3A8F8"/><path d="M132 236 L110 248 L132 260" stroke="#1A2129" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M188 236 L210 248 L188 260" stroke="#1A2129" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M168 230 L148 268" stroke="#1A2129" stroke-width="9" stroke-linecap="round"/></svg>Code Puppy</a>
+  <a class="brand" href="../index.html"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 212" style="width:32px;height:21px" aria-hidden="true"><path d="M62 78 C30 88 14 118 20 148 C24 172 44 186 62 182 L88 96 Z" fill="#A3A8F8"/><path d="M258 78 C290 88 306 118 300 148 C296 172 276 186 258 182 L232 96 Z" fill="#A3A8F8"/><path d="M88 62 C70 70 58 84 54 100" stroke="#1A2129" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M232 62 C250 70 262 84 266 100" stroke="#1A2129" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M70 96 C70 52 112 34 160 34 C208 34 250 52 250 96 C250 128 244 152 226 172 C206 192 184 200 160 200 C136 200 114 192 94 172 C76 152 70 128 70 96 Z" fill="#A3A8F8"/><circle cx="122" cy="108" r="14" fill="#1A2129"/><circle cx="198" cy="108" r="14" fill="#1A2129"/><path d="M138 138 C138 124 182 124 182 138 C182 150 172 156 168 160 L168 176 C180 178 188 184 186 192 C184 200 172 200 166 194" stroke="#1A2129" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M152 160 L152 176 C140 178 132 184 134 192 C136 200 148 200 154 194" stroke="#1A2129" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Code Puppy</a>
   <div class="links">
     <a href="../index.html">Hub</a><a href="../field-guide/">Field Guide</a><a href="../releases/">Releases</a>
     <a href="./" class="active">Architecture</a><a href="../flat/">Flat Docs</a>
@@ -127,7 +134,7 @@
   <a class="gh" href="https://github.com/t-granlund/code_puppy" target="_blank" rel="noopener">GitHub</a>
 </nav>
 
-<header class="hero">
+<header class="hero"><svg class="watermark" viewBox="0 0 320 300" aria-hidden="true"><path d="M62 78 C30 88 14 118 20 148 C24 172 44 186 62 182 L88 96 Z" fill="#A3A8F8"/><path d="M258 78 C290 88 306 118 300 148 C296 172 276 186 258 182 L232 96 Z" fill="#A3A8F8"/><path d="M70 96 C70 52 112 34 160 34 C208 34 250 52 250 96 C250 128 244 152 226 172 C206 192 184 200 160 200 C136 200 114 192 94 172 C76 152 70 128 70 96 Z" fill="#A3A8F8"/><circle cx="122" cy="108" r="13" fill="#A3A8F8"/><circle cx="198" cy="108" r="13" fill="#A3A8F8"/><circle cx="160" cy="248" r="46" fill="#A3A8F8"/></svg>
   <span class="kicker">Internal Training · System Architecture</span>
   <h1>The machine, <span class="g">explained.</span></h1>
   <p>Left to right: how one Mac stays current, tested, published, and documented — and everything living inside it.</p>
@@ -138,54 +145,54 @@
 
   <div class="lbl"><span class="dotc" style="background:var(--peri)"></span>The end-to-end loop</div>
   <div class="lane">
-    <div class="node" data-d="machine"><span class="n-open">+</span><div class="n-k">Host</div><div class="n-t">Tyler's Mac</div><div class="n-d">Working clone, uv tool install, private profile. The whole show runs here.</div></div>
+    <div class="node" data-d="machine" data-ic="server:peri"><span class="n-open">+</span><div class="n-k">Host</div><div class="n-t">Tyler's Mac</div><div class="n-d">Working clone, uv tool install, private profile. The whole show runs here.</div></div>
     <div class="arrow"></div>
-    <div class="node" data-d="launchd"><span class="n-open">+</span><div class="n-k">Schedule</div><div class="n-t">launchd</div><div class="n-d">07:00 · 12:00 · 20:00 calendar intervals, wake catch-up.</div></div>
+    <div class="node" data-d="launchd" data-ic="clock:cyan"><span class="n-open">+</span><div class="n-k">Schedule</div><div class="n-t">launchd</div><div class="n-d">07:00 · 12:00 · 20:00 calendar intervals, wake catch-up.</div></div>
     <div class="arrow"></div>
     <div class="fanwrap" style="flex:0 0 auto">
       <div class="n-k" style="font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--peri);margin-bottom:10px">update-code-puppy.sh — stage train</div>
       <div class="stagetrain">
-        <div class="node" data-d="s1" style="min-width:140px"><span class="n-open">+</span><div class="n-k" style="color:var(--peri)">01</div><div class="n-t">Snapshot</div></div>
+        <div class="node" data-d="s1" data-ic="archive:cyan" style="min-width:140px"><span class="n-open">+</span><div class="n-k" style="color:var(--peri)">01</div><div class="n-t">Snapshot</div></div>
         <div class="arrow" style="width:18px"></div>
-        <div class="node" data-d="s2" style="min-width:140px"><span class="n-open">+</span><div class="n-k" style="color:var(--cyan)">02</div><div class="n-t">Sync</div></div>
+        <div class="node" data-d="s2" data-ic="branch:cyan" style="min-width:140px"><span class="n-open">+</span><div class="n-k" style="color:var(--cyan)">02</div><div class="n-t">Sync</div></div>
         <div class="arrow" style="width:18px"></div>
-        <div class="node" data-d="s3" style="min-width:150px;border-color:rgba(92,242,242,.35);background:linear-gradient(180deg,rgba(92,242,242,.06),var(--panel))"><span class="n-open">+</span><div class="n-k" style="color:var(--cyan)">03</div><div class="n-t">Cross-Check</div></div>
+        <div class="node" data-d="s3" data-ic="flask:cyan" style="min-width:150px;border-color:rgba(92,242,242,.35);background:linear-gradient(180deg,rgba(92,242,242,.06),var(--panel))"><span class="n-open">+</span><div class="n-k" style="color:var(--cyan)">03</div><div class="n-t">Cross-Check</div></div>
         <div class="arrow" style="width:18px"></div>
-        <div class="node" data-d="s4" style="min-width:140px"><span class="n-open">+</span><div class="n-k" style="color:var(--mint)">04</div><div class="n-t">Install + Regen</div></div>
+        <div class="node" data-d="s4" data-ic="package:mint" style="min-width:140px"><span class="n-open">+</span><div class="n-k" style="color:var(--mint)">04</div><div class="n-t">Install + Regen</div></div>
         <div class="arrow" style="width:18px"></div>
-        <div class="node" data-d="s5" style="min-width:140px"><span class="n-open">+</span><div class="n-k" style="color:var(--peri)">05</div><div class="n-t">Publish</div></div>
+        <div class="node" data-d="s5" data-ic="upload:peri" style="min-width:140px"><span class="n-open">+</span><div class="n-k" style="color:var(--peri)">05</div><div class="n-t">Publish</div></div>
         <div class="arrow" style="width:18px"></div>
-        <div class="node" data-d="s6" style="min-width:140px"><span class="n-open">+</span><div class="n-k" style="color:var(--peri-l)">06</div><div class="n-t">Maintain</div></div>
+        <div class="node" data-d="s6" data-ic="wrench:pl" style="min-width:140px"><span class="n-open">+</span><div class="n-k" style="color:var(--peri-l)">06</div><div class="n-t">Maintain</div></div>
       </div>
     </div>
     <div class="arrow"></div>
     <div class="cluster">
-      <div class="node" data-d="fork"><span class="n-open">+</span><div class="n-k">Publish · public</div><div class="n-t">t-granlund/code_puppy</div><div class="n-d">Fork + this site</div></div>
-      <div class="node" data-d="mirror"><span class="n-open">+</span><div class="n-k">Publish · private</div><div class="n-t">Multi-Agent-Orch-CLI</div><div class="n-d">Insurance mirror</div></div>
-      <div class="node" data-d="profile"><span class="n-open">+</span><div class="n-k">Backup · private</div><div class="n-t">profile-backup</div><div class="n-d">~/.code_puppy whitelist</div></div>
+      <div class="node" data-d="fork" data-ic="fork:peri"><span class="n-open">+</span><div class="n-k">Publish · public</div><div class="n-t">t-granlund/code_puppy</div><div class="n-d">Fork + this site</div></div>
+      <div class="node" data-d="mirror" data-ic="database:peri"><span class="n-open">+</span><div class="n-k">Publish · private</div><div class="n-t">Multi-Agent-Orch-CLI</div><div class="n-d">Insurance mirror</div></div>
+      <div class="node" data-d="profile" data-ic="archive:mint"><span class="n-open">+</span><div class="n-k">Backup · private</div><div class="n-t">profile-backup</div><div class="n-d">~/.code_puppy whitelist</div></div>
     </div>
   </div>
 
   <div class="lbl"><span class="dotc" style="background:var(--mint)"></span>update_schedule, end to end</div>
   <div class="lane">
-    <div class="node" data-d="e2e-plist"><span class="n-open">+</span><div class="n-k">Trigger</div><div class="n-t">com.code-puppy.daily-update.plist</div><div class="n-d">StartCalendarInterval ×3</div></div>
+    <div class="node" data-d="e2e-plist" data-ic="calendar:peri"><span class="n-open">+</span><div class="n-k">Trigger</div><div class="n-t">com.code-puppy.daily-update.plist</div><div class="n-d">StartCalendarInterval ×3</div></div>
     <div class="arrow"></div>
-    <div class="node" data-d="e2e-script"><span class="n-open">+</span><div class="n-k">Work</div><div class="n-t">update-code-puppy.sh</div><div class="n-d">The six-stage train above</div></div>
+    <div class="node" data-d="e2e-script" data-ic="terminal:peri"><span class="n-open">+</span><div class="n-k">Work</div><div class="n-t">update-code-puppy.sh</div><div class="n-d">The six-stage train above</div></div>
     <div class="arrow"></div>
-    <div class="node" data-d="e2e-plugin"><span class="n-open">+</span><div class="n-k">Watchdog</div><div class="n-t">register_callbacks.py</div><div class="n-d">User plugin, loaded every session</div></div>
+    <div class="node" data-d="e2e-plugin" data-ic="layers:peri"><span class="n-open">+</span><div class="n-k">Watchdog</div><div class="n-t">register_callbacks.py</div><div class="n-d">User plugin, loaded every session</div></div>
     <div class="arrow"></div>
-    <div class="node" data-d="e2e-trust"><span class="n-open">+</span><div class="n-k">Gate</div><div class="n-t">trusted_plugins.json</div><div class="n-d">SHA-256 content hash</div></div>
+    <div class="node" data-d="e2e-trust" data-ic="shield:peri"><span class="n-open">+</span><div class="n-k">Gate</div><div class="n-t">trusted_plugins.json</div><div class="n-d">SHA-256 content hash</div></div>
     <div class="arrow"></div>
-    <div class="node" data-d="e2e-notify"><span class="n-open">+</span><div class="n-k">Surface</div><div class="n-t">Notifications + /update</div><div class="n-d">osascript, status, log, now</div></div>
+    <div class="node" data-d="e2e-notify" data-ic="bell:peri"><span class="n-open">+</span><div class="n-k">Surface</div><div class="n-t">Notifications + /update</div><div class="n-d">osascript, status, log, now</div></div>
   </div>
 
   <div class="lbl"><span class="dotc" style="background:var(--cyan)"></span>The fork layer — what upstream doesn't have</div>
   <div class="cards">
-    <div class="node" data-d="f-site"><span class="n-open">+</span><div class="n-k">Feature</div><div class="n-t">This public site</div><div class="n-d">5 sections, auto-deploying Pages build</div></div>
-    <div class="node" data-d="f-observatory"><span class="n-open">+</span><div class="n-k">Feature</div><div class="n-t">Evergreen observatory</div><div class="n-d">Auto-curated from every run</div></div>
-    <div class="node" data-d="f-pipeline"><span class="n-open">+</span><div class="n-k">Feature</div><div class="n-t">Self-healing updater v2</div><div class="n-d">Test-gated, mirror-publishing</div></div>
-    <div class="node" data-d="f-guide"><span class="n-open">+</span><div class="n-k">Feature</div><div class="n-t">Deep field-guide introspection</div><div class="n-d">Core-package + user-tier scanning</div></div>
-    <div class="node" data-d="f-commits"><span class="n-open">+</span><div class="n-k">Ledger</div><div class="n-t">Unique commits</div><div class="n-d">The full fork-only trail</div></div>
+    <div class="node" data-d="f-site" data-ic="grid:peri"><span class="n-open">+</span><div class="n-k">Feature</div><div class="n-t">This public site</div><div class="n-d">5 sections, auto-deploying Pages build</div></div>
+    <div class="node" data-d="f-observatory" data-ic="activity:cyan"><span class="n-open">+</span><div class="n-k">Feature</div><div class="n-t">Evergreen observatory</div><div class="n-d">Auto-curated from every run</div></div>
+    <div class="node" data-d="f-pipeline" data-ic="refresh:peri"><span class="n-open">+</span><div class="n-k">Feature</div><div class="n-t">Self-healing updater v2</div><div class="n-d">Test-gated, mirror-publishing</div></div>
+    <div class="node" data-d="f-guide" data-ic="book:cyan"><span class="n-open">+</span><div class="n-k">Feature</div><div class="n-t">Deep field-guide introspection</div><div class="n-d">Core-package + user-tier scanning</div></div>
+    <div class="node" data-d="f-commits" data-ic="commit:peri"><span class="n-open">+</span><div class="n-k">Ledger</div><div class="n-t">Unique commits</div><div class="n-d">The full fork-only trail</div></div>
   </div>
 
   <div class="lbl"><span class="dotc" style="background:var(--peri-l)"></span>Full inventory — every plugin, agent, skill, tool</div>
@@ -271,6 +278,39 @@ const D = {
     <span class="commit"><b>7252ee53</b>docs: profile backup automation</span>
     <p style="margin-top:10px">…plus recurring <code>docs(field-guide+observatory): regenerate</code> commits the pipeline writes itself.</p>`},
 };
+
+
+const ICONS={
+server:'<rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><path d="M6 6h.01M6 18h.01"/>',
+clock:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+archive:'<rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/>',
+branch:'<path d="M6 3v12"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/>',
+flask:'<path d="M10 2v7.5a2 2 0 0 1-.2.9L4.7 20.5a1 1 0 0 0 .9 1.5h12.8a1 1 0 0 0 .9-1.5L14.2 10.4a2 2 0 0 1-.2-.9V2"/><path d="M8.5 2h7"/><path d="M7 16h10"/>',
+pkg:'<path d="M21 8v8a2 2 0 0 1-1 1.73l-7 4a2 2 0 0 1-2 0l-7-4A2 2 0 0 1 3 16V8a2 2 0 0 1 1-1.73l7-4a2 2 0 0 1 2 0l7 4A2 2 0 0 1 21 8Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/>',
+upload:'<path d="M4 14.9A7 7 0 1 1 15.7 8h1.8a4.5 4.5 0 0 1 2.5 8.2"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/>',
+wrench:'<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>',
+fork:'<circle cx="12" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><path d="M18 9v2a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V9"/><path d="M12 12v3"/>',
+database:'<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/>',
+calendar:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+terminal:'<path d="m4 17 6-6-6-6"/><path d="M12 19h8"/>',
+layers:'<path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/>',
+shield:'<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/>',
+bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
+grid:'<rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/>',
+activity:'<path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/>',
+refresh:'<path d="M3 2v6h6"/><path d="M21 12A9 9 0 0 0 6 5.3L3 8"/><path d="M21 22v-6h-6"/><path d="M3 12a9 9 0 0 0 15 6.7l3-2.7"/>',
+book:'<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>',
+commit:'<circle cx="12" cy="12" r="3"/><path d="M3 12h6M15 12h6"/>'
+};
+ICONS.package=ICONS.pkg;
+document.querySelectorAll('.node[data-ic]').forEach(n=>{
+  const [name,cls]=n.dataset.ic.split(':');
+  const body=ICONS[name]; if(!body) return;
+  const span=document.createElement('span');
+  span.className='n-ic '+(cls&&cls!=='peri'?cls:'');
+  span.innerHTML='<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+body+'</svg>';
+  n.insertBefore(span, n.firstChild);
+});
 
 /* ---------- sheet mechanics ---------- */
 const sheet=document.getElementById('sheet'), bd=document.getElementById('bd'),
