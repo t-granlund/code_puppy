@@ -52,6 +52,14 @@
   .stat .n { font-size:34px; font-weight:700; color:var(--accent); font-family:var(--mono); }
   .stat .l { font-size:12.5px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.08em; margin-top:6px; }
 
+  .card .ci { width:36px;height:36px;border-radius:10px;display:grid;place-items:center;margin-bottom:6px;border:1px solid var(--border-light);background:rgba(163,168,248,.08);color:var(--accent); }
+  .card.t-2 .ci { color:var(--accent-2); background:rgba(92,242,242,.08); border-color:rgba(92,242,242,.22);}
+  .card.t-3 .ci { color:var(--accent-3); background:rgba(97,232,135,.08); border-color:rgba(97,232,135,.22);}
+  .card.t-accent .ci { color:var(--accent); }
+  .card.t-4 .ci { color:var(--accent-4); background:rgba(197,201,251,.09); border-color:rgba(197,201,251,.22);}
+  .watermark { position:absolute; top:-10px; right:-30px; width:420px; opacity:.045; pointer-events:none; }
+  .hero { position:relative; }
+  @media(max-width:820px){ .watermark{display:none} }
   .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:20px; padding:24px 0 80px; }
   .card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:28px; display:flex; flex-direction:column; gap:14px; transition:transform .18s ease, border-color .18s ease; box-shadow:var(--shadow); }
   .card:hover { transform:translateY(-3px); border-color:var(--border-light); text-decoration:none; }
@@ -74,7 +82,7 @@
 </head>
 <body>
 <nav class="nav">
-  <a class="logo" href="./" style="text-decoration:none;color:inherit"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 300" style="width:38px;height:36px" aria-hidden="true"><path d="M62 78 C30 88 14 118 20 148 C24 172 44 186 62 182 L88 96 Z" fill="#A3A8F8"/><path d="M258 78 C290 88 306 118 300 148 C296 172 276 186 258 182 L232 96 Z" fill="#A3A8F8"/><path d="M88 62 C70 70 58 84 54 100" stroke="#1A2129" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M232 62 C250 70 262 84 266 100" stroke="#1A2129" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M70 96 C70 52 112 34 160 34 C208 34 250 52 250 96 C250 128 244 152 226 172 C206 192 184 200 160 200 C136 200 114 192 94 172 C76 152 70 128 70 96 Z" fill="#A3A8F8"/><circle cx="122" cy="108" r="13" fill="#1A2129"/><circle cx="198" cy="108" r="13" fill="#1A2129"/><path d="M138 138 C138 124 182 124 182 138 C182 150 172 156 168 160 L168 176 C180 178 188 184 186 192 C184 200 172 200 166 194" stroke="#1A2129" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M152 160 L152 176 C140 178 132 184 134 192 C136 200 148 200 154 194" stroke="#1A2129" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="160" cy="248" r="46" fill="#A3A8F8"/><path d="M132 236 L110 248 L132 260" stroke="#1A2129" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M188 236 L210 248 L188 260" stroke="#1A2129" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M168 230 L148 268" stroke="#1A2129" stroke-width="9" stroke-linecap="round"/></svg><b>Code Puppy</b></a>
+  <a class="logo" href="./" style="text-decoration:none;color:inherit"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 212" style="width:34px;height:22px" aria-hidden="true"><path d="M62 78 C30 88 14 118 20 148 C24 172 44 186 62 182 L88 96 Z" fill="#A3A8F8"/><path d="M258 78 C290 88 306 118 300 148 C296 172 276 186 258 182 L232 96 Z" fill="#A3A8F8"/><path d="M88 62 C70 70 58 84 54 100" stroke="#1A2129" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M232 62 C250 70 262 84 266 100" stroke="#1A2129" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M70 96 C70 52 112 34 160 34 C208 34 250 52 250 96 C250 128 244 152 226 172 C206 192 184 200 160 200 C136 200 114 192 94 172 C76 152 70 128 70 96 Z" fill="#A3A8F8"/><circle cx="122" cy="108" r="14" fill="#1A2129"/><circle cx="198" cy="108" r="14" fill="#1A2129"/><path d="M138 138 C138 124 182 124 182 138 C182 150 172 156 168 160 L168 176 C180 178 188 184 186 192 C184 200 172 200 166 194" stroke="#1A2129" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M152 160 L152 176 C140 178 132 184 134 192 C136 200 148 200 154 194" stroke="#1A2129" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Code Puppy</b></a>
   <div class="links">
     <a href="./" class="active">Hub</a>
     <a href="./field-guide/">Field Guide</a>
@@ -85,7 +93,7 @@
 </nav>
 
 <main class="wrap">
-  <section class="hero">
+  <section class="hero"><svg class="watermark" viewBox="0 0 320 300" aria-hidden="true"><path d="M62 78 C30 88 14 118 20 148 C24 172 44 186 62 182 L88 96 Z" fill="#A3A8F8"/><path d="M258 78 C290 88 306 118 300 148 C296 172 276 186 258 182 L232 96 Z" fill="#A3A8F8"/><path d="M70 96 C70 52 112 34 160 34 C208 34 250 52 250 96 C250 128 244 152 226 172 C206 192 184 200 160 200 C136 200 114 192 94 172 C76 152 70 128 70 96 Z" fill="#A3A8F8"/><circle cx="122" cy="108" r="13" fill="#A3A8F8"/><circle cx="198" cy="108" r="13" fill="#A3A8F8"/><circle cx="160" cy="248" r="46" fill="#A3A8F8"/></svg>
     <span class="kicker">Public Mirror · t-granlund/code_puppy</span>
     <h1>Code Puppy, <em>documented.</em></h1>
     <p class="lede">A living knowledge base for the multi-agent CLI platform. Explore every tool, agent, plugin, and skill; read the curated breakdown of the last two months of shipping; or take the fully-offline flat file on the go.</p>
@@ -101,6 +109,7 @@
 
   <section class="cards">
     <a class="card t-2" href="./field-guide/">
+      <span class="ci"><svg class="" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m16.24 7.76-2.12 6.36-6.36 2.12 2.12-6.36 6.36-2.12z"/></svg></span>
       <span class="t">Explore</span>
       <span class="h">Field Guide</span>
       <span class="d">The interactive explorer for the whole platform: browse every tool, sub-agent, plugin, skill, and the SDLC lifecycle — filterable, live-synced to the repo, rebuilt daily.</span>
@@ -109,6 +118,7 @@
     </a>
 
     <a class="card t-accent" href="./releases/">
+      <span class="ci"><svg class="" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/></svg></span>
       <span class="t">Catch Up</span>
       <span class="h">Release Observatory</span>
       <span class="d">Curated deep-dives on the notable updates of the last two months — what each is, what it does, and why it matters — plus a scannable index of every minor change and bug fix.</span>
@@ -117,6 +127,7 @@
     </a>
 
     <a class="card t-4" href="./architecture/">
+      <span class="ci"><svg class="" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg></span>
       <span class="t">Understand</span>
       <span class="h">Architecture</span>
       <span class="d">The self-healing pipeline as a single diagram &mdash; scheduler, six-stage train, mirrors, backups, and the watchdog that keeps the whole machine honest.</span>
@@ -125,6 +136,7 @@
     </a>
 
     <a class="card t-3" href="./flat/">
+      <span class="ci"><svg class="" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg></span>
       <span class="t">Carry</span>
       <span class="h">Flat Field Guide</span>
       <span class="d">A single self-contained HTML file with the entire field guide inlined — no server, no assets. Download it, email it, or open it from a thumb drive.</span>
