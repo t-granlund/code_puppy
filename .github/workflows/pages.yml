@@ -58,6 +58,10 @@ jobs:
           mkdir -p _site/architecture
           cp pages-hub/architecture.html _site/architecture/index.html
 
+          # 3c. Design system reference page
+          mkdir -p _site/design
+          cp pages-hub/design.html _site/design/index.html
+
           # 4. Fully-offline flat file
           mkdir -p _site/flat
           cp docs/field-guide-flat.html _site/flat/index.html
