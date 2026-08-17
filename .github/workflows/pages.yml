@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - "docs/field-guide/**"
+      - "docs/field-guide-flat.html"
+      - "pages-hub/**"
       - ".github/workflows/pages.yml"
   workflow_dispatch: {}
 
@@ -25,10 +27,37 @@ jobs:
       - name: Prepare Pages artifact
         run: |
           mkdir -p _site
-          cp -r docs/field-guide/. _site/
+
+          # 1. Landing hub at the root
+          cp pages-hub/index.html _site/
+          # Inject live platform stats from the field guide data into the hub
+          node - <<'EOF'
+          const fs = require('fs');
+          const dataJs = fs.readFileSync('docs/field-guide/data.js', 'utf8')
+            .replace(/^window\.FIELD_GUIDE_DATA = /, '').replace(/;\s*$/, '');
+          const d = JSON.parse(dataJs);
+          let html = fs.readFileSync('_site/index.html', 'utf8');
+          html = html
+            .replace(/id="s-tools">—</,  `id="s-tools">${d.stats.tools}<`)
+            .replace(/id="s-agents">—</, `id="s-agents">${d.stats.agents}<`)
+            .replace(/id="s-plugins">—</,`id="s-plugins">${d.stats.plugins}<`)
+            .replace(/id="s-commits">—</,`id="s-commits">${d.stats.commitsLast2Months}<`);
+          fs.writeFileSync('_site/index.html', html);
+          EOF
+
+          # 2. Interactive field guide explorer
+          mkdir -p _site/field-guide
+          cp -r docs/field-guide/. _site/field-guide/
+
+          # 3. Release observatory
+          mkdir -p _site/releases
+          cp pages-hub/updates.html _site/releases/index.html
+
+          # 4. Fully-offline flat file
           mkdir -p _site/flat
           cp docs/field-guide-flat.html _site/flat/index.html
-          # GitHub Pages' default Jekyll step would choke on underscore dirs
+
+          # Stop GitHub Pages from Jekyll-transforming anything
           touch _site/.nojekyll
 
       - uses: actions/configure-pages@v5
