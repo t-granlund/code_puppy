@@ -1,8 +1,8 @@
 window.FIELD_GUIDE_DATA = {
   "meta": {
-    "generatedAt": "2026-08-17T14:24:59.207114+00:00",
+    "generatedAt": "2026-08-17T14:28:21.553189+00:00",
     "repoPath": "/Users/tygranlund/code_puppy",
-    "repoHead": "70ff66c3",
+    "repoHead": "c1066229",
     "branch": "main",
     "currentVersion": "code-puppy v0.0.728",
     "sourceUrl": "https://github.com/mpfaffenberger/code_puppy"
@@ -12,7 +12,7 @@ window.FIELD_GUIDE_DATA = {
     "agents": 22,
     "plugins": 57,
     "skills": 2,
-    "commitsLast2Months": 659,
+    "commitsLast2Months": 661,
     "releases": 3
   },
   "tools": [
@@ -2730,7 +2730,7 @@ window.FIELD_GUIDE_DATA = {
       "files": [
         {
           "name": "register_callbacks.py",
-          "lines": 216
+          "lines": 240
         }
       ],
       "hasReadme": false,
@@ -2902,12 +2902,28 @@ window.FIELD_GUIDE_DATA = {
     }
   ],
   "changelog": {
-    "total_commits": 659,
+    "total_commits": 661,
     "releases": [
       {
         "month": "2026-08",
-        "commit_count": 241,
+        "commit_count": 243,
         "commits": [
+          {
+            "hash": "c1066229ff35ffa9aba69569e9ea981b21d12813",
+            "short_hash": "c1066229",
+            "subject": "ci(pages): deploy field guide to GitHub Pages on docs changes",
+            "author": "Tyler Granlund",
+            "date": "2026-08-17",
+            "month": "2026-08"
+          },
+          {
+            "hash": "747df1429f76c01a9290232080b6baf415ebd8b3",
+            "short_hash": "747df142",
+            "subject": "docs(field-guide): regenerate after upstream sync (2026-08-17)",
+            "author": "Tyler Granlund",
+            "date": "2026-08-17",
+            "month": "2026-08"
+          },
           {
             "hash": "70ff66c3699ea3decddba57d377fe6c83d044f8a",
             "short_hash": "70ff66c3",
@@ -2970,22 +2986,6 @@ window.FIELD_GUIDE_DATA = {
             "subject": "feat(field-guide): deeper plugin/tool extraction + skills + SDLC lifecycle",
             "author": "Tyler Granlund",
             "date": "2026-08-13",
-            "month": "2026-08"
-          },
-          {
-            "hash": "1a07ef68cd037d97b5b8919fa11eae00f6fbef29",
-            "short_hash": "1a07ef68",
-            "subject": "fix(field-guide): flat HTML no longer wipes DATA.plugins via JS escape reinterpretation",
-            "author": "Tyler Granlund",
-            "date": "2026-08-10",
-            "month": "2026-08"
-          },
-          {
-            "hash": "69905961fd547fa36fae190e600f1dfa65ee83ed",
-            "short_hash": "69905961",
-            "subject": "Route Anthropic Opus 5 to adaptive thinking",
-            "author": "Mike Pfaffenberger",
-            "date": "2026-08-17",
             "month": "2026-08"
           }
         ]
@@ -3164,6 +3164,20 @@ window.FIELD_GUIDE_DATA = {
       }
     ],
     "commits": [
+      {
+        "hash": "c1066229ff35ffa9aba69569e9ea981b21d12813",
+        "short_hash": "c1066229",
+        "subject": "ci(pages): deploy field guide to GitHub Pages on docs changes",
+        "author": "Tyler Granlund",
+        "date": "2026-08-17"
+      },
+      {
+        "hash": "747df1429f76c01a9290232080b6baf415ebd8b3",
+        "short_hash": "747df142",
+        "subject": "docs(field-guide): regenerate after upstream sync (2026-08-17)",
+        "author": "Tyler Granlund",
+        "date": "2026-08-17"
+      },
       {
         "hash": "70ff66c3699ea3decddba57d377fe6c83d044f8a",
         "short_hash": "70ff66c3",
