@@ -1,8 +1,8 @@
 window.FIELD_GUIDE_DATA = {
   "meta": {
-    "generatedAt": "2026-08-17T14:31:57.691793+00:00",
+    "generatedAt": "2026-08-17T14:58:43.367983+00:00",
     "repoPath": "/Users/tygranlund/code_puppy",
-    "repoHead": "e12ca1c8",
+    "repoHead": "70967a91",
     "branch": "main",
     "currentVersion": "code-puppy v0.0.729",
     "sourceUrl": "https://github.com/mpfaffenberger/code_puppy"
@@ -12,7 +12,7 @@ window.FIELD_GUIDE_DATA = {
     "agents": 22,
     "plugins": 57,
     "skills": 2,
-    "commitsLast2Months": 664,
+    "commitsLast2Months": 667,
     "releases": 3
   },
   "tools": [
@@ -2902,12 +2902,36 @@ window.FIELD_GUIDE_DATA = {
     }
   ],
   "changelog": {
-    "total_commits": 664,
+    "total_commits": 667,
     "releases": [
       {
         "month": "2026-08",
-        "commit_count": 246,
+        "commit_count": 249,
         "commits": [
+          {
+            "hash": "70967a91cb1b36ae1f0a1cea80b3aa610b42dfa2",
+            "short_hash": "70967a91",
+            "subject": "chore: auto-commit pre-update leftovers (2026-08-17 09:58)",
+            "author": "Tyler Granlund",
+            "date": "2026-08-17",
+            "month": "2026-08"
+          },
+          {
+            "hash": "3012c61f8649b6f00668051ada531b34a5949c47",
+            "short_hash": "3012c61f",
+            "subject": "docs(sovereignty): reflect auto-sync updater + Pages field guide",
+            "author": "Tyler Granlund",
+            "date": "2026-08-17",
+            "month": "2026-08"
+          },
+          {
+            "hash": "7a71b193b0a6e3850e80f599e36ae52fa4f5e813",
+            "short_hash": "7a71b193",
+            "subject": "docs(field-guide): regenerate + post-update leftovers (2026-08-17 09:31)",
+            "author": "Tyler Granlund",
+            "date": "2026-08-17",
+            "month": "2026-08"
+          },
           {
             "hash": "e12ca1c8d0eb3edefc6cc71adc56a7117e605a7f",
             "short_hash": "e12ca1c8",
@@ -2960,30 +2984,6 @@ window.FIELD_GUIDE_DATA = {
             "hash": "6fc05df4129a81c9621be9363321f3dd41258880",
             "short_hash": "6fc05df4",
             "subject": "fix(field-guide): correct skill source labels and sanitize paths",
-            "author": "Tyler Granlund",
-            "date": "2026-08-16",
-            "month": "2026-08"
-          },
-          {
-            "hash": "f98458f227c1a66eefa80fa41c1d67d5d76a2006",
-            "short_hash": "f98458f2",
-            "subject": "docs(field-guide): regenerate with user plugins + i_have_adhd; app.js tier badges",
-            "author": "Tyler Granlund",
-            "date": "2026-08-16",
-            "month": "2026-08"
-          },
-          {
-            "hash": "bcce3696b50fbfc61e5d500214d3fd5b60c03071",
-            "short_hash": "bcce3696",
-            "subject": "docs(field-guide): regenerate after core-plugins package scan support",
-            "author": "Tyler Granlund",
-            "date": "2026-08-16",
-            "month": "2026-08"
-          },
-          {
-            "hash": "e45d7700838f203072b373808a6e3dd0d6b8a660",
-            "short_hash": "e45d7700",
-            "subject": "feat(field-guide): scan installed core-plugins package + user plugins",
             "author": "Tyler Granlund",
             "date": "2026-08-16",
             "month": "2026-08"
@@ -3164,6 +3164,27 @@ window.FIELD_GUIDE_DATA = {
       }
     ],
     "commits": [
+      {
+        "hash": "70967a91cb1b36ae1f0a1cea80b3aa610b42dfa2",
+        "short_hash": "70967a91",
+        "subject": "chore: auto-commit pre-update leftovers (2026-08-17 09:58)",
+        "author": "Tyler Granlund",
+        "date": "2026-08-17"
+      },
+      {
+        "hash": "3012c61f8649b6f00668051ada531b34a5949c47",
+        "short_hash": "3012c61f",
+        "subject": "docs(sovereignty): reflect auto-sync updater + Pages field guide",
+        "author": "Tyler Granlund",
+        "date": "2026-08-17"
+      },
+      {
+        "hash": "7a71b193b0a6e3850e80f599e36ae52fa4f5e813",
+        "short_hash": "7a71b193",
+        "subject": "docs(field-guide): regenerate + post-update leftovers (2026-08-17 09:31)",
+        "author": "Tyler Granlund",
+        "date": "2026-08-17"
+      },
       {
         "hash": "e12ca1c8d0eb3edefc6cc71adc56a7117e605a7f",
         "short_hash": "e12ca1c8",
