@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Architecture — Code Puppy Self-Healing Pipeline</title>
+<meta name="description" content="System architecture of the code-puppy autonomous update, publishing, and documentation pipeline." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --black: #000;
+    --panel: #161617;
+    --panel-2: #1c1c1e;
+    --hairline: rgba(255,255,255,.10);
+    --hairline-strong: rgba(255,255,255,.16);
+    --text: #f5f5f7;
+    --text-2: #a1a1a6;
+    --text-3: #6e6e73;
+    --blue: #2997ff;
+    --green: #30d158;
+    --purple: #bf5af2;
+    --orange: #ff9f0a;
+    --pink: #ff375f;
+    --teal: #64d2ff;
+    --grad: linear-gradient(92deg,#0090ff 0%,#bf5af2 55%,#ff375f 100%);
+    --radius: 20px;
+    --radius-s: 14px;
+    --sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Inter, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --mono: "SF Mono", "JetBrains Mono", ui-monospace, Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--black); color: var(--text);
+    font-family: var(--sans); font-size: 15px; line-height: 1.5;
+    -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+  }
+  a { color: var(--text-2); text-decoration: none; }
+  a:hover { color: var(--text); }
+
+  /* ---------- page chrome ---------- */
+  .nav {
+    position: sticky; top: 0; z-index: 50;
+    display: flex; align-items: center; gap: 22px;
+    padding: 16px 32px;
+    background: rgba(0,0,0,.72); backdrop-filter: saturate(180%) blur(20px);
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    font-size: 12.5px;
+  }
+  .nav .brand { display:flex; align-items:center; gap:10px; font-weight:600; color:var(--text); letter-spacing:-.01em; }
+  .nav .brand .mark { width:20px; height:20px; border-radius:6px; background: var(--grad); }
+  .nav .links { margin-left: auto; display: flex; gap: 22px; }
+  .nav .links a { color: var(--text-2); transition: color .15s; }
+  .nav .links a.active { color: var(--text); }
+  @media (max-width: 860px){ .nav .links { display:none; } }
+
+  .stagebg { position: absolute; inset: 0; z-index: -1; overflow: hidden; }
+  .stagebg i { position: absolute; border-radius: 50%; filter: blur(90px); opacity: .16; }
+  .stagebg .g1 { width: 560px; height: 560px; top: -140px; right: -120px; background: var(--blue); }
+  .stagebg .g2 { width: 460px; height: 460px; top: 520px; left: -160px; background: var(--purple); opacity: .12; }
+  .stagebg .g3 { width: 420px; height: 420px; bottom: 120px; right: 10%; background: var(--green); opacity: .08; }
+
+  .wrap { max-width: 1220px; margin: 0 auto; padding: 0 40px; position: relative; }
+
+  /* ---------- hero ---------- */
+  .hero { padding: 96px 0 64px; text-align: center; }
+  .kicker {
+    display: inline-block; font-size: 12px; font-weight: 600;
+    letter-spacing: .22em; text-transform: uppercase;
+    color: var(--text-2); margin-bottom: 22px;
+    padding: 8px 16px; border: 1px solid var(--hairline); border-radius: 980px;
+    background: rgba(255,255,255,.03);
+  }
+  .hero h1 {
+    font-size: clamp(44px, 6.4vw, 80px); font-weight: 800;
+    letter-spacing: -0.035em; line-height: 1.02; margin: 0; color: var(--text);
+  }
+  .hero h1 .g { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .hero .sub { max-width: 640px; margin: 24px auto 0; font-size: 19px; color: var(--text-2); font-weight: 400; letter-spacing: -0.01em; }
+
+  /* ---------- diagram ---------- */
+  .layer-lbl { display:flex; align-items:center; gap:16px; font-size: 11px; font-weight:600; letter-spacing:.2em; text-transform:uppercase; color:var(--text-3); margin: 56px 0 20px; }
+  .layer-lbl::after { content:""; height:1px; flex:1; background: var(--hairline); }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius);
+    padding: 22px 24px;
+    transition: transform .35s cubic-bezier(.22,1,.36,1), border-color .35s, box-shadow .35s;
+    box-shadow: 0 24px 60px -40px rgba(0,0,0,.9);
+  }
+  .card:hover { transform: translateY(-4px); border-color: var(--hairline-strong); box-shadow: 0 40px 80px -40px rgba(0,0,0,.95); }
+  .card .c-k { font-size: 11px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 8px; }
+  .card .c-t { font-size: 17px; font-weight: 700; letter-spacing: -0.015em; color: var(--text); }
+  .card .c-d { font-size: 13px; color: var(--text-2); margin-top: 6px; line-height: 1.55; }
+  .card code { font-family: var(--mono); font-size: 11.5px; color: var(--text); background: rgba(255,255,255,.07); padding: 2px 7px; border-radius: 6px; overflow-wrap: anywhere; }
+
+  /* scheduler */
+  .sched { max-width: 720px; margin: 0 auto; text-align: center; padding: 30px 32px; }
+  .sched .times { display: flex; justify-content: center; gap: 12px; margin: 18px 0 14px; }
+  .chip { font-family: var(--mono); font-size: 13px; font-weight: 500; padding: 9px 18px; border-radius: 980px; background: var(--panel-2); border: 1px solid var(--hairline); color: var(--text); }
+  .sched .note { font-size: 12.5px; color: var(--text-3); }
+
+  /* connectors */
+  .flow { display:flex; justify-content:center; margin: 0; }
+  .flow .v { width: 2px; height: 52px; background: linear-gradient(to bottom, var(--hairline-strong), rgba(255,255,255,.28)); position: relative; overflow: hidden; }
+  .flow .v::after { content:""; position:absolute; left:0; top:-40%; width:100%; height:40%; background: linear-gradient(to bottom, transparent, var(--blue), transparent); animation: drop 2.4s cubic-bezier(.4,0,.2,1) infinite; }
+  @keyframes drop { to { top: 110%; } }
+  .flow .v.g::after { background: linear-gradient(to bottom, transparent, var(--green), transparent); animation-delay:.8s; }
+  .flow .v.p::after { background: linear-gradient(to bottom, transparent, var(--purple), transparent); animation-delay:1.6s; }
+
+  /* pipeline train */
+  .pipewrap { background: var(--panel); border: 1px solid var(--hairline); border-radius: 28px; padding: 30px 30px 34px; }
+  .pipehead { display:flex; align-items:baseline; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:24px; }
+  .pipehead .ttl { font-size:15px; font-weight:700; letter-spacing:-0.01em; }
+  .pipehead .ttl code { font-family:var(--mono); font-size:12px; color:var(--text-2); background:rgba(255,255,255,.06); padding:3px 8px; border-radius:6px; margin-left:10px; font-weight:500; }
+  .pipehead .guard { font-size:12px; color:var(--text-3); font-family:var(--mono); }
+  .stages { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+  @media (max-width: 1020px){ .stages { grid-template-columns: repeat(3,1fr);} }
+  @media (max-width: 640px){
+    .stages { grid-template-columns: 1fr;}
+    .wrap { padding: 0 18px; }
+    .sched, .pipewrap { padding-left: 18px; padding-right: 18px; }
+  }
+  /* Long technical tokens must never force horizontal overflow */
+  code, .route, .tag, .chip { overflow-wrap: anywhere; }
+  .pipehead .ttl code { word-break: break-all; }
+  .card, .pipewrap, .hero { min-width: 0; }
+  .stage { background: var(--panel-2); border: 1px solid var(--hairline); border-radius: var(--radius-s); padding: 16px 16px 18px; position: relative; }
+  .stage .num { font-family: var(--mono); font-size: 11px; font-weight:500; color: var(--text-3); margin-bottom: 10px; display:flex; align-items:center; gap:8px;}
+  .stage .num::after { content:""; flex:1; height:1px; background:var(--hairline); }
+  .stage .s-t { font-size: 13.5px; font-weight: 700; letter-spacing:-0.01em; margin-bottom: 5px; }
+  .stage .s-d { font-size: 11.5px; color: var(--text-2); line-height: 1.5; }
+  .stage.s1 .num { color: var(--blue); } .stage.s2 .num { color: var(--teal); } .stage.s3 .num { color: var(--orange); }
+  .stage.s4 .num { color: var(--green); } .stage.s5 .num { color: var(--purple); } .stage.s6 .num { color: var(--pink); }
+  .stage.s3 { border-color: rgba(255,159,10,.35); background: linear-gradient(180deg, rgba(255,159,10,.07), var(--panel-2)); }
+
+  /* tri fan out */
+  .trunk { display:flex; justify-content:center; }
+  .fan { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  @media (max-width: 900px){ .fan { grid-template-columns: 1fr; } }
+  .dest { position: relative; overflow: hidden; }
+  .dest::before { content:""; position:absolute; top:0; left:24px; right:24px; height:1px; background: var(--hairline-strong); }
+  .dest .routes { margin-top: 14px; display:flex; flex-direction:column; gap:6px; }
+  .route { display:flex; justify-content:space-between; gap:10px; font-family:var(--mono); font-size:11.5px; color:var(--text-2); padding:7px 12px; background:rgba(255,255,255,.04); border-radius:8px; }
+  .route b { color:var(--text); font-weight:500; }
+  .tagrow { display:flex; gap:8px; flex-wrap:wrap; margin-top: 12px; }
+  .tag { font-family: var(--mono); font-size: 10.5px; color: var(--text-3); border:1px solid var(--hairline); border-radius: 980px; padding: 4px 10px; }
+
+  .emissions { display:grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 18px; }
+  @media (max-width: 900px){ .emissions { grid-template-columns: 1fr; } }
+
+  /* watchdog side */
+  .watch { display:grid; grid-template-columns: 200px 1fr; gap: 24px; align-items:center; }
+  @media (max-width: 700px){ .watch { grid-template-columns:1fr; } }
+  .loopwrap { display:grid; place-items:center; }
+  .loopwrap svg { width: 130px; height: 130px; }
+  .orbit { animation: spin 10s linear infinite; transform-origin: 65px 65px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .watch ul { margin: 10px 0 0; padding: 0 0 0 18px; }
+  .watch li { font-size: 13px; color: var(--text-2); margin-bottom: 7px; }
+  .watch li::marker { color: var(--text-3); }
+
+  .guardrail { display:flex; gap:10px; flex-wrap:wrap; margin-top: 26px; }
+  .pill { font-size: 12px; color: var(--text-2); background: rgba(255,255,255,.045); border: 1px solid var(--hairline); border-radius: 980px; padding: 7px 14px; }
+  .pill b { color: var(--text); font-weight: 600; }
+
+  .livestrip { display:flex; align-items:center; justify-content:center; gap:10px; margin: 48px 0 8px; font-family: var(--mono); font-size: 12px; color: var(--text-3); letter-spacing: .04em; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 0 rgba(48,209,88,.5); animation: pulse 2s infinite; }
+  @keyframes pulse { 70% { box-shadow: 0 0 0 9px rgba(48,209,88,0);} 100% { box-shadow:0 0 0 0 rgba(48,209,88,0);} }
+
+  footer { border-top: 1px solid rgba(255,255,255,.08); margin-top: 40px; padding: 26px 0 44px; }
+  footer .wrap { display:flex; justify-content:space-between; gap:24px; flex-wrap:wrap; }
+  footer p { font-size: 11.5px; color: var(--text-3); max-width: 560px; margin: 0; }
+
+  @media print { body { background:#fff; color:#000; } .card,.pipewrap,.stage { border-color:#ddd; } }
+  @media (prefers-reduced-motion: reduce) { .flow .v::after, .orbit, .dot { animation: none; } }
+</style>
+</head>
+<body>
+<nav class="nav">
+  <a class="brand" href="../index.html"><span class="mark"></span>Code Puppy</a>
+  <div class="links">
+    <a href="../index.html">Hub</a>
+    <a href="../field-guide/">Field Guide</a>
+    <a href="../releases/">Releases</a>
+    <a href="./" class="active">Architecture</a>
+    <a href="../flat/">Flat Docs</a>
+    <a href="https://github.com/t-granlund/code_puppy" target="_blank" rel="noopener">GitHub</a>
+  </div>
+</nav>
+
+<div class="stagebg"><i class="g1"></i><i class="g2"></i><i class="g3"></i></div>
+
+<header class="hero wrap">
+  <span class="kicker">Internal Training · System Architecture</span>
+  <h1>Self-healing<br /><span class="g">by design.</span></h1>
+  <p class="sub">One pipeline. Three times a day. Zero babysitting. The lifecycle that keeps code-puppy current, tested, published, and documented — automatically.</p>
+</header>
+
+<main class="wrap">
+
+  <div class="layer-lbl">Schedule</div>
+  <section class="card sched">
+    <div class="c-t">launchd — the metronome that owns time</div>
+    <div class="times">
+      <span class="chip">07:00</span><span class="chip">12:00</span><span class="chip">20:00</span>
+    </div>
+    <div class="note"><code>com.code-puppy.daily-update</code> · macOS wakes the machine at schedule · missed runs fire on wake · on failure, everything fails safe</div>
+  </section>
+
+  <div class="flow"><div class="v"></div></div>
+
+  <div class="layer-lbl">Pipeline · update-code-puppy.sh</div>
+  <section class="pipewrap">
+    <div class="pipehead">
+      <div class="ttl">The six-stage train <code>~/.code_puppy/scripts/update-code-puppy.sh</code></div>
+      <div class="guard">Every stage aborts&nbsp;safely · nothing half-applies</div>
+    </div>
+    <div class="stages">
+      <div class="stage s1"><div class="num">01</div><div class="s-t">Snapshot</div><div class="s-d">Safety branch. Dirty-tree leftovers auto-committed — pull never blocked, work never lost.</div></div>
+      <div class="stage s2"><div class="num">02</div><div class="s-t">Sync</div><div class="s-d">Rebase local main onto upstream <code>origin/main</code>. Divergence absorbed, history linear.</div></div>
+      <div class="stage s3"><div class="num">03</div><div class="s-t">Cross-Check</div><div class="s-d">7,311 tests run against the merged tree. Any failure: hard reset to pre-sync state. Broken upstreams don't get installed.</div></div>
+      <div class="stage s4"><div class="num">04</div><div class="s-t">Install + Regen</div><div class="s-d">uv reinstalls from source, field guide and release observatory regenerated and auto-consumed.</div></div>
+      <div class="stage s5"><div class="num">05</div><div class="s-t">Publish</div><div class="s-d">Push to fork + private mirror via gh. Fork-divergence recovery, backlog marker retries failures.</div></div>
+      <div class="stage s6"><div class="num">06</div><div class="s-t">Maintain</div><div class="s-d">Profile snapshot to backup repo. Safety-branch pruning. Desktop notification. Clean exit.</div></div>
+    </div>
+
+    <div class="livestrip"><span class="dot"></span>LIVE — next automated fire today, on schedule</div>
+
+    <div class="guardrail">
+      <span class="pill"><b>Rollback</b> test-gated install</span>
+      <span class="pill"><b>Force-with-lease</b> mirror reconciliation</span>
+      <span class="pill"><b>Marker</b> .pending-publish backlog</span>
+      <span class="pill"><b>Idempotent</b> rerun-safe by construction</span>
+    </div>
+  </section>
+
+  <div class="flow"><div class="v p"></div></div>
+
+  <div class="layer-lbl">Destinations</div>
+  <section class="fan">
+    <div class="card dest">
+      <div class="c-k" style="color:var(--blue)">Public Fork</div>
+      <div class="c-t">t-granlund/code_puppy</div>
+      <div class="c-d">The mirror the world sees — and the origin of the public site, rebuilt on every docs-touching push.</div>
+      <div class="routes">
+        <span class="route"><b>/</b> landing hub</span>
+        <span class="route"><b>/field-guide/</b> interactive explorer</span>
+        <span class="route"><b>/releases/</b> evergreen observatory</span>
+        <span class="route"><b>/architecture/</b> this diagram</span>
+        <span class="route"><b>/flat/</b> offline single file</span>
+      </div>
+      <div class="tagrow"><span class="tag">build_type: workflow</span><span class="tag">configure-pages omitted (429-hardened)</span></div>
+    </div>
+    <div class="card dest">
+      <div class="c-k" style="color:var(--purple)">Private Mirror</div>
+      <div class="c-t">Multi-Agent-Orch-CLI</div>
+      <div class="c-d">Insurance against upstream disappearance. Exact replica of local main — force-with-lease keeps it honest.</div>
+      <div class="routes">
+        <span class="route"><b>main</b> identical tree, same SHA</span>
+        <span class="route"><b>push</b> force-with-lease only</span>
+        <span class="route"><b>restore</b> git clone and done</span>
+      </div>
+      <div class="tagrow"><span class="tag">untouchable fallback</span><span class="tag">same commit SHA</span></div>
+    </div>
+    <div class="card dest">
+      <div class="c-k" style="color:var(--green)">Profile Backup</div>
+      <div class="c-t">code-puppy-profile-backup</div>
+      <div class="c-d">Whitelisted snapshot of <code>~/.code_puppy</code> — agents, plugins, kennel memory, config. The part no upstream can rebuild.</div>
+      <div class="routes">
+        <span class="route"><b>72 files</b> whitelisted, tracked</span>
+        <span class="route"><b>~8 MB</b> of a 26 GB profile</span>
+        <span class="route"><b>per run</b> committed only on change</span>
+      </div>
+      <div class="tagrow"><span class="tag">private · keys inside</span><span class="tag">snapshot per run</span></div>
+    </div>
+  </section>
+
+  <div class="flow"><div class="v g"></div></div>
+
+  <div class="layer-lbl">The Watchdog</div>
+  <section class="card watch">
+    <div class="loopwrap">
+      <svg viewBox="0 0 130 130" fill="none" aria-hidden="true">
+        <circle cx="65" cy="65" r="52" stroke="rgba(255,255,255,.10)" stroke-width="1.5"/>
+        <g class="orbit">
+          <circle cx="65" cy="13" r="4.5" fill="#30d158"/>
+          <path d="M65 13 a52 52 0 0 1 45 26" stroke="rgba(48,209,88,.55)" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+        </g>
+        <text x="65" y="61" text-anchor="middle" fill="#f5f5f7" font-family="-apple-system, SF Pro Text, Inter, sans-serif" font-size="13" font-weight="600">5 min</text>
+        <text x="65" y="79" text-anchor="middle" fill="#6e6e73" font-family="-apple-system, SF Pro Text, Inter, sans-serif" font-size="10">heartbeat</text>
+      </svg>
+    </div>
+    <div>
+      <div class="c-k" style="color:var(--green)">update_schedule plugin</div>
+      <div class="c-t">If the machine forgets, it reminds itself</div>
+      <div class="c-d">Loaded with every code-puppy session. Trust-gated, hash-verified, and impossible to silence by accident.</div>
+      <ul>
+        <li>Re-enables + re-bootstraps the launchd job if it ever gets dropped</li>
+        <li>Self-heals its own config if something disables the plugin</li>
+        <li>Re-checks every 5 minutes during agent runs — throttled, never spammy</li>
+        <li><code>/update status</code> reports schedule, sync state, Pages health</li>
+      </ul>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Architecture rendered 2026-08-17 against a live system. Every element on this page executes on schedule, autonomously, on the machine that generated it. Failures degrade gracefully: the pipeline rolls back, the mirrors wait, the watchdog waits five minutes and fixes it.</p>
+    <p style="text-align:right; flex:1">code_puppy · internal reference</p>
+  </div>
+</footer>
+
+</body>
+</html>
