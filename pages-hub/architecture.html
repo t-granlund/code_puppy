@@ -9,6 +9,14 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../assets/tokens.css" />
+<link rel="stylesheet" href="../assets/sidebar.css" />
+<link rel="stylesheet" href="../assets/popover.css" />
+<script src="../assets/icons.js"></script>
+<script>window.BB_SHELL = { base: "../", active: "architecture", assetsBase: "../assets/" };</script>
+<script src="../assets/shell.js" defer></script>
+<script src="../assets/sidebar.js" defer></script>
+<script src="../assets/popover.js" defer></script>
 <style>
   :root{
     --bg:#1A2129; --panel:#202834; --panel-2:#252F3C;
@@ -48,9 +56,24 @@
   .lbl::after{content:"";height:1px;flex:1;background:var(--line)}
   .lbl .dotc{width:8px;height:8px;border-radius:50%}
 
-  /* ---- horizontal lanes: grow to fill on wide screens ---- */
-  .lane{display:flex;align-items:stretch;gap:0}
-  @media(max-width:1650px){.lane{overflow-x:auto;padding-bottom:6px;scrollbar-width:none}.lane::-webkit-scrollbar{display:none}.lane .node{flex:0 0 auto;max-width:230px}}
+  main{overflow:hidden;max-width:100%}
+  /* ---- horizontal lanes on very wide screens; wrap to a grid below ---- */
+  .lane{display:flex;align-items:stretch;gap:0;max-width:100%}
+  @media(max-width:1650px){
+    .lane{flex-wrap:wrap;gap:12px}
+    .lane .arrow, .lane .fanwrap>.n-k{display:none}
+    .lane .fanwrap{flex:1 1 100%;order:-1;width:100%;max-width:100%}
+    .lane .stagetrain{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .lane .stagetrain .arrow{display:none}
+    .lane .cluster{flex:1 1 100%;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;justify-content:stretch}
+  }
+  @media(max-width:760px){
+    .lane .stagetrain, .lane .cluster{grid-template-columns:1fr 1fr}
+  }
+  @media(max-width:520px){
+    .lane .stagetrain, .lane .cluster{grid-template-columns:1fr}
+    .lane .node{max-width:100%}
+  }
   .node{flex:1 1 150px;min-width:150px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px 18px;min-width:170px;max-width:230px;cursor:pointer;transition:transform .25s cubic-bezier(.22,1,.36,1),border-color .25s,box-shadow .25s;position:relative}
   .node:hover{transform:translateY(-3px);border-color:var(--line-2)}
   .node:focus-visible{outline:2px solid var(--peri);outline-offset:2px}
@@ -66,9 +89,8 @@
   .cluster{flex:1 1 220px;display:flex;flex-direction:column;gap:12px;justify-content:center}
   .cluster .node{min-width:210px;width:100%}
 
-  .fanwrap{flex:2 1 auto;min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:22px 24px 26px}
-  .stagetrain{display:flex;align-items:stretch}
-  @media(max-width:1650px){.fanwrap{flex:0 0 auto}.stagetrain{overflow-x:auto;scrollbar-width:none}.stagetrain::-webkit-scrollbar{display:none}}
+  .fanwrap{flex:2 1 auto;min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:22px 24px 26px;max-width:100%}
+  .stagetrain{display:flex;align-items:stretch;max-width:100%}
 
   .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
 
@@ -312,25 +334,33 @@ document.querySelectorAll('.node[data-ic]').forEach(n=>{
   n.insertBefore(span, n.firstChild);
 });
 
-/* ---------- sheet mechanics ---------- */
-const sheet=document.getElementById('sheet'), bd=document.getElementById('bd'),
-      sc=document.getElementById('sc'), x=document.getElementById('x');
-let sel=null;
-function openSheet(html, node){
-  sc.innerHTML=html; sheet.classList.add('on'); bd.classList.add('on');
-  if(sel) sel.classList.remove('sel'); sel=node||null; if(sel) sel.classList.add('sel');
-  sheet.scrollTop=0;
-}
-function closeSheet(){ sheet.classList.remove('on'); bd.classList.remove('on'); if(sel){sel.classList.remove('sel'); sel=null;} }
-bd.onclick=closeSheet; x.onclick=closeSheet;
-addEventListener('keydown', e=>{ if(e.key==='Escape') closeSheet(); });
+/* ---------- detail via the shared BB popover ----------
+   Nodes + inventory rows open the ARIA popover (focus trap, Esc/backdrop
+   close, open-in-new-page, copy-link, deep-linkable #detail=<key>).
+   The old .sheet/.backdrop markup remains present-but-unused; popover.js
+   builds its own overlay. */
+// Seed an empty shared map; merge node details (window.D) into it so
+// popover can resolve both structural nodes and inventory rows.
+window.BB_DETAIL = {};
+for (const k in D) window.BB_DETAIL[k] = D[k];
+window.D = D;   // expose const D as window.D for the popover's fallback path
 
 document.querySelectorAll('.node[data-d]').forEach(n=>{
   n.setAttribute('tabindex','0');
-  const go=()=>{ const d=D[n.dataset.d]; if(d) openSheet(`<div class="sh-k">${d.k}</div><h3>${d.t}</h3><div class="sh-body">${d.b}</div>`, n); };
-  n.addEventListener('click', go);
-  n.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); go(); }});
+  n.setAttribute('data-pop', n.dataset.d);
+  const title = n.querySelector('.n-t') ? n.querySelector('.n-t').textContent : n.dataset.d;
+  const kind  = n.querySelector('.n-k') ? n.querySelector('.n-k').textContent : 'Detail';
+  n.setAttribute('data-pop-label', kind + ' · ' + title);
+  n.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); n.click(); }});
 });
+
+// register inventory/detail items (rendered later) with data-pop at render time
+window.__bbRegisterRow = function(row, key, label){
+  row.setAttribute('tabindex','0');
+  row.setAttribute('data-pop', key);
+  row.setAttribute('data-pop-label', label);
+  row.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();row.click();}});
+};
 
 /* ---------- inventory from field-guide data ---------- */
 const KIND={p:('plugin'),a:('agent'),t:('tool'),s:('skill')};
@@ -370,13 +400,16 @@ function render(){
     <span class="kind ${i.k}">${KIND[i.k]}</span><span class="nm">${esc(i.nm)}</span>
     <span class="ds">${esc(i.ds.slice(0,110))}</span><span class="tg">${esc(i.tg)}</span></div>`).join('');
   inv.querySelectorAll('.row').forEach(r=>{
-    const go=()=>showItem(items[+r.dataset.ix], r);
-    r.onclick=go;
-    r.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();go();}});
+    const it = items[+r.dataset.ix];
+    // stash the built detail on the shared BB_DETAIL map, then let the
+    // popover open it (focus trap / open-in-new-page / copy-link).
+    const key = 'inv-' + (+r.dataset.ix);
+    window.BB_DETAIL[key] = { k: KIND[it.k] + ' · ' + it.tg, t: it.nm, b: buildItemBody(it) };
+    window.__bbRegisterRow(r, key, KIND[it.k] + ' · ' + it.nm);
   });
 }
 function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
-function showItem(i,row){
+function buildItemBody(i){
   let body='';
   if(i.k==='p'){const p=i.raw;
     body=`<div class="kv"><b>tier</b><span>${esc(p.tier)}</span></div>
@@ -396,7 +429,7 @@ function showItem(i,row){
     body=`<p>${esc(s.description||'')}</p><div class="kv"><b>source</b><span>${esc(s.source)}</span></div>
       <div class="kv"><b>path</b><span>${esc(s.path)}</span></div>`;
   }
-  openSheet(`<div class="sh-k">${KIND[i.k]} · ${esc(i.tg)}</div><h3>${esc(i.nm)}</h3><div class="sh-body">${body}</div>`, row);
+  return body;
 }
 </script>
 
