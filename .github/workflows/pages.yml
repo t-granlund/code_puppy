@@ -1,0 +1,47 @@
+name: Deploy Field Guide to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/field-guide/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch: {}
+
+permissions:
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare Pages artifact
+        run: |
+          mkdir -p _site
+          cp -r docs/field-guide/. _site/
+          mkdir -p _site/flat
+          cp docs/field-guide-flat.html _site/flat/index.html
+          # GitHub Pages' default Jekyll step would choke on underscore dirs
+          touch _site/.nojekyll
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
