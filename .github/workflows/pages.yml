@@ -60,7 +60,9 @@ jobs:
           # Stop GitHub Pages from Jekyll-transforming anything
           touch _site/.nojekyll
 
-      - uses: actions/configure-pages@v5
+      # NOTE: actions/configure-pages deliberately omitted. It only sets
+      # static-generator metadata we don't use, and its codeload tarball
+      # was persistently 429ing (3 failed deploys on 2026-08-17).
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
