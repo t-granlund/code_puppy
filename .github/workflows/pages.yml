@@ -53,6 +53,10 @@ jobs:
           mkdir -p _site/releases
           cp pages-hub/updates.html _site/releases/index.html
 
+          # 3b. Architecture diagram
+          mkdir -p _site/architecture
+          cp pages-hub/architecture.html _site/architecture/index.html
+
           # 4. Fully-offline flat file
           mkdir -p _site/flat
           cp docs/field-guide-flat.html _site/flat/index.html
