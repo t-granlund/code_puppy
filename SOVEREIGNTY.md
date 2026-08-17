@@ -7,8 +7,8 @@ A living brief on what this is, what's backed up where, and how to stay self-suf
 | Layer | Location | Purpose | Status |
 |---|---|---|---|
 | **Working source clone** | `~/code_puppy/` | Live development + install source |  main @ v0.0.709 |
-| **Public fork** | `github.com/t-granlund/code_puppy` | Backup; mirrors upstream + Tyler's work |  in sync with main |
-| **Private mirror (insurance)** | `github.com/t-granlund/Multi-Agent-Orch-CLI` | Untouchable fallback if public repo dies |  in sync with main |
+| **Public fork** | `github.com/t-granlund/code_puppy` | Backup; mirrors upstream + Tyler's work |  auto-synced by updater; **GitHub Pages field guide** at t-granlund.github.io/code_puppy/ |
+| **Private mirror (insurance)** | `github.com/t-granlund/Multi-Agent-Orch-CLI` | Untouchable fallback if public repo dies |  auto-synced by updater |
 | **Installed tool** | `~/.local/share/uv/tools/code-puppy/` | Currently-running CLI (uv tool install) |  v0.0.709 |
 | **Offline wheel** | `~/code_puppy/dist/code_puppy-0.0.709-py3-none-any.whl` | Zero-network reinstall artifact |  built |
 | **User profile** | `~/.code_puppy/` | plugins/, agents/, config, kennel (memory), logs |  not in any repo |
@@ -22,19 +22,18 @@ myfork   = github.com/t-granlund/code_puppy.git       (public fork — backup)
 private  = github.com/t-granlund/Multi-Agent-Orch-CLI (private insurance repo)
 ```
 
-Daily update script (`~/.code_puppy/scripts/update-code-puppy.sh`) pulls `origin` only. It's a **pure consumer** — never pushes. Your local commits pile up fast-forward/rebasing on origin; push manually to `myfork` + `private` when ready.
+Daily update script (`~/.code_puppy/scripts/update-code-puppy.sh`) is a **full self-healing pipeline**: snapshot → rebase on upstream → run tests (cross-check) → reinstall → regen field guide → push `myfork` + `private` via `gh`. launchd fires at **07:00 / 12:00 / 20:00**, and macOS wakes the machine at those times, so missed runs fire on wake.
 
 ## Running cadence
 
 ```bash
 cd ~/code_puppy
 
-# 1. Daily: let the update_schedule plugin pull fresh upstream changes
-#    (runs automatically at 08:00 and 17:00 via launchd)
-launchctl start com.code-puppy.daily-update    # trigger manually
+# 1. Automatic: update_schedule plugin runs thrice daily (7a/12p/8p).
+#    launchctl start com.code-puppy.daily-update   # trigger manually
 
-# 2. After local work lands, mirror to BOTH backups
-git push myfork main && git push private main
+# 2. Pushes happen automatically (myfork + private), and each push to main
+#    rebuilds the field guide on GitHub Pages via .github/workflows/pages.yml
 
 # 3. Quarterly (or when version bumps): rebuild offline insurance
 /opt/homebrew/bin/uv build --out-dir dist/
