@@ -1,8 +1,8 @@
 window.FIELD_GUIDE_DATA = {
   "meta": {
-    "generatedAt": "2026-08-17T17:00:09.606582+00:00",
+    "generatedAt": "2026-08-17T17:10:38.390680+00:00",
     "repoPath": "/Users/tygranlund/code_puppy",
-    "repoHead": "41a7d07f",
+    "repoHead": "e78f5be7",
     "branch": "main",
     "currentVersion": "code-puppy v0.0.729",
     "sourceUrl": "https://github.com/mpfaffenberger/code_puppy"
@@ -12,7 +12,7 @@ window.FIELD_GUIDE_DATA = {
     "agents": 22,
     "plugins": 57,
     "skills": 2,
-    "commitsLast2Months": 671,
+    "commitsLast2Months": 672,
     "releases": 3
   },
   "tools": [
@@ -2902,12 +2902,20 @@ window.FIELD_GUIDE_DATA = {
     }
   ],
   "changelog": {
-    "total_commits": 671,
+    "total_commits": 672,
     "releases": [
       {
         "month": "2026-08",
-        "commit_count": 260,
+        "commit_count": 261,
         "commits": [
+          {
+            "hash": "e78f5be7bec5fc57fcdd2976d261f9d8781ac0bf",
+            "short_hash": "e78f5be7",
+            "subject": "docs(field-guide+observatory): regenerate + post-update leftovers (2026-08-17 12:00)",
+            "author": "Tyler Granlund",
+            "date": "2026-08-17",
+            "month": "2026-08"
+          },
           {
             "hash": "41a7d07fe55d5714fc3decf587debe51488f03dc",
             "short_hash": "41a7d07f",
@@ -2976,14 +2984,6 @@ window.FIELD_GUIDE_DATA = {
             "hash": "be449265c6366acfc2e2486cd22e325221a007f6",
             "short_hash": "be449265",
             "subject": "docs(field-guide): regenerate + post-update leftovers (2026-08-17 10:01)",
-            "author": "Tyler Granlund",
-            "date": "2026-08-17",
-            "month": "2026-08"
-          },
-          {
-            "hash": "c4dfe9b8b617fcac9f7d6946708b13f0758775fa",
-            "short_hash": "c4dfe9b8",
-            "subject": "docs(field-guide): regenerate + post-update leftovers (2026-08-17 09:59)",
             "author": "Tyler Granlund",
             "date": "2026-08-17",
             "month": "2026-08"
@@ -3164,6 +3164,13 @@ window.FIELD_GUIDE_DATA = {
       }
     ],
     "commits": [
+      {
+        "hash": "e78f5be7bec5fc57fcdd2976d261f9d8781ac0bf",
+        "short_hash": "e78f5be7",
+        "subject": "docs(field-guide+observatory): regenerate + post-update leftovers (2026-08-17 12:00)",
+        "author": "Tyler Granlund",
+        "date": "2026-08-17"
+      },
       {
         "hash": "41a7d07fe55d5714fc3decf587debe51488f03dc",
         "short_hash": "41a7d07f",
