@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Code Puppy — Public Knowledge Base</title>
+<meta name="description" content="Public mirror of the Code Puppy platform: field guide, release observatory, and the interactive agent/tool explorer." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0b0f14; --bg-elev: #111821; --bg-card: #151e28;
+    --border: #233040; --border-light: #334459;
+    --text: #e8eef4; --text-soft: #9fb0c3; --text-muted: #6b7d91;
+    --accent: #f5b94d; --accent-2: #6cb6ff; --accent-3: #4cc46a; --accent-4: #b692f6; --danger: #ff7b72;
+    --radius: 14px; --radius-sm: 8px;
+    --shadow: 0 24px 80px -28px rgba(0,0,0,0.6);
+    --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:var(--sans); font-size:15px; line-height:1.65; -webkit-font-smoothing:antialiased; }
+  a { color:var(--accent-2); text-decoration:none; } a:hover { text-decoration:underline; }
+  code, .mono { font-family:var(--mono); }
+  code { background:rgba(108,182,255,.10); color:var(--accent-2); padding:2px 6px; border-radius:5px; font-size:.92em; }
+  h1,h2,h3 { margin:0; line-height:1.25; }
+  p { margin:0 0 14px; color:var(--text-soft); }
+
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+  .nav { position:sticky; top:0; z-index:100; display:flex; align-items:center; gap:14px; padding:14px 24px; background:rgba(11,15,20,.85); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); }
+  .nav .logo { display:flex; align-items:center; gap:12px; }
+  .nav .logo .paw { width:36px; height:36px; background:linear-gradient(135deg,var(--accent),var(--accent-4)); border-radius:10px; display:grid; place-items:center; font-size:20px; font-family:var(--mono); font-weight:700; color:#1a1510; }
+  .nav .logo b { font-size:16px; font-weight:700; }
+  .nav .links { margin-left:auto; display:flex; gap:10px; }
+  .nav .links a { font-family:var(--mono); font-size:12.5px; color:var(--text-soft); padding:7px 14px; border-radius:8px; border:1px solid transparent; }
+  .nav .links a:hover { color:var(--accent); border-color:var(--border-light); background:var(--bg-elev); text-decoration:none; }
+  .nav .links a.active { color:var(--accent); }
+
+  .hero { padding:80px 0 48px; }
+  .kicker { font-family:var(--mono); font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent); display:inline-block; border:1px solid var(--border-light); padding:6px 14px; border-radius:999px; margin-bottom:20px; }
+  .hero h1 { font-size:clamp(38px,6vw,64px); font-weight:700; letter-spacing:-0.03em; line-height:1.05; }
+  .hero h1 em { font-style:normal; color:var(--accent); }
+  .hero p.lede { max-width:720px; font-size:19px; color:var(--text-soft); margin-top:22px; }
+
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px; margin:44px 0 12px; }
+  .stat { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; text-align:center; box-shadow:var(--shadow); }
+  .stat .n { font-size:34px; font-weight:700; color:var(--accent); font-family:var(--mono); }
+  .stat .l { font-size:12.5px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.08em; margin-top:6px; }
+
+  .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:20px; padding:24px 0 80px; }
+  .card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:28px; display:flex; flex-direction:column; gap:14px; transition:transform .18s ease, border-color .18s ease; box-shadow:var(--shadow); }
+  .card:hover { transform:translateY(-3px); border-color:var(--border-light); text-decoration:none; }
+  .card .t { font-size:12px; font-family:var(--mono); letter-spacing:.12em; text-transform:uppercase; }
+  .card .h { font-size:20px; font-weight:700; color:var(--text); }
+  .card .d { color:var(--text-soft); font-size:14.5px; flex:1; }
+  .card .go { font-family:var(--mono); font-size:12.5px; display:inline-flex; gap:8px; align-items:center; }
+  .card.t-accent .t, .card.t-accent .go { color:var(--accent); }
+  .card.t-2 .t, .card.t-2 .go { color:var(--accent-2); }
+  .card.t-3 .t, .card.t-3 .go { color:var(--accent-3); }
+  .card.t-4 .t, .card.t-4 .go { color:var(--accent-4); }
+  .card .pill { display:inline-block; font-family:var(--mono); font-size:10.5px; padding:3px 9px; border-radius:999px; border:1px solid var(--border-light); color:var(--text-muted); width:fit-content; }
+
+  footer { border-top:1px solid var(--border); padding:28px 0 40px; margin-top:40px; }
+  footer .inner { display:flex; justify-content:space-between; gap:20px; flex-wrap:wrap; font-family:var(--mono); font-size:12.5px; color:var(--text-muted); }
+  footer a { color:var(--text-soft); }
+
+  @media (max-width:760px) { .nav .links { display:none; } }
+</style>
+</head>
+<body>
+<nav class="nav">
+  <div class="logo"><div class="paw"></div><b>Code Puppy</b></div>
+  <div class="links">
+    <a href="./" class="active">Hub</a>
+    <a href="./field-guide/">Field Guide</a>
+    <a href="./releases/">Releases</a>
+    <a href="./flat/">Flat Docs</a>
+    <a href="https://github.com/t-granlund/code_puppy" target="_blank" rel="noopener">GitHub</a>
+  </div>
+</nav>
+
+<main class="wrap">
+  <section class="hero">
+    <span class="kicker">Public Mirror · t-granlund/code_puppy</span>
+    <h1>Code Puppy, <em>documented.</em></h1>
+    <p class="lede">A living knowledge base for the multi-agent CLI platform. Explore every tool, agent, plugin, and skill; read the curated breakdown of the last two months of shipping; or take the fully-offline flat file on the go.</p>
+
+    <div class="stats" id="stats">
+      <!-- injected at build-time by pages workflow -->
+      <div class="stat"><div class="n" id="s-tools">—</div><div class="l">Tools</div></div>
+      <div class="stat"><div class="n" id="s-agents">—</div><div class="l">Agents</div></div>
+      <div class="stat"><div class="n" id="s-plugins">—</div><div class="l">Plugins</div></div>
+      <div class="stat"><div class="n" id="s-commits">—</div><div class="l">Commits / 2mo</div></div>
+    </div>
+  </section>
+
+  <section class="cards">
+    <a class="card t-2" href="./field-guide/">
+      <span class="t">Explore</span>
+      <span class="h">Field Guide</span>
+      <span class="d">The interactive explorer for the whole platform: browse every tool, sub-agent, plugin, skill, and the SDLC lifecycle — filterable, live-synced to the repo, rebuilt daily.</span>
+      <span class="pill">interactive · data-driven</span>
+      <span class="go">Open the explorer →</span>
+    </a>
+
+    <a class="card t-accent" href="./releases/">
+      <span class="t">Catch Up</span>
+      <span class="h">Release Observatory</span>
+      <span class="d">Curated deep-dives on the notable updates of the last two months — what each is, what it does, and why it matters — plus a scannable index of every minor change and bug fix.</span>
+      <span class="pill">curated · last 60 days</span>
+      <span class="go">Read the updates →</span>
+    </a>
+
+    <a class="card t-3" href="./flat/">
+      <span class="t">Carry</span>
+      <span class="h">Flat Field Guide</span>
+      <span class="d">A single self-contained HTML file with the entire field guide inlined — no server, no assets. Download it, email it, or open it from a thumb drive.</span>
+      <span class="pill">offline · self-contained</span>
+      <span class="go">Get the flat file →</span>
+    </a>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap inner">
+    <span> Code Puppy public mirror · rebuilt daily by the update_schedule pipeline</span>
+    <span>source: <a href="https://github.com/mpfaffenberger/code_puppy" target="_blank" rel="noopener">mpfaffenberger/code_puppy</a> · mirror: <a href="https://github.com/t-granlund/code_puppy" target="_blank" rel="noopener">t-granlund/code_puppy</a></span>
+  </div>
+</footer>
+
+</body>
+</html>
