@@ -136,6 +136,11 @@
       font-size: 11px;
       color: var(--text-muted);
       white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 38vw;
+      min-width: 0;
+      flex-shrink: 1;
     }
     @media (max-width: 900px) {
       .nav .links { display: none; }
@@ -143,7 +148,7 @@
     }
 
     /* Layout */
-    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; min-width: 0; }
     main { padding-top: 74px; }
 
     /* Plugin / tool meta rows */
@@ -282,10 +287,10 @@
     .section-head h2 { margin: 0; }
     .intro { max-width: 760px; margin-bottom: 28px; }
 
-    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
     .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
     @media (max-width: 900px) { .grid-3 { grid-template-columns: 1fr; } }
-    @media (max-width: 680px) { .grid-2 { grid-template-columns: 1fr; } }
+    @media (max-width: 680px) { .grid-2 { grid-template-columns: minmax(0, 1fr); } }
 
     .card {
       background: var(--bg-card);
@@ -396,6 +401,8 @@
       padding: 3px 8px;
       border-radius: 5px;
       color: var(--text-muted);
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
     .agent-card .tools-toggle {
       font-family: var(--mono);
@@ -1132,6 +1139,22 @@
       margin: 16px 0;
       font-size: 14px;
     }
+    /* Long unbreakable mono strings (version tags, register_callbacks
+       paths) wrap instead of pushing their column/parent out. */
+    td, th, .meta, .meta-row, code, dd { overflow-wrap: anywhere; word-break: break-word; }
+    /* Wide data tables scroll inside their own box on narrow viewports.
+       The wrapper must be a block box clipped to its parent so the inner
+       table's min-width overflows the wrapper (scrolls) not the section. */
+    .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; display: block; }
+    .table-scroll table { width: 100%; min-width: 520px; }
+    /* Rendered-into containers (architecture diagram, SDLC stages) can hold
+       a wide table/sheet — scroll them rather than blow out the section. */
+    #architecture-diagram, #sdlc-stages { max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    #architecture-diagram table, #sdlc-stages table {
+      width: 100%; min-width: 0; table-layout: fixed;
+    }
+    #architecture-diagram td, #architecture-diagram th,
+    #sdlc-stages td, #sdlc-stages th { overflow-wrap: anywhere; word-break: break-word; }
     th, td {
       text-align: left;
       padding: 10px 12px;
@@ -1320,10 +1343,12 @@
           <h2>Plugin Ecosystem</h2>
         </div>
         <div class="intro" id="plugins-intro"></div>
-        <table id="plugins-table">
-          <thead><tr><th>Plugin</th><th>Notes</th></tr></thead>
-          <tbody></tbody>
-        </table>
+        <div class="table-scroll">
+          <table id="plugins-table">
+            <thead><tr><th>Plugin</th><th>Notes</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
       </div>
     </section>
 
