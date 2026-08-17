@@ -561,23 +561,27 @@ def _write_flat_html(data: dict) -> Path:
     data_js = "window.FIELD_GUIDE_DATA = " + json.dumps(data, indent=2, ensure_ascii=False) + ";\n"
 
     # Inline data.js
+    # NOTE: use a replacement FUNCTION (not a string) for every re.sub below.
+    # A string replacement makes re.sub interpret backslash sequences in the
+    # JSON/JS payload (e.g. \n, \g) as escape/group references, silently
+    # corrupting embedded script content. A lambda returns the text verbatim.
     html_template = re.sub(
         r'<script\s+src="data\.js"></script>',
-        f'<script>\n{_inline_script_block(data_js)}\n</script>',
+        lambda m: f'<script>\n{_inline_script_block(data_js)}\n</script>',
         html_template,
     )
 
     # Inline app.js
     html_template = re.sub(
         r'<script\s+src="app\.js"></script>',
-        f'<script>\n{_inline_script_block(app_js)}\n</script>',
+        lambda m: f'<script>\n{_inline_script_block(app_js)}\n</script>',
         html_template,
     )
 
     # Inline changelog.js so the flat file is fully self-contained
     html_template = re.sub(
         r'<script\s+src="changelog\.js"></script>',
-        f'<script>\n{_inline_script_block(changelog_js)}\n</script>',
+        lambda m: f'<script>\n{_inline_script_block(changelog_js)}\n</script>',
         html_template,
     )
 
