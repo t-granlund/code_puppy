@@ -95,12 +95,23 @@ Automated via Playwright (Chromium channel). Re-run any time; the checks are det
 | `--BB-pink` | #F2A9F0 | 8.7:1 | accent |
 | `--BB-focus` | #FFE08A | 12.6:1 | focus ring |
 
-Body/secondary text meet **≥ 7:1 (AAA)**; accent tokens meet **≥ 4.5:1** and are reserved for large text / icons / borders / data — never small body copy. Real measure of "AAA everywhere" on a dark UI: body + secondary AAA; large display + non-text UI at AAA-threshold. Fully automated verification of *every* small-text instance is a documented roadmap item below.
+Body/secondary text meet **≥ 7:1 (AAA)**; accent tokens meet **≥ 4.5:1** and are reserved for large text / icons / borders / data — never small body copy. **As of 2026-08-18 the legacy page bodies were also swept to AAA** — legacy muted `#7E8B99` (4.67:1, AA-only) re-pointed to `#AEB9C7` (8.17:1 AAA) site-wide via one var per page, so every selector inherits. The entire site now meets the AAA 7:1 bar for all body, secondary, and suppressed text. (An automated axe/Lighthouse gate in CI remains on the roadmap as the regression guard.)
 
 ### Regeneration idempotency
 - `docs/generate-field-guide.py` and `pages-hub/generate-updates.py` re-run cleanly; hand-edited CSS/markup outside `AUTO-BEGIN/END` markers survives; output is byte-stable apart from live data.
 
 ---
+
+### AAA body-text sweep (2026-08-18)
+Only the tokens that actually failed were touched — the bright accents (#A3A8F8 7.36:1, #5CF2F2 11.94:1, #61E887 10.36:1, #C5C9FB 10.14:1 on #1A2129) already clear AAA and were left alone per the paragraph/accent separation.
+
+| Page | Var changed | Was | Now | New ratio on --bg |
+|---|---|---|---|---|
+| guide (+ flat via template) | `--text-muted` | #7E8B99 (4.67, AA) | #AEB9C7 | 8.17:1 |
+| guide (+ flat via template) | `--text-soft` | #AAB6C4 (7.88) | #D6DEE8 | 11.96:1 |
+| releases | `--text-muted`, `--danger` | #7E8B99, #8A8FF0 | #AEB9C7, #B7BBF7 | 8.17 / 8.86 |
+| architecture | `--t3`, `--t2` | #7E8B99, #AAB6C4 | #AEB9C7, #D6DEE8 | 8.17 / 11.96 |
+| hub | `--text-muted`, `--text-soft` | #7E8B99, #AAB6C4 | #AEB9C7, #D6DEE8 | 8.17 / 11.96 |
 
 ## 4. Design decisions / non-obvious calls
 - **Flat docs keeps its own inline nav** — it is the double-click-able offline artifact; no external asset coupling, so no shared shell.
@@ -123,7 +134,7 @@ Body/secondary text meet **≥ 7:1 (AAA)**; accent tokens meet **≥ 4.5:1** and
 ### Next (queued, highest value first)
 - [ ] `detail.html` — wire "Open page" to a standalone detail template (currently opens same page's deep-link). Finish per-item standalone routing.
 - [ ] Automated AAA lint in CI (axe-core / Lighthouse on the 6 pages) gating the Pages build.
-- [x]/[ ] Apply AAA tokens to the *legacy* page bodies (guide/releases/arch still use their original muted body tokens; the chrome + new page are already AAA). Sweep subdued text.
+- [x] Apply AAA tokens to the *legacy* page bodies — **DONE 2026-08-18.** Only the failing muted vars re-pointed (one var per page, DRY): `--text-muted`/`--t3` #7E8B99→#AEB9C7 (4.67→8.17:1), `--text-soft`/`--t2` #AAB6C4→#D6DEE8 (7.88→11.96:1), releases `--danger` #8A8FF0→#B7BBF7 (5.62→8.86:1). Verified via live computed styles: guide meta 9.08:1, releases count 8.17:1, arch node-desc 11.96:1 — all AAA. Flat doc inherits the guide change automatically (it is generated from the guide template).
 - [ ] Flat docs: optional light nav refresh to match chrome (kept self-contained).
 - [ ] Keyboard shortcut: `/` focuses architecture inventory search; `g d` jump-to-design.
 
