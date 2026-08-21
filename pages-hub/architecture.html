@@ -169,7 +169,7 @@
   <div class="lane">
     <div class="node" data-d="machine" data-ic="server:peri"><span class="n-open">+</span><div class="n-k">Host</div><div class="n-t">Tyler's Mac</div><div class="n-d">Working clone, uv tool install, private profile. The whole show runs here.</div></div>
     <div class="arrow"></div>
-    <div class="node" data-d="launchd" data-ic="clock:cyan"><span class="n-open">+</span><div class="n-k">Schedule</div><div class="n-t">launchd</div><div class="n-d">07:00 · 12:00 · 20:00 calendar intervals, wake catch-up.</div></div>
+    <div class="node" data-d="launchd" data-ic="clock:cyan"><span class="n-open">+</span><div class="n-k">Schedule</div><div class="n-t">launchd</div><div class="n-d">Ad-hoc via /update now (launchd plist paused).</div></div>
     <div class="arrow"></div>
     <div class="fanwrap" style="flex:0 0 auto">
       <div class="n-k" style="font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--peri);margin-bottom:10px">update-code-puppy.sh — stage train</div>
@@ -252,10 +252,10 @@ const D = {
     <div class="kv"><b>~/.code_puppy</b><span>profile: agents, plugins, kennel memory, config (whitelisted backup)</span></div>
     <div class="kv"><b>uv tool install</b><span>code-puppy v0.0.754 at ~/.local/share/uv/tools/code-puppy</span></div>
     <div class="kv"><b>launchd gui domain</b><span>~/Library/LaunchAgents/com.code-puppy.daily-update.plist</span></div>`},
-  launchd: {k:'Schedule', t:'launchd — the metronome', b:`
-    <p>Calendar-interval agent in the per-user GUI domain. macOS wakes the machine at scheduled times; a missed run fires immediately on wake (the 8:15am-wake case).</p>
-    <div class="kv"><b>intervals</b><span>07:00 · 12:00 · 20:00 daily</span></div>
-    <div class="kv"><b>last state</b><span>loaded, dormant between fires</span></div>
+  launchd: {k:'Schedule', t:'launchd — paused (ad-hoc)', b:`
+    <p>Calendar-interval agent in the per-user GUI domain. Currently paused (plist renamed .paused). Updates run ad-hoc via /update now, which fires the pipeline script directly.</p>
+    <div class="kv"><b>intervals</b><span>Ad-hoc (launchd paused)</span></div>
+    <div class="kv"><b>last state</b><span>plist paused, not loaded</span></div>
     <div class="kv"><b>logs</b><span>~/.code_puppy/logs/update-code-puppy.log</span></div>`},
   s1: {k:'Stage 01', t:'Snapshot', b:`<p>Creates a <code>backup/pre-update-*</code> branch, then auto-commits any dirty-tree leftovers. A pull can never be blocked and work can never be lost — the guard that used to deadlock the whole updater.</p>`},
   s2: {k:'Stage 02', t:'Sync', b:`<p>Fetches upstream <code>mpfaffenberger/code_puppy</code> and rebases local main on top. Fork-only commits ride cleanly over every upstream drop.</p>`},
@@ -269,18 +269,17 @@ const D = {
     <div class="kv"><b>build_type</b><span>workflow (upload + deploy actions)</span></div>`},
   mirror: {k:'Publish · private', t:'Multi-Agent-Orch-CLI', b:`<p>The insurance mirror — untouchable fallback if the public upstream ever disappears. Exact replica of local main, reconciled by force-with-lease.</p>`},
   profile: {k:'Backup · private', t:'code-puppy-profile-backup', b:`<p>Whitelisted snapshot of <code>~/.code_puppy</code> on every run — agents, plugins, kennel memory, config, OAuth material. ~72 files, ~8MB of a 26GB profile. The part no upstream can rebuild.</p>`},
-  'e2e-plist': {k:'Trigger', t:'The plist', b:`
+  'e2e-plist': {k:'Trigger', t:'The plist (paused)', b:`
     <div class="kv"><b>Label</b><span>com.code-puppy.daily-update</span></div>
     <div class="kv"><b>Program</b><span>/bin/bash update-code-puppy.sh</span></div>
     <div class="kv"><b>PATH</b><span>pinned: uv, gh, git all absolute</span></div>
     <div class="kv"><b>RunAtLoad</b><span>false — pure calendar cadence</span></div>
-    <p>lint-clean; bootstrap'd into gui/$(id -u). The update_schedule plugin re-bootstraps it automatically if it ever gets unloaded.</p>`},
-  'e2e-script': {k:'Work', t:'The script', b:`<p>~/.code_puppy/scripts/update-code-puppy.sh — every stage aborts safely: rebase conflicts abort with nothing installed, test failures roll back, publish failures mark-and-retry. Re-running it manually (<code>launchctl start</code>) is exactly what the scheduler does.</p>`},
+    <p>Currently paused (plist renamed .paused). The update_schedule plugin runs the pipeline script directly via /update now instead of launchd.</p>`},
+  'e2e-script': {k:'Work', t:'The script', b:`<p>~/.code_puppy/scripts/update-code-puppy.sh — every stage aborts safely: rebase conflicts abort with nothing installed, test failures roll back, publish failures mark-and-retry. /update now fires this script directly (no launchd needed).</p>`},
   'e2e-plugin': {k:'Watchdog', t:'The plugin inside every session', b:`
-    <p>Lives at ~/.code_puppy/plugins/update_schedule and registers three callbacks:</p>
+    <p>Lives at ~/.code_puppy/plugins/update_schedule and registers two callbacks:</p>
     <div class="kv"><b>custom_command</b><span>/update now · status · log · enable · disable</span></div>
-    <div class="kv"><b>agent_run_start</b><span>every 5 min: launchctl enable + bootstrap if the job got dropped</span></div>
-    <div class="kv"><b>config self-heal</b><span>forces itself out of disabled_plugins if anything parks it there</span></div>`},
+    <div class="kv"><b>custom_command_help</b><span>registers the /update slash command in help</span></div>`},
   'e2e-trust': {k:'Gate', t:'Trust store', b:`<p>Every edit to the plugin changes its content hash; code-puppy refuses to load it until re-trusted. The gate stores SHA-256 over every plugin file in <code>trusted_plugins.json</code>. (Last refresh: after the schedule/status upgrades.)</p>`},
   'e2e-notify': {k:'Surface', t:'Where you see it', b:`<p>Desktop notifications on success/failure, <code>/update status</code> inside code-puppy (schedule, publish state, tree cleanliness), and the raw log tail. Silence means it ran, passed tests, published, and backed up.</p>`},
   'f-site': {k:'Feature · fork-only', t:'This public site', b:`<p>Hub + interactive field guide + evergreen observatory + this page + offline flat file, deployed by .github/workflows/pages.yml on every docs-touching push. Upload/deploy actions only — configure-pages dropped after a week of codeload 429s.</p>`},
