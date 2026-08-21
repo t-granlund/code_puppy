@@ -557,7 +557,6 @@ def _write_flat_html(data: dict) -> Path:
 
     html_template = (OUTPUT_DIR / "index.html").read_text()
     app_js = (OUTPUT_DIR / "app.js").read_text()
-    changelog_js = (OUTPUT_DIR / "changelog.js").read_text()
     data_js = "window.FIELD_GUIDE_DATA = " + json.dumps(data, indent=2, ensure_ascii=False) + ";\n"
 
     # Inline data.js
@@ -575,13 +574,6 @@ def _write_flat_html(data: dict) -> Path:
     html_template = re.sub(
         r'<script\s+src="app\.js"></script>',
         lambda m: f'<script>\n{_inline_script_block(app_js)}\n</script>',
-        html_template,
-    )
-
-    # Inline changelog.js so the flat file is fully self-contained
-    html_template = re.sub(
-        r'<script\s+src="changelog\.js"></script>',
-        lambda m: f'<script>\n{_inline_script_block(changelog_js)}\n</script>',
         html_template,
     )
 
