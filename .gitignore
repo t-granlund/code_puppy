@@ -31,6 +31,9 @@ nuitka-crash-report.xml
 *.backup
 main.bin
 
+# Session log dumps (auto-committed by updater; not source)
+NEWLog*.txt
+
 # Bundled skills removed — skills are now fetched from remote catalog
 code_puppy/bundled_skills/
 
