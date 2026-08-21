@@ -22,18 +22,19 @@ myfork   = github.com/t-granlund/code_puppy.git       (public fork — backup)
 private  = github.com/t-granlund/Multi-Agent-Orch-CLI (private insurance repo)
 ```
 
-Daily update script (`~/.code_puppy/scripts/update-code-puppy.sh`) is a **full self-healing pipeline**: snapshot → rebase on upstream → run tests (cross-check) → reinstall → regen field guide → push `myfork` + `private` via `gh`. launchd fires at **07:00 / 12:00 / 20:00**, and macOS wakes the machine at those times, so missed runs fire on wake.
+Daily update script (`~/.code_puppy/scripts/update-code-puppy.sh`) is a **full self-healing pipeline**: snapshot → rebase on upstream → run tests (cross-check) → reinstall → regen field guide → push `myfork` + `private` via `gh`. Runs **ad-hoc** via `/update now` (launchd plist is paused; no auto-schedule).
 
 ## Running cadence
 
 ```bash
 cd ~/code_puppy
 
-# 1. Automatic: update_schedule plugin runs thrice daily (7a/12p/8p).
-#    launchctl start com.code-puppy.daily-update   # trigger manually
+# 1. Ad-hoc: run `/update now` in any code-puppy session to trigger the
+#    full pipeline (rebase -> tests -> reinstall -> regen field guide ->
+#    push myfork + private). No auto-schedule; launchd plist is paused.
 
-# 2. Pushes happen automatically (myfork + private), and each push to main
-#    rebuilds the field guide on GitHub Pages via .github/workflows/pages.yml
+# 2. Each push to main rebuilds the field guide on GitHub Pages via
+#    .github/workflows/pages.yml
 
 # 3. Quarterly (or when version bumps): rebuild offline insurance
 /opt/homebrew/bin/uv build --out-dir dist/
@@ -77,4 +78,4 @@ cd ~/code_puppy && git remote remove origin
 ## Residual Risk
 
 - **Generated field-guide artifacts** (`docs/field-guide/data.js`, `docs/field-guide-flat.html`) are gitignored locally but referenced by upstream code. If upstream ever tracks them, your local untracking will fight on every rebase. Decide once: either commit them somewhere owned by you, or accept the rebase dance.
-- **launchd auto-update runs daily.** If upstream ever pushes a regression, you auto-ingest it. Consider adding a smoke test step to `update-code-puppy.sh` before notifying success.
+- **Updates run ad-hoc** (launchd paused). You only ingest upstream changes when you explicitly run `/update now`, so regressions can't sneak in unattended.
