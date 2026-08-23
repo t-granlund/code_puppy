@@ -6,11 +6,11 @@ A living brief on what this is, what's backed up where, and how to stay self-suf
 
 | Layer | Location | Purpose | Status |
 |---|---|---|---|
-| **Working source clone** | `~/code_puppy/` | Live development + install source |  main @ v0.0.754 |
+| **Working source clone** | `~/code_puppy/` | Live development + install source |  main @ v0.0.768 |
 | **Public fork** | `github.com/t-granlund/code_puppy` | Backup; mirrors upstream + Tyler's work |  auto-synced by updater; **GitHub Pages site** at t-granlund.github.io/code_puppy/ (hub / field-guide / releases / flat) |
 | **Private mirror (insurance)** | `github.com/t-granlund/Multi-Agent-Orch-CLI` | Untouchable fallback if public repo dies |  auto-synced by updater |
-| **Installed tool** | `~/.local/share/uv/tools/code-puppy/` | Currently-running CLI (uv tool install) |  v0.0.754 |
-| **Offline wheel** | `~/code_puppy/dist/code_puppy-0.0.754-py3-none-any.whl` | Zero-network reinstall artifact |  built Aug 21 (current; rebuild with `uv build` if needed) |
+| **Installed tool** | `~/.local/share/uv/tools/code-puppy/` | Currently-running CLI (uv tool install) |  v0.0.768 |
+| **Offline wheel** | `~/code_puppy/dist/code_puppy-0.0.768-py3-none-any.whl` | Zero-network reinstall artifact |  built Aug 22 (current; rebuild with `uv build` if needed) |
 | **User profile** | `~/.code_puppy/` | plugins/, agents/, config, kennel (memory), logs |  not in any repo |
 | **Apr-2026 OAuth fix (history)** | tag `snapshot-old-myfork-main` | Tyler's callback/Claude-OAuth sync; since superseded by upstream | archived as tag |
 
@@ -60,7 +60,7 @@ git clone https://github.com/t-granlund/Multi-Agent-Orch-CLI.git ~/code_puppy
 cd ~/code_puppy && /opt/homebrew/bin/uv tool install --reinstall .
 
 # Nuclear offline fallback (no network at all)
-/opt/homebrew/bin/uv tool install ~/code_puppy/dist/code_puppy-0.0.754-py3-none-any.whl
+/opt/homebrew/bin/uv tool install ~/code_puppy/dist/code_puppy-0.0.768-py3-none-any.whl
 ```
 
 **Cut the upstream link** (cleanliness):
