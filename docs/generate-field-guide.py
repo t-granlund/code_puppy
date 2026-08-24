@@ -13,6 +13,7 @@ launchable documentation site.
 
 from __future__ import annotations
 
+import base64
 import json
 import os
 import re
@@ -551,6 +552,27 @@ def _inline_script_block(content: str) -> str:
     return content.replace("</script>", "<\\/script>")
 
 
+def _inline_image_assets(html: str, base_dir: Path) -> str:
+    """Inline assets/*.png references as base64 data URIs.
+
+    The flat HTML is meant to open standalone (file://) from docs/, where a
+    relative ``assets/<name>.png`` path would NOT resolve. Inlining the logo
+    and favicon as data URIs keeps the file truly self-contained, matching the
+    same philosophy used for inlined JS/CSS/data above.
+    """
+    pattern = re.compile(r'(src|href)="assets/([A-Za-z0-9_.\-]+\.png)"')
+
+    def _sub(m: re.Match) -> str:
+        fname = m.group(2)
+        fpath = base_dir / "assets" / fname
+        if not fpath.exists():
+            return m.group(0)
+        b64 = base64.b64encode(fpath.read_bytes()).decode("ascii")
+        return f'{m.group(1)}="data:image/png;base64,{b64}"'
+
+    return pattern.sub(_sub, html)
+
+
 def _write_flat_html(data: dict) -> Path:
     """Write a single self-contained HTML file with all CSS/JS/data inlined."""
     flat_path = DOCS_DIR / "field-guide-flat.html"
@@ -598,6 +620,11 @@ def _write_flat_html(data: dict) -> Path:
         "cd docs/field-guide && python3 -m http.server 8080",
         "file:///path/to/field-guide-flat.html",
     )
+
+    # Inline PNG assets (logo + favicon) as base64 data URIs so the flat
+    # file is truly standalone — relative asset paths won't resolve from
+    # docs/field-guide-flat.html.
+    html_template = _inline_image_assets(html_template, OUTPUT_DIR)
 
     flat_path.write_text(html_template)
     return flat_path

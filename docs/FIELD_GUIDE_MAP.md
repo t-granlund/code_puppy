@@ -117,7 +117,7 @@ A generated, launchable local documentation site. Three files do the work:
   snapshot: `generatedAt 2026-08-22`, `code-puppy v0.0.768`, head `1fb151bc`,
   59 tools / 22 agents / 62 plugins / 5 skills / 825 commits (2mo) / 3 releases.
 - **`changelog.js`** — **removed** (was an empty 0 B placeholder; see Gaps G2).
-- **`assets/`** — `puppy.svg`, `puppy-full.svg`.
+- **`assets/`** — `code_puppy_logo_noback.png` (nav logo), `favicon.png` (favicon), `puppy.svg`/`puppy-full.svg` (legacy SVG marks).
 
 ### Sections (12)
 
@@ -179,7 +179,7 @@ fixed point. Run: `uv run python pages-hub/generate-updates.py`
 
 `icons.js` (`BB.icon(name,size)` — the icon factory used by `design.html`),
 `popover.css`/`popover.js` (detail sheet), `shell.js`, `sidebar.css`/`sidebar.js`,
-`tokens.css` (design tokens), `puppy.svg`/`puppy-full.svg`.
+`tokens.css` (design tokens), `code_puppy_logo_noback.png` (brand logo), `favicon.png`, `puppy.svg`/`puppy-full.svg` (legacy SVG marks).
 
 ###  Deploy convention (see Gaps G4)
 
