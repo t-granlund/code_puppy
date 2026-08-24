@@ -1,8 +1,8 @@
 window.FIELD_GUIDE_DATA = {
   "meta": {
-    "generatedAt": "2026-08-24T16:57:14.660968+00:00",
+    "generatedAt": "2026-08-24T17:18:47.753205+00:00",
     "repoPath": "/Users/tygranlund/code_puppy",
-    "repoHead": "3781b0f2",
+    "repoHead": "2e743a8b",
     "branch": "main",
     "currentVersion": "code-puppy v0.0.775",
     "sourceUrl": "https://github.com/mpfaffenberger/code_puppy"
@@ -12,7 +12,7 @@ window.FIELD_GUIDE_DATA = {
     "agents": 22,
     "plugins": 63,
     "skills": 5,
-    "commitsLast2Months": 846,
+    "commitsLast2Months": 847,
     "releases": 3
   },
   "tools": [
@@ -3090,12 +3090,20 @@ window.FIELD_GUIDE_DATA = {
     }
   ],
   "changelog": {
-    "total_commits": 846,
+    "total_commits": 847,
     "releases": [
       {
         "month": "2026-08",
-        "commit_count": 453,
+        "commit_count": 454,
         "commits": [
+          {
+            "hash": "2e743a8b3165695856553ef62b022637ef53c76b",
+            "short_hash": "2e743a8b",
+            "subject": "docs(field-guide+hub): use real Code Puppy logo across nav, favicon & shell",
+            "author": "Tyler Granlund",
+            "date": "2026-08-24",
+            "month": "2026-08"
+          },
           {
             "hash": "3781b0f23d4749178a0d2efdf81ed626ae1a40ae",
             "short_hash": "3781b0f2",
@@ -3165,14 +3173,6 @@ window.FIELD_GUIDE_DATA = {
             "short_hash": "63408f87",
             "subject": "Resize detection for the session browser; termflow-md >= 0.5.0",
             "author": "mpfaffenberger",
-            "date": "2026-08-23",
-            "month": "2026-08"
-          },
-          {
-            "hash": "183396489fefa5339a0a6cb0d48ccc6ec2f6e93a",
-            "short_hash": "18339648",
-            "subject": "chore: bump version [ci skip]",
-            "author": "github-actions[bot]",
             "date": "2026-08-23",
             "month": "2026-08"
           }
@@ -3352,6 +3352,13 @@ window.FIELD_GUIDE_DATA = {
       }
     ],
     "commits": [
+      {
+        "hash": "2e743a8b3165695856553ef62b022637ef53c76b",
+        "short_hash": "2e743a8b",
+        "subject": "docs(field-guide+hub): use real Code Puppy logo across nav, favicon & shell",
+        "author": "Tyler Granlund",
+        "date": "2026-08-24"
+      },
       {
         "hash": "3781b0f23d4749178a0d2efdf81ed626ae1a40ae",
         "short_hash": "3781b0f2",
