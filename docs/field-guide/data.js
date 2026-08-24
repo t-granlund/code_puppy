@@ -1,8 +1,8 @@
 window.FIELD_GUIDE_DATA = {
   "meta": {
-    "generatedAt": "2026-08-24T17:18:47.753205+00:00",
+    "generatedAt": "2026-08-24T17:36:16.032878+00:00",
     "repoPath": "/Users/tygranlund/code_puppy",
-    "repoHead": "2e743a8b",
+    "repoHead": "69442ba8",
     "branch": "main",
     "currentVersion": "code-puppy v0.0.775",
     "sourceUrl": "https://github.com/mpfaffenberger/code_puppy"
@@ -10,9 +10,9 @@ window.FIELD_GUIDE_DATA = {
   "stats": {
     "tools": 59,
     "agents": 22,
-    "plugins": 63,
+    "plugins": 64,
     "skills": 5,
-    "commitsLast2Months": 847,
+    "commitsLast2Months": 848,
     "releases": 3
   },
   "tools": [
@@ -2024,6 +2024,28 @@ window.FIELD_GUIDE_DATA = {
       "hasSkill": false
     },
     {
+      "name": "logo_toolkit",
+      "tier": "user",
+      "description": "User plugin: /logo slash command for logo manipulation.",
+      "hooks": [
+        "custom_command",
+        "custom_command_help"
+      ],
+      "hasCustomCommand": true,
+      "files": [
+        {
+          "name": "logo_ops.py",
+          "lines": 181
+        },
+        {
+          "name": "register_callbacks.py",
+          "lines": 361
+        }
+      ],
+      "hasReadme": false,
+      "hasSkill": false
+    },
+    {
       "name": "meta_oauth",
       "tier": "core-package",
       "description": "Callbacks for Meta Muse OAuth authentication and model registration.",
@@ -3090,12 +3112,20 @@ window.FIELD_GUIDE_DATA = {
     }
   ],
   "changelog": {
-    "total_commits": 847,
+    "total_commits": 848,
     "releases": [
       {
         "month": "2026-08",
-        "commit_count": 454,
+        "commit_count": 455,
         "commits": [
+          {
+            "hash": "69442ba839a7ceee6c1cde6a8878aa3baff5cbd4",
+            "short_hash": "69442ba8",
+            "subject": "design: migrate design system to Granlund-Grove forest palette",
+            "author": "Tyler Granlund",
+            "date": "2026-08-24",
+            "month": "2026-08"
+          },
           {
             "hash": "2e743a8b3165695856553ef62b022637ef53c76b",
             "short_hash": "2e743a8b",
@@ -3164,14 +3194,6 @@ window.FIELD_GUIDE_DATA = {
             "hash": "afa26f4b676f3941739f99bfa8e9d76d2cf88658",
             "short_hash": "afa26f4b",
             "subject": "One column of right padding in the session browser; termflow-md >= 0.5.1",
-            "author": "mpfaffenberger",
-            "date": "2026-08-23",
-            "month": "2026-08"
-          },
-          {
-            "hash": "63408f87196eb8c6c3eec2d1b151a23a71bc67f6",
-            "short_hash": "63408f87",
-            "subject": "Resize detection for the session browser; termflow-md >= 0.5.0",
             "author": "mpfaffenberger",
             "date": "2026-08-23",
             "month": "2026-08"
@@ -3352,6 +3374,13 @@ window.FIELD_GUIDE_DATA = {
       }
     ],
     "commits": [
+      {
+        "hash": "69442ba839a7ceee6c1cde6a8878aa3baff5cbd4",
+        "short_hash": "69442ba8",
+        "subject": "design: migrate design system to Granlund-Grove forest palette",
+        "author": "Tyler Granlund",
+        "date": "2026-08-24"
+      },
       {
         "hash": "2e743a8b3165695856553ef62b022637ef53c76b",
         "short_hash": "2e743a8b",
