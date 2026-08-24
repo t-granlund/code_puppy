@@ -1,8 +1,8 @@
 window.FIELD_GUIDE_DATA = {
   "meta": {
-    "generatedAt": "2026-08-24T17:36:16.032878+00:00",
+    "generatedAt": "2026-08-24T17:45:00.564037+00:00",
     "repoPath": "/Users/tygranlund/code_puppy",
-    "repoHead": "69442ba8",
+    "repoHead": "5c45bddc",
     "branch": "main",
     "currentVersion": "code-puppy v0.0.775",
     "sourceUrl": "https://github.com/mpfaffenberger/code_puppy"
@@ -12,7 +12,7 @@ window.FIELD_GUIDE_DATA = {
     "agents": 22,
     "plugins": 64,
     "skills": 5,
-    "commitsLast2Months": 848,
+    "commitsLast2Months": 849,
     "releases": 3
   },
   "tools": [
@@ -3112,12 +3112,20 @@ window.FIELD_GUIDE_DATA = {
     }
   ],
   "changelog": {
-    "total_commits": 848,
+    "total_commits": 849,
     "releases": [
       {
         "month": "2026-08",
-        "commit_count": 455,
+        "commit_count": 456,
         "commits": [
+          {
+            "hash": "5c45bddc40e5795a78ad19596d158f13a4f29c26",
+            "short_hash": "5c45bddc",
+            "subject": "feat(logo): white logo toolkit plugin + white logo for grove theme",
+            "author": "Tyler Granlund",
+            "date": "2026-08-24",
+            "month": "2026-08"
+          },
           {
             "hash": "69442ba839a7ceee6c1cde6a8878aa3baff5cbd4",
             "short_hash": "69442ba8",
@@ -3187,14 +3195,6 @@ window.FIELD_GUIDE_DATA = {
             "short_hash": "7ff29e37",
             "subject": "chore: bump version [ci skip]",
             "author": "github-actions[bot]",
-            "date": "2026-08-23",
-            "month": "2026-08"
-          },
-          {
-            "hash": "afa26f4b676f3941739f99bfa8e9d76d2cf88658",
-            "short_hash": "afa26f4b",
-            "subject": "One column of right padding in the session browser; termflow-md >= 0.5.1",
-            "author": "mpfaffenberger",
             "date": "2026-08-23",
             "month": "2026-08"
           }
@@ -3374,6 +3374,13 @@ window.FIELD_GUIDE_DATA = {
       }
     ],
     "commits": [
+      {
+        "hash": "5c45bddc40e5795a78ad19596d158f13a4f29c26",
+        "short_hash": "5c45bddc",
+        "subject": "feat(logo): white logo toolkit plugin + white logo for grove theme",
+        "author": "Tyler Granlund",
+        "date": "2026-08-24"
+      },
       {
         "hash": "69442ba839a7ceee6c1cde6a8878aa3baff5cbd4",
         "short_hash": "69442ba8",

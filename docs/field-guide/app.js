@@ -415,49 +415,93 @@ function renderHelios() {
 // PLUGINS
 /* ------------------------------------------------------------------ */
 
+const HOOK_CATEGORIES = {
+  Lifecycle: ["startup","shutdown","agent_run_start","agent_run_end","invoke_agent","agent_exception"],
+  Model: ["model_select","load_model_config","load_models_config","load_model_descriptions","get_model_system_prompt","transform_model_messages"],
+  Tools: ["register_tools","register_agent_tools","pre_tool_call","post_tool_call"],
+  Agents: ["register_agents"],
+  Skills: ["register_skills"],
+  Security: ["file_permission","run_shell_command"],
+  Commands: ["custom_command","custom_command_help"],
+  CLI: ["register_cli_args","handle_cli_args"],
+  Streaming: ["stream_event"],
+  Prompts: ["load_prompt"],
+  MCP: ["pre_mcp_autostart"],
+};
+
+function _categorizeHooks(hooks) {
+  const cats = {};
+  const used = new Set();
+  for (const [cat, members] of Object.entries(HOOK_CATEGORIES)) {
+    const matched = hooks.filter((h) => members.includes(h));
+    if (matched.length) { cats[cat] = matched; matched.forEach((h) => used.add(h)); }
+  }
+  const other = hooks.filter((h) => !used.has(h));
+  if (other.length) cats.Other = other;
+  return cats;
+}
+
 function renderPlugins() {
   document.getElementById("plugins-intro").innerHTML = `
     <p>Plugins are discovered from three tiers: builtin (<code>code_puppy/plugins/</code>), user (<code>~/.code_puppy/plugins/</code>), and project (<code>.code_puppy/plugins/</code>). Each is a directory containing <code>register_callbacks.py</code>.</p>
-    <p>Project plugins are disabled by default until trusted via the <code>/plugins</code> TUI ceremony. Load order is builtin -> user -> project.</p>
+    <p>Project plugins are disabled by default until trusted via the <code>/plugins</code> TUI ceremony. Load order is builtin -> user -> project. Click a plugin on the left to explore its hooks, files, and capabilities.</p>
   `;
 
-  // Replace the plain table with rich cards when deep data is present.
-  const table = document.querySelector("#plugins-table");
-  const wrap = table ? table.parentElement : null;
-  if (wrap) {
-    const grid = el("div", "grid-2");
-    (DATA.plugins || []).forEach((p) => {
-      const card = el("div", "card");
-      const head = el("div", "header");
-      head.style.cssText = "display:flex;justify-content:space-between;align-items:baseline;gap:8px";
-      head.appendChild(el("h3", "", p.name));
-      if (p.hasCustomCommand) {
-        const badge = el("span", "badge", "/cmd");
-        head.appendChild(badge);
-      }
-      if (p.tier) {
-        head.appendChild(el("span", "badge", p.tier));
-      }
-      card.appendChild(head);
-      if (p.description) card.appendChild(el("p", "", p.description));
-
-      const meta = el("div", "meta-row");
-      (p.hooks || []).slice(0, 6).forEach((h) => {
-        const tag = el("span", "tag accent", h);
-        meta.appendChild(tag);
-      });
-      (p.files || []).slice(0, 5).forEach((f) => {
-        // Files are {name, lines} objects (older data.js used plain strings).
-        const fname = typeof f === "string" ? f : f.name;
-        if (fname === "register_callbacks.py") return; // implied
-        const label = typeof f === "string" ? fname : `${fname} (${f.lines})`;
-        meta.appendChild(el("span", "tag", label));
-      });
-      if (meta.children.length) card.appendChild(meta);
-      grid.appendChild(card);
-    });
-    table.replaceWith(grid);
+  const plugins = DATA.plugins || [];
+  const listEl = document.getElementById("plugins-list");
+  const detailEl = document.getElementById("plugins-detail");
+  if (!listEl || !detailEl) return;
+  if (!plugins.length) {
+    detailEl.innerHTML = '<div class="md-empty">No plugins discovered.</div>';
+    return;
   }
+
+  plugins.forEach((p, i) => {
+    const item = el("div", "md-item");
+    item.appendChild(el("span", "", p.name));
+    if (p.tier) item.appendChild(el("span", "md-tier", p.tier));
+    item.addEventListener("click", () => {
+      listEl.querySelectorAll(".md-item").forEach((n) => n.classList.remove("active"));
+      item.classList.add("active");
+      _renderPluginDetail(p, detailEl);
+    });
+    if (i === 0) item.classList.add("active");
+    listEl.appendChild(item);
+  });
+
+  _renderPluginDetail(plugins[0], detailEl);
+}
+
+function _renderPluginDetail(p, container) {
+  const cats = _categorizeHooks(p.hooks || []);
+  const hooksHtml = Object.entries(cats).map(([cat, hs]) =>
+    `<div class="md-d-cat"><div class="md-d-cat-label">${cat}</div>` +
+    `<div class="md-d-hooks">${hs.map((h) => `<span class="tag accent">${h}</span>`).join("")}</div></div>`
+  ).join("");
+
+  const filesHtml = (p.files || []).map((f) => {
+    const name = typeof f === "string" ? f : f.name;
+    const lines = typeof f === "object" ? f.lines : "";
+    return `<div class="md-d-file"><span>${name}</span>${lines ? `<span class="lines">${lines} lines</span>` : ""}</div>`;
+  }).join("");
+
+  const flags = [
+    { label: "Custom Command", y: p.hasCustomCommand },
+    { label: "README", y: p.hasReadme },
+    { label: "SKILL.md", y: p.hasSkill },
+  ];
+
+  container.innerHTML =
+    `<div class="md-d-head"><h3>${p.name}</h3><div class="md-d-badges">` +
+    `${p.tier ? `<span class="md-d-badge accent">${p.tier}</span>` : ""}` +
+    `${p.hasCustomCommand ? `<span class="md-d-badge">/cmd</span>` : ""}` +
+    `</div></div>` +
+    `${p.description ? `<div class="md-d-desc">${p.description}</div>` : ""}` +
+    `<div class="md-d-section"><h4>Capabilities</h4><div class="md-d-flags">` +
+    flags.map((f) => `<div class="md-d-flag ${f.y ? "y" : "n"}">${f.y ? "yes" : "no"} ${f.label}</div>`).join("") +
+    `</div></div>` +
+    (hooksHtml ? `<div class="md-d-section"><h4>Hooks (${(p.hooks || []).length})</h4>${hooksHtml}</div>` : "") +
+    (filesHtml ? `<div class="md-d-section"><h4>Files (${(p.files || []).length})</h4><div class="md-d-files">${filesHtml}</div>` : "");
 }
 
 /* ------------------------------------------------------------------ */
