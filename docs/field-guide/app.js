@@ -441,35 +441,164 @@ function _categorizeHooks(hooks) {
   return cats;
 }
 
+const _pluginState = { sort: "name", tier: "all", use: "all", search: "", selected: null };
+
+function _sortPlugins(list, sort) {
+  const sorted = [...list];
+  if (sort === "name") sorted.sort((a, b) => a.name.localeCompare(b.name));
+  else if (sort === "tier") {
+    const order = { builtin: 0, user: 1, project: 2 };
+    sorted.sort((a, b) => (order[a.tier] ?? 3) - (order[b.tier] ?? 3) || a.name.localeCompare(b.name));
+  } else if (sort === "hooks") sorted.sort((a, b) => (b.hooks?.length || 0) - (a.hooks?.length || 0));
+  else if (sort === "files") sorted.sort((a, b) => (b.files?.length || 0) - (a.files?.length || 0));
+  return sorted;
+}
+
+function _filterPlugins(list, state) {
+  return list.filter((p) => {
+    if (state.tier !== "all" && p.tier !== state.tier) return false;
+    if (state.use !== "all") {
+      const cats = _categorizeHooks(p.hooks || []);
+      if (state.use === "cmd" && !p.hasCustomCommand) return false;
+      if (state.use === "skill" && !p.hasSkill) return false;
+      if (state.use === "readme" && !p.hasReadme) return false;
+      if (state.use !== "cmd" && state.use !== "skill" && state.use !== "readme") {
+        if (!cats[state.use]) return false;
+      }
+    }
+    if (state.search) {
+      const q = state.search.toLowerCase();
+      const hay = (p.name + " " + (p.description || "") + " " + (p.hooks || []).join(" ")).toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+}
+
+function _availableUses(plugins) {
+  const uses = new Set();
+  plugins.forEach((p) => {
+    if (p.hasCustomCommand) uses.add("cmd");
+    if (p.hasSkill) uses.add("skill");
+    if (p.hasReadme) uses.add("readme");
+    Object.keys(_categorizeHooks(p.hooks || [])).forEach((c) => uses.add(c));
+  });
+  return [...uses].sort();
+}
+
+const _USE_LABELS = {
+  cmd: "/cmd", skill: "SKILL", readme: "README",
+  Lifecycle: "Lifecycle", Model: "Model", Tools: "Tools", Agents: "Agents",
+  Skills: "Skills", Security: "Security", Commands: "Commands", CLI: "CLI",
+  Streaming: "Streaming", Prompts: "Prompts", MCP: "MCP", Other: "Other",
+};
+
 function renderPlugins() {
   document.getElementById("plugins-intro").innerHTML = `
     <p>Plugins are discovered from three tiers: builtin (<code>code_puppy/plugins/</code>), user (<code>~/.code_puppy/plugins/</code>), and project (<code>.code_puppy/plugins/</code>). Each is a directory containing <code>register_callbacks.py</code>.</p>
-    <p>Project plugins are disabled by default until trusted via the <code>/plugins</code> TUI ceremony. Load order is builtin -> user -> project. Click a plugin on the left to explore its hooks, files, and capabilities.</p>
+    <p>Project plugins are disabled by default until trusted via the <code>/plugins</code> TUI ceremony. Load order is builtin -> user -> project. Use the filters to sort and find plugins by type or use.</p>
   `;
 
-  const plugins = DATA.plugins || [];
+  const allPlugins = DATA.plugins || [];
   const listEl = document.getElementById("plugins-list");
   const detailEl = document.getElementById("plugins-detail");
-  if (!listEl || !detailEl) return;
-  if (!plugins.length) {
+  const toolbarEl = document.getElementById("plugins-toolbar");
+  if (!listEl || !detailEl || !toolbarEl) return;
+  if (!allPlugins.length) {
+    toolbarEl.innerHTML = "";
     detailEl.innerHTML = '<div class="md-empty">No plugins discovered.</div>';
     return;
   }
 
-  plugins.forEach((p, i) => {
+  const tiers = [...new Set(allPlugins.map((p) => p.tier).filter(Boolean))].sort();
+  const uses = _availableUses(allPlugins);
+
+  // --- Toolbar ---
+  toolbarEl.innerHTML =
+    `<input type="text" class="md-search" id="plugin-search" placeholder="Filter plugins..." value="${_pluginState.search}" />` +
+    `<div class="md-sort-row"><label>Sort</label><select class="md-sort" id="plugin-sort">` +
+    [["name","Name (A-Z)"],["tier","Tier"],["hooks","Hooks (most)"],["files","Files (most)"]].map(
+      ([v,l]) => `<option value="${v}"${_pluginState.sort===v?" selected":""}>${l}</option>`
+    ).join("") + `</select></div>` +
+    `<div><div class="md-filter-group-label">Tier</div><div class="md-filter-group" id="plugin-tier-filters">` +
+    ["all",...tiers].map((t) => `<button class="md-filter${_pluginState.tier===t?" active":""}" data-tier="${t}">${t==="all"?"All":t}</button>`).join("") +
+    `</div></div>` +
+    `<div><div class="md-filter-group-label">Use</div><div class="md-filter-group" id="plugin-use-filters">` +
+    ["all",...uses].map((u) => `<button class="md-filter${_pluginState.use===u?" active":""}" data-use="${u}">${u==="all"?"All":(_USE_LABELS[u]||u)}</button>`).join("") +
+    `</div></div>` +
+    `<div class="md-count" id="plugin-count"></div>`;
+
+  // Wire toolbar events
+  document.getElementById("plugin-search").addEventListener("input", (e) => {
+    _pluginState.search = e.target.value;
+    _refreshPluginList(allPlugins, listEl, detailEl);
+  });
+  document.getElementById("plugin-sort").addEventListener("change", (e) => {
+    _pluginState.sort = e.target.value;
+    _refreshPluginList(allPlugins, listEl, detailEl);
+  });
+  toolbarEl.querySelectorAll("[data-tier]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      _pluginState.tier = btn.dataset.tier;
+      toolbarEl.querySelectorAll("[data-tier]").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      _refreshPluginList(allPlugins, listEl, detailEl);
+    });
+  });
+  toolbarEl.querySelectorAll("[data-use]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      _pluginState.use = btn.dataset.use;
+      toolbarEl.querySelectorAll("[data-use]").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      _refreshPluginList(allPlugins, listEl, detailEl);
+    });
+  });
+
+  _refreshPluginList(allPlugins, listEl, detailEl);
+}
+
+function _refreshPluginList(allPlugins, listEl, detailEl) {
+  const filtered = _filterPlugins(allPlugins, _pluginState);
+  const sorted = _sortPlugins(filtered, _pluginState.sort);
+
+  const countEl = document.getElementById("plugin-count");
+  if (countEl) countEl.textContent = `${filtered.length} of ${allPlugins.length} plugins`;
+
+  listEl.innerHTML = "";
+  if (!sorted.length) {
+    listEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px">No matches</div>';
+    return;
+  }
+
+  // Preserve selection if still in list, else pick first
+  const selected = _pluginState.selected && sorted.find((p) => p.name === _pluginState.selected) ? _pluginState.selected : sorted[0].name;
+  _pluginState.selected = selected;
+
+  sorted.forEach((p) => {
     const item = el("div", "md-item");
     item.appendChild(el("span", "", p.name));
-    if (p.tier) item.appendChild(el("span", "md-tier", p.tier));
+    const meta = el("span", "", "");
+    meta.style.cssText = "display:flex;gap:4px;align-items:center";
+    if (p.tier) meta.appendChild(el("span", "md-tier", p.tier));
+    const hookCount = (p.hooks || []).length;
+    if (hookCount) {
+      const hc = el("span", "md-tier", String(hookCount));
+      hc.title = hookCount + " hooks";
+      meta.appendChild(hc);
+    }
+    item.appendChild(meta);
+    if (p.name === selected) item.classList.add("active");
     item.addEventListener("click", () => {
+      _pluginState.selected = p.name;
       listEl.querySelectorAll(".md-item").forEach((n) => n.classList.remove("active"));
       item.classList.add("active");
       _renderPluginDetail(p, detailEl);
     });
-    if (i === 0) item.classList.add("active");
     listEl.appendChild(item);
   });
 
-  _renderPluginDetail(plugins[0], detailEl);
+  const detailPlugin = sorted.find((p) => p.name === selected);
+  _renderPluginDetail(detailPlugin, detailEl);
 }
 
 function _renderPluginDetail(p, container) {

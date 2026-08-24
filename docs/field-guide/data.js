@@ -1,8 +1,8 @@
 window.FIELD_GUIDE_DATA = {
   "meta": {
-    "generatedAt": "2026-08-24T17:45:00.564037+00:00",
+    "generatedAt": "2026-08-24T18:10:20.715605+00:00",
     "repoPath": "/Users/tygranlund/code_puppy",
-    "repoHead": "5c45bddc",
+    "repoHead": "1cc260e0",
     "branch": "main",
     "currentVersion": "code-puppy v0.0.775",
     "sourceUrl": "https://github.com/mpfaffenberger/code_puppy"
@@ -12,7 +12,7 @@ window.FIELD_GUIDE_DATA = {
     "agents": 22,
     "plugins": 64,
     "skills": 5,
-    "commitsLast2Months": 849,
+    "commitsLast2Months": 850,
     "releases": 3
   },
   "tools": [
@@ -3112,12 +3112,20 @@ window.FIELD_GUIDE_DATA = {
     }
   ],
   "changelog": {
-    "total_commits": 849,
+    "total_commits": 850,
     "releases": [
       {
         "month": "2026-08",
-        "commit_count": 456,
+        "commit_count": 457,
         "commits": [
+          {
+            "hash": "1cc260e061c1029411ef34e63c229da3504fac5e",
+            "short_hash": "1cc260e0",
+            "subject": "feat(field-guide): master-detail plugin ecosystem explorer",
+            "author": "Tyler Granlund",
+            "date": "2026-08-24",
+            "month": "2026-08"
+          },
           {
             "hash": "5c45bddc40e5795a78ad19596d158f13a4f29c26",
             "short_hash": "5c45bddc",
@@ -3188,14 +3196,6 @@ window.FIELD_GUIDE_DATA = {
             "subject": "Two-phase master/detail flow on phone-sized terminals; termflow-md >= 0.6.0",
             "author": "mpfaffenberger",
             "date": "2026-08-24",
-            "month": "2026-08"
-          },
-          {
-            "hash": "7ff29e370c00e49fc4fc911722def2c2a3418efe",
-            "short_hash": "7ff29e37",
-            "subject": "chore: bump version [ci skip]",
-            "author": "github-actions[bot]",
-            "date": "2026-08-23",
             "month": "2026-08"
           }
         ]
@@ -3374,6 +3374,13 @@ window.FIELD_GUIDE_DATA = {
       }
     ],
     "commits": [
+      {
+        "hash": "1cc260e061c1029411ef34e63c229da3504fac5e",
+        "short_hash": "1cc260e0",
+        "subject": "feat(field-guide): master-detail plugin ecosystem explorer",
+        "author": "Tyler Granlund",
+        "date": "2026-08-24"
+      },
       {
         "hash": "5c45bddc40e5795a78ad19596d158f13a4f29c26",
         "short_hash": "5c45bddc",
