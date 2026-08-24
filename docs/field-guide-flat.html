@@ -1418,19 +1418,19 @@
   <script>
 window.FIELD_GUIDE_DATA = {
   "meta": {
-    "generatedAt": "2026-08-23T02:57:34.609706+00:00",
+    "generatedAt": "2026-08-24T15:56:54.055153+00:00",
     "repoPath": "/Users/tygranlund/code_puppy",
-    "repoHead": "db98c229",
+    "repoHead": "a94050b9",
     "branch": "main",
-    "currentVersion": "code-puppy v0.0.768",
+    "currentVersion": "code-puppy v0.0.775",
     "sourceUrl": "https://github.com/mpfaffenberger/code_puppy"
   },
   "stats": {
     "tools": 59,
     "agents": 22,
-    "plugins": 62,
+    "plugins": 63,
     "skills": 5,
-    "commitsLast2Months": 825,
+    "commitsLast2Months": 845,
     "releases": 3
   },
   "tools": [
@@ -3910,6 +3910,32 @@ window.FIELD_GUIDE_DATA = {
       "hasSkill": false
     },
     {
+      "name": "session_namer",
+      "tier": "core-package",
+      "description": "Register the session-namer plugin.",
+      "hooks": [
+        "post_autosave",
+        "session_browser_open"
+      ],
+      "hasCustomCommand": false,
+      "files": [
+        {
+          "name": "__init__.py",
+          "lines": 1
+        },
+        {
+          "name": "namer.py",
+          "lines": 255
+        },
+        {
+          "name": "register_callbacks.py",
+          "lines": 86
+        }
+      ],
+      "hasReadme": false,
+      "hasSkill": false
+    },
+    {
       "name": "shell_safety",
       "tier": "core-package",
       "description": "Callback registration for shell command safety checking.",
@@ -4482,88 +4508,88 @@ window.FIELD_GUIDE_DATA = {
     }
   ],
   "changelog": {
-    "total_commits": 825,
+    "total_commits": 845,
     "releases": [
       {
         "month": "2026-08",
-        "commit_count": 430,
+        "commit_count": 452,
         "commits": [
           {
-            "hash": "db98c2292ebb0c43294c9729223a83292714cd54",
-            "short_hash": "db98c229",
+            "hash": "a94050b986d718127e66f285b2b7a71ca4b99b83",
+            "short_hash": "a94050b9",
+            "subject": "docs(pages): bump version refs to v0.0.768 + rebuild offline wheel",
+            "author": "Tyler Granlund",
+            "date": "2026-08-22",
+            "month": "2026-08"
+          },
+          {
+            "hash": "97c3a20607ca70963b40da0b86a565c954941cda",
+            "short_hash": "97c3a206",
+            "subject": "docs(field-guide+observatory): regenerate for v0.0.768 update",
+            "author": "Tyler Granlund",
+            "date": "2026-08-22",
+            "month": "2026-08"
+          },
+          {
+            "hash": "b1eb34d14a5b9e6892f593119433496711cf4ded",
+            "short_hash": "b1eb34d1",
             "subject": "chore: auto-commit pre-update leftovers (2026-08-22 21:55)",
             "author": "Tyler Granlund",
             "date": "2026-08-22",
             "month": "2026-08"
           },
           {
-            "hash": "9e319a70735d4508c6add0c9a4e8370bb2b0909b",
-            "short_hash": "9e319a70",
+            "hash": "201b23cf0ea80eba09424f7f5fe09eaf56c42220",
+            "short_hash": "201b23cf",
             "subject": "chore: rebuild offline wheel to v0.0.754, untrack NEWLog session log",
             "author": "Tyler Granlund",
             "date": "2026-08-21",
             "month": "2026-08"
           },
           {
-            "hash": "35d9a632a793919288f217797292bf975dcb70f9",
-            "short_hash": "35d9a632",
+            "hash": "4b4a0ae3ceedbb0fcbe635ce5dcccef61e91f9b3",
+            "short_hash": "4b4a0ae3",
             "subject": "docs(pages): switch update_schedule to ad-hoc mode (no launchd)",
             "author": "Tyler Granlund",
             "date": "2026-08-21",
             "month": "2026-08"
           },
           {
-            "hash": "c7da0e505c41560231b46fbf80e350ffc5e6dc15",
-            "short_hash": "c7da0e50",
+            "hash": "1c4ebbaf6582c8882295a4cd665b294bfc53e6a4",
+            "short_hash": "1c4ebbaf",
             "subject": "docs(pages): bump stale version refs to v0.0.754 (architecture.html, SOVEREIGNTY.md, FIELD_GUIDE_MAP snapshot)",
             "author": "Tyler Granlund",
             "date": "2026-08-21",
             "month": "2026-08"
           },
           {
-            "hash": "3e88357299ecf7558389a6e326fe9bff1b7fa846",
-            "short_hash": "3e883572",
+            "hash": "6d93d4aed6867b86284ed0a98b13d09de722161b",
+            "short_hash": "6d93d4ae",
             "subject": "docs(field-guide+observatory): regenerate + post-update leftovers (2026-08-21 14:43)",
             "author": "Tyler Granlund",
             "date": "2026-08-21",
             "month": "2026-08"
           },
           {
-            "hash": "59849866b4c0ad803cdd79ff4aa9e9920297d49c",
-            "short_hash": "59849866",
+            "hash": "f12b48fc133e1f304671a8e8cb629c7cd9f6ebc7",
+            "short_hash": "f12b48fc",
             "subject": "docs: fix stale version refs (v0.0.729/v0.0.709 -> v0.0.751) in architecture.html + SOVEREIGNTY.md",
             "author": "Tyler Granlund",
             "date": "2026-08-20",
             "month": "2026-08"
           },
           {
-            "hash": "ca2c97b4e4028924efddfdb0072a5acc801faa62",
-            "short_hash": "ca2c97b4",
+            "hash": "cb0c53bbdce9919dc6497c9b15df5ab1dc645c02",
+            "short_hash": "cb0c53bb",
             "subject": "docs(field-guide+observatory): regenerate + post-update leftovers (2026-08-20 18:47)",
             "author": "Tyler Granlund",
             "date": "2026-08-20",
             "month": "2026-08"
           },
           {
-            "hash": "6c19c6ff86588fbc53302b6caac110437680c78f",
-            "short_hash": "6c19c6ff",
+            "hash": "1303e7af4c49c78b5a080be0f903f90d727fba9b",
+            "short_hash": "1303e7af",
             "subject": "chore: auto-commit pre-update leftovers (2026-08-20 18:46)",
-            "author": "Tyler Granlund",
-            "date": "2026-08-20",
-            "month": "2026-08"
-          },
-          {
-            "hash": "17d845f4bab68773b75878bd02cca2060479a4b3",
-            "short_hash": "17d845f4",
-            "subject": "docs(field-guide+observatory): regenerate + post-update leftovers (2026-08-20 18:42)",
-            "author": "Tyler Granlund",
-            "date": "2026-08-20",
-            "month": "2026-08"
-          },
-          {
-            "hash": "8a2c602ac70e17e4c9c5692db0089012a1de9714",
-            "short_hash": "8a2c602a",
-            "subject": "docs(field-guide+observatory): regenerate + post-update leftovers (2026-08-20 18:36)",
             "author": "Tyler Granlund",
             "date": "2026-08-20",
             "month": "2026-08"
@@ -4575,40 +4601,40 @@ window.FIELD_GUIDE_DATA = {
         "commit_count": 366,
         "commits": [
           {
-            "hash": "f14e002821786ca9dbde82ec94bfaa5c93f37bb3",
-            "short_hash": "f14e0028",
+            "hash": "fe27edf96a668710769b8d3ad577c4722d005c5d",
+            "short_hash": "fe27edf9",
             "subject": "docs: CPU interactive curriculum web app + puppy mark",
             "author": "Tyler Granlund",
             "date": "2026-07-31",
             "month": "2026-07"
           },
           {
-            "hash": "30157494af84bca64db83510f17da5dfd1157645",
-            "short_hash": "30157494",
+            "hash": "6100f3c37b1547b30dff7deb30d3bc94c20e6758",
+            "short_hash": "6100f3c3",
             "subject": "docs: deck v3 — Acts IX/X, the internal + external university",
             "author": "Tyler Granlund",
             "date": "2026-07-31",
             "month": "2026-07"
           },
           {
-            "hash": "904ff2bc8143f6f63339ca3964c8c36152dba8bc",
-            "short_hash": "904ff2bc",
+            "hash": "a57dedc5488e6541c20683d25fbd933d0b1db2ac",
+            "short_hash": "a57dedc5",
             "subject": "docs: deck v2.1 — token architecture, component registry, 42-test suite",
             "author": "Tyler Granlund",
             "date": "2026-07-30",
             "month": "2026-07"
           },
           {
-            "hash": "3ca8d4b74a4f319a8a52409717236d77672d7d27",
-            "short_hash": "3ca8d4b7",
+            "hash": "534d93749f3aae49be3c898332caeff536fabd82",
+            "short_hash": "534d9374",
             "subject": "docs: deck v2 — Cornerstone+ design system, Fireship beat, fact-check pass",
             "author": "Tyler Granlund",
             "date": "2026-07-30",
             "month": "2026-07"
           },
           {
-            "hash": "05887e789ae73e28d1e7808be0cdb739cd1592bb",
-            "short_hash": "05887e78",
+            "hash": "38b00d7a81858b21a29223657fae803694f9fcce",
+            "short_hash": "38b00d7a",
             "subject": "docs: The Great Adpuppytion — Code-Puppy University founding deck",
             "author": "Tyler Granlund",
             "date": "2026-07-30",
@@ -4658,7 +4684,7 @@ window.FIELD_GUIDE_DATA = {
       },
       {
         "month": "2026-06",
-        "commit_count": 29,
+        "commit_count": 27,
         "commits": [
           {
             "hash": "b76275aba4b09556f69f0c09dc33c70b922f174d",
@@ -4745,431 +4771,585 @@ window.FIELD_GUIDE_DATA = {
     ],
     "commits": [
       {
-        "hash": "db98c2292ebb0c43294c9729223a83292714cd54",
-        "short_hash": "db98c229",
+        "hash": "a94050b986d718127e66f285b2b7a71ca4b99b83",
+        "short_hash": "a94050b9",
+        "subject": "docs(pages): bump version refs to v0.0.768 + rebuild offline wheel",
+        "author": "Tyler Granlund",
+        "date": "2026-08-22"
+      },
+      {
+        "hash": "97c3a20607ca70963b40da0b86a565c954941cda",
+        "short_hash": "97c3a206",
+        "subject": "docs(field-guide+observatory): regenerate for v0.0.768 update",
+        "author": "Tyler Granlund",
+        "date": "2026-08-22"
+      },
+      {
+        "hash": "b1eb34d14a5b9e6892f593119433496711cf4ded",
+        "short_hash": "b1eb34d1",
         "subject": "chore: auto-commit pre-update leftovers (2026-08-22 21:55)",
         "author": "Tyler Granlund",
         "date": "2026-08-22"
       },
       {
-        "hash": "9e319a70735d4508c6add0c9a4e8370bb2b0909b",
-        "short_hash": "9e319a70",
+        "hash": "201b23cf0ea80eba09424f7f5fe09eaf56c42220",
+        "short_hash": "201b23cf",
         "subject": "chore: rebuild offline wheel to v0.0.754, untrack NEWLog session log",
         "author": "Tyler Granlund",
         "date": "2026-08-21"
       },
       {
-        "hash": "35d9a632a793919288f217797292bf975dcb70f9",
-        "short_hash": "35d9a632",
+        "hash": "4b4a0ae3ceedbb0fcbe635ce5dcccef61e91f9b3",
+        "short_hash": "4b4a0ae3",
         "subject": "docs(pages): switch update_schedule to ad-hoc mode (no launchd)",
         "author": "Tyler Granlund",
         "date": "2026-08-21"
       },
       {
-        "hash": "c7da0e505c41560231b46fbf80e350ffc5e6dc15",
-        "short_hash": "c7da0e50",
+        "hash": "1c4ebbaf6582c8882295a4cd665b294bfc53e6a4",
+        "short_hash": "1c4ebbaf",
         "subject": "docs(pages): bump stale version refs to v0.0.754 (architecture.html, SOVEREIGNTY.md, FIELD_GUIDE_MAP snapshot)",
         "author": "Tyler Granlund",
         "date": "2026-08-21"
       },
       {
-        "hash": "3e88357299ecf7558389a6e326fe9bff1b7fa846",
-        "short_hash": "3e883572",
+        "hash": "6d93d4aed6867b86284ed0a98b13d09de722161b",
+        "short_hash": "6d93d4ae",
         "subject": "docs(field-guide+observatory): regenerate + post-update leftovers (2026-08-21 14:43)",
         "author": "Tyler Granlund",
         "date": "2026-08-21"
       },
       {
-        "hash": "59849866b4c0ad803cdd79ff4aa9e9920297d49c",
-        "short_hash": "59849866",
+        "hash": "f12b48fc133e1f304671a8e8cb629c7cd9f6ebc7",
+        "short_hash": "f12b48fc",
         "subject": "docs: fix stale version refs (v0.0.729/v0.0.709 -> v0.0.751) in architecture.html + SOVEREIGNTY.md",
         "author": "Tyler Granlund",
         "date": "2026-08-20"
       },
       {
-        "hash": "ca2c97b4e4028924efddfdb0072a5acc801faa62",
-        "short_hash": "ca2c97b4",
+        "hash": "cb0c53bbdce9919dc6497c9b15df5ab1dc645c02",
+        "short_hash": "cb0c53bb",
         "subject": "docs(field-guide+observatory): regenerate + post-update leftovers (2026-08-20 18:47)",
         "author": "Tyler Granlund",
         "date": "2026-08-20"
       },
       {
-        "hash": "6c19c6ff86588fbc53302b6caac110437680c78f",
-        "short_hash": "6c19c6ff",
+        "hash": "1303e7af4c49c78b5a080be0f903f90d727fba9b",
+        "short_hash": "1303e7af",
         "subject": "chore: auto-commit pre-update leftovers (2026-08-20 18:46)",
         "author": "Tyler Granlund",
         "date": "2026-08-20"
       },
       {
-        "hash": "17d845f4bab68773b75878bd02cca2060479a4b3",
-        "short_hash": "17d845f4",
+        "hash": "52b8e33b3cdac922c49b2a1204e8f4713c222bae",
+        "short_hash": "52b8e33b",
         "subject": "docs(field-guide+observatory): regenerate + post-update leftovers (2026-08-20 18:42)",
         "author": "Tyler Granlund",
         "date": "2026-08-20"
       },
       {
-        "hash": "8a2c602ac70e17e4c9c5692db0089012a1de9714",
-        "short_hash": "8a2c602a",
+        "hash": "98db05cf4ace34ab91fa3376b3839e0ff94ef855",
+        "short_hash": "98db05cf",
         "subject": "docs(field-guide+observatory): regenerate + post-update leftovers (2026-08-20 18:36)",
         "author": "Tyler Granlund",
         "date": "2026-08-20"
       },
       {
-        "hash": "3725cd38320f856bbb26f26d9d41894a4cd15a31",
-        "short_hash": "3725cd38",
+        "hash": "b0149d1f49aa7b56ab462ae6fbcb4ccbbed81ca7",
+        "short_hash": "b0149d1f",
         "subject": "chore: auto-commit pre-update leftovers (2026-08-20 18:34)",
         "author": "Tyler Granlund",
         "date": "2026-08-20"
       },
       {
-        "hash": "888bc47d2db10bf8731781ca8b382cea267535c2",
-        "short_hash": "888bc47d",
+        "hash": "5db3ad8f008a4fc71cac45794c5edaae927834ea",
+        "short_hash": "5db3ad8f",
         "subject": "docs(field-guide+observatory): regenerate + post-update leftovers (2026-08-20 18:04)",
         "author": "Tyler Granlund",
         "date": "2026-08-20"
       },
       {
-        "hash": "0e24482bc257fd7c6ce8bd54d22597fe2afe8bd6",
-        "short_hash": "0e24482b",
+        "hash": "051972a62e8671977e4c05a3a1ef708fb84d6e26",
+        "short_hash": "051972a6",
         "subject": "chore: auto-commit pre-update leftovers (2026-08-20 18:02)",
         "author": "Tyler Granlund",
         "date": "2026-08-20"
       },
       {
-        "hash": "5c1b1b2fe6b2ce0e12bedc8c7ee0bd98806d5557",
-        "short_hash": "5c1b1b2f",
+        "hash": "aaaa63657d20d949520c35f56b974f21a895f2d5",
+        "short_hash": "aaaa6365",
         "subject": "docs(field-guide+observatory): regenerate + post-update leftovers (2026-08-19 07:02)",
         "author": "Tyler Granlund",
         "date": "2026-08-19"
       },
       {
-        "hash": "1dae65b6dbcecc3f3411da4c08bfc63db1aafcf3",
-        "short_hash": "1dae65b6",
+        "hash": "e9a85dade153730d174a61f48adcc0074526f1ba",
+        "short_hash": "e9a85dad",
         "subject": "docs(field-guide+observatory): regenerate + post-update leftovers (2026-08-18 20:02)",
         "author": "Tyler Granlund",
         "date": "2026-08-18"
       },
       {
-        "hash": "d965d88fa16d665d818fb73a9f791d79dee5d4b3",
-        "short_hash": "d965d88f",
+        "hash": "e7bae933a82638803f7a8f4f52e43ca2866a9ede",
+        "short_hash": "e7bae933",
         "subject": "chore: auto-commit pre-update leftovers (2026-08-18 20:00)",
         "author": "Tyler Granlund",
         "date": "2026-08-18"
       },
       {
-        "hash": "d6d8fcb04b67e5fffd32269807670c7a5cbb8414",
-        "short_hash": "d6d8fcb0",
+        "hash": "b7b31f1c4d92a5df2b59ee5b2cb9936b1ebe6c7c",
+        "short_hash": "b7b31f1c",
         "subject": "docs(field-guide+observatory): regenerate + post-update leftovers (2026-08-18 12:01)",
         "author": "Tyler Granlund",
         "date": "2026-08-18"
       },
       {
-        "hash": "c833c6105b0c7d3c13ecea87e5f79a385eb01956",
-        "short_hash": "c833c610",
+        "hash": "179d5ce5217a65050de8d5600a2e65f0fa267cc9",
+        "short_hash": "179d5ce5",
         "subject": "feat(a11y): sweep legacy page bodies to WCAG 2.2 AAA body-text contrast",
         "author": "Tyler Granlund",
         "date": "2026-08-18"
       },
       {
-        "hash": "86ba58d4a13a9f1248e2178fa33e277b5a5ed939",
-        "short_hash": "86ba58d4",
+        "hash": "d34be01ee986efadddf92765406f4bf17c97fe97",
+        "short_hash": "d34be01e",
         "subject": "docs(field-guide+observatory): regenerate + post-update leftovers (2026-08-18 07:02)",
         "author": "Tyler Granlund",
         "date": "2026-08-18"
       },
       {
-        "hash": "86d22bd1c26c0ebbcda5b2da05a7c81140438e98",
-        "short_hash": "86d22bd1",
+        "hash": "cf96011f16773f0ba2f1eb05d8615554c8dece79",
+        "short_hash": "cf96011f",
         "subject": "docs(field-guide+observatory): regenerate + post-update leftovers (2026-08-17 20:02)",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "35e68cceef8aad37d78c810c0a41d90060316c2f",
-        "short_hash": "35e68cce",
+        "hash": "612441061816d84c84547ef74b7effe1324eeb6c",
+        "short_hash": "61244106",
         "subject": "docs: build log + roadmap (what shipped, where, QA status, forward plan)",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "bf2cdaad4dd4ec3f7925cf354240e4fc34d374ca",
-        "short_hash": "bf2cdaad",
+        "hash": "f5eb864c15462ec9c10ef76f90ddf2cc500bf7d6",
+        "short_hash": "f5eb864c",
         "subject": "feat(ui): sidebar app-shell + reusable popover + design system, WCAG 2.2 AAA",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "efa557d6c01e3ee120e4057ec11f1bd1ff155a5d",
-        "short_hash": "efa557d6",
+        "hash": "a2cb36f8265dbf6fed9a1c1c103a7cc75a1fe0bd",
+        "short_hash": "a2cb36f8",
         "subject": "docs(field-guide+observatory): regenerate + post-update leftovers (2026-08-17 17:21)",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "2366ef314a0717053bd70a0b1af2d2d446dbd4cd",
-        "short_hash": "2366ef31",
+        "hash": "1ba436f4cbe7cd4d7517ae1be1279c672b78e01a",
+        "short_hash": "1ba436f4",
         "subject": "fix(field-guide): flat-doc JSON corruption + responsive [mobile/tablet] layout",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "d1e9899f68f9c899924fa18a3336b50049f06ffa",
-        "short_hash": "d1e9899f",
+        "hash": "cc7c1a744678d712a21597e287850c2c10f1758a",
+        "short_hash": "cc7c1a74",
         "subject": "feat(brand): lucide icon pass + face-only mark, brand watermarks across site",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "45bc91178d3373ec12f65ff7c391f54b1572ba9d",
-        "short_hash": "45bc9117",
+        "hash": "6b69778188f4f80ca3bc15fce8383c69a9315a1b",
+        "short_hash": "6b697781",
         "subject": "feat(arch): wide-screen lane expansion + left-aligned navigation",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "8744d94a47de048ffee3d1d6c71dfe108b759078",
-        "short_hash": "8744d94a",
+        "hash": "69472adfc415266bf2b929b2722835e3fb0acffa",
+        "short_hash": "69472adf",
         "subject": "feat(pages): interactive architecture board - L-R flow, drilldown sheets, live inventory",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "55af906388e5ce0c69776f000e34d4fadbbee2b7",
-        "short_hash": "55af9063",
+        "hash": "733f7bd2697f63b82b5f13fa6a19205459b91562",
+        "short_hash": "733f7bd2",
         "subject": "feat(brand): site-wide rebrand to periwinkle/cyan/mint design system",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "8ee558030781959effbe93b3aecac531d3c502a5",
-        "short_hash": "8ee55803",
+        "hash": "e5591ef826adb5e982be5ead95a924b5fccae617",
+        "short_hash": "e5591ef8",
         "subject": "docs(field-guide+observatory): regenerate + post-update leftovers (2026-08-17 12:00)",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "d66df95825921ff0ad4cab42394efc390e927a59",
-        "short_hash": "d66df958",
+        "hash": "5b18c6601d7715634e92ad8273009c08e9acdd17",
+        "short_hash": "5b18c660",
         "subject": "feat(pages): architecture diagram page - self-healing pipeline, Apple-internal-training treatment",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "e92635dbb43df277b0cb01690989e18cc1ebdb3f",
-        "short_hash": "e92635db",
+        "hash": "73886dfa6ef674383852f7f9925d8d58724e7bd4",
+        "short_hash": "73886dfa",
         "subject": "docs(field-guide+observatory): regenerate + post-update leftovers (2026-08-17 10:48)",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "05dfc5c08e4ddf83cd662e7725cc524db219aaa8",
-        "short_hash": "05dfc5c0",
+        "hash": "27ccd9c773fc5204fcba697af27eca02c1425ef8",
+        "short_hash": "27ccd9c7",
         "subject": "docs(sovereignty): profile backup now automated; curation cadence + restore path",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "7cd040b5bb947e36d7e6e5eb9fada8eb69eb5bb1",
-        "short_hash": "7cd040b5",
+        "hash": "f93a1b3e6fadf4986c0c7d7ab3d2b765b33c4d82",
+        "short_hash": "f93a1b3e",
         "subject": "ci(pages): drop configure-pages (codeload 429 flake) - upload/deploy suffice",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "b4d9d8d2e100677a31fd8656ec3783d8643146a7",
-        "short_hash": "b4d9d8d2",
+        "hash": "6dadf3a4b1f1c5180abbb1f595f3d60942ccd09a",
+        "short_hash": "6dadf3a4",
         "subject": "docs(field-guide+observatory): regenerate + post-update leftovers (2026-08-17 10:29)",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "1181f5c2411400de0973d0565cc8f4990d3e604b",
-        "short_hash": "1181f5c2",
+        "hash": "7837f8774cde49623004633588d34aa56ddc41f3",
+        "short_hash": "7837f877",
         "subject": "feat(pages): evergreen release observatory auto-regenerated by update pipeline",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "5ba11a2fa0ae95c51d2d3429508c8ac399d61edf",
-        "short_hash": "5ba11a2f",
+        "hash": "608bf356d9fe6bbd6b78f368d4cf3c5b3ea950d5",
+        "short_hash": "608bf356",
         "subject": "docs(sovereignty): update Pages URL structure for 4-section site",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "182fdd8be6f2f31c2018b1e2e00ca79298e963ca",
-        "short_hash": "182fdd8b",
+        "hash": "82c5ec4708671e656a84f30eaa3f8d24445aa251",
+        "short_hash": "82c5ec47",
         "subject": "docs(pages): public site hub + release observatory for t-granlund fork Pages",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "cfa18743b2f5bb750bcb1e66b4433133095c92f5",
-        "short_hash": "cfa18743",
+        "hash": "155c3954227687671ec727283271739bb1099584",
+        "short_hash": "155c3954",
         "subject": "docs(field-guide): regenerate + post-update leftovers (2026-08-17 10:01)",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "6db2d8ac04023118230e2578895f73815ab5ec7a",
-        "short_hash": "6db2d8ac",
+        "hash": "aa6d250ef47b26b30f6aadd29c2ea68c521f20cb",
+        "short_hash": "aa6d250e",
         "subject": "docs(field-guide): regenerate + post-update leftovers (2026-08-17 09:59)",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "6aaf9f9211a00da7ec1abfbb319525fd0f3e319d",
-        "short_hash": "6aaf9f92",
+        "hash": "0e3230ba80f83e2748ae017ceee8f48dadbc6fe8",
+        "short_hash": "0e3230ba",
         "subject": "docs(field-guide): regenerate + post-update leftovers (2026-08-17 09:58)",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "b686d449fa238e34d4c813a75c40849ad0ac303c",
-        "short_hash": "b686d449",
+        "hash": "217f3ebca936df6aa28750fcaac452ba7776e95a",
+        "short_hash": "217f3ebc",
         "subject": "chore: auto-commit pre-update leftovers (2026-08-17 09:58)",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "3a2c52b17cfdc46b0b686d3b4aa1f6750826ec1d",
-        "short_hash": "3a2c52b1",
+        "hash": "c35058df3c92fc52a00a175715669682c1668f4e",
+        "short_hash": "c35058df",
         "subject": "docs(sovereignty): reflect auto-sync updater + Pages field guide",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "397ac20cd9c81b77e0f09a783659f08941c5fa99",
-        "short_hash": "397ac20c",
+        "hash": "60e6fc9044d0d88cafcbe805dd44cc7d391d7057",
+        "short_hash": "60e6fc90",
         "subject": "docs(field-guide): regenerate + post-update leftovers (2026-08-17 09:31)",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "5569ade0290af44a298ab44484d9cdc2cdea707c",
-        "short_hash": "5569ade0",
+        "hash": "1891501f0e936300f95743b8b4952abd64388d07",
+        "short_hash": "1891501f",
         "subject": "docs(field-guide): regenerate + post-update leftovers (2026-08-17 09:28)",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "5586865d87e4530cf7edbeb027ee92d296477c13",
-        "short_hash": "5586865d",
+        "hash": "6469f27c7bc45e6a79ee4976d48b86dadb716eee",
+        "short_hash": "6469f27c",
         "subject": "docs(field-guide): regenerate + post-update leftovers (2026-08-17 09:28)",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "b2628f1f93f9b5abe171e676eeb96cd20260b0e6",
-        "short_hash": "b2628f1f",
+        "hash": "34d4cf95a82ff9231d1c298b6364fa8a71a5064a",
+        "short_hash": "34d4cf95",
         "subject": "ci(pages): deploy field guide to GitHub Pages on docs changes",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "25e52318c9b5042327b770e77d03b6dfedbd1e68",
-        "short_hash": "25e52318",
+        "hash": "6d0f9af74c996025c2367a51baaf2f7d5a52629f",
+        "short_hash": "6d0f9af7",
         "subject": "docs(field-guide): regenerate after upstream sync (2026-08-17)",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "868b6950c90886465c0c16c0d094943b7f71fbd1",
-        "short_hash": "868b6950",
+        "hash": "2a5297746d50e95761de6cc2e3127463387b0f62",
+        "short_hash": "2a529774",
         "subject": "docs: sovereignty playbook, weekly features page, changelog dir",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "b1ef085f8ee6240fe3aa93a383f9c6451c5e3053",
-        "short_hash": "b1ef085f",
+        "hash": "29b2e5e5c44440d203dc7090b176d99f19896d44",
+        "short_hash": "29b2e5e5",
         "subject": "docs(field-guide): regenerate with corrected skill labels",
         "author": "Tyler Granlund",
         "date": "2026-08-16"
       },
       {
-        "hash": "864daa6ed3f083a12eac0cbd6023aa2aa297ff6b",
-        "short_hash": "864daa6e",
+        "hash": "c17c1069ab1a16f64d955961f53aa7de2f6f91d1",
+        "short_hash": "c17c1069",
         "subject": "fix(field-guide): correct skill source labels and sanitize paths",
         "author": "Tyler Granlund",
         "date": "2026-08-16"
       },
       {
-        "hash": "a11bcc1d9ded15537df5f7314e97a69afd212f1d",
-        "short_hash": "a11bcc1d",
+        "hash": "9c3249c54191d71b5906d8777ec6a3ed5b86c314",
+        "short_hash": "9c3249c5",
         "subject": "docs(field-guide): regenerate with user plugins + i_have_adhd; app.js tier badges",
         "author": "Tyler Granlund",
         "date": "2026-08-16"
       },
       {
-        "hash": "97d5f465484bddd566033beb44633f8898bdc385",
-        "short_hash": "97d5f465",
+        "hash": "c9adc87d237b2f4a1f21994ac80a00ac815deb2d",
+        "short_hash": "c9adc87d",
         "subject": "docs(field-guide): regenerate after core-plugins package scan support",
         "author": "Tyler Granlund",
         "date": "2026-08-16"
       },
       {
-        "hash": "bd60242e45eab1f943b728f8d5c00d4cd3760141",
-        "short_hash": "bd60242e",
+        "hash": "ff1b21d5924caf9ed1b470127aef6f22178f4e47",
+        "short_hash": "ff1b21d5",
         "subject": "feat(field-guide): scan installed core-plugins package + user plugins",
         "author": "Tyler Granlund",
         "date": "2026-08-16"
       },
       {
-        "hash": "f14e002821786ca9dbde82ec94bfaa5c93f37bb3",
-        "short_hash": "f14e0028",
+        "hash": "fe27edf96a668710769b8d3ad577c4722d005c5d",
+        "short_hash": "fe27edf9",
         "subject": "docs: CPU interactive curriculum web app + puppy mark",
         "author": "Tyler Granlund",
         "date": "2026-07-31"
       },
       {
-        "hash": "30157494af84bca64db83510f17da5dfd1157645",
-        "short_hash": "30157494",
+        "hash": "6100f3c37b1547b30dff7deb30d3bc94c20e6758",
+        "short_hash": "6100f3c3",
         "subject": "docs: deck v3 — Acts IX/X, the internal + external university",
         "author": "Tyler Granlund",
         "date": "2026-07-31"
       },
       {
-        "hash": "904ff2bc8143f6f63339ca3964c8c36152dba8bc",
-        "short_hash": "904ff2bc",
+        "hash": "a57dedc5488e6541c20683d25fbd933d0b1db2ac",
+        "short_hash": "a57dedc5",
         "subject": "docs: deck v2.1 — token architecture, component registry, 42-test suite",
         "author": "Tyler Granlund",
         "date": "2026-07-30"
       },
       {
-        "hash": "3ca8d4b74a4f319a8a52409717236d77672d7d27",
-        "short_hash": "3ca8d4b7",
+        "hash": "534d93749f3aae49be3c898332caeff536fabd82",
+        "short_hash": "534d9374",
         "subject": "docs: deck v2 — Cornerstone+ design system, Fireship beat, fact-check pass",
         "author": "Tyler Granlund",
         "date": "2026-07-30"
       },
       {
-        "hash": "05887e789ae73e28d1e7808be0cdb739cd1592bb",
-        "short_hash": "05887e78",
+        "hash": "38b00d7a81858b21a29223657fae803694f9fcce",
+        "short_hash": "38b00d7a",
         "subject": "docs: The Great Adpuppytion — Code-Puppy University founding deck",
         "author": "Tyler Granlund",
         "date": "2026-07-30"
       },
       {
-        "hash": "ad8b0ef0fc5fc3d7420a9d0d7f37994fcd0a9410",
-        "short_hash": "ad8b0ef0",
+        "hash": "2023233a27ec5595da12357d369974dba510289c",
+        "short_hash": "2023233a",
         "subject": "feat(field-guide): recreate changelog.py source from pycache analysis",
         "author": "Tyler Granlund",
         "date": "2026-08-13"
       },
       {
-        "hash": "cc4c01468371505b68b13b52b909b760733c279c",
-        "short_hash": "cc4c0146",
+        "hash": "2cb5bf14ccff524490c7c3ec15dced0ffb4ebbf7",
+        "short_hash": "2cb5bf14",
         "subject": "feat(field-guide): deeper plugin/tool extraction + skills + SDLC lifecycle",
         "author": "Tyler Granlund",
         "date": "2026-08-13"
       },
       {
-        "hash": "35f6c89260e1c05f1c3c156dfae3e1c0edb9faed",
-        "short_hash": "35f6c892",
+        "hash": "45cef5dbb9c10258ee28d3314b4f7fbb48f763b3",
+        "short_hash": "45cef5db",
         "subject": "fix(field-guide): flat HTML no longer wipes DATA.plugins via JS escape reinterpretation",
         "author": "Tyler Granlund",
         "date": "2026-08-10"
+      },
+      {
+        "hash": "980d66d5b1d744d03b9fe7882a0a35c16408fc47",
+        "short_hash": "980d66d5",
+        "subject": "chore: bump version [ci skip]",
+        "author": "github-actions[bot]",
+        "date": "2026-08-24"
+      },
+      {
+        "hash": "71ffed158e64d5a1f82b2b84bc7172faaaa5b78c",
+        "short_hash": "71ffed15",
+        "subject": "Interrogate the TUI kill list: two targets down without ports",
+        "author": "mpfaffenberger",
+        "date": "2026-08-24"
+      },
+      {
+        "hash": "e697252a1c72606463fb3b8ca0e2046d61308464",
+        "short_hash": "e697252a",
+        "subject": "chore: bump version [ci skip]",
+        "author": "github-actions[bot]",
+        "date": "2026-08-24"
+      },
+      {
+        "hash": "4d269ed2491f8b829e3885e8788cc7d6bdb53bda",
+        "short_hash": "4d269ed2",
+        "subject": "Charge image tokens by area instead of digest length (#783) (#854)",
+        "author": "Phani Sai Ram M",
+        "date": "2026-08-24"
+      },
+      {
+        "hash": "73f167c84a2ae7ae193a71f1d36016037b442731",
+        "short_hash": "73f167c8",
+        "subject": "Two-phase master/detail flow on phone-sized terminals; termflow-md >= 0.6.0",
+        "author": "mpfaffenberger",
+        "date": "2026-08-24"
+      },
+      {
+        "hash": "956418782d7aee9cb3cba6bc7d7b471c038f4a41",
+        "short_hash": "95641878",
+        "subject": "chore: bump version [ci skip]",
+        "author": "github-actions[bot]",
+        "date": "2026-08-23"
+      },
+      {
+        "hash": "017f8d4b26833c546afde1d3860613e2c33446f5",
+        "short_hash": "017f8d4b",
+        "subject": "One column of right padding in the session browser; termflow-md >= 0.5.1",
+        "author": "mpfaffenberger",
+        "date": "2026-08-23"
+      },
+      {
+        "hash": "d25b480b53c9a0ca8471165a7ef7f736772b74f3",
+        "short_hash": "d25b480b",
+        "subject": "Resize detection for the session browser; termflow-md >= 0.5.0",
+        "author": "mpfaffenberger",
+        "date": "2026-08-23"
+      },
+      {
+        "hash": "226b05b6fdb7a5000ef531645c3cb47c5d1838ab",
+        "short_hash": "226b05b6",
+        "subject": "chore: bump version [ci skip]",
+        "author": "github-actions[bot]",
+        "date": "2026-08-23"
+      },
+      {
+        "hash": "a6e21d6d0c447c4688c093729d9f6c1335997bde",
+        "short_hash": "a6e21d6d",
+        "subject": "Drop orphaned /colors and /diff i18n keys",
+        "author": "mpfaffenberger",
+        "date": "2026-08-23"
+      },
+      {
+        "hash": "9eaf5a59ba872e05bd562946569f37946364a2d8",
+        "short_hash": "9eaf5a59",
+        "subject": "Remove the /colors and /diff TUIs: theming owns those settings",
+        "author": "mpfaffenberger",
+        "date": "2026-08-23"
+      },
+      {
+        "hash": "d1b5132e3cefdca5739cf06b32f3ffc106596365",
+        "short_hash": "d1b5132e",
+        "subject": "chore: bump version [ci skip]",
+        "author": "github-actions[bot]",
+        "date": "2026-08-23"
+      },
+      {
+        "hash": "dce98fb08da32c24c05da0f0fd37251d265d08ca",
+        "short_hash": "dce98fb0",
+        "subject": "Lock code-puppy-core-plugins 0.0.18 (session_namer)",
+        "author": "mpfaffenberger",
+        "date": "2026-08-23"
+      },
+      {
+        "hash": "694006b98f01669ea445ef253942baf9f7c1bc09",
+        "short_hash": "694006b9",
+        "subject": "chore: bump version [ci skip]",
+        "author": "github-actions[bot]",
+        "date": "2026-08-23"
+      },
+      {
+        "hash": "600334647a672ba0eb00ac722fe3cc1d43517e46",
+        "short_hash": "60033464",
+        "subject": "Two-pane session browser for /resume with AI-naming hook",
+        "author": "mpfaffenberger",
+        "date": "2026-08-23"
+      },
+      {
+        "hash": "b19a0bf556e8fba54a6fcfce3f2ac9ec3394b78e",
+        "short_hash": "b19a0bf5",
+        "subject": "Delegate diff rendering wholesale to termflow 0.3.0",
+        "author": "mpfaffenberger",
+        "date": "2026-08-23"
+      },
+      {
+        "hash": "4e2ce2775c4aba97f5e6a5beac7d2a48a2b116e4",
+        "short_hash": "4e2ce277",
+        "subject": "Honor the cursor contract in region teardown/establish and grows",
+        "author": "mpfaffenberger",
+        "date": "2026-08-23"
+      },
+      {
+        "hash": "3c0a48e736c0f606d5947b0ecdf5e13b34ad6892",
+        "short_hash": "3c0a48e7",
+        "subject": "Preserve popup slack across same-geometry suspend/resume",
+        "author": "mpfaffenberger",
+        "date": "2026-08-23"
+      },
+      {
+        "hash": "688d68090395a33f4f5b8e7175333c2d197127af",
+        "short_hash": "688d6809",
+        "subject": "chore: bump version [ci skip]",
+        "author": "github-actions[bot]",
+        "date": "2026-08-23"
+      },
+      {
+        "hash": "0733da003de955816bf8a15e3112ed1f2c0cfecf",
+        "short_hash": "0733da00",
+        "subject": "Speed up REPL autocomplete with threaded TTL caches",
+        "author": "mpfaffenberger",
+        "date": "2026-08-23"
       },
       {
         "hash": "ea0a9b7333ca9acb15ea612a7e192886d9bfdbff",
@@ -10504,20 +10684,6 @@ window.FIELD_GUIDE_DATA = {
         "subject": "feat(commands): scaffold /plan planning-only slash command (#503)",
         "author": "britz",
         "date": "2026-06-25"
-      },
-      {
-        "hash": "1f34c4c60dc7e520a1e8483b9080eec867844d35",
-        "short_hash": "1f34c4c6",
-        "subject": "chore: bump version [ci skip]",
-        "author": "github-actions[bot]",
-        "date": "2026-06-24"
-      },
-      {
-        "hash": "ed50b6ad96c635a4120f96ab0250b4ec959b4191",
-        "short_hash": "ed50b6ad",
-        "subject": "feat: add quick resume support (#501)",
-        "author": "Demise",
-        "date": "2026-06-24"
       }
     ]
   },
