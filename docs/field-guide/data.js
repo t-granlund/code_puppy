@@ -1,8 +1,8 @@
 window.FIELD_GUIDE_DATA = {
   "meta": {
-    "generatedAt": "2026-08-24T19:19:57.784400+00:00",
+    "generatedAt": "2026-08-24T19:25:43.033140+00:00",
     "repoPath": "/Users/tygranlund/code_puppy",
-    "repoHead": "718f20d0",
+    "repoHead": "b096399d",
     "branch": "main",
     "currentVersion": "code-puppy v0.0.775",
     "sourceUrl": "https://github.com/mpfaffenberger/code_puppy"
@@ -12,7 +12,7 @@ window.FIELD_GUIDE_DATA = {
     "agents": 22,
     "plugins": 64,
     "skills": 5,
-    "commitsLast2Months": 856,
+    "commitsLast2Months": 858,
     "releases": 3
   },
   "tools": [
@@ -3112,25 +3112,41 @@ window.FIELD_GUIDE_DATA = {
     }
   ],
   "changelog": {
-    "total_commits": 856,
+    "total_commits": 858,
     "releases": [
       {
         "month": "2026-08",
-        "commit_count": 463,
+        "commit_count": 465,
         "commits": [
           {
-            "hash": "718f20d0aa395751139cb867616bcd25affcb347",
-            "short_hash": "718f20d0",
-            "subject": "fix: broken nav/sidebar logo — height:auto collapses in flex",
+            "hash": "b096399d3cabb0adf654b7bc4df4789025f9ef24",
+            "short_hash": "b096399d",
+            "subject": "feat: left sidebar navigation across all pages, mobile-optimized",
             "author": "Tyler Granlund",
             "date": "2026-08-24",
             "month": "2026-08"
           },
           {
-            "hash": "f882ded7197ec8753991db56239bc8f0a78646a6",
-            "short_hash": "f882ded7",
+            "hash": "52a63345570899c3214cd9e197db5fd42e4b7102",
+            "short_hash": "52a63345",
             "subject": "chore: bump version [ci skip]",
             "author": "github-actions[bot]",
+            "date": "2026-08-24",
+            "month": "2026-08"
+          },
+          {
+            "hash": "97e8e4cbe7abf5c917469a5168c13c4709113d63",
+            "short_hash": "97e8e4cb",
+            "subject": "chore: bump version [ci skip]",
+            "author": "github-actions[bot]",
+            "date": "2026-08-24",
+            "month": "2026-08"
+          },
+          {
+            "hash": "0b80f27206d10edbea23951952f96d148b82ec22",
+            "short_hash": "0b80f272",
+            "subject": "fix: broken nav/sidebar logo — height:auto collapses in flex",
+            "author": "Tyler Granlund",
             "date": "2026-08-24",
             "month": "2026-08"
           },
@@ -3178,22 +3194,6 @@ window.FIELD_GUIDE_DATA = {
             "hash": "5c45bddc40e5795a78ad19596d158f13a4f29c26",
             "short_hash": "5c45bddc",
             "subject": "feat(logo): white logo toolkit plugin + white logo for grove theme",
-            "author": "Tyler Granlund",
-            "date": "2026-08-24",
-            "month": "2026-08"
-          },
-          {
-            "hash": "69442ba839a7ceee6c1cde6a8878aa3baff5cbd4",
-            "short_hash": "69442ba8",
-            "subject": "design: migrate design system to Granlund-Grove forest palette",
-            "author": "Tyler Granlund",
-            "date": "2026-08-24",
-            "month": "2026-08"
-          },
-          {
-            "hash": "2e743a8b3165695856553ef62b022637ef53c76b",
-            "short_hash": "2e743a8b",
-            "subject": "docs(field-guide+hub): use real Code Puppy logo across nav, favicon & shell",
             "author": "Tyler Granlund",
             "date": "2026-08-24",
             "month": "2026-08"
@@ -3375,17 +3375,31 @@ window.FIELD_GUIDE_DATA = {
     ],
     "commits": [
       {
-        "hash": "718f20d0aa395751139cb867616bcd25affcb347",
-        "short_hash": "718f20d0",
-        "subject": "fix: broken nav/sidebar logo — height:auto collapses in flex",
+        "hash": "b096399d3cabb0adf654b7bc4df4789025f9ef24",
+        "short_hash": "b096399d",
+        "subject": "feat: left sidebar navigation across all pages, mobile-optimized",
         "author": "Tyler Granlund",
         "date": "2026-08-24"
       },
       {
-        "hash": "f882ded7197ec8753991db56239bc8f0a78646a6",
-        "short_hash": "f882ded7",
+        "hash": "52a63345570899c3214cd9e197db5fd42e4b7102",
+        "short_hash": "52a63345",
         "subject": "chore: bump version [ci skip]",
         "author": "github-actions[bot]",
+        "date": "2026-08-24"
+      },
+      {
+        "hash": "97e8e4cbe7abf5c917469a5168c13c4709113d63",
+        "short_hash": "97e8e4cb",
+        "subject": "chore: bump version [ci skip]",
+        "author": "github-actions[bot]",
+        "date": "2026-08-24"
+      },
+      {
+        "hash": "0b80f27206d10edbea23951952f96d148b82ec22",
+        "short_hash": "0b80f272",
+        "subject": "fix: broken nav/sidebar logo — height:auto collapses in flex",
+        "author": "Tyler Granlund",
         "date": "2026-08-24"
       },
       {
