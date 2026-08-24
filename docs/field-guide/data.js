@@ -1,8 +1,8 @@
 window.FIELD_GUIDE_DATA = {
   "meta": {
-    "generatedAt": "2026-08-24T18:10:20.715605+00:00",
+    "generatedAt": "2026-08-24T19:10:01.013326+00:00",
     "repoPath": "/Users/tygranlund/code_puppy",
-    "repoHead": "1cc260e0",
+    "repoHead": "4068fe96",
     "branch": "main",
     "currentVersion": "code-puppy v0.0.775",
     "sourceUrl": "https://github.com/mpfaffenberger/code_puppy"
@@ -12,7 +12,7 @@ window.FIELD_GUIDE_DATA = {
     "agents": 22,
     "plugins": 64,
     "skills": 5,
-    "commitsLast2Months": 850,
+    "commitsLast2Months": 854,
     "releases": 3
   },
   "tools": [
@@ -3112,12 +3112,44 @@ window.FIELD_GUIDE_DATA = {
     }
   ],
   "changelog": {
-    "total_commits": 850,
+    "total_commits": 854,
     "releases": [
       {
         "month": "2026-08",
-        "commit_count": 457,
+        "commit_count": 461,
         "commits": [
+          {
+            "hash": "4068fe9646612fe594ee16e1a1a4eb62992f2587",
+            "short_hash": "4068fe96",
+            "subject": "fix(pages-hub): replace fake inline SVG silhouettes with real logo",
+            "author": "Tyler Granlund",
+            "date": "2026-08-24",
+            "month": "2026-08"
+          },
+          {
+            "hash": "45d1cd068e5fb30e30affde2cb9002abeea282b2",
+            "short_hash": "45d1cd06",
+            "subject": "fix(pages-hub): stats show real numbers locally (fetch -> script include)",
+            "author": "Tyler Granlund",
+            "date": "2026-08-24",
+            "month": "2026-08"
+          },
+          {
+            "hash": "fabf162715614809fe1c85ace8609c4a62594c29",
+            "short_hash": "fabf1627",
+            "subject": "fix(pages-hub): QA pass on landing page — 12 issues fixed",
+            "author": "Tyler Granlund",
+            "date": "2026-08-24",
+            "month": "2026-08"
+          },
+          {
+            "hash": "c529a62169d16efa9216c6371b3ff039e9b48574",
+            "short_hash": "c529a621",
+            "subject": "feat(field-guide): sortable, filterable plugin sidebar",
+            "author": "Tyler Granlund",
+            "date": "2026-08-24",
+            "month": "2026-08"
+          },
           {
             "hash": "1cc260e061c1029411ef34e63c229da3504fac5e",
             "short_hash": "1cc260e0",
@@ -3163,38 +3195,6 @@ window.FIELD_GUIDE_DATA = {
             "short_hash": "da28917b",
             "subject": "chore: bump version [ci skip]",
             "author": "github-actions[bot]",
-            "date": "2026-08-24",
-            "month": "2026-08"
-          },
-          {
-            "hash": "ac09a2a3f6576151817c5aef87e8d760e2d97c00",
-            "short_hash": "ac09a2a3",
-            "subject": "Interrogate the TUI kill list: two targets down without ports",
-            "author": "mpfaffenberger",
-            "date": "2026-08-24",
-            "month": "2026-08"
-          },
-          {
-            "hash": "e2d4bf653c855c433e1435ce7b29a612b0e865ba",
-            "short_hash": "e2d4bf65",
-            "subject": "chore: bump version [ci skip]",
-            "author": "github-actions[bot]",
-            "date": "2026-08-24",
-            "month": "2026-08"
-          },
-          {
-            "hash": "e294f344139c08ef2ef68bf9f68648a5af4e86a0",
-            "short_hash": "e294f344",
-            "subject": "Charge image tokens by area instead of digest length (#783) (#854)",
-            "author": "Phani Sai Ram M",
-            "date": "2026-08-24",
-            "month": "2026-08"
-          },
-          {
-            "hash": "1f5af5557e11c286b6bc873ad0ed2319db7fdc64",
-            "short_hash": "1f5af555",
-            "subject": "Two-phase master/detail flow on phone-sized terminals; termflow-md >= 0.6.0",
-            "author": "mpfaffenberger",
             "date": "2026-08-24",
             "month": "2026-08"
           }
@@ -3374,6 +3374,34 @@ window.FIELD_GUIDE_DATA = {
       }
     ],
     "commits": [
+      {
+        "hash": "4068fe9646612fe594ee16e1a1a4eb62992f2587",
+        "short_hash": "4068fe96",
+        "subject": "fix(pages-hub): replace fake inline SVG silhouettes with real logo",
+        "author": "Tyler Granlund",
+        "date": "2026-08-24"
+      },
+      {
+        "hash": "45d1cd068e5fb30e30affde2cb9002abeea282b2",
+        "short_hash": "45d1cd06",
+        "subject": "fix(pages-hub): stats show real numbers locally (fetch -> script include)",
+        "author": "Tyler Granlund",
+        "date": "2026-08-24"
+      },
+      {
+        "hash": "fabf162715614809fe1c85ace8609c4a62594c29",
+        "short_hash": "fabf1627",
+        "subject": "fix(pages-hub): QA pass on landing page — 12 issues fixed",
+        "author": "Tyler Granlund",
+        "date": "2026-08-24"
+      },
+      {
+        "hash": "c529a62169d16efa9216c6371b3ff039e9b48574",
+        "short_hash": "c529a621",
+        "subject": "feat(field-guide): sortable, filterable plugin sidebar",
+        "author": "Tyler Granlund",
+        "date": "2026-08-24"
+      },
       {
         "hash": "1cc260e061c1029411ef34e63c229da3504fac5e",
         "short_hash": "1cc260e0",
