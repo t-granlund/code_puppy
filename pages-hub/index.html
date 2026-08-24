@@ -182,23 +182,27 @@
 </footer>
 
 <script>
-  // Stats fallback: inject from field-guide data.js if available locally
-  // (the GitHub Pages workflow does this at build time, but locally the
-  // stats show "—" unless we fetch the data ourselves).
+<!-- Stats: load field-guide data.js via script include (works on file://,
+     unlike fetch). The GitHub Pages workflow also injects at build time;
+     this covers local dev + any path the deploy might miss. Try the Pages
+     path first, then the local-dev relative path. -->
+<script src="./field-guide/data.js" onerror="this.onerror=null;this.src='../docs/field-guide/data.js'"></script>
+<script>
   (function() {
+    // If the Pages workflow already injected numbers, skip.
     if (document.getElementById('s-tools').textContent !== '—') return;
-    fetch('./field-guide/data.js')
-      .then(function(r) { return r.ok ? r.text() : Promise.reject(); })
-      .then(function(text) {
-        var json = text.replace(/^window\.FIELD_GUIDE_DATA\s*=\s*/, '').replace(/;\s*$/, '');
-        var d = JSON.parse(json);
-        var map = { 's-tools': d.stats.tools, 's-agents': d.stats.agents, 's-plugins': d.stats.plugins, 's-commits': d.stats.commitsLast2Months };
-        Object.keys(map).forEach(function(id) {
-          var el = document.getElementById(id);
-          if (el && map[id] != null) el.textContent = map[id];
-        });
-      })
-      .catch(function() {});
+    var d = window.FIELD_GUIDE_DATA;
+    if (!d || !d.stats) return;
+    var map = {
+      's-tools': d.stats.tools,
+      's-agents': d.stats.agents,
+      's-plugins': d.stats.plugins,
+      's-commits': d.stats.commitsLast2Months,
+    };
+    Object.keys(map).forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el && map[id] != null) el.textContent = map[id];
+    });
   })();
 </script>
 
