@@ -1,8 +1,8 @@
 window.FIELD_GUIDE_DATA = {
   "meta": {
-    "generatedAt": "2026-08-24T19:10:01.013326+00:00",
+    "generatedAt": "2026-08-24T19:19:57.784400+00:00",
     "repoPath": "/Users/tygranlund/code_puppy",
-    "repoHead": "4068fe96",
+    "repoHead": "718f20d0",
     "branch": "main",
     "currentVersion": "code-puppy v0.0.775",
     "sourceUrl": "https://github.com/mpfaffenberger/code_puppy"
@@ -12,7 +12,7 @@ window.FIELD_GUIDE_DATA = {
     "agents": 22,
     "plugins": 64,
     "skills": 5,
-    "commitsLast2Months": 854,
+    "commitsLast2Months": 856,
     "releases": 3
   },
   "tools": [
@@ -3112,12 +3112,28 @@ window.FIELD_GUIDE_DATA = {
     }
   ],
   "changelog": {
-    "total_commits": 854,
+    "total_commits": 856,
     "releases": [
       {
         "month": "2026-08",
-        "commit_count": 461,
+        "commit_count": 463,
         "commits": [
+          {
+            "hash": "718f20d0aa395751139cb867616bcd25affcb347",
+            "short_hash": "718f20d0",
+            "subject": "fix: broken nav/sidebar logo — height:auto collapses in flex",
+            "author": "Tyler Granlund",
+            "date": "2026-08-24",
+            "month": "2026-08"
+          },
+          {
+            "hash": "f882ded7197ec8753991db56239bc8f0a78646a6",
+            "short_hash": "f882ded7",
+            "subject": "chore: bump version [ci skip]",
+            "author": "github-actions[bot]",
+            "date": "2026-08-24",
+            "month": "2026-08"
+          },
           {
             "hash": "4068fe9646612fe594ee16e1a1a4eb62992f2587",
             "short_hash": "4068fe96",
@@ -3179,22 +3195,6 @@ window.FIELD_GUIDE_DATA = {
             "short_hash": "2e743a8b",
             "subject": "docs(field-guide+hub): use real Code Puppy logo across nav, favicon & shell",
             "author": "Tyler Granlund",
-            "date": "2026-08-24",
-            "month": "2026-08"
-          },
-          {
-            "hash": "3781b0f23d4749178a0d2efdf81ed626ae1a40ae",
-            "short_hash": "3781b0f2",
-            "subject": "docs(field-guide+observatory): regenerate + post-update leftovers (2026-08-24 10:56)",
-            "author": "Tyler Granlund",
-            "date": "2026-08-24",
-            "month": "2026-08"
-          },
-          {
-            "hash": "da28917b168c1abbc7b385784bef1079539b31e3",
-            "short_hash": "da28917b",
-            "subject": "chore: bump version [ci skip]",
-            "author": "github-actions[bot]",
             "date": "2026-08-24",
             "month": "2026-08"
           }
@@ -3374,6 +3374,20 @@ window.FIELD_GUIDE_DATA = {
       }
     ],
     "commits": [
+      {
+        "hash": "718f20d0aa395751139cb867616bcd25affcb347",
+        "short_hash": "718f20d0",
+        "subject": "fix: broken nav/sidebar logo — height:auto collapses in flex",
+        "author": "Tyler Granlund",
+        "date": "2026-08-24"
+      },
+      {
+        "hash": "f882ded7197ec8753991db56239bc8f0a78646a6",
+        "short_hash": "f882ded7",
+        "subject": "chore: bump version [ci skip]",
+        "author": "github-actions[bot]",
+        "date": "2026-08-24"
+      },
       {
         "hash": "4068fe9646612fe594ee16e1a1a4eb62992f2587",
         "short_hash": "4068fe96",
