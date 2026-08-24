@@ -8,7 +8,7 @@
 <meta name="description" content="Curated deep-dives on the notable Code Puppy updates of the last two months — what each is, what it does, and why it matters — plus a full index of every minor change and bug fix." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="../assets/tokens.css" />
 <link rel="stylesheet" href="../assets/sidebar.css" />
 <script src="../assets/icons.js"></script>
@@ -17,27 +17,28 @@
 <script src="../assets/sidebar.js" defer></script>
 <style>
   :root {
-    --bg: #1A2129; --bg-elev: #202834; --bg-card: #232D3A;
-    --border: rgba(255,255,255,.09); --border-light: rgba(255,255,255,.16);
-    --text: #FFFFFF; --text-soft: #D6DEE8; --text-muted: #AEB9C7; /* AAA on --bg: soft 11.96:1, muted 8.17:1 */
-    --accent: #A3A8F8; --accent-2: #5CF2F2; --accent-3: #61E887; --accent-4: #C5C9FB; --danger: #B7BBF7; /* danger: AAA-large on --bg */
+    --bg: #0E130F; --bg-elev: #121813; --bg-card: #161D18;
+    --border: rgba(238,235,229,.09); --border-light: rgba(238,235,229,.16);
+    --text: #EEEBE2; --text-soft: #D1CEC5; --text-muted: #A5A699; /* AAA on --bg: soft 11.96:1, muted 8.17:1 */
+    --accent: #E4AA71; --accent-2: #F2A26A; --accent-3: #98B79E; --accent-4: #ECEBE5; --danger: #CAAB88; /* amber-soft: AAA on --bg */
     --radius: 14px; --radius-sm: 8px;
     --shadow: 0 24px 80px -28px rgba(0,0,0,0.6);
     --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --display: "Fraunces", Georgia, "Times New Roman", serif;
   }
   * { box-sizing:border-box; }
   html { scroll-behavior:smooth; }
   body { margin:0; background:var(--bg); color:var(--text); font-family:var(--sans); font-size:15px; line-height:1.7; -webkit-font-smoothing:antialiased; }
   a { color:var(--accent-2); text-decoration:none; } a:hover { text-decoration:underline; }
   code, .mono { font-family:var(--mono); }
-  code { background:rgba(92,242,242,.10); color:var(--accent-2); padding:2px 6px; border-radius:5px; font-size:.92em; overflow-wrap:anywhere; word-break:break-word; }
+  code { background:rgba(242,162,106,.10); color:var(--accent-2); padding:2px 6px; border-radius:5px; font-size:.92em; overflow-wrap:anywhere; word-break:break-word; }
   dd, dt, p, li { overflow-wrap:anywhere; }
-  h1,h2,h3,h4 { margin:0; line-height:1.3; }
+  h1,h2,h3,h4 { margin:0; line-height:1.3; font-family:var(--display); letter-spacing:-0.02em; }
   p { margin:0 0 12px; color:var(--text-soft); }
   .wrap { max-width:860px; margin:0 auto; padding:0 24px; }
 
-  .nav { position:sticky; top:0; z-index:100; display:flex; align-items:center; gap:14px; padding:14px 24px; background:rgba(11,15,20,.85); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); }
+  .nav { position:sticky; top:0; z-index:100; display:flex; align-items:center; gap:14px; padding:14px 24px; background:rgba(10,15,11,.85); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); }
   .nav .logo { display:flex; align-items:center; gap:12px; }
   .nav .logo .paw { width:38px; height:36px; object-fit:contain; }
   .nav .logo b { font-size:16px; font-weight:700; }
@@ -117,7 +118,7 @@
 </head>
 <body>
 <nav class="nav">
-  <a href="../index.html" class="logo" style="text-decoration:none;color:inherit"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 212" style="width:34px;height:22px" aria-hidden="true"><path d="M62 78 C30 88 14 118 20 148 C24 172 44 186 62 182 L88 96 Z" fill="#A3A8F8"/><path d="M258 78 C290 88 306 118 300 148 C296 172 276 186 258 182 L232 96 Z" fill="#A3A8F8"/><path d="M88 62 C70 70 58 84 54 100" stroke="#1A2129" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M232 62 C250 70 262 84 266 100" stroke="#1A2129" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M70 96 C70 52 112 34 160 34 C208 34 250 52 250 96 C250 128 244 152 226 172 C206 192 184 200 160 200 C136 200 114 192 94 172 C76 152 70 128 70 96 Z" fill="#A3A8F8"/><circle cx="122" cy="108" r="14" fill="#1A2129"/><circle cx="198" cy="108" r="14" fill="#1A2129"/><path d="M138 138 C138 124 182 124 182 138 C182 150 172 156 168 160 L168 176 C180 178 188 184 186 192 C184 200 172 200 166 194" stroke="#1A2129" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M152 160 L152 176 C140 178 132 184 134 192 C136 200 148 200 154 194" stroke="#1A2129" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Code Puppy</b></a>
+  <a href="../index.html" class="logo" style="text-decoration:none;color:inherit"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 212" style="width:34px;height:22px" aria-hidden="true"><path d="M62 78 C30 88 14 118 20 148 C24 172 44 186 62 182 L88 96 Z" fill="#E4AA71"/><path d="M258 78 C290 88 306 118 300 148 C296 172 276 186 258 182 L232 96 Z" fill="#E4AA71"/><path d="M88 62 C70 70 58 84 54 100" stroke="#0E130F" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M232 62 C250 70 262 84 266 100" stroke="#0E130F" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M70 96 C70 52 112 34 160 34 C208 34 250 52 250 96 C250 128 244 152 226 172 C206 192 184 200 160 200 C136 200 114 192 94 172 C76 152 70 128 70 96 Z" fill="#E4AA71"/><circle cx="122" cy="108" r="14" fill="#0E130F"/><circle cx="198" cy="108" r="14" fill="#0E130F"/><path d="M138 138 C138 124 182 124 182 138 C182 150 172 156 168 160 L168 176 C180 178 188 184 186 192 C184 200 172 200 166 194" stroke="#0E130F" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M152 160 L152 176 C140 178 132 184 134 192 C136 200 148 200 154 194" stroke="#0E130F" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Code Puppy</b></a>
   <div class="links">
     <a href="../index.html">Hub</a>
     <a href="../field-guide/">Field Guide</a>
@@ -128,7 +129,7 @@
 </nav>
 
 <main class="wrap">
-  <header class="hero"><svg class="watermark" viewBox="0 0 320 300" aria-hidden="true"><path d="M62 78 C30 88 14 118 20 148 C24 172 44 186 62 182 L88 96 Z" fill="#A3A8F8"/><path d="M258 78 C290 88 306 118 300 148 C296 172 276 186 258 182 L232 96 Z" fill="#A3A8F8"/><path d="M70 96 C70 52 112 34 160 34 C208 34 250 52 250 96 C250 128 244 152 226 172 C206 192 184 200 160 200 C136 200 114 192 94 172 C76 152 70 128 70 96 Z" fill="#A3A8F8"/><circle cx="122" cy="108" r="13" fill="#A3A8F8"/><circle cx="198" cy="108" r="13" fill="#A3A8F8"/><circle cx="160" cy="248" r="46" fill="#A3A8F8"/></svg>
+  <header class="hero"><svg class="watermark" viewBox="0 0 320 300" aria-hidden="true"><path d="M62 78 C30 88 14 118 20 148 C24 172 44 186 62 182 L88 96 Z" fill="#E4AA71"/><path d="M258 78 C290 88 306 118 300 148 C296 172 276 186 258 182 L232 96 Z" fill="#E4AA71"/><path d="M70 96 C70 52 112 34 160 34 C208 34 250 52 250 96 C250 128 244 152 226 172 C206 192 184 200 160 200 C136 200 114 192 94 172 C76 152 70 128 70 96 Z" fill="#E4AA71"/><circle cx="122" cy="108" r="13" fill="#E4AA71"/><circle cx="198" cy="108" r="13" fill="#E4AA71"/><circle cx="160" cy="248" r="46" fill="#E4AA71"/></svg>
     <span class="kicker">Release Observatory</span>
     <h1>The last two months, <em>curated.</em></h1>
     <p class="lede">Everything notable that shipped in code-puppy over the past 60 days, with plain-language breakdowns of what it is, what it does, and why it matters — plus a complete index of the smaller work.</p>

@@ -7,27 +7,27 @@
 const DATA = (typeof FIELD_GUIDE_DATA !== "undefined" ? FIELD_GUIDE_DATA : (window.FIELD_GUIDE_DATA || {}));
 
 const THEME_COLORS = {
-  models: "#6cb6ff",
-  tools: "#f5b94d",
-  agents: "#b692f6",
-  ux: "#4cc46a",
-  durability: "#36c6b0",
-  mcp: "#ff9f6b",
-  plugins: "#f49ac2",
-  ci: "#ff7b72",
-  docs: "#9fb0c3",
-  misc: "#6b7d91",
+  models: "#7BA8C4",     // warm slate-blue
+  tools: "#F5B94D",      // amber-gold
+  agents: "#C4A0D4",     // dusty lavender
+  ux: "#7DB585",        // sage-moss
+  durability: "#5FA89A", // forest teal
+  mcp: "#FF9F6B",       // warm orange
+  plugins: "#D89FB0",    // dusty rose
+  ci: "#E07A6E",        // terracotta
+  docs: "#C4A882",      // warm tan
+  misc: "#8A9B8E",      // sage-grey
 };
 
 const TOOL_CATEGORY_COLORS = {
-  agent: "#6cb6ff",
-  file: "#f5b94d",
-  shell: "#4cc46a",
-  browser: "#b692f6",
-  skills: "#ff9f6b",
-  user: "#36c6b0",
-  constructor: "#f49ac2",
-  other: "#6b7d91",
+  agent: "#7BA8C4",
+  file: "#F5B94D",
+  shell: "#7DB585",
+  browser: "#C4A0D4",
+  skills: "#FF9F6B",
+  user: "#5FA89A",
+  constructor: "#D89FB0",
+  other: "#8A9B8E",
 };
 
 function el(tag, className, text) {

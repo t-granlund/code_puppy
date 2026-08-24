@@ -8,7 +8,7 @@
 <meta name="description" content="The Code Puppy design system: tokens, iconography, components, and accessibility standards." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="../assets/tokens.css" />
 <link rel="stylesheet" href="../assets/sidebar.css" />
 <script src="../assets/icons.js"></script>
@@ -21,8 +21,8 @@
   body { margin:0; background:var(--BB-bg); color:var(--BB-t2); font-family:var(--BB-sans); font-size:15px; line-height:1.7; -webkit-font-smoothing:antialiased; }
   a { color:var(--BB-link); text-decoration:none; }
   a:hover { text-decoration:underline; }
-  code { font-family:var(--BB-mono); background:rgba(102,240,237,.10); color:var(--BB-cyan); padding:2px 6px; border-radius:5px; font-size:.9em; overflow-wrap:anywhere; }
-  h1,h2,h3 { margin:0; line-height:1.2; color:var(--BB-t1); }
+  code { font-family:var(--BB-mono); background:rgba(242,162,106,.10); color:var(--BB-cyan); padding:2px 6px; border-radius:5px; font-size:.9em; overflow-wrap:anywhere; }
+  h1,h2,h3 { margin:0; line-height:1.2; color:var(--BB-t1); font-family:var(--BB-display); letter-spacing:-0.02em; }
   p { margin:0 0 14px; }
 
   main, .sb-main { overflow-x: hidden; }
@@ -37,7 +37,7 @@
 
   section { padding: 44px 0; border-top: 1px solid var(--BB-line); }
   .sec-h { display:flex; align-items:center; gap:12px; margin-bottom:8px; }
-  .sec-h .ic { width:34px;height:34px;border-radius:10px;display:grid;place-items:center;border:1px solid var(--BB-line-2); color:var(--BB-peri); background:rgba(192,196,251,.08); }
+  .sec-h .ic { width:34px;height:34px;border-radius:10px;display:grid;place-items:center;border:1px solid var(--BB-line-2); color:var(--BB-peri); background:rgba(228,170,113,.08); }
   .sec-h h2 { font-size:26px; font-weight:700; letter-spacing:-0.02em; }
   .sec-sub { color:var(--BB-t3); font-size:14.5px; margin-bottom:26px; max-width:640px; }
 
@@ -62,10 +62,10 @@
   .btns { display:flex; gap:12px; flex-wrap:wrap; }
   .btn { font-family:var(--BB-mono); font-size:12.5px; padding:9px 16px; border-radius:9px; border:1px solid var(--BB-line-2); background:var(--BB-panel); color:var(--BB-t2); cursor:pointer; }
   .btn:hover { border-color:var(--BB-peri); color:var(--BB-peri); }
-  .btn.pri { background:rgba(102,240,237,.12); border-color:rgba(102,240,237,.4); color:var(--BB-cyan); }
-  .snip { background:#0F141A; border:1px solid var(--BB-line); border-radius:10px; padding:16px; font-family:var(--BB-mono); font-size:12px; color:var(--BB-t3); overflow-x:auto; white-space:pre; margin-top:16px; }
+  .btn.pri { background:rgba(242,162,106,.12); border-color:rgba(242,162,106,.4); color:var(--BB-cyan); }
+  .snip { background:#0E130F; border:1px solid var(--BB-line); border-radius:10px; padding:16px; font-family:var(--BB-mono); font-size:12px; color:var(--BB-t3); overflow-x:auto; white-space:pre; margin-top:16px; }
 
-  .note { border-left:3px solid var(--BB-mint); background:rgba(111,240,154,.06); padding:14px 18px; border-radius:0 10px 10px 0; color:var(--BB-t3); font-size:14px; }
+  .note { border-left:3px solid var(--BB-mint); background:rgba(152,183,158,.06); padding:14px 18px; border-radius:0 10px 10px 0; color:var(--BB-t3); font-size:14px; }
   .note b { color:var(--BB-t1); }
 
   footer { border-top:1px solid var(--BB-line); padding:30px 26px 60px; color:var(--BB-t3); font-size:12.5px; display:flex; justify-content:space-between; gap:20px; flex-wrap:wrap; }
@@ -93,7 +93,7 @@
     <div class="sec-h"><span class="ic">T</span><h2>Typography</h2></div>
     <p class="sec-sub">Inter for UI, JetBrains Mono for code/mono labels. Display uses clamp() so it never overflows on any viewport.</p>
     <div class="demo"><div class="lbl">Display / clamp(38–60px)</div><div style="font-size:clamp(30px,5vw,52px);font-weight:800;letter-spacing:-0.03em;color:var(--BB-t1)">The machine, explained.</div></div>
-    <div class="demo"><div class="lbl">Body / 15px</div><p style="font-size:15px;max-width:560px">Body copy sits at <code>--BB-t2</code> (#E9EEF4), comfortably above the AAA 7:1 threshold at 15.9:1 on the base background.</p></div>
+    <div class="demo"><div class="lbl">Body / 15px</div><p style="font-size:15px;max-width:560px">Body copy sits at <code>--BB-t2</code> (#D1CEC5), comfortably above the AAA 7:1 threshold at 15.9:1 on the base background.</p></div>
     <div class="demo"><div class="lbl">Mono / inline code</div><p><code>~/.code_puppy/scripts/update-code-puppy.sh</code> and <code>json.dumps(data, indent=2)</code> wrap cleanly at any width.</p></div>
   </section>
 
@@ -132,7 +132,7 @@
 
     <div class="demo">
       <div class="lbl">Note / callout</div>
-      <div class="note"><b>AAA note.</b> Every interactive target is &ge;24&times;24px, focus rings use <code>--BB-focus</code> (#FFE08A) at 3px-equivalent high contrast, and all motion respects <code>prefers-reduced-motion</code>.</div>
+      <div class="note"><b>AAA note.</b> Every interactive target is &ge;24&times;24px, focus rings use <code>--BB-focus</code> (#E4AA71) at 3px-equivalent high contrast, and all motion respects <code>prefers-reduced-motion</code>.</div>
     </div>
   </section>
 
@@ -145,13 +145,13 @@
 <script>
   // Swatch table from the actual token sheet
   var TOKENS = [
-    ["--BB-bg","#141B23","base bg","—"],["--BB-t1","#FFFFFF","heading","19.3:1"],["--BB-t2","#E9EEF4","body","15.9:1"],
-    ["--BB-t3","#C7D0DA","secondary","11.1:1"],["--BB-peri","#C0C4FB","accent","8.6:1"],["--BB-cyan","#66F0ED","accent","12.1:1"],
-    ["--BB-mint","#6FF09A","accent","10.9:1"],["--BB-peri-l","#DBDDFE","accent","12.9:1"],["--BB-pink","#F2A9F0","accent","8.7:1"],
-    ["--BB-focus","#FFE08A","focus","12.6:1"]
+    ["--BB-bg","#0E130F","grove bg","—"],["--BB-t1","#EEEBE2","foreground","15.7:1"],["--BB-t2","#D1CEC5","stone","11.9:1"],
+    ["--BB-t3","#A5A699","muted-fg","7.6:1"],["--BB-peri","#E4AA71","cedar","9.2:1"],["--BB-cyan","#F2A26A","cedar-br","9.1:1"],
+    ["--BB-mint","#98B79E","sage","8.6:1"],["--BB-peri-l","#ECEBE5","mist","15.7:1"],["--BB-pink","#CAAB88","amber","8.7:1"],
+    ["--BB-focus","#E4AA71","cedar","9.2:1"]
   ];
   document.getElementById("swatches").innerHTML = TOKENS.map(function(t){
-    var fg = t[0]==="--BB-t1"||t[0]==="--BB-t2"||t[0]==="--BB-t3"||t[0]==="--BB-focus" ? "#141B23" : "#E9EEF4";
+    var fg = t[0]==="--BB-t1"||t[0]==="--BB-t2"||t[0]==="--BB-t3"||t[0]==="--BB-focus" ? "#0E130F" : "#D1CEC5";
     return '<div class="sw"><div class="chip" style="background:'+t[1]+';color:'+fg+'">'+t[0]+'</div>'+
       '<div class="meta"><div class="n">'+t[0]+'</div><div class="v">'+t[1]+' · '+t[2]+'</div><div class="r">'+t[3]+'</div></div></div>';
   }).join("");

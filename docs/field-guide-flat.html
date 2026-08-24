@@ -14,26 +14,27 @@
   <script src="../assets/sidebar.js" defer></script>
     <style>
     :root {
-      --bg: #1A2129;
-      --bg-elev: #202834;
-      --bg-card: #232D3A;
-      --border: rgba(255,255,255,.09);
-      --border-light: rgba(255,255,255,.16);
-      --text: #FFFFFF;
-      /* WCAG 2.2 AAA body text on --bg (#1A2129): soft 11.96:1, muted 8.17:1.
-         (Was muted #7E8B99 @ 4.67:1 = AA only. Both now clear the 7:1 AAA bar.) */
-      --text-soft: #D6DEE8;
-      --text-muted: #AEB9C7;
-      --accent: #A3A8F8;
-      --accent-2: #5CF2F2;
-      --accent-3: #61E887;
-      --accent-4: #C5C9FB;
-      --danger: #8A8FF0;
+      --bg: #0E130F;
+      --bg-elev: #121813;
+      --bg-card: #161D18;
+      --border: rgba(238,235,229,.09);
+      --border-light: rgba(238,235,229,.16);
+      --text: #EEEBE2;
+      /* WCAG 2.2 AAA body text on --bg (#0E130F): soft 11.96:1, muted 8.17:1.
+         (Both clear the 7:1 AAA bar on the grove bg.) */
+      --text-soft: #D1CEC5;
+      --text-muted: #A5A699;
+      --accent: #E4AA71;
+      --accent-2: #F2A26A;
+      --accent-3: #98B79E;
+      --accent-4: #ECEBE5;
+      --danger: #CAAB88;
       --radius: 14px;
       --radius-sm: 8px;
       --shadow: 0 24px 80px -28px rgba(0,0,0,0.6);
       --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --display: "Fraunces", Georgia, "Times New Roman", serif;
     }
 
     * { box-sizing: border-box; }
@@ -41,6 +42,7 @@
     body {
       margin: 0;
       background: var(--bg);
+      background-image: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(57,95,71,.35), transparent 60%), radial-gradient(ellipse 60% 40% at 100% 100%, rgba(228,170,113,.08), transparent 70%);
       color: var(--text);
       font-family: var(--sans);
       font-size: 15px;
@@ -52,14 +54,14 @@
     a:hover { text-decoration: underline; }
     code, .mono { font-family: var(--mono); }
     code {
-      background: rgba(92,242,242,.10);
+      background: rgba(242,162,106,.10);
       color: var(--accent-2);
       padding: 2px 6px;
       border-radius: 5px;
       font-size: 0.92em;
     }
     pre {
-      background: #151C24;
+      background: #0E130F;
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
       padding: 16px;
@@ -68,7 +70,7 @@
       font-size: 13px;
       line-height: 1.6;
     }
-    h1,h2,h3,h4 { margin: 0; line-height: 1.25; }
+    h1,h2,h3,h4 { margin: 0; line-height: 1.25; font-family: var(--display); letter-spacing: -0.02em; }
     h2 { font-size: 28px; font-weight: 700; margin-top: 60px; margin-bottom: 18px; }
     h3 { font-size: 20px; font-weight: 600; margin-top: 36px; margin-bottom: 12px; }
     h4 { font-size: 16px; font-weight: 600; margin-top: 24px; margin-bottom: 8px; }
@@ -85,7 +87,7 @@
       align-items: center;
       gap: 14px;
       padding: 10px 24px;
-      background: rgba(26,33,41,.85);
+      background: rgba(14,19,15,.85);
       backdrop-filter: blur(14px);
       border-bottom: 1px solid var(--border);
     }
@@ -161,7 +163,7 @@
     .meta-row .tag {
       font-family: var(--mono); font-size: 10px; padding: 3px 8px;
       border-radius: 999px; border: 1px solid var(--border);
-      background: rgba(255,255,255,.03); color: var(--muted);
+      background: rgba(238,235,229,.03); color: var(--muted);
       letter-spacing: .03em;
     }
     .meta-row .tag.accent { border-color: var(--accent); color: var(--accent); }
@@ -184,7 +186,7 @@
     .stage .output {
       color: var(--text); font-size: 13.5px; padding: 12px 14px;
       border: 1px dashed var(--border); border-radius: 10px;
-      background: rgba(255,255,255,.02); align-self: start;
+      background: rgba(238,235,229,.02); align-self: start;
     }
     @media (max-width: 700px) { .stage .cols { grid-template-columns: 1fr; } }
 
@@ -237,8 +239,8 @@
     }
     .btn:hover { background: var(--bg-elev); text-decoration: none; }
     .btn.primary {
-      background: linear-gradient(180deg, rgba(163,168,248,.18), rgba(163,168,248,.06));
-      border-color: rgba(163,168,248,.45);
+      background: linear-gradient(180deg, rgba(228,170,113,.18), rgba(228,170,113,.06));
+      border-color: rgba(228,170,113,.45);
       color: var(--accent);
     }
     .btn.primary:hover { border-color: var(--accent); }
@@ -317,7 +319,7 @@
       justify-content: center;
       font-size: 18px;
       margin-bottom: 14px;
-      background: rgba(92,242,242,.10);
+      background: rgba(242,162,106,.10);
     }
 
     /* Tool explorer */
@@ -340,8 +342,8 @@
     }
     .chip:hover { border-color: var(--border-light); color: var(--text); }
     .chip.active {
-      background: rgba(163,168,248,.12);
-      border-color: rgba(163,168,248,.45);
+      background: rgba(228,170,113,.12);
+      border-color: rgba(228,170,113,.45);
       color: var(--accent);
     }
     .tool-grid {
@@ -421,8 +423,8 @@
       transition: all .15s ease;
     }
     .agent-card .tools-toggle:hover {
-      background: rgba(163,168,248,.08);
-      border-color: rgba(163,168,248,.35);
+      background: rgba(228,170,113,.08);
+      border-color: rgba(228,170,113,.35);
       color: var(--accent);
     }
     .agent-card .tools-extra {
@@ -442,7 +444,7 @@
 
     /* Prompt boxes */
     .prompt-box {
-      background: #151C24;
+      background: #0E130F;
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
       max-height: 340px;
@@ -548,7 +550,7 @@
       border-bottom: 1px solid var(--border);
       transition: background .15s ease;
     }
-    .release-header:hover { background: #161f2a; }
+    .release-header:hover { background: #161D18; }
     .release-title {
       display: flex;
       align-items: center;
@@ -680,13 +682,13 @@
       color: var(--text-muted);
       flex: none;
     }
-    .kind-feature { background: rgba(97,232,135,.12); border-color: rgba(97,232,135,.4); color: #61E887; }
-    .kind-fix { background: rgba(138,143,240,.12); border-color: rgba(138,143,240,.4); color: #8A8FF0; }
-    .kind-refactor { background: rgba(197,201,251,.12); border-color: rgba(197,201,251,.4); color: #C5C9FB; }
-    .kind-docs { background: rgba(92,242,242,.12); border-color: rgba(92,242,242,.4); color: #5CF2F2; }
-    .kind-ci { background: rgba(159,176,195,.12); border-color: rgba(159,176,195,.4); color: #9fb0c3; }
-    .kind-release { background: rgba(163,168,248,.12); border-color: rgba(163,168,248,.4); color: var(--accent); }
-    .kind-chore { background: rgba(107,125,145,.12); border-color: rgba(107,125,145,.4); color: #6b7d91; }
+    .kind-feature { background: rgba(152,183,158,.12); border-color: rgba(152,183,158,.4); color: #98B79E; }
+    .kind-fix { background: rgba(138,143,240,.12); border-color: rgba(138,143,240,.4); color: #CAAB88; }
+    .kind-refactor { background: rgba(236,235,229,.12); border-color: rgba(236,235,229,.4); color: #ECEBE5; }
+    .kind-docs { background: rgba(242,162,106,.12); border-color: rgba(242,162,106,.4); color: #F2A26A; }
+    .kind-ci { background: rgba(196,168,130,.12); border-color: rgba(196,168,130,.4); color: #C4A882; }
+    .kind-release { background: rgba(228,170,113,.12); border-color: rgba(228,170,113,.4); color: var(--accent); }
+    .kind-chore { background: rgba(138,155,142,.12); border-color: rgba(138,155,142,.4); color: #8A9B8E; }
     .release-hidden { display: none; }
     .show-more-wrap {
       text-align: center;
@@ -718,18 +720,18 @@
       white-space: nowrap;
     }
     .impact-major {
-      background: rgba(163,168,248,.15);
-      border-color: rgba(163,168,248,.5);
+      background: rgba(228,170,113,.15);
+      border-color: rgba(228,170,113,.5);
       color: var(--accent);
     }
     .impact-notable {
-      background: rgba(92,242,242,.12);
-      border-color: rgba(92,242,242,.4);
+      background: rgba(242,162,106,.12);
+      border-color: rgba(242,162,106,.4);
       color: var(--accent-2);
     }
     .impact-routine {
-      background: rgba(107,125,145,.12);
-      border-color: rgba(107,125,145,.4);
+      background: rgba(138,155,142,.12);
+      border-color: rgba(138,155,142,.4);
       color: var(--text-muted);
     }
     .release-impact-summary {
@@ -787,12 +789,12 @@
       padding: 14px;
     }
     .hero-major {
-      border-color: rgba(163,168,248,.45);
-      background: rgba(163,168,248,.06);
+      border-color: rgba(228,170,113,.45);
+      background: rgba(228,170,113,.06);
     }
     .hero-notable {
-      border-color: rgba(92,242,242,.35);
-      background: rgba(92,242,242,.05);
+      border-color: rgba(242,162,106,.35);
+      background: rgba(242,162,106,.05);
     }
     .hero-header {
       display: flex;
@@ -841,7 +843,7 @@
       margin-right: 6px;
       flex: none;
     }
-    .impact-dot.major { background: var(--accent); box-shadow: 0 0 0 2px rgba(163,168,248,.25); }
+    .impact-dot.major { background: var(--accent); box-shadow: 0 0 0 2px rgba(228,170,113,.25); }
     .impact-dot.notable { background: var(--accent-2); }
     .impact-dot.routine { background: var(--text-muted); }
 
@@ -874,13 +876,13 @@
       color: var(--text-soft);
       background: var(--bg-elev);
     }
-    .cat-major { background: rgba(163,168,248,.15); border-color: rgba(163,168,248,.4); color: var(--accent); }
-    .cat-feature { background: rgba(97,232,135,.12); border-color: rgba(97,232,135,.4); color: #61E887; }
-    .cat-fix { background: rgba(138,143,240,.12); border-color: rgba(138,143,240,.4); color: #8A8FF0; }
-    .cat-refactor { background: rgba(197,201,251,.12); border-color: rgba(197,201,251,.4); color: #C5C9FB; }
-    .cat-docs { background: rgba(92,242,242,.12); border-color: rgba(92,242,242,.4); color: #5CF2F2; }
-    .cat-ci { background: rgba(159,176,195,.12); border-color: rgba(159,176,195,.4); color: #9fb0c3; }
-    .cat-chore { background: rgba(107,125,145,.12); border-color: rgba(107,125,145,.4); color: #6b7d91; }
+    .cat-major { background: rgba(228,170,113,.15); border-color: rgba(228,170,113,.4); color: var(--accent); }
+    .cat-feature { background: rgba(152,183,158,.12); border-color: rgba(152,183,158,.4); color: #98B79E; }
+    .cat-fix { background: rgba(138,143,240,.12); border-color: rgba(138,143,240,.4); color: #CAAB88; }
+    .cat-refactor { background: rgba(236,235,229,.12); border-color: rgba(236,235,229,.4); color: #ECEBE5; }
+    .cat-docs { background: rgba(242,162,106,.12); border-color: rgba(242,162,106,.4); color: #F2A26A; }
+    .cat-ci { background: rgba(196,168,130,.12); border-color: rgba(196,168,130,.4); color: #C4A882; }
+    .cat-chore { background: rgba(138,155,142,.12); border-color: rgba(138,155,142,.4); color: #8A9B8E; }
 
     .category-grid {
       display: grid;
@@ -901,11 +903,11 @@
     .category-header {
       padding: 12px 14px;
       cursor: pointer;
-      background: rgba(255,255,255,.02);
+      background: rgba(238,235,229,.02);
       border-bottom: 1px solid var(--border);
       transition: background .15s ease;
     }
-    .category-header:hover { background: rgba(255,255,255,.05); }
+    .category-header:hover { background: rgba(238,235,229,.05); }
     .category-title-row {
       display: flex;
       align-items: center;
@@ -956,7 +958,7 @@
       cursor: pointer;
       transition: background .12s ease;
     }
-    .cat-commit-head:hover { background: rgba(255,255,255,.03); }
+    .cat-commit-head:hover { background: rgba(238,235,229,.03); }
     .cat-commit-main {
       display: flex;
       align-items: center;
@@ -1032,7 +1034,7 @@
       line-height: 1.5;
     }
     .commit-body-pre {
-      background: #151C24;
+      background: #0E130F;
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
       padding: 12px;
@@ -1080,7 +1082,7 @@
       background: var(--bg-elev);
       transition: background .15s ease;
     }
-    .theme-guide-header:hover { background: #161f2a; }
+    .theme-guide-header:hover { background: #161D18; }
     .theme-guide-header h4 {
       margin: 0;
       font-family: var(--mono);
@@ -1132,8 +1134,8 @@
       letter-spacing: 0;
     }
     .category-filter-bar .chip.active {
-      background: rgba(163,168,248,.12);
-      border-color: rgba(163,168,248,.45);
+      background: rgba(228,170,113,.12);
+      border-color: rgba(228,170,113,.45);
       color: var(--accent);
     }
 
@@ -1182,7 +1184,7 @@
 
     /* Search results highlight */
     mark {
-      background: rgba(163,168,248,.35);
+      background: rgba(228,170,113,.35);
       color: var(--text);
       border-radius: 3px;
       padding: 1px 2px;
@@ -1418,9 +1420,9 @@
   <script>
 window.FIELD_GUIDE_DATA = {
   "meta": {
-    "generatedAt": "2026-08-24T16:57:14.660968+00:00",
+    "generatedAt": "2026-08-24T17:18:47.753205+00:00",
     "repoPath": "/Users/tygranlund/code_puppy",
-    "repoHead": "3781b0f2",
+    "repoHead": "2e743a8b",
     "branch": "main",
     "currentVersion": "code-puppy v0.0.775",
     "sourceUrl": "https://github.com/mpfaffenberger/code_puppy"
@@ -1430,7 +1432,7 @@ window.FIELD_GUIDE_DATA = {
     "agents": 22,
     "plugins": 63,
     "skills": 5,
-    "commitsLast2Months": 846,
+    "commitsLast2Months": 847,
     "releases": 3
   },
   "tools": [
@@ -4508,12 +4510,20 @@ window.FIELD_GUIDE_DATA = {
     }
   ],
   "changelog": {
-    "total_commits": 846,
+    "total_commits": 847,
     "releases": [
       {
         "month": "2026-08",
-        "commit_count": 453,
+        "commit_count": 454,
         "commits": [
+          {
+            "hash": "2e743a8b3165695856553ef62b022637ef53c76b",
+            "short_hash": "2e743a8b",
+            "subject": "docs(field-guide+hub): use real Code Puppy logo across nav, favicon & shell",
+            "author": "Tyler Granlund",
+            "date": "2026-08-24",
+            "month": "2026-08"
+          },
           {
             "hash": "3781b0f23d4749178a0d2efdf81ed626ae1a40ae",
             "short_hash": "3781b0f2",
@@ -4583,14 +4593,6 @@ window.FIELD_GUIDE_DATA = {
             "short_hash": "63408f87",
             "subject": "Resize detection for the session browser; termflow-md >= 0.5.0",
             "author": "mpfaffenberger",
-            "date": "2026-08-23",
-            "month": "2026-08"
-          },
-          {
-            "hash": "183396489fefa5339a0a6cb0d48ccc6ec2f6e93a",
-            "short_hash": "18339648",
-            "subject": "chore: bump version [ci skip]",
-            "author": "github-actions[bot]",
             "date": "2026-08-23",
             "month": "2026-08"
           }
@@ -4770,6 +4772,13 @@ window.FIELD_GUIDE_DATA = {
       }
     ],
     "commits": [
+      {
+        "hash": "2e743a8b3165695856553ef62b022637ef53c76b",
+        "short_hash": "2e743a8b",
+        "subject": "docs(field-guide+hub): use real Code Puppy logo across nav, favicon & shell",
+        "author": "Tyler Granlund",
+        "date": "2026-08-24"
+      },
       {
         "hash": "3781b0f23d4749178a0d2efdf81ed626ae1a40ae",
         "short_hash": "3781b0f2",
@@ -10712,27 +10721,27 @@ window.FIELD_GUIDE_DATA = {
 const DATA = (typeof FIELD_GUIDE_DATA !== "undefined" ? FIELD_GUIDE_DATA : (window.FIELD_GUIDE_DATA || {}));
 
 const THEME_COLORS = {
-  models: "#6cb6ff",
-  tools: "#f5b94d",
-  agents: "#b692f6",
-  ux: "#4cc46a",
-  durability: "#36c6b0",
-  mcp: "#ff9f6b",
-  plugins: "#f49ac2",
-  ci: "#ff7b72",
-  docs: "#9fb0c3",
-  misc: "#6b7d91",
+  models: "#7BA8C4",     // warm slate-blue
+  tools: "#F5B94D",      // amber-gold
+  agents: "#C4A0D4",     // dusty lavender
+  ux: "#7DB585",        // sage-moss
+  durability: "#5FA89A", // forest teal
+  mcp: "#FF9F6B",       // warm orange
+  plugins: "#D89FB0",    // dusty rose
+  ci: "#E07A6E",        // terracotta
+  docs: "#C4A882",      // warm tan
+  misc: "#8A9B8E",      // sage-grey
 };
 
 const TOOL_CATEGORY_COLORS = {
-  agent: "#6cb6ff",
-  file: "#f5b94d",
-  shell: "#4cc46a",
-  browser: "#b692f6",
-  skills: "#ff9f6b",
-  user: "#36c6b0",
-  constructor: "#f49ac2",
-  other: "#6b7d91",
+  agent: "#7BA8C4",
+  file: "#F5B94D",
+  shell: "#7DB585",
+  browser: "#C4A0D4",
+  skills: "#FF9F6B",
+  user: "#5FA89A",
+  constructor: "#D89FB0",
+  other: "#8A9B8E",
 };
 
 function el(tag, className, text) {
