@@ -139,7 +139,7 @@
   .n-ic.c{color:var(--cyan);background:rgba(242,162,106,.08);border-color:rgba(242,162,106,.22)}
   .n-ic.m{color:var(--mint);background:rgba(152,183,158,.08);border-color:rgba(152,183,158,.22)}
   .n-ic.pl{color:var(--peri-l);background:rgba(236,235,229,.09);border-color:rgba(236,235,229,.22)}
-  .watermark{position:absolute;top:40px;right:-60px;width:340px;opacity:.05;pointer-events:none;z-index:0}
+  .watermark{position:absolute;top:40px;right:-60px;width:340px;height:auto;opacity:.05;pointer-events:none;z-index:0;object-fit:contain}
   @media(max-width:900px){.watermark{display:none}}
   main,.hero{position:relative;z-index:1}
   footer{border-top:1px solid var(--line);padding:24px 32px 40px;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
@@ -149,7 +149,7 @@
 </head>
 <body>
 <nav class="nav">
-  <a class="brand" href="../index.html"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 212" style="width:32px;height:21px" aria-hidden="true"><path d="M62 78 C30 88 14 118 20 148 C24 172 44 186 62 182 L88 96 Z" fill="#E4AA71"/><path d="M258 78 C290 88 306 118 300 148 C296 172 276 186 258 182 L232 96 Z" fill="#E4AA71"/><path d="M88 62 C70 70 58 84 54 100" stroke="#0E130F" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M232 62 C250 70 262 84 266 100" stroke="#0E130F" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M70 96 C70 52 112 34 160 34 C208 34 250 52 250 96 C250 128 244 152 226 172 C206 192 184 200 160 200 C136 200 114 192 94 172 C76 152 70 128 70 96 Z" fill="#E4AA71"/><circle cx="122" cy="108" r="14" fill="#0E130F"/><circle cx="198" cy="108" r="14" fill="#0E130F"/><path d="M138 138 C138 124 182 124 182 138 C182 150 172 156 168 160 L168 176 C180 178 188 184 186 192 C184 200 172 200 166 194" stroke="#0E130F" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M152 160 L152 176 C140 178 132 184 134 192 C136 200 148 200 154 194" stroke="#0E130F" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Code Puppy</a>
+  <a class="brand" href="../index.html"><img src="../assets/code_puppy_logo_white.png" alt="Code Puppy" style="width:32px;height:auto" /> Code Puppy</a>
   <div class="links">
     <a href="../index.html">Hub</a><a href="../field-guide/">Field Guide</a><a href="../releases/">Releases</a>
     <a href="./" class="active">Architecture</a><a href="../flat/">Flat Docs</a>
@@ -157,7 +157,7 @@
   <a class="gh" href="https://github.com/t-granlund/code_puppy" target="_blank" rel="noopener">GitHub</a>
 </nav>
 
-<header class="hero"><svg class="watermark" viewBox="0 0 320 300" aria-hidden="true"><path d="M62 78 C30 88 14 118 20 148 C24 172 44 186 62 182 L88 96 Z" fill="#E4AA71"/><path d="M258 78 C290 88 306 118 300 148 C296 172 276 186 258 182 L232 96 Z" fill="#E4AA71"/><path d="M70 96 C70 52 112 34 160 34 C208 34 250 52 250 96 C250 128 244 152 226 172 C206 192 184 200 160 200 C136 200 114 192 94 172 C76 152 70 128 70 96 Z" fill="#E4AA71"/><circle cx="122" cy="108" r="13" fill="#E4AA71"/><circle cx="198" cy="108" r="13" fill="#E4AA71"/><circle cx="160" cy="248" r="46" fill="#E4AA71"/></svg>
+<header class="hero"><img class="watermark" src="../assets/code_puppy_logo_white.png" alt="" aria-hidden="true" />
   <span class="kicker">Internal Training · System Architecture</span>
   <h1>The machine, <span class="g">explained.</span></h1>
   <p>Left to right: how one Mac stays current, tested, published, and documented — and everything living inside it.</p>
