@@ -326,9 +326,24 @@
     }
 
     /* Master-detail layout (plugins) */
-    .md-layout { display: grid; grid-template-columns: 280px minmax(0,1fr); gap: 20px; align-items: start; }
-    @media (max-width: 780px) { .md-layout { grid-template-columns: minmax(0,1fr); } }
-    .md-list { max-height: 620px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-card); padding: 8px; }
+    .md-layout { display: grid; grid-template-columns: 300px minmax(0,1fr); gap: 20px; align-items: start; }
+    .md-sidebar { display: flex; flex-direction: column; gap: 0; }
+    .md-toolbar { background: var(--bg-card); border: 1px solid var(--border); border-bottom: none; border-radius: var(--radius) var(--radius) 0 0; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+    .md-search { width: 100%; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 12px; color: var(--text); font-family: var(--sans); font-size: 13px; outline: none; }
+    .md-search:focus { border-color: var(--accent); }
+    .md-search::placeholder { color: var(--text-muted); }
+    .md-sort-row { display: flex; align-items: center; gap: 8px; }
+    .md-sort-row label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--text-muted); white-space: nowrap; }
+    .md-sort { flex: 1; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 6px 8px; color: var(--text); font-family: var(--sans); font-size: 12px; outline: none; cursor: pointer; }
+    .md-sort:focus { border-color: var(--accent); }
+    .md-filter-group { display: flex; flex-wrap: wrap; gap: 4px; }
+    .md-filter-group-label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--text-muted); margin-bottom: 2px; }
+    .md-filter { font-family: var(--mono); font-size: 10px; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--border); background: transparent; color: var(--text-muted); cursor: pointer; transition: .1s ease; white-space: nowrap; }
+    .md-filter:hover { border-color: var(--border-light); color: var(--text-soft); }
+    .md-filter.active { background: rgba(228,170,113,.12); border-color: var(--accent); color: var(--accent); }
+    .md-count { font-family: var(--mono); font-size: 10px; color: var(--text-muted); padding: 0 2px; }
+    @media (max-width: 780px) { .md-layout { grid-template-columns: minmax(0,1fr); } .md-toolbar { border-radius: var(--radius); border-bottom: 1px solid var(--border); } .md-list { border-radius: 0 0 var(--radius) var(--radius); max-height: 200px; } }
+    .md-list { max-height: 560px; overflow-y: auto; border: 1px solid var(--border); border-top: none; border-radius: 0 0 var(--radius) var(--radius); background: var(--bg-card); padding: 8px; }
     @media (max-width: 780px) { .md-list { display: flex; gap: 8px; overflow-x: auto; max-height: none; } }
     .md-item { padding: 10px 14px; border-radius: var(--radius-sm); cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 8px; border: 1px solid transparent; transition: .12s ease; font-size: 14px; color: var(--text-soft); }
     .md-item:hover { background: var(--panel); color: var(--text); }
@@ -1388,7 +1403,10 @@
         </div>
         <div class="intro" id="plugins-intro"></div>
         <div id="plugins-md" class="md-layout">
-          <div class="md-list" id="plugins-list"></div>
+          <div class="md-sidebar">
+            <div class="md-toolbar" id="plugins-toolbar"></div>
+            <div class="md-list" id="plugins-list"></div>
+          </div>
           <div class="md-detail" id="plugins-detail"></div>
         </div>
       </div>
