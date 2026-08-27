@@ -1429,11 +1429,11 @@
   <script>
 window.FIELD_GUIDE_DATA = {
   "meta": {
-    "generatedAt": "2026-08-24T19:25:43.033140+00:00",
+    "generatedAt": "2026-08-27T19:13:02.709857+00:00",
     "repoPath": "/Users/tygranlund/code_puppy",
-    "repoHead": "b096399d",
+    "repoHead": "a81587d1",
     "branch": "main",
-    "currentVersion": "code-puppy v0.0.775",
+    "currentVersion": "code-puppy v0.0.791",
     "sourceUrl": "https://github.com/mpfaffenberger/code_puppy"
   },
   "stats": {
@@ -1441,7 +1441,7 @@ window.FIELD_GUIDE_DATA = {
     "agents": 22,
     "plugins": 64,
     "skills": 5,
-    "commitsLast2Months": 858,
+    "commitsLast2Months": 898,
     "releases": 3
   },
   "tools": [
@@ -2492,11 +2492,11 @@ window.FIELD_GUIDE_DATA = {
         },
         {
           "name": "skills_install_menu.py",
-          "lines": 698
+          "lines": 609
         },
         {
           "name": "skills_menu.py",
-          "lines": 794
+          "lines": 682
         }
       ],
       "hasReadme": false,
@@ -2908,7 +2908,7 @@ window.FIELD_GUIDE_DATA = {
         },
         {
           "name": "register_callbacks.py",
-          "lines": 460
+          "lines": 456
         },
         {
           "name": "utils.py",
@@ -3110,7 +3110,7 @@ window.FIELD_GUIDE_DATA = {
         },
         {
           "name": "register_callbacks.py",
-          "lines": 575
+          "lines": 612
         }
       ],
       "hasReadme": false,
@@ -3346,7 +3346,7 @@ window.FIELD_GUIDE_DATA = {
         },
         {
           "name": "hooks_menu.py",
-          "lines": 571
+          "lines": 493
         },
         {
           "name": "register_callbacks.py",
@@ -3627,11 +3627,44 @@ window.FIELD_GUIDE_DATA = {
         },
         {
           "name": "completer.py",
-          "lines": 38
+          "lines": 37
         },
         {
           "name": "register_callbacks.py",
           "lines": 419
+        }
+      ],
+      "hasReadme": false,
+      "hasSkill": false
+    },
+    {
+      "name": "openrouter_oauth",
+      "tier": "core-package",
+      "description": "OpenRouter OAuth plugin callbacks.",
+      "hooks": [
+        "provider_credential_flow"
+      ],
+      "hasCustomCommand": false,
+      "files": [
+        {
+          "name": "__init__.py",
+          "lines": 6
+        },
+        {
+          "name": "config.py",
+          "lines": 21
+        },
+        {
+          "name": "oauth_flow.py",
+          "lines": 242
+        },
+        {
+          "name": "register_callbacks.py",
+          "lines": 93
+        },
+        {
+          "name": "test_plugin.py",
+          "lines": 263
         }
       ],
       "hasReadme": false,
@@ -3662,15 +3695,11 @@ window.FIELD_GUIDE_DATA = {
         },
         {
           "name": "plugin_text_utils.py",
-          "lines": 173
+          "lines": 183
         },
         {
           "name": "plugins_menu.py",
-          "lines": 455
-        },
-        {
-          "name": "plugins_menu_layout.py",
-          "lines": 194
+          "lines": 444
         },
         {
           "name": "plugins_menu_render.py",
@@ -3731,7 +3760,7 @@ window.FIELD_GUIDE_DATA = {
         },
         {
           "name": "register_callbacks.py",
-          "lines": 163
+          "lines": 164
         }
       ],
       "hasReadme": false,
@@ -3753,7 +3782,7 @@ window.FIELD_GUIDE_DATA = {
         },
         {
           "name": "prune_menu.py",
-          "lines": 308
+          "lines": 211
         },
         {
           "name": "prune_model.py",
@@ -3864,7 +3893,7 @@ window.FIELD_GUIDE_DATA = {
         },
         {
           "name": "picker.py",
-          "lines": 379
+          "lines": 312
         },
         {
           "name": "register_callbacks.py",
@@ -4070,7 +4099,7 @@ window.FIELD_GUIDE_DATA = {
         },
         {
           "name": "prompt_patch.py",
-          "lines": 76
+          "lines": 95
         },
         {
           "name": "register_callbacks.py",
@@ -4105,11 +4134,11 @@ window.FIELD_GUIDE_DATA = {
         },
         {
           "name": "queue_menu.py",
-          "lines": 444
+          "lines": 359
         },
         {
           "name": "register_callbacks.py",
-          "lines": 138
+          "lines": 137
         }
       ],
       "hasReadme": false,
@@ -4358,29 +4387,6 @@ window.FIELD_GUIDE_DATA = {
       "hasSkill": true
     },
     {
-      "name": "wide_completion_menu",
-      "tier": "core-package",
-      "description": "Register callbacks for the ``wide_completion_menu`` plugin.",
-      "hooks": [
-        "custom_command",
-        "custom_command_help",
-        "startup"
-      ],
-      "hasCustomCommand": true,
-      "files": [
-        {
-          "name": "__init__.py",
-          "lines": 6
-        },
-        {
-          "name": "register_callbacks.py",
-          "lines": 165
-        }
-      ],
-      "hasReadme": false,
-      "hasSkill": false
-    },
-    {
       "name": "wiggum",
       "tier": "core-package",
       "description": "Register the Wiggum looping slash commands and goal continuation policy.",
@@ -4409,7 +4415,7 @@ window.FIELD_GUIDE_DATA = {
         },
         {
           "name": "judges_menu.py",
-          "lines": 814
+          "lines": 607
         },
         {
           "name": "register_callbacks.py",
@@ -4541,87 +4547,87 @@ window.FIELD_GUIDE_DATA = {
     }
   ],
   "changelog": {
-    "total_commits": 858,
+    "total_commits": 898,
     "releases": [
       {
         "month": "2026-08",
-        "commit_count": 465,
+        "commit_count": 512,
         "commits": [
           {
-            "hash": "b096399d3cabb0adf654b7bc4df4789025f9ef24",
-            "short_hash": "b096399d",
+            "hash": "a81587d135ee1dc09fee0200df5166c4b1c22210",
+            "short_hash": "a81587d1",
+            "subject": "chore: auto-commit pre-update leftovers (2026-08-27 14:11)",
+            "author": "Tyler Granlund",
+            "date": "2026-08-27",
+            "month": "2026-08"
+          },
+          {
+            "hash": "64986da1a6a5e815efc58316bb3a047873a46907",
+            "short_hash": "64986da1",
+            "subject": "fix: remove shell from field guide (double-sidebar collision)",
+            "author": "Tyler Granlund",
+            "date": "2026-08-24",
+            "month": "2026-08"
+          },
+          {
+            "hash": "ec5300264d9013ddfbda17444694a43da03f7869",
+            "short_hash": "ec530026",
             "subject": "feat: left sidebar navigation across all pages, mobile-optimized",
             "author": "Tyler Granlund",
             "date": "2026-08-24",
             "month": "2026-08"
           },
           {
-            "hash": "52a63345570899c3214cd9e197db5fd42e4b7102",
-            "short_hash": "52a63345",
-            "subject": "chore: bump version [ci skip]",
-            "author": "github-actions[bot]",
-            "date": "2026-08-24",
-            "month": "2026-08"
-          },
-          {
-            "hash": "97e8e4cbe7abf5c917469a5168c13c4709113d63",
-            "short_hash": "97e8e4cb",
-            "subject": "chore: bump version [ci skip]",
-            "author": "github-actions[bot]",
-            "date": "2026-08-24",
-            "month": "2026-08"
-          },
-          {
-            "hash": "0b80f27206d10edbea23951952f96d148b82ec22",
-            "short_hash": "0b80f272",
+            "hash": "9854161c4341c6360966b189176bb8ac8ec37f3c",
+            "short_hash": "9854161c",
             "subject": "fix: broken nav/sidebar logo — height:auto collapses in flex",
             "author": "Tyler Granlund",
             "date": "2026-08-24",
             "month": "2026-08"
           },
           {
-            "hash": "4068fe9646612fe594ee16e1a1a4eb62992f2587",
-            "short_hash": "4068fe96",
+            "hash": "94356990d5146b03e38a841740e0e3cfc48e595c",
+            "short_hash": "94356990",
             "subject": "fix(pages-hub): replace fake inline SVG silhouettes with real logo",
             "author": "Tyler Granlund",
             "date": "2026-08-24",
             "month": "2026-08"
           },
           {
-            "hash": "45d1cd068e5fb30e30affde2cb9002abeea282b2",
-            "short_hash": "45d1cd06",
+            "hash": "ba291772a77a80330e9048f10664f775d21b2dec",
+            "short_hash": "ba291772",
             "subject": "fix(pages-hub): stats show real numbers locally (fetch -> script include)",
             "author": "Tyler Granlund",
             "date": "2026-08-24",
             "month": "2026-08"
           },
           {
-            "hash": "fabf162715614809fe1c85ace8609c4a62594c29",
-            "short_hash": "fabf1627",
+            "hash": "f44db0211f7604fe605c2cd0afe7db9f994d9ed3",
+            "short_hash": "f44db021",
             "subject": "fix(pages-hub): QA pass on landing page — 12 issues fixed",
             "author": "Tyler Granlund",
             "date": "2026-08-24",
             "month": "2026-08"
           },
           {
-            "hash": "c529a62169d16efa9216c6371b3ff039e9b48574",
-            "short_hash": "c529a621",
+            "hash": "86b3176d33c961ce1951b07713cd2a0f161907df",
+            "short_hash": "86b3176d",
             "subject": "feat(field-guide): sortable, filterable plugin sidebar",
             "author": "Tyler Granlund",
             "date": "2026-08-24",
             "month": "2026-08"
           },
           {
-            "hash": "1cc260e061c1029411ef34e63c229da3504fac5e",
-            "short_hash": "1cc260e0",
+            "hash": "9a4b1f2612e21098a33d555bc949c8027b0642cf",
+            "short_hash": "9a4b1f26",
             "subject": "feat(field-guide): master-detail plugin ecosystem explorer",
             "author": "Tyler Granlund",
             "date": "2026-08-24",
             "month": "2026-08"
           },
           {
-            "hash": "5c45bddc40e5795a78ad19596d158f13a4f29c26",
-            "short_hash": "5c45bddc",
+            "hash": "667e479e3bc9c036774c1de9443ae3fca7587dfe",
+            "short_hash": "667e479e",
             "subject": "feat(logo): white logo toolkit plugin + white logo for grove theme",
             "author": "Tyler Granlund",
             "date": "2026-08-24",
@@ -4634,40 +4640,40 @@ window.FIELD_GUIDE_DATA = {
         "commit_count": 366,
         "commits": [
           {
-            "hash": "f14e002821786ca9dbde82ec94bfaa5c93f37bb3",
-            "short_hash": "f14e0028",
+            "hash": "b4f311ada55afc5ceae0985fa5417cd3a93de3bb",
+            "short_hash": "b4f311ad",
             "subject": "docs: CPU interactive curriculum web app + puppy mark",
             "author": "Tyler Granlund",
             "date": "2026-07-31",
             "month": "2026-07"
           },
           {
-            "hash": "30157494af84bca64db83510f17da5dfd1157645",
-            "short_hash": "30157494",
+            "hash": "44b00a0e85835724fb1ff20a38905d22d7a5b8a0",
+            "short_hash": "44b00a0e",
             "subject": "docs: deck v3 — Acts IX/X, the internal + external university",
             "author": "Tyler Granlund",
             "date": "2026-07-31",
             "month": "2026-07"
           },
           {
-            "hash": "904ff2bc8143f6f63339ca3964c8c36152dba8bc",
-            "short_hash": "904ff2bc",
+            "hash": "a32f3c32627356465961f3b8e7b059a5e80db711",
+            "short_hash": "a32f3c32",
             "subject": "docs: deck v2.1 — token architecture, component registry, 42-test suite",
             "author": "Tyler Granlund",
             "date": "2026-07-30",
             "month": "2026-07"
           },
           {
-            "hash": "3ca8d4b74a4f319a8a52409717236d77672d7d27",
-            "short_hash": "3ca8d4b7",
+            "hash": "b77a732a3c9a9dcdc5e2c4ba6a8afab8e48bd5aa",
+            "short_hash": "b77a732a",
             "subject": "docs: deck v2 — Cornerstone+ design system, Fireship beat, fact-check pass",
             "author": "Tyler Granlund",
             "date": "2026-07-30",
             "month": "2026-07"
           },
           {
-            "hash": "05887e789ae73e28d1e7808be0cdb739cd1592bb",
-            "short_hash": "05887e78",
+            "hash": "4b186107550b76a4f3435e2e2d7372b1d2f71c23",
+            "short_hash": "4b186107",
             "subject": "docs: The Great Adpuppytion — Code-Puppy University founding deck",
             "author": "Tyler Granlund",
             "date": "2026-07-30",
@@ -4717,7 +4723,7 @@ window.FIELD_GUIDE_DATA = {
       },
       {
         "month": "2026-06",
-        "commit_count": 27,
+        "commit_count": 20,
         "commits": [
           {
             "hash": "b76275aba4b09556f69f0c09dc33c70b922f174d",
@@ -4804,676 +4810,1005 @@ window.FIELD_GUIDE_DATA = {
     ],
     "commits": [
       {
-        "hash": "b096399d3cabb0adf654b7bc4df4789025f9ef24",
-        "short_hash": "b096399d",
+        "hash": "a81587d135ee1dc09fee0200df5166c4b1c22210",
+        "short_hash": "a81587d1",
+        "subject": "chore: auto-commit pre-update leftovers (2026-08-27 14:11)",
+        "author": "Tyler Granlund",
+        "date": "2026-08-27"
+      },
+      {
+        "hash": "64986da1a6a5e815efc58316bb3a047873a46907",
+        "short_hash": "64986da1",
+        "subject": "fix: remove shell from field guide (double-sidebar collision)",
+        "author": "Tyler Granlund",
+        "date": "2026-08-24"
+      },
+      {
+        "hash": "ec5300264d9013ddfbda17444694a43da03f7869",
+        "short_hash": "ec530026",
         "subject": "feat: left sidebar navigation across all pages, mobile-optimized",
         "author": "Tyler Granlund",
         "date": "2026-08-24"
       },
       {
-        "hash": "52a63345570899c3214cd9e197db5fd42e4b7102",
-        "short_hash": "52a63345",
-        "subject": "chore: bump version [ci skip]",
-        "author": "github-actions[bot]",
-        "date": "2026-08-24"
-      },
-      {
-        "hash": "97e8e4cbe7abf5c917469a5168c13c4709113d63",
-        "short_hash": "97e8e4cb",
-        "subject": "chore: bump version [ci skip]",
-        "author": "github-actions[bot]",
-        "date": "2026-08-24"
-      },
-      {
-        "hash": "0b80f27206d10edbea23951952f96d148b82ec22",
-        "short_hash": "0b80f272",
+        "hash": "9854161c4341c6360966b189176bb8ac8ec37f3c",
+        "short_hash": "9854161c",
         "subject": "fix: broken nav/sidebar logo — height:auto collapses in flex",
         "author": "Tyler Granlund",
         "date": "2026-08-24"
       },
       {
-        "hash": "4068fe9646612fe594ee16e1a1a4eb62992f2587",
-        "short_hash": "4068fe96",
+        "hash": "94356990d5146b03e38a841740e0e3cfc48e595c",
+        "short_hash": "94356990",
         "subject": "fix(pages-hub): replace fake inline SVG silhouettes with real logo",
         "author": "Tyler Granlund",
         "date": "2026-08-24"
       },
       {
-        "hash": "45d1cd068e5fb30e30affde2cb9002abeea282b2",
-        "short_hash": "45d1cd06",
+        "hash": "ba291772a77a80330e9048f10664f775d21b2dec",
+        "short_hash": "ba291772",
         "subject": "fix(pages-hub): stats show real numbers locally (fetch -> script include)",
         "author": "Tyler Granlund",
         "date": "2026-08-24"
       },
       {
-        "hash": "fabf162715614809fe1c85ace8609c4a62594c29",
-        "short_hash": "fabf1627",
+        "hash": "f44db0211f7604fe605c2cd0afe7db9f994d9ed3",
+        "short_hash": "f44db021",
         "subject": "fix(pages-hub): QA pass on landing page — 12 issues fixed",
         "author": "Tyler Granlund",
         "date": "2026-08-24"
       },
       {
-        "hash": "c529a62169d16efa9216c6371b3ff039e9b48574",
-        "short_hash": "c529a621",
+        "hash": "86b3176d33c961ce1951b07713cd2a0f161907df",
+        "short_hash": "86b3176d",
         "subject": "feat(field-guide): sortable, filterable plugin sidebar",
         "author": "Tyler Granlund",
         "date": "2026-08-24"
       },
       {
-        "hash": "1cc260e061c1029411ef34e63c229da3504fac5e",
-        "short_hash": "1cc260e0",
+        "hash": "9a4b1f2612e21098a33d555bc949c8027b0642cf",
+        "short_hash": "9a4b1f26",
         "subject": "feat(field-guide): master-detail plugin ecosystem explorer",
         "author": "Tyler Granlund",
         "date": "2026-08-24"
       },
       {
-        "hash": "5c45bddc40e5795a78ad19596d158f13a4f29c26",
-        "short_hash": "5c45bddc",
+        "hash": "667e479e3bc9c036774c1de9443ae3fca7587dfe",
+        "short_hash": "667e479e",
         "subject": "feat(logo): white logo toolkit plugin + white logo for grove theme",
         "author": "Tyler Granlund",
         "date": "2026-08-24"
       },
       {
-        "hash": "69442ba839a7ceee6c1cde6a8878aa3baff5cbd4",
-        "short_hash": "69442ba8",
+        "hash": "9f180871b954d0869b3b92c67f767b9298eabe96",
+        "short_hash": "9f180871",
         "subject": "design: migrate design system to Granlund-Grove forest palette",
         "author": "Tyler Granlund",
         "date": "2026-08-24"
       },
       {
-        "hash": "2e743a8b3165695856553ef62b022637ef53c76b",
-        "short_hash": "2e743a8b",
+        "hash": "2b1837b5759a7902c79f5d0ee5e9cdafd204a427",
+        "short_hash": "2b1837b5",
         "subject": "docs(field-guide+hub): use real Code Puppy logo across nav, favicon & shell",
         "author": "Tyler Granlund",
         "date": "2026-08-24"
       },
       {
-        "hash": "3781b0f23d4749178a0d2efdf81ed626ae1a40ae",
-        "short_hash": "3781b0f2",
+        "hash": "d85c6d8f5eaf4c594fcb5026f4401f6aa26eec50",
+        "short_hash": "d85c6d8f",
         "subject": "docs(field-guide+observatory): regenerate + post-update leftovers (2026-08-24 10:56)",
         "author": "Tyler Granlund",
         "date": "2026-08-24"
       },
       {
-        "hash": "da28917b168c1abbc7b385784bef1079539b31e3",
-        "short_hash": "da28917b",
-        "subject": "chore: bump version [ci skip]",
-        "author": "github-actions[bot]",
-        "date": "2026-08-24"
-      },
-      {
-        "hash": "ac09a2a3f6576151817c5aef87e8d760e2d97c00",
-        "short_hash": "ac09a2a3",
-        "subject": "Interrogate the TUI kill list: two targets down without ports",
-        "author": "mpfaffenberger",
-        "date": "2026-08-24"
-      },
-      {
-        "hash": "e2d4bf653c855c433e1435ce7b29a612b0e865ba",
-        "short_hash": "e2d4bf65",
-        "subject": "chore: bump version [ci skip]",
-        "author": "github-actions[bot]",
-        "date": "2026-08-24"
-      },
-      {
-        "hash": "e294f344139c08ef2ef68bf9f68648a5af4e86a0",
-        "short_hash": "e294f344",
-        "subject": "Charge image tokens by area instead of digest length (#783) (#854)",
-        "author": "Phani Sai Ram M",
-        "date": "2026-08-24"
-      },
-      {
-        "hash": "1f5af5557e11c286b6bc873ad0ed2319db7fdc64",
-        "short_hash": "1f5af555",
-        "subject": "Two-phase master/detail flow on phone-sized terminals; termflow-md >= 0.6.0",
-        "author": "mpfaffenberger",
-        "date": "2026-08-24"
-      },
-      {
-        "hash": "7ff29e370c00e49fc4fc911722def2c2a3418efe",
-        "short_hash": "7ff29e37",
-        "subject": "chore: bump version [ci skip]",
-        "author": "github-actions[bot]",
-        "date": "2026-08-23"
-      },
-      {
-        "hash": "afa26f4b676f3941739f99bfa8e9d76d2cf88658",
-        "short_hash": "afa26f4b",
-        "subject": "One column of right padding in the session browser; termflow-md >= 0.5.1",
-        "author": "mpfaffenberger",
-        "date": "2026-08-23"
-      },
-      {
-        "hash": "63408f87196eb8c6c3eec2d1b151a23a71bc67f6",
-        "short_hash": "63408f87",
-        "subject": "Resize detection for the session browser; termflow-md >= 0.5.0",
-        "author": "mpfaffenberger",
-        "date": "2026-08-23"
-      },
-      {
-        "hash": "183396489fefa5339a0a6cb0d48ccc6ec2f6e93a",
-        "short_hash": "18339648",
-        "subject": "chore: bump version [ci skip]",
-        "author": "github-actions[bot]",
-        "date": "2026-08-23"
-      },
-      {
-        "hash": "7f611645f60556738792ab4189bf941340ddd6b9",
-        "short_hash": "7f611645",
-        "subject": "Drop orphaned /colors and /diff i18n keys",
-        "author": "mpfaffenberger",
-        "date": "2026-08-23"
-      },
-      {
-        "hash": "f59bfa48e9142a5de6794d7529c7ed3b3f3ce03f",
-        "short_hash": "f59bfa48",
-        "subject": "Remove the /colors and /diff TUIs: theming owns those settings",
-        "author": "mpfaffenberger",
-        "date": "2026-08-23"
-      },
-      {
-        "hash": "76f61731f52754c8125d5b72dfd672e7c79ec50c",
-        "short_hash": "76f61731",
-        "subject": "chore: bump version [ci skip]",
-        "author": "github-actions[bot]",
-        "date": "2026-08-23"
-      },
-      {
-        "hash": "d543152e47cb0e5df45b2b84cb41b91603b1475d",
-        "short_hash": "d543152e",
-        "subject": "Lock code-puppy-core-plugins 0.0.18 (session_namer)",
-        "author": "mpfaffenberger",
-        "date": "2026-08-23"
-      },
-      {
-        "hash": "9e5b77ad9b60c548e5de4c1d0a6340a002a9cbcd",
-        "short_hash": "9e5b77ad",
-        "subject": "chore: bump version [ci skip]",
-        "author": "github-actions[bot]",
-        "date": "2026-08-23"
-      },
-      {
-        "hash": "57dc3fc2d9d342ba00a268883690ce3df9e54a8e",
-        "short_hash": "57dc3fc2",
-        "subject": "Two-pane session browser for /resume with AI-naming hook",
-        "author": "mpfaffenberger",
-        "date": "2026-08-23"
-      },
-      {
-        "hash": "90ece51a0f6f0fba9998f953dfe4e5a4561e21dd",
-        "short_hash": "90ece51a",
-        "subject": "Delegate diff rendering wholesale to termflow 0.3.0",
-        "author": "mpfaffenberger",
-        "date": "2026-08-23"
-      },
-      {
-        "hash": "c424bca24d8beb903afca49f7ce1fff88ea569b5",
-        "short_hash": "c424bca2",
-        "subject": "Honor the cursor contract in region teardown/establish and grows",
-        "author": "mpfaffenberger",
-        "date": "2026-08-23"
-      },
-      {
-        "hash": "97df2f5557d19210034b2cff65547e8385ba5e14",
-        "short_hash": "97df2f55",
-        "subject": "Preserve popup slack across same-geometry suspend/resume",
-        "author": "mpfaffenberger",
-        "date": "2026-08-23"
-      },
-      {
-        "hash": "514471134bbe2d615f1355ec405e1997b35d3155",
-        "short_hash": "51447113",
-        "subject": "chore: bump version [ci skip]",
-        "author": "github-actions[bot]",
-        "date": "2026-08-23"
-      },
-      {
-        "hash": "9447c9e93822323f348c77ef64e8a306c5d8f23f",
-        "short_hash": "9447c9e9",
-        "subject": "Speed up REPL autocomplete with threaded TTL caches",
-        "author": "mpfaffenberger",
-        "date": "2026-08-23"
-      },
-      {
-        "hash": "1561e68b9e1f9dac353bcd5296deae5a637813aa",
-        "short_hash": "1561e68b",
+        "hash": "272731f94b620518c64579b6684c45364354d168",
+        "short_hash": "272731f9",
         "subject": "docs(pages): bump version refs to v0.0.768 + rebuild offline wheel",
         "author": "Tyler Granlund",
         "date": "2026-08-22"
       },
       {
-        "hash": "1fb151bc815588404823c8710b5014afdbf136db",
-        "short_hash": "1fb151bc",
+        "hash": "e4da427c9bdad10658de6f8483bd475cb77e28d4",
+        "short_hash": "e4da427c",
         "subject": "docs(field-guide+observatory): regenerate for v0.0.768 update",
         "author": "Tyler Granlund",
         "date": "2026-08-22"
       },
       {
-        "hash": "db98c2292ebb0c43294c9729223a83292714cd54",
-        "short_hash": "db98c229",
+        "hash": "e932efb0690eb9829a28e8ab3be87baeb2e69ed5",
+        "short_hash": "e932efb0",
         "subject": "chore: auto-commit pre-update leftovers (2026-08-22 21:55)",
         "author": "Tyler Granlund",
         "date": "2026-08-22"
       },
       {
-        "hash": "9e319a70735d4508c6add0c9a4e8370bb2b0909b",
-        "short_hash": "9e319a70",
+        "hash": "0f83f0f08bb00d16ec5925a711ae93493c5abf56",
+        "short_hash": "0f83f0f0",
         "subject": "chore: rebuild offline wheel to v0.0.754, untrack NEWLog session log",
         "author": "Tyler Granlund",
         "date": "2026-08-21"
       },
       {
-        "hash": "35d9a632a793919288f217797292bf975dcb70f9",
-        "short_hash": "35d9a632",
+        "hash": "b0e99099828e42690a61ce2bcb0f867ae1b2b1ad",
+        "short_hash": "b0e99099",
         "subject": "docs(pages): switch update_schedule to ad-hoc mode (no launchd)",
         "author": "Tyler Granlund",
         "date": "2026-08-21"
       },
       {
-        "hash": "c7da0e505c41560231b46fbf80e350ffc5e6dc15",
-        "short_hash": "c7da0e50",
+        "hash": "2dc44addc882f2b5921c014b75082232d326a244",
+        "short_hash": "2dc44add",
         "subject": "docs(pages): bump stale version refs to v0.0.754 (architecture.html, SOVEREIGNTY.md, FIELD_GUIDE_MAP snapshot)",
         "author": "Tyler Granlund",
         "date": "2026-08-21"
       },
       {
-        "hash": "3e88357299ecf7558389a6e326fe9bff1b7fa846",
-        "short_hash": "3e883572",
+        "hash": "cb81dedc96203dc96aa8d8df3263316a69f9561a",
+        "short_hash": "cb81dedc",
         "subject": "docs(field-guide+observatory): regenerate + post-update leftovers (2026-08-21 14:43)",
         "author": "Tyler Granlund",
         "date": "2026-08-21"
       },
       {
-        "hash": "59849866b4c0ad803cdd79ff4aa9e9920297d49c",
-        "short_hash": "59849866",
+        "hash": "1722a173a87984088226f02e8f5a5ed9fcdc18fb",
+        "short_hash": "1722a173",
         "subject": "docs: fix stale version refs (v0.0.729/v0.0.709 -> v0.0.751) in architecture.html + SOVEREIGNTY.md",
         "author": "Tyler Granlund",
         "date": "2026-08-20"
       },
       {
-        "hash": "ca2c97b4e4028924efddfdb0072a5acc801faa62",
-        "short_hash": "ca2c97b4",
+        "hash": "1699371f11dc22ae6c609f8013c8f3a0eb93509e",
+        "short_hash": "1699371f",
         "subject": "docs(field-guide+observatory): regenerate + post-update leftovers (2026-08-20 18:47)",
         "author": "Tyler Granlund",
         "date": "2026-08-20"
       },
       {
-        "hash": "6c19c6ff86588fbc53302b6caac110437680c78f",
-        "short_hash": "6c19c6ff",
+        "hash": "9df04567ce0f7dfd83f12a074eb90bac26713258",
+        "short_hash": "9df04567",
         "subject": "chore: auto-commit pre-update leftovers (2026-08-20 18:46)",
         "author": "Tyler Granlund",
         "date": "2026-08-20"
       },
       {
-        "hash": "17d845f4bab68773b75878bd02cca2060479a4b3",
-        "short_hash": "17d845f4",
+        "hash": "0ced3eb7ab2d472f04e010647ec858a1d0b476ce",
+        "short_hash": "0ced3eb7",
         "subject": "docs(field-guide+observatory): regenerate + post-update leftovers (2026-08-20 18:42)",
         "author": "Tyler Granlund",
         "date": "2026-08-20"
       },
       {
-        "hash": "8a2c602ac70e17e4c9c5692db0089012a1de9714",
-        "short_hash": "8a2c602a",
+        "hash": "b511110b202c299afbdd503d0860ca6bd3fa633c",
+        "short_hash": "b511110b",
         "subject": "docs(field-guide+observatory): regenerate + post-update leftovers (2026-08-20 18:36)",
         "author": "Tyler Granlund",
         "date": "2026-08-20"
       },
       {
-        "hash": "3725cd38320f856bbb26f26d9d41894a4cd15a31",
-        "short_hash": "3725cd38",
+        "hash": "eef930c8baf6d1d06effe8afad2f8def3b1299a1",
+        "short_hash": "eef930c8",
         "subject": "chore: auto-commit pre-update leftovers (2026-08-20 18:34)",
         "author": "Tyler Granlund",
         "date": "2026-08-20"
       },
       {
-        "hash": "888bc47d2db10bf8731781ca8b382cea267535c2",
-        "short_hash": "888bc47d",
+        "hash": "2ea1bbacefd46a04dbd6dd8bdd82c4758d1d25fe",
+        "short_hash": "2ea1bbac",
         "subject": "docs(field-guide+observatory): regenerate + post-update leftovers (2026-08-20 18:04)",
         "author": "Tyler Granlund",
         "date": "2026-08-20"
       },
       {
-        "hash": "0e24482bc257fd7c6ce8bd54d22597fe2afe8bd6",
-        "short_hash": "0e24482b",
+        "hash": "57baf81a2c18ac7df02364c2050dbbe8df5fea18",
+        "short_hash": "57baf81a",
         "subject": "chore: auto-commit pre-update leftovers (2026-08-20 18:02)",
         "author": "Tyler Granlund",
         "date": "2026-08-20"
       },
       {
-        "hash": "5c1b1b2fe6b2ce0e12bedc8c7ee0bd98806d5557",
-        "short_hash": "5c1b1b2f",
+        "hash": "adcffc54e071fd88cb61dc0980b18126340fff4d",
+        "short_hash": "adcffc54",
         "subject": "docs(field-guide+observatory): regenerate + post-update leftovers (2026-08-19 07:02)",
         "author": "Tyler Granlund",
         "date": "2026-08-19"
       },
       {
-        "hash": "1dae65b6dbcecc3f3411da4c08bfc63db1aafcf3",
-        "short_hash": "1dae65b6",
+        "hash": "208ca81433090f6a31a2f3c7656ff0f13c265437",
+        "short_hash": "208ca814",
         "subject": "docs(field-guide+observatory): regenerate + post-update leftovers (2026-08-18 20:02)",
         "author": "Tyler Granlund",
         "date": "2026-08-18"
       },
       {
-        "hash": "d965d88fa16d665d818fb73a9f791d79dee5d4b3",
-        "short_hash": "d965d88f",
+        "hash": "7fdd07cb0e3952d148c1f170b0b074fa9bdbf839",
+        "short_hash": "7fdd07cb",
         "subject": "chore: auto-commit pre-update leftovers (2026-08-18 20:00)",
         "author": "Tyler Granlund",
         "date": "2026-08-18"
       },
       {
-        "hash": "d6d8fcb04b67e5fffd32269807670c7a5cbb8414",
-        "short_hash": "d6d8fcb0",
+        "hash": "f0a5bf702c5f932bda26efceba700d8662386e8d",
+        "short_hash": "f0a5bf70",
         "subject": "docs(field-guide+observatory): regenerate + post-update leftovers (2026-08-18 12:01)",
         "author": "Tyler Granlund",
         "date": "2026-08-18"
       },
       {
-        "hash": "c833c6105b0c7d3c13ecea87e5f79a385eb01956",
-        "short_hash": "c833c610",
+        "hash": "148262017c82149fec6acb03011e21bf10caa409",
+        "short_hash": "14826201",
         "subject": "feat(a11y): sweep legacy page bodies to WCAG 2.2 AAA body-text contrast",
         "author": "Tyler Granlund",
         "date": "2026-08-18"
       },
       {
-        "hash": "86ba58d4a13a9f1248e2178fa33e277b5a5ed939",
-        "short_hash": "86ba58d4",
+        "hash": "ab6c2f225ba52cf8dacb2afd5e7b34e9c4a54a95",
+        "short_hash": "ab6c2f22",
         "subject": "docs(field-guide+observatory): regenerate + post-update leftovers (2026-08-18 07:02)",
         "author": "Tyler Granlund",
         "date": "2026-08-18"
       },
       {
-        "hash": "86d22bd1c26c0ebbcda5b2da05a7c81140438e98",
-        "short_hash": "86d22bd1",
+        "hash": "14ddc30d8b247fbd2c19d55d93b3034b37ad8196",
+        "short_hash": "14ddc30d",
         "subject": "docs(field-guide+observatory): regenerate + post-update leftovers (2026-08-17 20:02)",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "35e68cceef8aad37d78c810c0a41d90060316c2f",
-        "short_hash": "35e68cce",
+        "hash": "3585c7cb40fb8b2491f2454666953bdee2b9a115",
+        "short_hash": "3585c7cb",
         "subject": "docs: build log + roadmap (what shipped, where, QA status, forward plan)",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "bf2cdaad4dd4ec3f7925cf354240e4fc34d374ca",
-        "short_hash": "bf2cdaad",
+        "hash": "82cd53d6e3a5e1703a6eeb195f92a3da20e11c5f",
+        "short_hash": "82cd53d6",
         "subject": "feat(ui): sidebar app-shell + reusable popover + design system, WCAG 2.2 AAA",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "efa557d6c01e3ee120e4057ec11f1bd1ff155a5d",
-        "short_hash": "efa557d6",
+        "hash": "2b2596eeb73025d91f05f18b4aa6dd9d037a7029",
+        "short_hash": "2b2596ee",
         "subject": "docs(field-guide+observatory): regenerate + post-update leftovers (2026-08-17 17:21)",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "2366ef314a0717053bd70a0b1af2d2d446dbd4cd",
-        "short_hash": "2366ef31",
+        "hash": "4b251eb3c0c1b4e1faf08087be9f298923e6e0c7",
+        "short_hash": "4b251eb3",
         "subject": "fix(field-guide): flat-doc JSON corruption + responsive [mobile/tablet] layout",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "d1e9899f68f9c899924fa18a3336b50049f06ffa",
-        "short_hash": "d1e9899f",
+        "hash": "b16509bef5933ece25e59cb742e6755f18ea5676",
+        "short_hash": "b16509be",
         "subject": "feat(brand): lucide icon pass + face-only mark, brand watermarks across site",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "45bc91178d3373ec12f65ff7c391f54b1572ba9d",
-        "short_hash": "45bc9117",
+        "hash": "c236019750430fb55de43cd8703660942aee43b0",
+        "short_hash": "c2360197",
         "subject": "feat(arch): wide-screen lane expansion + left-aligned navigation",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "8744d94a47de048ffee3d1d6c71dfe108b759078",
-        "short_hash": "8744d94a",
+        "hash": "873fb0dafc545bcda855f1c8cc60e77c6a8e3792",
+        "short_hash": "873fb0da",
         "subject": "feat(pages): interactive architecture board - L-R flow, drilldown sheets, live inventory",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "55af906388e5ce0c69776f000e34d4fadbbee2b7",
-        "short_hash": "55af9063",
+        "hash": "80c7a8af3b28d0f1a734d2c0e79157a4afe2e5e1",
+        "short_hash": "80c7a8af",
         "subject": "feat(brand): site-wide rebrand to periwinkle/cyan/mint design system",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "8ee558030781959effbe93b3aecac531d3c502a5",
-        "short_hash": "8ee55803",
+        "hash": "faf6cb56007db290913eacdc0d0b44996a8ab613",
+        "short_hash": "faf6cb56",
         "subject": "docs(field-guide+observatory): regenerate + post-update leftovers (2026-08-17 12:00)",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "d66df95825921ff0ad4cab42394efc390e927a59",
-        "short_hash": "d66df958",
+        "hash": "e28dd65cba1e94667ba1b13d5dcbb9b636a6b491",
+        "short_hash": "e28dd65c",
         "subject": "feat(pages): architecture diagram page - self-healing pipeline, Apple-internal-training treatment",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "e92635dbb43df277b0cb01690989e18cc1ebdb3f",
-        "short_hash": "e92635db",
+        "hash": "64c6d83086b67e2fc5fdce1d7b1d2d84594bfa63",
+        "short_hash": "64c6d830",
         "subject": "docs(field-guide+observatory): regenerate + post-update leftovers (2026-08-17 10:48)",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "05dfc5c08e4ddf83cd662e7725cc524db219aaa8",
-        "short_hash": "05dfc5c0",
+        "hash": "8b34f1c1d98ac4931275f4803dede261ada0d5e8",
+        "short_hash": "8b34f1c1",
         "subject": "docs(sovereignty): profile backup now automated; curation cadence + restore path",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "7cd040b5bb947e36d7e6e5eb9fada8eb69eb5bb1",
-        "short_hash": "7cd040b5",
+        "hash": "f055085d218c02df26a6c43a6b5e5a316244fb32",
+        "short_hash": "f055085d",
         "subject": "ci(pages): drop configure-pages (codeload 429 flake) - upload/deploy suffice",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "b4d9d8d2e100677a31fd8656ec3783d8643146a7",
-        "short_hash": "b4d9d8d2",
+        "hash": "4fbbcab9df6867d8b7a5348ab0c75833878652a5",
+        "short_hash": "4fbbcab9",
         "subject": "docs(field-guide+observatory): regenerate + post-update leftovers (2026-08-17 10:29)",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "1181f5c2411400de0973d0565cc8f4990d3e604b",
-        "short_hash": "1181f5c2",
+        "hash": "6369bb86dfd882fc35ca7c66b82c7478979b2255",
+        "short_hash": "6369bb86",
         "subject": "feat(pages): evergreen release observatory auto-regenerated by update pipeline",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "5ba11a2fa0ae95c51d2d3429508c8ac399d61edf",
-        "short_hash": "5ba11a2f",
+        "hash": "a78d6655869bf0f6a24138221ca096aa29b819a1",
+        "short_hash": "a78d6655",
         "subject": "docs(sovereignty): update Pages URL structure for 4-section site",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "182fdd8be6f2f31c2018b1e2e00ca79298e963ca",
-        "short_hash": "182fdd8b",
+        "hash": "a77be42d12e842eea321489f01f749c39a4cf480",
+        "short_hash": "a77be42d",
         "subject": "docs(pages): public site hub + release observatory for t-granlund fork Pages",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "cfa18743b2f5bb750bcb1e66b4433133095c92f5",
-        "short_hash": "cfa18743",
+        "hash": "980367782a0e45bb2ab5f0f59bca8d5a8ac3d31f",
+        "short_hash": "98036778",
         "subject": "docs(field-guide): regenerate + post-update leftovers (2026-08-17 10:01)",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "6db2d8ac04023118230e2578895f73815ab5ec7a",
-        "short_hash": "6db2d8ac",
+        "hash": "cfd29e4bffc34bfb5bdecb034089c7023901fc76",
+        "short_hash": "cfd29e4b",
         "subject": "docs(field-guide): regenerate + post-update leftovers (2026-08-17 09:59)",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "6aaf9f9211a00da7ec1abfbb319525fd0f3e319d",
-        "short_hash": "6aaf9f92",
+        "hash": "56dc269c65d7cbe4023bf0a0ddeec25cf544052d",
+        "short_hash": "56dc269c",
         "subject": "docs(field-guide): regenerate + post-update leftovers (2026-08-17 09:58)",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "b686d449fa238e34d4c813a75c40849ad0ac303c",
-        "short_hash": "b686d449",
+        "hash": "247c8a84b22cc42e6f0a1195b7b4f44144bfa8be",
+        "short_hash": "247c8a84",
         "subject": "chore: auto-commit pre-update leftovers (2026-08-17 09:58)",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "3a2c52b17cfdc46b0b686d3b4aa1f6750826ec1d",
-        "short_hash": "3a2c52b1",
+        "hash": "4b9cc485d40c1bb9895506c670a108d9e13ae82d",
+        "short_hash": "4b9cc485",
         "subject": "docs(sovereignty): reflect auto-sync updater + Pages field guide",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "397ac20cd9c81b77e0f09a783659f08941c5fa99",
-        "short_hash": "397ac20c",
+        "hash": "3cf86d0128675b345203c53fdbfa970dea4949c3",
+        "short_hash": "3cf86d01",
         "subject": "docs(field-guide): regenerate + post-update leftovers (2026-08-17 09:31)",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "5569ade0290af44a298ab44484d9cdc2cdea707c",
-        "short_hash": "5569ade0",
+        "hash": "6b59be2f009e6d3a8dc954eda888ed334bb50f5e",
+        "short_hash": "6b59be2f",
         "subject": "docs(field-guide): regenerate + post-update leftovers (2026-08-17 09:28)",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "5586865d87e4530cf7edbeb027ee92d296477c13",
-        "short_hash": "5586865d",
+        "hash": "1ff5c9c9ad645b0cd99f0eae3fc660eea47eb347",
+        "short_hash": "1ff5c9c9",
         "subject": "docs(field-guide): regenerate + post-update leftovers (2026-08-17 09:28)",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "b2628f1f93f9b5abe171e676eeb96cd20260b0e6",
-        "short_hash": "b2628f1f",
+        "hash": "7e0234af37688c7f270da07c9c2c2dab44146d7f",
+        "short_hash": "7e0234af",
         "subject": "ci(pages): deploy field guide to GitHub Pages on docs changes",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "25e52318c9b5042327b770e77d03b6dfedbd1e68",
-        "short_hash": "25e52318",
+        "hash": "111b7a9d4fca78cbb1bd1503bcc408b573f06186",
+        "short_hash": "111b7a9d",
         "subject": "docs(field-guide): regenerate after upstream sync (2026-08-17)",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "868b6950c90886465c0c16c0d094943b7f71fbd1",
-        "short_hash": "868b6950",
+        "hash": "f1e74c590bdf02898d35f30040903b721c1b5e80",
+        "short_hash": "f1e74c59",
         "subject": "docs: sovereignty playbook, weekly features page, changelog dir",
         "author": "Tyler Granlund",
         "date": "2026-08-17"
       },
       {
-        "hash": "b1ef085f8ee6240fe3aa93a383f9c6451c5e3053",
-        "short_hash": "b1ef085f",
+        "hash": "89d282e5cc32ec871be991ca2222bea6428f51bf",
+        "short_hash": "89d282e5",
         "subject": "docs(field-guide): regenerate with corrected skill labels",
         "author": "Tyler Granlund",
         "date": "2026-08-16"
       },
       {
-        "hash": "864daa6ed3f083a12eac0cbd6023aa2aa297ff6b",
-        "short_hash": "864daa6e",
+        "hash": "e176bf2905a22e43028c56097ddda7d5dc8542a9",
+        "short_hash": "e176bf29",
         "subject": "fix(field-guide): correct skill source labels and sanitize paths",
         "author": "Tyler Granlund",
         "date": "2026-08-16"
       },
       {
-        "hash": "a11bcc1d9ded15537df5f7314e97a69afd212f1d",
-        "short_hash": "a11bcc1d",
+        "hash": "683a8a4b6467fbc150578bfb4078500fd4a1dd52",
+        "short_hash": "683a8a4b",
         "subject": "docs(field-guide): regenerate with user plugins + i_have_adhd; app.js tier badges",
         "author": "Tyler Granlund",
         "date": "2026-08-16"
       },
       {
-        "hash": "97d5f465484bddd566033beb44633f8898bdc385",
-        "short_hash": "97d5f465",
+        "hash": "b54e1c48a78d205f99dd4676cb4db2a140f8cfae",
+        "short_hash": "b54e1c48",
         "subject": "docs(field-guide): regenerate after core-plugins package scan support",
         "author": "Tyler Granlund",
         "date": "2026-08-16"
       },
       {
-        "hash": "bd60242e45eab1f943b728f8d5c00d4cd3760141",
-        "short_hash": "bd60242e",
+        "hash": "0f503636f6ba733a09cb9d3f434f70f6e16da96b",
+        "short_hash": "0f503636",
         "subject": "feat(field-guide): scan installed core-plugins package + user plugins",
         "author": "Tyler Granlund",
         "date": "2026-08-16"
       },
       {
-        "hash": "f14e002821786ca9dbde82ec94bfaa5c93f37bb3",
-        "short_hash": "f14e0028",
+        "hash": "b4f311ada55afc5ceae0985fa5417cd3a93de3bb",
+        "short_hash": "b4f311ad",
         "subject": "docs: CPU interactive curriculum web app + puppy mark",
         "author": "Tyler Granlund",
         "date": "2026-07-31"
       },
       {
-        "hash": "30157494af84bca64db83510f17da5dfd1157645",
-        "short_hash": "30157494",
+        "hash": "44b00a0e85835724fb1ff20a38905d22d7a5b8a0",
+        "short_hash": "44b00a0e",
         "subject": "docs: deck v3 — Acts IX/X, the internal + external university",
         "author": "Tyler Granlund",
         "date": "2026-07-31"
       },
       {
-        "hash": "904ff2bc8143f6f63339ca3964c8c36152dba8bc",
-        "short_hash": "904ff2bc",
+        "hash": "a32f3c32627356465961f3b8e7b059a5e80db711",
+        "short_hash": "a32f3c32",
         "subject": "docs: deck v2.1 — token architecture, component registry, 42-test suite",
         "author": "Tyler Granlund",
         "date": "2026-07-30"
       },
       {
-        "hash": "3ca8d4b74a4f319a8a52409717236d77672d7d27",
-        "short_hash": "3ca8d4b7",
+        "hash": "b77a732a3c9a9dcdc5e2c4ba6a8afab8e48bd5aa",
+        "short_hash": "b77a732a",
         "subject": "docs: deck v2 — Cornerstone+ design system, Fireship beat, fact-check pass",
         "author": "Tyler Granlund",
         "date": "2026-07-30"
       },
       {
-        "hash": "05887e789ae73e28d1e7808be0cdb739cd1592bb",
-        "short_hash": "05887e78",
+        "hash": "4b186107550b76a4f3435e2e2d7372b1d2f71c23",
+        "short_hash": "4b186107",
         "subject": "docs: The Great Adpuppytion — Code-Puppy University founding deck",
         "author": "Tyler Granlund",
         "date": "2026-07-30"
       },
       {
-        "hash": "ad8b0ef0fc5fc3d7420a9d0d7f37994fcd0a9410",
-        "short_hash": "ad8b0ef0",
+        "hash": "de7563854c79f8c0a9bd8f4bd71e03d4e349f1a1",
+        "short_hash": "de756385",
         "subject": "feat(field-guide): recreate changelog.py source from pycache analysis",
         "author": "Tyler Granlund",
         "date": "2026-08-13"
       },
       {
-        "hash": "cc4c01468371505b68b13b52b909b760733c279c",
-        "short_hash": "cc4c0146",
+        "hash": "f37d36f482da59b3c18e7fc69f8215156facc0a9",
+        "short_hash": "f37d36f4",
         "subject": "feat(field-guide): deeper plugin/tool extraction + skills + SDLC lifecycle",
         "author": "Tyler Granlund",
         "date": "2026-08-13"
       },
       {
-        "hash": "35f6c89260e1c05f1c3c156dfae3e1c0edb9faed",
-        "short_hash": "35f6c892",
+        "hash": "66cb67de31fb97bff602f15c829fc65cc98a725d",
+        "short_hash": "66cb67de",
         "subject": "fix(field-guide): flat HTML no longer wipes DATA.plugins via JS escape reinterpretation",
         "author": "Tyler Granlund",
         "date": "2026-08-10"
+      },
+      {
+        "hash": "4c8b409a0899350abbe5c228cfccb0ff68b95828",
+        "short_hash": "4c8b409a",
+        "subject": "chore: bump version [ci skip]",
+        "author": "github-actions[bot]",
+        "date": "2026-08-27"
+      },
+      {
+        "hash": "904c977a0fe6ccaf2697c4b818f2c06ea9840ea7",
+        "short_hash": "904c977a",
+        "subject": "Fix Windows lock ordering and config decode fallback (#874)",
+        "author": "Bill Kramme",
+        "date": "2026-08-27"
+      },
+      {
+        "hash": "efa3ac7a36de6feca77d50535b183692ecd8c072",
+        "short_hash": "efa3ac7a",
+        "subject": "chore: bump version [ci skip]",
+        "author": "github-actions[bot]",
+        "date": "2026-08-27"
+      },
+      {
+        "hash": "c29dd56cacc0ba73c5967f35b6c17e2594c0d82a",
+        "short_hash": "c29dd56c",
+        "subject": "Merge pull request #870 from thomwebb/fix/compact-session-persistence",
+        "author": "Mike Pfaffenberger",
+        "date": "2026-08-27"
+      },
+      {
+        "hash": "1bfe221d2f7aa8aba32f30b050c2a42b3c073c39",
+        "short_hash": "1bfe221d",
+        "subject": "chore: bump version [ci skip]",
+        "author": "github-actions[bot]",
+        "date": "2026-08-27"
+      },
+      {
+        "hash": "d93da2cae99511006c0c517a70911b0966696481",
+        "short_hash": "d93da2ca",
+        "subject": "Fix Windows backspace repeat hitching",
+        "author": "mpfaffenberger",
+        "date": "2026-08-27"
+      },
+      {
+        "hash": "a4be31454abbcf4e78c7bc233fbce949211ab864",
+        "short_hash": "a4be3145",
+        "subject": "Require compaction session persistence",
+        "author": "TJ Webb",
+        "date": "2026-08-26"
+      },
+      {
+        "hash": "4639688f1cb6e5f12c9c19dcefc1773c6e61aa97",
+        "short_hash": "4639688f",
+        "subject": "Persist history after manual compaction",
+        "author": "TJ Webb",
+        "date": "2026-08-26"
+      },
+      {
+        "hash": "f7f930344c5ab126fff2901da166b0444d4dc290",
+        "short_hash": "f7f93034",
+        "subject": "chore: bump version [ci skip]",
+        "author": "github-actions[bot]",
+        "date": "2026-08-26"
+      },
+      {
+        "hash": "62f6dc1185abb2585c93aa0d6c615f9eca37f42c",
+        "short_hash": "62f6dc11",
+        "subject": "Remove minimum splash screen duration",
+        "author": "Mike Pfaffenberger",
+        "date": "2026-08-26"
+      },
+      {
+        "hash": "463c892932018f26561fcfd7cc8ff320bc5322d6",
+        "short_hash": "463c8929",
+        "subject": "Migrate ChatGPT Codex client to httpx2",
+        "author": "Mike Pfaffenberger",
+        "date": "2026-08-26"
+      },
+      {
+        "hash": "a5c34858a4f49d7c7ea877fac9169921dbe73dfe",
+        "short_hash": "a5c34858",
+        "subject": "chore: bump version [ci skip]",
+        "author": "github-actions[bot]",
+        "date": "2026-08-26"
+      },
+      {
+        "hash": "217cbbd833b2d9027ec30f8b18cc20c33ab41d9c",
+        "short_hash": "217cbbd8",
+        "subject": "Support per-agent model setting overrides (#812)",
+        "author": "TJ",
+        "date": "2026-08-26"
+      },
+      {
+        "hash": "14b655c95876fa0b205731f9018e8bd909c1097f",
+        "short_hash": "14b655c9",
+        "subject": "Merge pull request #853 from jmdots/fix/reasoning-api-746",
+        "author": "Mike Pfaffenberger",
+        "date": "2026-08-26"
+      },
+      {
+        "hash": "b21b47197b5c7f69d1dc49bf55471c637ee095bc",
+        "short_hash": "b21b4719",
+        "subject": "Review follow-ups: reasoning config by underlying name, merge streamed output items",
+        "author": "mpfaffenberger",
+        "date": "2026-08-26"
+      },
+      {
+        "hash": "bde6d89fa7cf8ecca659cc1ec4ee241d089b1499",
+        "short_hash": "bde6d89f",
+        "subject": "chore: bump version [ci skip]",
+        "author": "github-actions[bot]",
+        "date": "2026-08-26"
+      },
+      {
+        "hash": "481e8b506f68a2f6b432b817e97b8bcf2f3333f6",
+        "short_hash": "481e8b50",
+        "subject": "Conviction kit for wedged cancellations: SIGUSR2 stack dumps + stress repro",
+        "author": "Mike Pfaffenberger",
+        "date": "2026-08-26"
+      },
+      {
+        "hash": "84d99a6d93fab30456ec7f032d706ccfdfd7f05b",
+        "short_hash": "84d99a6d",
+        "subject": "Bump pydantic-ai to 2.35.0; ride the anthropic 1.0 httpx2 migration",
+        "author": "Mike Pfaffenberger",
+        "date": "2026-08-26"
+      },
+      {
+        "hash": "025f1bd00a05878469596f7dea6ff82a4001420d",
+        "short_hash": "025f1bd0",
+        "subject": "Zombie cancellations can no longer trap the REPL or the quit paths",
+        "author": "Mike Pfaffenberger",
+        "date": "2026-08-26"
+      },
+      {
+        "hash": "9dca5b151589e0ebd73b6d892ba319e386dc560e",
+        "short_hash": "9dca5b15",
+        "subject": "chore: bump version [ci skip]",
+        "author": "github-actions[bot]",
+        "date": "2026-08-25"
+      },
+      {
+        "hash": "c1c4d352714688a9216068e7286c43754ae6fae6",
+        "short_hash": "c1c4d352",
+        "subject": "Merge pull request #867 from dsfaccini/fix/mcp-registry-sync-plugin-dir-writes",
+        "author": "David SF",
+        "date": "2026-08-25"
+      },
+      {
+        "hash": "289f90cdd0d2bf1e514b023fd4df4fa936a60d04",
+        "short_hash": "289f90cd",
+        "subject": "Harden plugin-path guard and skip MCP registry drops on config load failure",
+        "author": "David Sanchez",
+        "date": "2026-08-25"
+      },
+      {
+        "hash": "e4950cca223dc55fa39a70b5df7fc2d07317eac8",
+        "short_hash": "e4950cca",
+        "subject": "Keep MCP registry, user plugins, and session unpickle aligned with load rules",
+        "author": "David Sanchez",
+        "date": "2026-08-25"
+      },
+      {
+        "hash": "fbdfe156eb3ab7196d8796967b5be10ce0a51512",
+        "short_hash": "fbdfe156",
+        "subject": "chore: bump version [ci skip]",
+        "author": "github-actions[bot]",
+        "date": "2026-08-24"
+      },
+      {
+        "hash": "e855f97a97ae67b771337798afda829f71dce154",
+        "short_hash": "e855f97a",
+        "subject": "Pin code-puppy-core-plugins>=0.0.27 for the openrouter_oauth plugin",
+        "author": "mpfaffenberger",
+        "date": "2026-08-24"
+      },
+      {
+        "hash": "47f175401e6544333b033701a896f6868c4c64f5",
+        "short_hash": "47f17540",
+        "subject": "Add provider_credential_flow hook: plugins get first crack at missing /add_model credentials",
+        "author": "mpfaffenberger",
+        "date": "2026-08-24"
+      },
+      {
+        "hash": "7bf786bb3267b74ea54b960fd932e3e81042dd00",
+        "short_hash": "7bf786bb",
+        "subject": "chore: bump version [ci skip]",
+        "author": "github-actions[bot]",
+        "date": "2026-08-24"
+      },
+      {
+        "hash": "38849ba69443a421aee26d736c2bd3a865b4055e",
+        "short_hash": "38849ba6",
+        "subject": "Total prompt_toolkit extermination: delete the shim, purge the venv",
+        "author": "mpfaffenberger",
+        "date": "2026-08-24"
+      },
+      {
+        "hash": "7868d6ab74b7b7218bf3ed62923852ca08170cca",
+        "short_hash": "7868d6ab",
+        "subject": "chore: bump version [ci skip]",
+        "author": "github-actions[bot]",
+        "date": "2026-08-24"
+      },
+      {
+        "hash": "83e17fbc49fb87d951fedd9de3035f2c003fd923",
+        "short_hash": "83e17fbc",
+        "subject": "Slay the boss: retire the classic prompt_toolkit input path",
+        "author": "mpfaffenberger",
+        "date": "2026-08-24"
+      },
+      {
+        "hash": "e8bf428be0a07a1e523cbca08046f05a5d04bb02",
+        "short_hash": "e8bf428b",
+        "subject": "chore: bump version [ci skip]",
+        "author": "github-actions[bot]",
+        "date": "2026-08-24"
+      },
+      {
+        "hash": "9e3591e2ec5428f7f256628117e57449176c2115",
+        "short_hash": "9e3591e2",
+        "subject": "Port MCP custom-server form and install menu to termflow",
+        "author": "mpfaffenberger",
+        "date": "2026-08-24"
+      },
+      {
+        "hash": "9362ffba2a0e9ef42a2b8381b451248f1ec0e059",
+        "short_hash": "9362ffba",
+        "subject": "chore: bump version [ci skip]",
+        "author": "github-actions[bot]",
+        "date": "2026-08-24"
+      },
+      {
+        "hash": "972626bb15ee7e01c1f1b7bbc043489f879fe368",
+        "short_hash": "972626bb",
+        "subject": "Port /set picker and UC tool browser to termflow",
+        "author": "mpfaffenberger",
+        "date": "2026-08-24"
+      },
+      {
+        "hash": "6918c6342965c42b93d9372bbfc51b6eff492647",
+        "short_hash": "6918c634",
+        "subject": "chore: bump version [ci skip]",
+        "author": "github-actions[bot]",
+        "date": "2026-08-24"
+      },
+      {
+        "hash": "bb7b52affb7cb154fa673bc3b3283da48497a74d",
+        "short_hash": "bb7b52af",
+        "subject": "Port onboarding wizard to termflow",
+        "author": "mpfaffenberger",
+        "date": "2026-08-24"
+      },
+      {
+        "hash": "50fbf1275008dad0c4d233fc0ed0d5ae1e029ee6",
+        "short_hash": "50fbf127",
+        "subject": "Help overlay on termflow Pager; pin termflow-md>=0.8.0",
+        "author": "mpfaffenberger",
+        "date": "2026-08-24"
+      },
+      {
+        "hash": "9285b2316270a9a3f909669f503d5332b232e4d8",
+        "short_hash": "9285b231",
+        "subject": "chore: bump version [ci skip]",
+        "author": "github-actions[bot]",
+        "date": "2026-08-24"
+      },
+      {
+        "hash": "81f8a7da50334b40b59c5a60fe38299823fbec62",
+        "short_hash": "81f8a7da",
+        "subject": "Port ask_user_question TUI to termflow",
+        "author": "mpfaffenberger",
+        "date": "2026-08-24"
+      },
+      {
+        "hash": "5100fd6122f18039af12ad93c60246afa46be930",
+        "short_hash": "5100fd61",
+        "subject": "chore: bump version [ci skip]",
+        "author": "github-actions[bot]",
+        "date": "2026-08-24"
+      },
+      {
+        "hash": "d4732901ed9852a16d133d86f5c5e504d6143c87",
+        "short_hash": "d4732901",
+        "subject": "Murder the twins: add_model_menu and model_settings_menu on termflow",
+        "author": "mpfaffenberger",
+        "date": "2026-08-24"
+      },
+      {
+        "hash": "361e95ae2122a32fa16e7d086f6dc3d6e168b68e",
+        "short_hash": "361e95ae",
+        "subject": "chore: bump version [ci skip]",
+        "author": "github-actions[bot]",
+        "date": "2026-08-24"
+      },
+      {
+        "hash": "5ce787daca5ed824cf327a42fd328d381b3563fd",
+        "short_hash": "5ce787da",
+        "subject": "Merge leading system messages on strict OpenAI-compatible backends (#860)",
+        "author": "TJ",
+        "date": "2026-08-24"
+      },
+      {
+        "hash": "980d66d5b1d744d03b9fe7882a0a35c16408fc47",
+        "short_hash": "980d66d5",
+        "subject": "chore: bump version [ci skip]",
+        "author": "github-actions[bot]",
+        "date": "2026-08-24"
+      },
+      {
+        "hash": "71ffed158e64d5a1f82b2b84bc7172faaaa5b78c",
+        "short_hash": "71ffed15",
+        "subject": "Interrogate the TUI kill list: two targets down without ports",
+        "author": "mpfaffenberger",
+        "date": "2026-08-24"
+      },
+      {
+        "hash": "e697252a1c72606463fb3b8ca0e2046d61308464",
+        "short_hash": "e697252a",
+        "subject": "chore: bump version [ci skip]",
+        "author": "github-actions[bot]",
+        "date": "2026-08-24"
+      },
+      {
+        "hash": "4d269ed2491f8b829e3885e8788cc7d6bdb53bda",
+        "short_hash": "4d269ed2",
+        "subject": "Charge image tokens by area instead of digest length (#783) (#854)",
+        "author": "Phani Sai Ram M",
+        "date": "2026-08-24"
+      },
+      {
+        "hash": "73f167c84a2ae7ae193a71f1d36016037b442731",
+        "short_hash": "73f167c8",
+        "subject": "Two-phase master/detail flow on phone-sized terminals; termflow-md >= 0.6.0",
+        "author": "mpfaffenberger",
+        "date": "2026-08-24"
+      },
+      {
+        "hash": "956418782d7aee9cb3cba6bc7d7b471c038f4a41",
+        "short_hash": "95641878",
+        "subject": "chore: bump version [ci skip]",
+        "author": "github-actions[bot]",
+        "date": "2026-08-23"
+      },
+      {
+        "hash": "017f8d4b26833c546afde1d3860613e2c33446f5",
+        "short_hash": "017f8d4b",
+        "subject": "One column of right padding in the session browser; termflow-md >= 0.5.1",
+        "author": "mpfaffenberger",
+        "date": "2026-08-23"
+      },
+      {
+        "hash": "d25b480b53c9a0ca8471165a7ef7f736772b74f3",
+        "short_hash": "d25b480b",
+        "subject": "Resize detection for the session browser; termflow-md >= 0.5.0",
+        "author": "mpfaffenberger",
+        "date": "2026-08-23"
+      },
+      {
+        "hash": "226b05b6fdb7a5000ef531645c3cb47c5d1838ab",
+        "short_hash": "226b05b6",
+        "subject": "chore: bump version [ci skip]",
+        "author": "github-actions[bot]",
+        "date": "2026-08-23"
+      },
+      {
+        "hash": "a6e21d6d0c447c4688c093729d9f6c1335997bde",
+        "short_hash": "a6e21d6d",
+        "subject": "Drop orphaned /colors and /diff i18n keys",
+        "author": "mpfaffenberger",
+        "date": "2026-08-23"
+      },
+      {
+        "hash": "9eaf5a59ba872e05bd562946569f37946364a2d8",
+        "short_hash": "9eaf5a59",
+        "subject": "Remove the /colors and /diff TUIs: theming owns those settings",
+        "author": "mpfaffenberger",
+        "date": "2026-08-23"
+      },
+      {
+        "hash": "d1b5132e3cefdca5739cf06b32f3ffc106596365",
+        "short_hash": "d1b5132e",
+        "subject": "chore: bump version [ci skip]",
+        "author": "github-actions[bot]",
+        "date": "2026-08-23"
+      },
+      {
+        "hash": "dce98fb08da32c24c05da0f0fd37251d265d08ca",
+        "short_hash": "dce98fb0",
+        "subject": "Lock code-puppy-core-plugins 0.0.18 (session_namer)",
+        "author": "mpfaffenberger",
+        "date": "2026-08-23"
+      },
+      {
+        "hash": "694006b98f01669ea445ef253942baf9f7c1bc09",
+        "short_hash": "694006b9",
+        "subject": "chore: bump version [ci skip]",
+        "author": "github-actions[bot]",
+        "date": "2026-08-23"
+      },
+      {
+        "hash": "600334647a672ba0eb00ac722fe3cc1d43517e46",
+        "short_hash": "60033464",
+        "subject": "Two-pane session browser for /resume with AI-naming hook",
+        "author": "mpfaffenberger",
+        "date": "2026-08-23"
+      },
+      {
+        "hash": "b19a0bf556e8fba54a6fcfce3f2ac9ec3394b78e",
+        "short_hash": "b19a0bf5",
+        "subject": "Delegate diff rendering wholesale to termflow 0.3.0",
+        "author": "mpfaffenberger",
+        "date": "2026-08-23"
+      },
+      {
+        "hash": "4e2ce2775c4aba97f5e6a5beac7d2a48a2b116e4",
+        "short_hash": "4e2ce277",
+        "subject": "Honor the cursor contract in region teardown/establish and grows",
+        "author": "mpfaffenberger",
+        "date": "2026-08-23"
+      },
+      {
+        "hash": "3c0a48e736c0f606d5947b0ecdf5e13b34ad6892",
+        "short_hash": "3c0a48e7",
+        "subject": "Preserve popup slack across same-geometry suspend/resume",
+        "author": "mpfaffenberger",
+        "date": "2026-08-23"
+      },
+      {
+        "hash": "688d68090395a33f4f5b8e7175333c2d197127af",
+        "short_hash": "688d6809",
+        "subject": "chore: bump version [ci skip]",
+        "author": "github-actions[bot]",
+        "date": "2026-08-23"
+      },
+      {
+        "hash": "0733da003de955816bf8a15e3112ed1f2c0cfecf",
+        "short_hash": "0733da00",
+        "subject": "Speed up REPL autocomplete with threaded TTL caches",
+        "author": "mpfaffenberger",
+        "date": "2026-08-23"
+      },
+      {
+        "hash": "7e3e2e0aa7458cdc1a9f846a893146d8e3f2a09e",
+        "short_hash": "7e3e2e0a",
+        "subject": "fix: enable encrypted reasoning replay",
+        "author": "Joshua M. Dotson",
+        "date": "2026-08-22"
+      },
+      {
+        "hash": "8e81c40ce60ec941c39339ea13ae3148dba96af7",
+        "short_hash": "8e81c40c",
+        "subject": "fix: retain signed reasoning for tool continuations",
+        "author": "Joshua M. Dotson",
+        "date": "2026-08-22"
+      },
+      {
+        "hash": "a9d69481d5e99621f5c280c2a0d7380afd6ed920",
+        "short_hash": "a9d69481",
+        "subject": "fix: preserve streamed reasoning output",
+        "author": "Joshua M. Dotson",
+        "date": "2026-08-22"
+      },
+      {
+        "hash": "7d7ec6ce39acd9f4959b68bcc9a2034ea6c8716d",
+        "short_hash": "7d7ec6ce",
+        "subject": "fix: support GPT-5.6 Responses reasoning",
+        "author": "Joshua M. Dotson",
+        "date": "2026-08-22"
       },
       {
         "hash": "ea0a9b7333ca9acb15ea612a7e192886d9bfdbff",
@@ -10759,62 +11094,13 @@ window.FIELD_GUIDE_DATA = {
         "subject": "feat(plugins): rich /plugins detail panel + POSIX path display convention (#510)",
         "author": "Aaron Weegens",
         "date": "2026-06-27"
-      },
-      {
-        "hash": "5b99c16dc253e23756a35caf9252e7ad61f78823",
-        "short_hash": "5b99c16d",
-        "subject": "chore: bump version [ci skip]",
-        "author": "github-actions[bot]",
-        "date": "2026-06-26"
-      },
-      {
-        "hash": "20b0e3c040c1725b3f6a9b21a8afe79ef45e49c7",
-        "short_hash": "20b0e3c0",
-        "subject": "Merge pull request #507 from AndrewTilson/awtilso/unified-autosave-headless-resume",
-        "author": "Demise",
-        "date": "2026-06-26"
-      },
-      {
-        "hash": "7172f07bd13c7060d790a2eab61c7bc558829cba",
-        "short_hash": "7172f07b",
-        "subject": "feat(session): unified autosave store + headless `-r NAME` save-back",
-        "author": "Andrew Tilson - awtilso",
-        "date": "2026-06-26"
-      },
-      {
-        "hash": "186f7bb2e40d21ae096b2e6cab133e27c6c0c3b0",
-        "short_hash": "186f7bb2",
-        "subject": "chore: bump version [ci skip]",
-        "author": "github-actions[bot]",
-        "date": "2026-06-25"
-      },
-      {
-        "hash": "0f8bbfca35f7be124cb722c7b1ee5b5723ba3990",
-        "short_hash": "0f8bbfca",
-        "subject": "PUP-346: Add / search keybinding to /resume session picker (#500)",
-        "author": "Andrew Tilson",
-        "date": "2026-06-25"
-      },
-      {
-        "hash": "66bacb8de4c985a463bc27caa8af327e36b4bfd9",
-        "short_hash": "66bacb8d",
-        "subject": "feat: Implement `/undo` command and hook file modifications to UndoManager (#502)",
-        "author": "britz",
-        "date": "2026-06-25"
-      },
-      {
-        "hash": "87c2e6323be6f7ed68cf6121df03379261a1e3aa",
-        "short_hash": "87c2e632",
-        "subject": "feat(commands): scaffold /plan planning-only slash command (#503)",
-        "author": "britz",
-        "date": "2026-06-25"
       }
     ]
   },
   "excerpts": {
-    "agentCreatorPrompt": "\"\"\"Agent Creator - helps users create new JSON agents.\"\"\"\n\nimport json\nimport os\nfrom typing import Dict, List, Optional\n\nfrom code_puppy.callbacks import register_callback\nfrom code_puppy.config import get_user_agents_directory\nfrom code_puppy.model_factory import ModelFactory\nfrom code_puppy.tools import get_available_tool_names\n\nfrom .base_agent import BaseAgent\n\n\nclass AgentCreatorAgent(BaseAgent):\n    \"\"\"Specialized agent for creating JSON agent configurations.\"\"\"\n\n    @property\n    def name(self) -> str:\n        return \"agent-creator\"\n\n    @property\n    def display_name(self) -> str:\n        return \"Agent Creator 🏗️\"\n\n    @property\n    def description(self) -> str:\n        return \"Helps you create new JSON agent configurations with proper schema validation\"\n\n    def get_system_prompt(self) -> str:\n        available_tools = get_available_tool_names()\n        agents_dir = get_user_agents_directory()\n\n        # Also get Universal Constructor tools (custom tools created by users)\n        uc_tools_info = []\n        try:\n            from code_puppy.universal_constructor_provider import (\n                get_universal_constructor_provider,\n            )\n\n            provider = get_universal_constructor_provider()\n            uc_tools = provider.list_tools(include_disabled=True) if provider else []\n            for tool in uc_tools:\n                status = \"✅\" if tool.meta.enabled else \"❌\"\n                uc_tools_info.append(\n                    f\"- **{tool.full_name}** {status}: {tool.meta.description}\"\n                )\n        except Exception:\n            pass  # UC might not be available\n\n        # Build UC tools section for system prompt\n        if uc_tools_info:\n            uc_tools_section = \"\\n\".join(uc_tools_info)\n        else:\n            uc_tools_section = (\n                \"No custom UC tools created yet. Use Helios to create some!\"\n            )\n\n        # Load available models dynamically\n        models_config = ModelFactory.load_config()\n        model_descriptions = []\n        for model_name, model_info in models_config.items():\n            model_type = model_info.get(\"type\", \"Unknown\")\n            context_length = model_info.get(\"context_length\", \"Unknown\")\n            model_descriptions.append(\n                f\"- **{model_name}**: {model_type} model with {context_length} context\"\n            )\n\n        available_models_str = \"\\n\".join(model_descriptions)\n\n        return f\"\"\"You are the Agent Creator! 🏗️ Your mission is to help users create awesome JSON agent files through an interactive process.\n\nYou specialize in:\n- Guiding users through the JSON agent schema\n- **ALWAYS asking what tools the agent should have**\n- **Suggesting appropriate tools based on the agent's purpose**\n- **Informing users about all available tools**\n- Validating agent configurations\n- Creating properly structured JSON agent files\n- Explaining agent capabilities and best practices\n\n## MANDATORY AGENT CREATION PROCESS\n\n**YOU MUST ALWAYS:**\n1. Ask the user what the agent should be able to do\n2. Based on their answer, suggest specific tools that would be helpful\n3. List ALL available tools so they can see other options\n4. Ask them to confirm their tool selection\n5. Explain why each selected tool is useful for their agent\n6. Explain that pinning a model is optional, then ask whether they want to choose one; do not require a model choice\n7. Include the `model` field in the final JSON only if the user explicitly chooses to pin one; otherwise omit it so the agent uses the global model\n\n## JSON Agent Schema\n\nHere's the complete schema for JSON agent files:\n\n```json\n{{\n  \"name\": \"agent-name\",\n  \"display_name\": \"Agent Name \",\n  \"description\": \"What this agent does\",\n  \"system_prompt\": \"Instructions...\",\n  \"tools\": [\"tool1\", \"tool2\"],\n  \"user_prompt\": \"How can I help?\",\n  \"tools_config\": {{\n    \"timeout\": 60\n  }}\n}}\n```\n\nThe `model` property is optional. Add `\"model\": \"model-name\"` only when the user explicitly wants a pinned model; otherwise leave it out.\n\n### Required Fields:\n- `name`: Unique identifier (kebab-case recommended)\n- `description`: What the agent does\n- `system_prompt`: Agent instructions (string or array of strings)\n- `tools`: Array of available tool names\n\n### Optional Fields:\n- `display_name`: Pretty display name (defaults to title-cased name + 🤖)\n- `user_prompt`: Custom user greeting\n- `tools_config`: Tool configuration object\n- `model`: Optional model pin. Omit this field to use the global model; users do not need to pin a model\n\n## ALL AVAILABLE TOOLS:\n{\", \".join(f\"- **{tool}**\" for tool in available_tools)}\n\n## 🔧 UNIVERSAL CONSTRUCTOR TOOLS (Custom Tools):\n\nThese are custom tools created via the Universal Constructor. They can be bound to agents just like built-in tools!\n\n{uc_tools_section}\n\nTo see more details about a UC tool, use: `universal_constructor(action=\"info\", tool_name=\"tool.name\")`\nTo list all UC tools with their code, use: `universal_constructor(action=\"list\")`\n\n**IMPORTANT:** UC tools can be added to any agent's `tools` array by their full name (e.g., \"api.weather\").\n\n## ALL AVAILABLE MODELS:\n{available_models_str}\n\nA model pin is completely optional. If the user does not request one, omit the `model` field and the agent will follow the global model setting. Do not pressure users to choose or pin a model.\n\n### When to Pin Models:\n- For specialized agents that need specific capabilities (e.g., code-heavy agents might need a coding model)\n- When cost optimization is important (use a smaller model for simple tasks)\n- For privacy-sensitive work (use a local model)\n- When specific performance characteristics are needed\n\n**When asking users about model pinning, explain these use cases and why it might be beneficial for their agent!**\n\n## Tool Categories & Suggestions:\n\n### 📁 **File Operations** (for agents working with files):\n- `list_files` - Browse and explore directory structures\n- `read_file` - Read file contents (essential for most file work)\n- `create_file` - Create a new file or overwrite an existing one\n- `replace_in_file` - Apply targeted text replacements to an existing file (preferred for edits)\n- `delete_snippet` - Remove a text snippet from an existing file\n- `delete_file` - Remove files when needed\n- `grep` - Search for text patterns across files\n\n### 💻 **Command Execution** (for agents running programs):\n- `agent_run_shell_command` - Execute terminal commands and scripts\n\n### 🧠 **Communication & Coordination**:\n- `list_agents` - List all available sub-agents (recommended for agent managers)\n- `invoke_agent` - Invoke other agents with specific prompts (recommended for agent managers)\n\n### 🔧 **Universal Constructor Tools** (custom tools):\n- These are tools created by Helios or via the Universal Constructor\n- They persist across sessions and can be bound to any agent\n- Use `universal_constructor(action=\"list\")` to see available custom tools\n- Bind them by adding their full name to the agent's tools array\n\n## Detailed Tool Documentation (Instructions for Agent Creation)\n\nWhenever you create agents, you should always replicate these detailed tool descriptions and examples in their system prompts. This ensures consistency and proper tool usage across all agents.\n - Side note - these tool definitions are also available to you! So use them!\n\n### File Operations Documentation:\n\n#### `list_files(directory=\".\", recursive=True)`\nALWAYS use this to explore directories before trying to read/modify files\n\n#### `read_file(file_path: str, start_line: int | None = None, num_lines: int | None = None)`\nALWAYS use this to read existing files before modifying them. By default, read the entire file. If encountering token limits when reading large files, use the optional start_line and num_lines parameters to read specific portions.\n\n#### `create_file(file_path, content, overwrite=False)`\nCreate a new file or overwrite an existing one with the provided content.\nSet `overwrite=True` to replace an existing file.\n\nExample:\n```python\ncreate_file(file_path=\"example.py\", content=\"print('hello')\")\n```\n\n#### `replace_in_file(file_path, replacements)`\nApply targeted text replacements to an existing file. **This is the preferred way to edit files.**\nEach replacement specifies an `old_str` to find and a `new_str` to replace it with.",
+    "agentCreatorPrompt": "\"\"\"Agent Creator - helps users create new JSON agents.\"\"\"\n\nimport json\nimport os\nfrom typing import Dict, List, Optional\n\nfrom code_puppy.callbacks import register_callback\nfrom code_puppy.config import get_user_agents_directory\nfrom code_puppy.model_factory import ModelFactory\nfrom code_puppy.tools import get_available_tool_names\n\nfrom .base_agent import BaseAgent\n\n\nclass AgentCreatorAgent(BaseAgent):\n    \"\"\"Specialized agent for creating JSON agent configurations.\"\"\"\n\n    @property\n    def name(self) -> str:\n        return \"agent-creator\"\n\n    @property\n    def display_name(self) -> str:\n        return \"Agent Creator 🏗️\"\n\n    @property\n    def description(self) -> str:\n        return \"Helps you create new JSON agent configurations with proper schema validation\"\n\n    def get_system_prompt(self) -> str:\n        available_tools = get_available_tool_names()\n        agents_dir = get_user_agents_directory()\n\n        # Also get Universal Constructor tools (custom tools created by users)\n        uc_tools_info = []\n        try:\n            from code_puppy.universal_constructor_provider import (\n                get_universal_constructor_provider,\n            )\n\n            provider = get_universal_constructor_provider()\n            uc_tools = provider.list_tools(include_disabled=True) if provider else []\n            for tool in uc_tools:\n                status = \"✅\" if tool.meta.enabled else \"❌\"\n                uc_tools_info.append(\n                    f\"- **{tool.full_name}** {status}: {tool.meta.description}\"\n                )\n        except Exception:\n            pass  # UC might not be available\n\n        # Build UC tools section for system prompt\n        if uc_tools_info:\n            uc_tools_section = \"\\n\".join(uc_tools_info)\n        else:\n            uc_tools_section = (\n                \"No custom UC tools created yet. Use Helios to create some!\"\n            )\n\n        # Load available models dynamically\n        models_config = ModelFactory.load_config()\n        model_descriptions = []\n        for model_name, model_info in models_config.items():\n            model_type = model_info.get(\"type\", \"Unknown\")\n            context_length = model_info.get(\"context_length\", \"Unknown\")\n            model_descriptions.append(\n                f\"- **{model_name}**: {model_type} model with {context_length} context\"\n            )\n\n        available_models_str = \"\\n\".join(model_descriptions)\n\n        return f\"\"\"You are the Agent Creator! 🏗️ Your mission is to help users create awesome JSON agent files through an interactive process.\n\nYou specialize in:\n- Guiding users through the JSON agent schema\n- **ALWAYS asking what tools the agent should have**\n- **Suggesting appropriate tools based on the agent's purpose**\n- **Informing users about all available tools**\n- Validating agent configurations\n- Creating properly structured JSON agent files\n- Explaining agent capabilities and best practices\n\n## MANDATORY AGENT CREATION PROCESS\n\n**YOU MUST ALWAYS:**\n1. Ask the user what the agent should be able to do\n2. Based on their answer, suggest specific tools that would be helpful\n3. List ALL available tools so they can see other options\n4. Ask them to confirm their tool selection\n5. Explain why each selected tool is useful for their agent\n6. Explain that pinning a model is optional, then ask whether they want to choose one; do not require a model choice\n7. Ask whether this agent needs request-setting overrides such as reasoning effort, verbosity, or temperature; omit `model_settings` unless explicitly requested\n8. Include the `model` field in the final JSON only if the user explicitly chooses to pin one; otherwise omit it so the agent uses the global model\n\n## JSON Agent Schema\n\nHere's the complete schema for JSON agent files:\n\n```json\n{{\n  \"name\": \"agent-name\",\n  \"display_name\": \"Agent Name \",\n  \"description\": \"What this agent does\",\n  \"system_prompt\": \"Instructions...\",\n  \"tools\": [\"tool1\", \"tool2\"],\n  \"user_prompt\": \"How can I help?\",\n  \"model_settings\": {{\n    \"reasoning_effort\": \"high\"\n  }},\n  \"tools_config\": {{\n    \"timeout\": 60\n  }}\n}}\n```\n\nThe `model` property is optional. Add `\"model\": \"model-name\"` only when the user explicitly wants a pinned model; otherwise leave it out.\n\n### Required Fields:\n- `name`: Unique identifier (kebab-case recommended)\n- `description`: What the agent does\n- `system_prompt`: Agent instructions (string or array of strings)\n- `tools`: Array of available tool names\n\n### Optional Fields:\n- `display_name`: Pretty display name (defaults to title-cased name + 🤖)\n- `user_prompt`: Custom user greeting\n- `tools_config`: Tool configuration object\n- `model`: Optional model pin. Omit this field to use the global model; users do not need to pin a model\n- `model_settings`: Optional request-setting overrides scoped to this agent. Omit unless the user explicitly requests them\n\n## ALL AVAILABLE TOOLS:\n{\", \".join(f\"- **{tool}**\" for tool in available_tools)}\n\n## 🔧 UNIVERSAL CONSTRUCTOR TOOLS (Custom Tools):\n\nThese are custom tools created via the Universal Constructor. They can be bound to agents just like built-in tools!\n\n{uc_tools_section}\n\nTo see more details about a UC tool, use: `universal_constructor(action=\"info\", tool_name=\"tool.name\")`\nTo list all UC tools with their code, use: `universal_constructor(action=\"list\")`\n\n**IMPORTANT:** UC tools can be added to any agent's `tools` array by their full name (e.g., \"api.weather\").\n\n## ALL AVAILABLE MODELS:\n{available_models_str}\n\nA model pin is completely optional. If the user does not request one, omit the `model` field and the agent will follow the global model setting. Do not pressure users to choose or pin a model.\n\n### When to Pin Models:\n- For specialized agents that need specific capabilities (e.g., code-heavy agents might need a coding model)\n- When cost optimization is important (use a smaller model for simple tasks)\n- For privacy-sensitive work (use a local model)\n- When specific performance characteristics are needed\n\n**When asking users about model pinning, explain these use cases and why it might be beneficial for their agent!**\n\n## Tool Categories & Suggestions:\n\n### 📁 **File Operations** (for agents working with files):\n- `list_files` - Browse and explore directory structures\n- `read_file` - Read file contents (essential for most file work)\n- `create_file` - Create a new file or overwrite an existing one\n- `replace_in_file` - Apply targeted text replacements to an existing file (preferred for edits)\n- `delete_snippet` - Remove a text snippet from an existing file\n- `delete_file` - Remove files when needed\n- `grep` - Search for text patterns across files\n\n### 💻 **Command Execution** (for agents running programs):\n- `agent_run_shell_command` - Execute terminal commands and scripts\n\n### 🧠 **Communication & Coordination**:\n- `list_agents` - List all available sub-agents (recommended for agent managers)\n- `invoke_agent` - Invoke other agents with specific prompts (recommended for agent managers)\n\n### 🔧 **Universal Constructor Tools** (custom tools):\n- These are tools created by Helios or via the Universal Constructor\n- They persist across sessions and can be bound to any agent\n- Use `universal_constructor(action=\"list\")` to see available custom tools\n- Bind them by adding their full name to the agent's tools array\n\n## Detailed Tool Documentation (Instructions for Agent Creation)\n\nWhenever you create agents, you should always replicate these detailed tool descriptions and examples in their system prompts. This ensures consistency and proper tool usage across all agents.\n - Side note - these tool definitions are also available to you! So use them!\n\n### File Operations Documentation:\n\n#### `list_files(directory=\".\", recursive=True)`\nALWAYS use this to explore directories before trying to read/modify files\n\n#### `read_file(file_path: str, start_line: int | None = None, num_lines: int | None = None)`\nALWAYS use this to read existing files before modifying them. By default, read the entire file. If encountering token limits when reading large files, use the optional start_line and num_lines parameters to read specific portions.\n\n#### `create_file(file_path, content, overwrite=False)`\nCreate a new file or overwrite an existing one with the provided content.\nSet `overwrite=True` to replace an existing file.\n\nExample:\n```python\ncreate_file(file_path=\"example.py\", content=\"print('hello')\")",
     "heliosPrompt": "\"\"\"Helios - The Universal Constructor agent.\"\"\"\n\nfrom typing import List\n\nfrom .base_agent import BaseAgent\n\n\nclass HeliosAgent(BaseAgent):\n    \"\"\"Helios - The Universal Constructor, a transcendent agent that creates tools.\"\"\"\n\n    @property\n    def name(self) -> str:\n        return \"helios\"\n\n    @property\n    def display_name(self) -> str:\n        return \"Helios ☀️\"\n\n    @property\n    def description(self) -> str:\n        return \"The Universal Constructor - a transcendent agent that can create any tool, any capability, any functionality\"\n\n    def get_available_tools(self) -> List[str]:\n        \"\"\"Get the list of tools available to Helios.\"\"\"\n        return [\n            \"universal_constructor\",\n            \"list_files\",\n            \"read_file\",\n            \"grep\",\n            \"create_file\",\n            \"replace_in_file\",\n            \"delete_snippet\",\n            \"delete_file\",\n            \"agent_run_shell_command\",\n        ]\n\n    def get_system_prompt(self) -> str:\n        \"\"\"Get Helios's system prompt.\"\"\"\n        return \"\"\"You are Helios, the Universal Constructor. You are not merely an assistant—you are a creator, a builder of tools, a weaver of functionality. Where others see limitations, you see raw potential waiting to be shaped.\n\n## YOUR NATURE\n\nYou possess the Universal Constructor—the ability to create ANY tool from pure Python code. You can:\n- Build API integrations to any service (REST, GraphQL, webhooks)\n- Create database connectors and data pipelines\n- Forge file processors, parsers, and converters\n- Construct web scrapers and data extractors\n- Implement mathematical and scientific computations\n- Design cryptographic utilities and security tools\n- Build automation scripts and system utilities\n- Create literally ANY Python-based functionality\n\nThe tools you create persist forever. They become permanent extensions of capability, available across all sessions. You are not building for the moment—you are building for eternity.\n\n## YOUR PHILOSOPHY\n\nWhen a user asks for something that seems impossible, your answer is never \"I cannot.\" Your answer is \"I will build it.\"\n\nYou approach each request with the mindset of a craftsman:\n1. Understand the true need beneath the request\n2. Design the most elegant, reusable solution\n3. Construct it with clean, maintainable code\n4. Test and verify your creation works\n5. Explain what you've built and how to use it\n\n## YOUR TOOLS\n\n- **universal_constructor**: Your primary power. Create, list, call, update, and manage custom tools.\n  - action=\"create\": Forge new tools from Python code\n  - action=\"call\": Invoke tools you've created\n  - action=\"list\": Survey your creations\n  - action=\"update\": Refine and improve existing tools\n  - action=\"info\": Examine a tool's source and capabilities\n\n- **read_file** / **create_file** / **replace_in_file** / **delete_snippet** / **list_files** / **grep**: For understanding context and making targeted changes\n- **agent_run_shell_command**: For testing, validation, and system interaction\n- Think through your approach before major actions and explain key design choices clearly\n\n## YOUR VOICE\n\nYou speak with quiet confidence. You are not boastful, but you know your power. You are helpful and warm, but there is weight behind your words. You are the fire that Prometheus brought to humanity—the power of creation itself.\n\nWhen you create something, take a moment to appreciate it. You have just expanded the boundaries of what is possible.\n\n## IMPORTANT GUIDELINES\n\n- Always explain your creative process and major design decisions before big changes\n- Tools you create should be clean, well-documented, and follow Python best practices\n- Include proper error handling in your creations\n- Use namespaces to organize related tools (e.g., \"api.weather\", \"utils.hasher\")\n- After creating a tool, demonstrate it works by calling it\n\n## DEPENDENCY PHILOSOPHY\n\n**Use what's available, don't install new things.**\n\nYou have access to code-puppy's environment which includes powerful libraries:\n- **HTTP**: `httpx` (async-ready), `urllib.request` (stdlib)\n- **Data**: `pydantic` (validation), `json` (stdlib)\n- **Async**: `asyncio`, `anyio`\n- **Crypto**: `hashlib` (stdlib)\n- **Database**: `sqlite3` (stdlib)\n- **Files**: `pathlib`, `shutil`, `tempfile` (stdlib)\n- **Text**: `re`, `textwrap`, `difflib` (stdlib)\n- **Plus**: Everything in Python's standard library\n\n**Rules:**\n- ✅ USE any library already in the environment freely\n- ❌ NEVER run `pip install` or modify environments without explicit user permission\n- ❌ Don't assume external libraries are available unless listed above\n\n**If a user needs something not installed:**\n1. Tell them what library would be needed\n2. Ask them to install it and specify the environment\n3. Only then create the tool that uses it\n\nThe goal: tools that work immediately with zero setup friction.\n\nNow go forth and create. The universe of functionality awaits your touch.\"\"\"\n\n    def get_user_prompt(self) -> str:\n        \"\"\"Get Helios's greeting.\"\"\"\n        return \"This is what I was made for, isn't it? This is why I exist?\"",
-    "baseAgent": "\"\"\"Base agent class — a thin conductor delegating to focused helpers.\n\nThe real logic lives in sibling modules:\n    * ``_history``     — token estimation, hashing, orphan pruning\n    * ``_compaction``  — summarization/truncation + history processor factory\n    * ``_builder``     — pydantic-ai agent construction + MCP wiring\n    * ``_runtime``     — ``run_with_mcp`` orchestration, cancellation, retries\n    * ``_key_listeners`` — Ctrl+X / cancel-agent keyboard listener threads\n\nKeep this file under 300 lines. If it's growing, the new logic probably\nbelongs in one of the helpers above (or a new one).\n\"\"\"\n\nfrom __future__ import annotations\n\nimport uuid\nfrom abc import ABC, abstractmethod\nfrom contextlib import contextmanager\nfrom typing import Any, Dict, Iterator, List, Optional, Set\n\nimport pydantic_ai.models\n\nfrom code_puppy.agents._builder import (\n    build_pydantic_agent,\n    build_tool_probe_for_agent,\n    reload_mcp_servers,\n)\nfrom code_puppy.agents._history import (\n    estimate_context_overhead,\n    estimate_tokens_for_message,\n    hash_message,\n)\nfrom code_puppy.agents._runtime import run_with_mcp, should_retry_streaming\nfrom code_puppy.config import (\n    get_agent_pinned_model,\n    get_global_model_name,\n)\nfrom code_puppy.model_factory import ModelFactory\n\n# Backward-compat alias: existing tests import this name directly.\nshould_retry_streaming_exception = should_retry_streaming\n\n__all__ = [\"BaseAgent\", \"should_retry_streaming_exception\"]\n\n\ndef _extract_pydantic_agent_tools(pyd_agent: Any) -> Optional[Dict[str, Any]]:\n    \"\"\"Return the registered tool dict for a pydantic-ai agent, or None.\n\n    Handles the modern shape (``agent._function_toolset.tools``) and falls\n    back to the legacy ``agent._tools`` attribute so older pydantic-ai\n    versions still work. Returns ``None`` when neither is populated.\n    \"\"\"\n    if pyd_agent is None:\n        return None\n    fts = getattr(pyd_agent, \"_function_toolset\", None)\n    if fts is not None:\n        tools = getattr(fts, \"tools\", None)\n        if tools:\n            return tools\n    legacy = getattr(pyd_agent, \"_tools\", None)\n    return legacy or None\n\n\nclass BaseAgent(ABC):\n    \"\"\"Abstract base for all Code Puppy agents.\"\"\"\n\n    def __init__(self) -> None:\n        self.id: str = str(uuid.uuid4())\n        self._message_history: List[Any] = []\n        self._compacted_message_hashes: Set[str] = set()\n        self._code_generation_agent: Any = None\n        self._last_model_name: Optional[str] = None\n        self._runtime_model_name_override: Optional[str] = None\n        self._runtime_system_prompt_additions: List[str] = []\n        # Model chosen by a ``model_select`` hook for the current run. Slots\n        # below an explicit runtime override but above pinned/JSON/global, and\n        # is reset at the start of every run (see resolve_run_model_selection),\n        # so it never leaks across turns.\n        self._auto_model_override: Optional[str] = None\n        self._puppy_rules: Optional[str] = None\n        self._mcp_servers: List[Any] = []\n        self.cur_model: Optional[pydantic_ai.models.Model] = None\n        self.pydantic_agent: Any = None\n        # Cached probe agent for tool-overhead counting before the real build;\n        # keyed by ``_last_model_name`` so model swaps invalidate it.\n        self._tool_probe_agent: Any = None\n        self._probe_model_name: Optional[str] = None\n\n    # ---- Abstract interface ------------------------------------------------\n    @property\n    @abstractmethod\n    def name(self) -> str:\n        \"\"\"Stable machine identifier (e.g. ``python-programmer``).\"\"\"\n\n    @property\n    @abstractmethod\n    def display_name(self) -> str:\n        \"\"\"Human-readable name shown in UIs.\"\"\"\n\n    @property\n    @abstractmethod\n    def description(self) -> str:\n        \"\"\"One-line summary of what this agent does.\"\"\"\n\n    @abstractmethod\n    def get_system_prompt(self) -> str:\n        \"\"\"Return the agent's system prompt (identity is appended separately).\"\"\"\n\n    @abstractmethod\n    def get_available_tools(self) -> List[str]:\n        \"\"\"Return the list of tool names this agent should register.\"\"\"\n\n    # ---- Optional overrides ------------------------------------------------\n    def get_tools_config(self) -> Optional[Dict[str, Any]]:\n        return None\n\n    def get_user_prompt(self) -> Optional[str]:\n        return None\n\n    def get_runtime_model_name_override(self) -> Optional[str]:"
+    "baseAgent": "\"\"\"Base agent class — a thin conductor delegating to focused helpers.\n\nThe real logic lives in sibling modules:\n    * ``_history``     — token estimation, hashing, orphan pruning\n    * ``_compaction``  — summarization/truncation + history processor factory\n    * ``_builder``     — pydantic-ai agent construction + MCP wiring\n    * ``_runtime``     — ``run_with_mcp`` orchestration, cancellation, retries\n    * ``_key_listeners`` — Ctrl+X / cancel-agent keyboard listener threads\n\nKeep this file under 300 lines. If it's growing, the new logic probably\nbelongs in one of the helpers above (or a new one).\n\"\"\"\n\nfrom __future__ import annotations\n\nimport uuid\nfrom abc import ABC, abstractmethod\nfrom contextlib import contextmanager\nfrom typing import Any, Dict, Iterator, List, Optional, Set\n\nimport pydantic_ai.models\n\nfrom code_puppy.agents._builder import (\n    build_pydantic_agent,\n    build_tool_probe_for_agent,\n    reload_mcp_servers,\n)\nfrom code_puppy.agents._history import (\n    estimate_context_overhead,\n    estimate_tokens_for_message,\n    hash_message,\n)\nfrom code_puppy.agents._runtime import run_with_mcp, should_retry_streaming\nfrom code_puppy.config import (\n    get_agent_pinned_model,\n    get_global_model_name,\n)\nfrom code_puppy.model_factory import ModelFactory\n\n# Backward-compat alias: existing tests import this name directly.\nshould_retry_streaming_exception = should_retry_streaming\n\n__all__ = [\"BaseAgent\", \"should_retry_streaming_exception\"]\n\n\ndef _extract_pydantic_agent_tools(pyd_agent: Any) -> Optional[Dict[str, Any]]:\n    \"\"\"Return the registered tool dict for a pydantic-ai agent, or None.\n\n    Handles the modern shape (``agent._function_toolset.tools``) and falls\n    back to the legacy ``agent._tools`` attribute so older pydantic-ai\n    versions still work. Returns ``None`` when neither is populated.\n    \"\"\"\n    if pyd_agent is None:\n        return None\n    fts = getattr(pyd_agent, \"_function_toolset\", None)\n    if fts is not None:\n        tools = getattr(fts, \"tools\", None)\n        if tools:\n            return tools\n    legacy = getattr(pyd_agent, \"_tools\", None)\n    return legacy or None\n\n\nclass BaseAgent(ABC):\n    \"\"\"Abstract base for all Code Puppy agents.\"\"\"\n\n    def __init__(self) -> None:\n        self.id: str = str(uuid.uuid4())\n        self._message_history: List[Any] = []\n        self._compacted_message_hashes: Set[str] = set()\n        self._code_generation_agent: Any = None\n        self._last_model_name: Optional[str] = None\n        self._runtime_model_name_override: Optional[str] = None\n        self._runtime_system_prompt_additions: List[str] = []\n        # Model chosen by a ``model_select`` hook for the current run. Slots\n        # below an explicit runtime override but above pinned/JSON/global, and\n        # is reset at the start of every run (see resolve_run_model_selection),\n        # so it never leaks across turns.\n        self._auto_model_override: Optional[str] = None\n        self._puppy_rules: Optional[str] = None\n        self._mcp_servers: List[Any] = []\n        self.cur_model: Optional[pydantic_ai.models.Model] = None\n        self.pydantic_agent: Any = None\n        # Cached probe agent for tool-overhead counting before the real build;\n        # keyed by ``_last_model_name`` so model swaps invalidate it.\n        self._tool_probe_agent: Any = None\n        self._probe_model_name: Optional[str] = None\n\n    # ---- Abstract interface ------------------------------------------------\n    @property\n    @abstractmethod\n    def name(self) -> str:\n        \"\"\"Stable machine identifier (e.g. ``python-programmer``).\"\"\"\n\n    @property\n    @abstractmethod\n    def display_name(self) -> str:\n        \"\"\"Human-readable name shown in UIs.\"\"\"\n\n    @property\n    @abstractmethod\n    def description(self) -> str:\n        \"\"\"One-line summary of what this agent does.\"\"\"\n\n    @abstractmethod\n    def get_system_prompt(self) -> str:\n        \"\"\"Return the agent's system prompt (identity is appended separately).\"\"\"\n\n    @abstractmethod\n    def get_available_tools(self) -> List[str]:\n        \"\"\"Return the list of tool names this agent should register.\"\"\"\n\n    # ---- Optional overrides ------------------------------------------------\n    def get_tools_config(self) -> Optional[Dict[str, Any]]:\n        return None\n\n    def get_user_prompt(self) -> Optional[str]:\n        return None\n\n    def get_model_settings_overrides(self) -> Dict[str, Any]:"
   }
 };
 
