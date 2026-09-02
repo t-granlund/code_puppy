@@ -30,6 +30,11 @@ from typing import Any, Callable, Iterator, List, Optional, Sequence, Type, Unio
 import httpcore
 import httpx
 
+try:  # pragma: no cover - httpx2 ships with the pydantic-ai 2.x provider stack
+    import httpx2
+except ImportError:  # pragma: no cover - legacy installs without httpx2
+    httpx2 = None  # type: ignore[assignment]
+
 try:  # pragma: no cover - mcp version dependent
     from mcp.shared.exceptions import McpError
 except ImportError:  # newer mcp SDKs renamed McpError -> MCPError
@@ -136,6 +141,16 @@ _RETRYABLE_SNIPPETS = (
 # Transport failures worth a silent retry, by umbrella base class (not each
 # subclass) so any dropped-socket guise or timeout is covered. A flaky
 # VPN/WiFi blip is recoverable, never fatal.
+#
+# ``httpx2`` (pydantic-ai 2.x provider clients) is a *parallel* exception
+# hierarchy -- ``httpx2.ReadTimeout`` does NOT subclass ``httpx.ReadTimeout``
+# or anything else in ``httpx``/``httpcore``. Mid-stream errors from an
+# OpenAI-compatible provider (e.g. a stalled gateway sitting silent past the
+# read timeout) therefore slipped past every isinstance branch below on an
+# EMPTY message (no snippet to match) and died as a fatal 60-line traceback.
+# Real-world casualty: ``syn:large:vision`` hung 38 min mid-turn, the 1800s
+# read timeout fired, and the whole run crashed instead of retrying. List the
+# httpx2 umbrellas explicitly so both HTTP families retry identically.
 _RETRYABLE_EXCEPTIONS: tuple = (
     httpx.NetworkError,
     httpx.TimeoutException,
@@ -143,6 +158,14 @@ _RETRYABLE_EXCEPTIONS: tuple = (
     httpcore.NetworkError,
     httpcore.TimeoutException,
     httpcore.RemoteProtocolError,
+) + (
+    (
+        httpx2.NetworkError,
+        httpx2.TimeoutException,
+        httpx2.RemoteProtocolError,
+    )
+    if httpx2 is not None
+    else ()
 )
 
 
