@@ -72,7 +72,7 @@
   --radius-media: 10px;
   --radius-pill: 999px;
   --gap-grid: 0.8em;
-  --statement-height: 92vh;
+  --statement-height: 730px;
 
   /* ── 8 · MOTION BUDGET (wow is scarcity: 2 moments, total) ── */
   --motion-fade: slow;
