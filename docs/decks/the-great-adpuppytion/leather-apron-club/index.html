@@ -77,13 +77,16 @@
 </section>
 
 <!-- 2.8 · STAGE · the grove, alive -->
-<section class="stage act-grove">
-  <p class="eyebrow">The grove &middot; what shipped while the skeptics were writing posts</p>
-  <div style="display:flex;align-items:center;justify-content:center;gap:26px;flex-wrap:wrap;">
-    <img src="assets/spruce_grove.gif" alt="Spruce Grove animated mark" style="max-height:430px;border:1px solid var(--line,#223026);border-radius:16px;">
-    <img src="assets/spruce_grove_logo_white.png" alt="Spruce Grove wordmark" style="max-height:270px;">
+<section class="moment" id="the-moment">
+  <p class="eyebrow">the grove &middot; what shipped while the skeptics were writing posts</p>
+  <div class="moment-duo">
+    <div class="term-live" id="term-live" aria-label="live grove session">
+      <div class="term-bar"><span class="tdot"></span><span class="tdot"></span><span class="tdot"></span><span class="term-title">grove &mdash; bentonville, arkansas</span></div>
+      <pre class="term-body" id="term-body"></pre>
+    </div>
+    <img class="north-side" src="assets/spruce_grove_north.svg" alt="The North Star grove">
   </div>
-  <p class="soft" style="text-align:center;margin-top:1em;">One product line. <span class="frost">Five this month.</span></p>
+  <p class="moment-line">They scraped the internet that already exists &mdash; and called it the future.<br/><em>We ship new ground. Every craft. Every medium. All at once.</em></p>
 </section>
 
 <!-- ══════════════ ACT I · 1727 (grove) ══════════════ -->
@@ -610,6 +613,39 @@ function countersInit(){
   els.forEach(function(el){ io.observe(el); });
 }
 (function boot(){ if(window.Reveal&&Reveal.on){ Reveal.on('ready',function(){netInit();countersInit();}); Reveal.on('slidechanged',function(e){ if(e.currentSlide.classList.contains('monolith')) netInit(); }); netInit(); countersInit(); } else setTimeout(boot,300); })();
+</script>
+<script>
+function termType(){
+  var body=document.getElementById('term-body'); if(!body||body.dataset.done==="1") return; body.dataset.done="1";
+  var L=[
+    ['cmd','$ spruce-grove --transcribe "fire-department-voice-memo.m4a"'],
+    ['ok','  transcribed in 5.1s \u2014 214 words, on-device, zero cloud'],
+    ['dim',''],
+    ['cmd','$ grove "raise my coverage by 5% \u2014 uv run pytest"'],
+    ['ok','  19 of 19 test groups green \u2014 receipts, not promises'],
+    ['dim',''],
+    ['cmd','$ /rec'],
+    ['dim','  mockingbird listening \u2014 your voice is the keyboard'],
+    ['dim',''],
+    ['cmd','$ open sprucegrove.io'],
+    ['ok','  the whole method, readable by anyone']
+  ];
+  var li=0, ci=0;
+  function step(){
+    if(li>=L.length) return;
+    var row=L[li], txt=row[1];
+    if(ci<=txt.length){
+      var shown=txt.slice(0,ci), html="";
+      for(var k=0;k<li;k++){ var r=L[k]; html+= r[0]==='cmd'?'<span class="cmd">'+r[1]+'</span>':r[0]==='ok'?'<span class="ok">'+r[1]+'</span>':'<span class="dim">'+(r[1]||'\u00a0')+'</span>'; html+="\n"; }
+      html+= row[0]==='cmd'?'<span class="cmd">'+shown+'\u258d</span>':'<span class="'+row[0]+'">'+shown+'</span>';
+      body.innerHTML=html; ci++;
+      setTimeout(step, row[0]==='cmd'?15:7);
+    } else { li++; ci=0; setTimeout(step, 240); }
+  }
+  step();
+}
+if(window.Reveal&&Reveal.on){ Reveal.on('slidechanged',function(e){ if(e.currentSlide.id==='the-moment'){ var b=document.getElementById('term-body'); if(b){b.dataset.done="";b.innerHTML="";} termType(); } }); }
+document.addEventListener('DOMContentLoaded',function(){ setTimeout(termType,500); });
 </script>
 </body>
 </html>
