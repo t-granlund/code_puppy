@@ -377,3 +377,11 @@
 .monolith .mark-hero{filter:drop-shadow(0 6px 22px oklch(0.45 0.06 155/.25)) !important;}
 .term-live{box-shadow:0 14px 40px rgba(0,0,0,.45) !important;}
 .la-timeline circle{r:5.5;}
+
+/* pantheon fits the frame: 18 prints, three rows */
+.the-pantheon .wall{gap:10px !important;max-width:960px !important;}
+.the-pantheon .wall figure{width:96px !important;}
+.the-pantheon .wall img{width:96px !important;height:108px !important;border-width:2px !important;box-shadow:4px 4px 0 rgba(0,0,0,.6) !important;}
+.the-pantheon .wall figcaption{font-size:8.5px !important;margin-top:5px !important;}
+.the-pantheon h2{font-size:1.5em !important;}
+.the-pantheon p{font-size:.8em !important;margin-top:.7em !important;}
