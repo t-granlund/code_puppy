@@ -220,57 +220,49 @@
 <section class="statement center">
   <p class="eyebrow">1927 → 1940 · The last time it felt this heavy</p>
   <h2 style="max-width:18em;">When Chaplin finally spoke, he didn't make small talk.</h2>
-  <div style="margin-top:1.2em; max-width:640px; aspect-ratio:16/9; border:1px solid var(--line,#223026); border-radius:12px; overflow:hidden;">
-    <iframe width="100%" height="100%" src="https://www.youtube.com/embed/J7GY1Xg6X20"
-      title="The Great Dictator — final speech"
-      style="border:0;" allow="accelerometer; encrypted-media; picture-in-picture" allowfullscreen></iframe>
-  </div>
-  <p class="muted" style="font-size:0.62em; font-family:var(--mono); margin-top:0.6em;">the speech itself · United Artists, 1940 · played at the council</p>
   <p style="font-size:1em; max-width:30em; margin:0 auto;" class="soft">The greatest silent artist on earth refused the talkies for thirteen years. Europe under occupation, America still neutral — and then <em>The Great Dictator</em> ends with him addressing humanity directly.</p>
   <p class="cedar" style="margin-top:1.2em; font-size:0.85em;">What he said then is what this club is for now.<br/>Here it is. All of it. His words, not ours.</p>
 </section>
 
+<!-- 13 · STAGE · the speech, alive (banksy) -->
+<style>
+.bank-stage{background:#070a08;}
+.bank-grain{position:absolute;inset:0;pointer-events:none;opacity:.16;mix-blend-mode:overlay;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2'/><feColorMatrix type='saturate' values='0'/></filter><rect width='260' height='260' filter='url(%23n)' opacity='0.55'/></svg>");}
+.bank-splat{position:absolute;pointer-events:none;border-radius:46% 54% 51% 49%/57% 43% 57% 43%;background:radial-gradient(circle at 32% 30%, rgba(156,61,46,.5), rgba(156,61,46,.16) 55%, transparent 72%);filter:blur(2px);}
+.bank-splat.s1{width:360px;height:320px;left:-90px;top:-70px;transform:rotate(16deg);}
+.bank-splat.s2{width:280px;height:250px;right:-70px;bottom:6%;transform:rotate(-24deg);}
+.bank-drip{position:absolute;width:5px;background:linear-gradient(#9c3d2e, rgba(156,61,46,0));border-radius:3px;}
+.bank-eyebrow{font-family:var(--mono);color:#9c3d2e;letter-spacing:.3em;text-transform:uppercase;font-size:12px;margin:0 0 14px;}
+.bank-frame{position:relative;width:min(660px,60%);aspect-ratio:16/9;margin:0 auto;border:5px solid #e8e4d8;border-radius:2px;box-shadow:0 22px 70px rgba(0,0,0,.65);transform:rotate(-1.1deg);}
+.bank-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0;}
+.bank-frame::after{content:"";position:absolute;left:38px;bottom:-46px;width:5px;height:44px;background:linear-gradient(#9c3d2e,rgba(156,61,46,0));border-radius:3px;}
+.bank-tape{position:absolute;width:96px;height:26px;background:rgba(233,227,209,.24);transform:rotate(-4deg);top:-13px;left:50%;margin-left:-48px;}
+.bank-line{font-family:var(--disp);font-size:1.45em;color:#efe7d2;min-height:2.3em;max-width:30em;margin:26px auto 0;transition:opacity .18s;}
+.bank-callouts{display:flex;justify-content:center;gap:26px;flex-wrap:wrap;margin-top:14px;}
+.bank-callouts span{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#8b988e;opacity:.85;}
+.bank-hint{position:absolute;top:14px;right:20px;font-family:var(--mono);font-size:11px;color:#d2a069;display:none;}
+</style>
+<section class="bank-stage" id="chaplin-stage">
+  <div class="bank-grain"></div>
+  <div class="bank-splat s1"></div><div class="bank-splat s2"></div>
+  <div class="bank-drip" style="left:24%;top:0;height:120px;"></div>
+  <div class="bank-drip" style="right:14%;top:0;height:80px;"></div>
+  <p class="bank-eyebrow">the great dictator &middot; 1940 &middot; his first words on film</p>
+  <div class="bank-frame">
+    <div class="bank-tape"></div>
+    <video id="chaplin-video" src="assets/chaplin-1940.webm" preload="auto" playsinline></video>
+  </div>
+  <p class="bank-line" id="bank-line">&nbsp;</p>
+  <div class="bank-callouts">
+    <span>his first spoken words on film</span>
+    <span>1940 &mdash; the world on fire</span>
+    <span>studios called it a risk</span>
+    <span>history called it a prophecy</span>
+  </div>
+  <div class="bank-hint" id="bank-hint">&#9654; tap the frame for sound</div>
+</section>
+
 <!-- 13–20 · THE SPEECH — verbatim, one beat per slide -->
-<section class="chaplin-slide statement" data-auto-animate>
-  <p class="eyebrow">The Great Dictator · 1940 · Verbatim · I of VIII</p>
-  <p class="chaplin">"I'm sorry, but I don't want to be an emperor. That's not my business. I don't want to rule or conquer anyone. <span class="beat">I should like to help everyone if possible — Jew, Gentile, black man, white.</span>"</p>
-</section>
-
-<section class="chaplin-slide statement" data-auto-animate>
-  <p class="eyebrow">Verbatim · II of VIII</p>
-  <p class="chaplin">"We all want to help one another. Human beings are like that. <span class="beat">But we have lost the way.</span>"</p>
-</section>
-
-<section class="chaplin-slide statement" data-auto-animate>
-  <p class="eyebrow">Verbatim · III of VIII</p>
-  <p class="chaplin">"Machinery that gives abundance <span class="beat">has left us in want</span>. Our knowledge has made us cynical. Our cleverness hard and unkind. We think too much and feel too little. <span class="beat">More than machinery, we need humanity. More than cleverness, we need kindness and gentleness.</span>"</p>
-</section>
-
-<section class="chaplin-slide statement" data-auto-animate>
-  <p class="eyebrow">Verbatim · IV of VIII</p>
-  <p class="chaplin">"The airplane and the radio have brought us closer together. <span class="beat">The very nature of these inventions cries out for the goodness in men.</span>"</p>
-</section>
-
-<section class="chaplin-slide statement" data-auto-animate>
-  <p class="eyebrow">Verbatim · V of VIII</p>
-  <p class="chaplin">"Even now my voice is reaching millions throughout the world — millions of despairing men, women, and little children. To those who can hear me, I say: <span class="beat">do not despair</span>. The hate of men will pass, and dictators die, and the power they took from the people <span class="beat">will return to the people</span>. And so long as men die, liberty will never perish."</p>
-</section>
-
-<section class="chaplin-slide statement" data-auto-animate>
-  <p class="eyebrow">Verbatim · VI of VIII</p>
-  <p class="chaplin">"Soldiers — don't give yourselves to brutes. Men who despise you, enslave you, who regiment your lives, tell you what to do, what to think, and what to feel. Who drill you, diet you, treat you like cattle, use you as cannon fodder. <span class="beat">Don't give yourselves to these unnatural men — machine men with machine minds and machine hearts.</span>"</p>
-</section>
-
-<section class="chaplin-slide statement" data-auto-animate>
-  <p class="eyebrow">Verbatim · VII of VIII</p>
-  <p class="chaplin" style="font-size:1.7em;"><span class="beat">"You are not machines. You are not cattle. You are men.</span>"</p>
-</section>
-
-<section class="chaplin-slide statement" data-auto-animate>
-  <p class="eyebrow">Verbatim · VIII of VIII</p>
-  <p class="chaplin">"You, the people, have the power — the power to create machines, the power to create happiness. You, the people, have the power to make this life free and beautiful, to make this life a wonderful adventure. <span class="beat">Then, in the name of democracy, let us use that power — let us all unite.</span>"</p>
-</section>
-
 <!-- 21 · STATEMENT · the assignment -->
 <section class="statement center">
   <p class="eyebrow">Why we read all of it</p>
@@ -513,6 +505,55 @@ Reveal.initialize({
   autoAnimateDuration: 0.9,
   autoAnimateEasing: 'cubic-bezier(0.22, 1, 0.36, 1)'
 });
+</script>
+
+<script>
+(function(){
+  var BEATS = [
+    {t:0.02, line:"I'm sorry — but I don't want to be an emperor. That's not my business."},
+    {t:0.10, line:"I should like to help everyone if possible — Jew, Gentile, black man, white."},
+    {t:0.20, line:"We all want to help one another. Human beings are like that."},
+    {t:0.32, line:"Machinery that gives abundance has left us in want."},
+    {t:0.45, line:"More than machinery, we need humanity."},
+    {t:0.58, line:"You are not machines! You are not cattle! You are men!"},
+    {t:0.72, line:"The misery that is now upon us is but the passing of greed."},
+    {t:0.86, line:"Do not despair."},
+    {t:0.97, line:"In the name of democracy — let us all unite."}
+  ];
+  var playedOnce = false;
+  function isOnStage(){ var s = document.getElementById('chaplin-stage'); return !!(s && s.classList.contains('present')); }
+  function tick(){
+    var el = document.getElementById('chaplin-video');
+    if(!el) return;
+    if(!isOnStage()){ if(playedOnce && !el.paused) el.pause(); return; }
+    if(!playedOnce){
+      playedOnce = true;
+      try {
+        el.currentTime = 0; el.muted = false;
+        var pr = el.play();
+        if (pr && pr.catch) pr.catch(function(){
+          el.muted = true;
+          var p2 = el.play(); if (p2 && p2.catch) p2.catch(function(){});
+          var h = document.getElementById('bank-hint'); if(h) h.style.display = 'block';
+        });
+      } catch(e){}
+    }
+    if(!el.duration) return;
+    var t = el.currentTime/el.duration, cur = BEATS[0];
+    for (var i=0;i<BEATS.length;i++){ if(t >= BEATS[i].t) cur = BEATS[i]; }
+    var line = document.getElementById('bank-line');
+    if (line.dataset.line !== cur.line){
+      line.style.opacity = 0;
+      setTimeout(function(){ line.textContent = '\u201C' + cur.line + '\u201D'; line.style.opacity = 1; }, 160);
+      line.dataset.line = cur.line;
+    }
+  }
+  setInterval(tick, 180);
+  if (window.Reveal && Reveal.on) Reveal.on('slidechanged', function(e){
+    var cur = e.currentSlide;
+    if (cur && cur.id === 'chaplin-stage') playedOnce = false; /* the speech restarts on re-entry */
+  });
+})();
 </script>
 </body>
 </html>
