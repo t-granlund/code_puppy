@@ -339,3 +339,7 @@
 .north-side{flex:.7;height:330px;filter:drop-shadow(0 12px 46px oklch(0.78 0.12 55 / .28));}
 .moment-line{font-family:var(--serif);font-size:1.5em;color:#efe7d2;margin:26px auto 0 !important;max-width:28em;}
 .moment-line em{color:#98b79e !important;font-style:italic;}
+
+/* ═══ ACT ZERO ═══ */
+.act0{text-align:center;}
+.act0 h1 em,.act0 h2 em{color:var(--lac-grove) !important;font-style:italic;}
