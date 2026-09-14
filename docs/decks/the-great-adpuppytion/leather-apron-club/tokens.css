@@ -21,7 +21,9 @@
   --lac-grove:  oklch(0.72 0.09 155);   /* grove green (moss, brightened for text) */
   --lac-moss:   oklch(0.45 0.06 155);   /* moss — fills only, never text */
   --lac-frost:  oklch(0.80 0.06 210);   /* glacier — present-day, receipts */
-  --lac-ember:  oklch(0.72 0.13 40);    /* alarm — the machine age */
+  --lac-ember:  oklch(0.72 0.13 40);   /* alarm — fills */
+  --lac-ember-text: oklch(0.72 0.14 40); /* alarm as text — AA on night bg */
+  --lac-ember-strong: oklch(0.62 0.16 33); /* alarm display — AA-large on night */    /* alarm — the machine age */
 
   /* ── 2 · SEMANTIC SURFACES & INK ── */
   --surface-canvas: var(--lac-night-900);

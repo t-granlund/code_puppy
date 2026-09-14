@@ -16,7 +16,8 @@
 <!-- ══════════════ ACT 0 · COLD OPEN (cedar) ══════════════ -->
 
 <!-- 1 · STATEMENT · title + stroke-drawn spruce mark -->
-<section class="statement center" data-auto-animate>
+<section data-monolith class="monolith statement center" data-auto-animate>
+  <img class="mark-hero" src="assets/spruce_grove_mark.svg" alt="">
   <p class="eyebrow">Philadelphia 1727 → Bentonville · Arkansas 2026</p>
   <svg class="treemark" viewBox="0 0 24 24" fill="none" aria-hidden="true" data-id="spruce">
     <path class="draw" d="M12 2 L6 11 H9 L4.5 18 H10 V22 H14 V18 H19.5 L15 11 H18 Z"
@@ -232,7 +233,7 @@
 .bank-splat.s1{width:360px;height:320px;left:-90px;top:-70px;transform:rotate(16deg);}
 .bank-splat.s2{width:280px;height:250px;right:-70px;bottom:6%;transform:rotate(-24deg);}
 .bank-drip{position:absolute;width:5px;background:linear-gradient(#9c3d2e, rgba(156,61,46,0));border-radius:3px;}
-.bank-eyebrow{font-family:var(--mono);color:#9c3d2e;letter-spacing:.3em;text-transform:uppercase;font-size:12px;margin:0 0 14px;}
+.bank-eyebrow{font-family:var(--mono);color:var(--lac-ember-strong);letter-spacing:.3em;text-transform:uppercase;font-size:12px;margin:0 0 14px;}
 .bank-frame{position:relative;width:min(660px,60%);aspect-ratio:16/9;margin:0 auto;border:5px solid #e8e4d8;border-radius:2px;box-shadow:0 22px 70px rgba(0,0,0,.65);transform:rotate(-1.1deg);}
 .bank-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0;}
 .bank-frame::after{content:"";position:absolute;left:38px;bottom:-46px;width:5px;height:44px;background:linear-gradient(#9c3d2e,rgba(156,61,46,0));border-radius:3px;}
@@ -343,14 +344,14 @@
 
 <!-- 25.9 · STATEMENT · the understone -->
 <section class="statement center act-cedar" style="background:rgba(156,61,46,0.08);">
-  <p class="eyebrow" style="color:#9c3d2e;">The understone &middot; say it plainly</p>
+  <p class="eyebrow" style="color:var(--lac-ember-strong);">The understone &middot; say it plainly</p>
   <h1 class="megaword" style="font-size:2.2em; max-width:17em; margin:0 auto;">Every month you rent the brain of your business,<br/><span class="frost">someone else holds the keys.</span></h1>
   <p style="max-width:26em; margin:1.4em auto 0; color:var(--dim,#93a096);">
     Subscriptions rise. Contracts renew. Platforms fold and take your data with them.
     The grove runs <strong>on your machine</strong> &mdash; it audits, recommends and builds
     <strong>with your ideas and best practices</strong> &mdash; and when the internet blinks,
     the shop still has its tools.</p>
-  <p style="max-width:26em; margin:1em auto 0; font-family:var(--mono); font-size:0.8em; color:#9c3d2e;">
+  <p style="max-width:26em; margin:1em auto 0; font-family:var(--mono); font-size:0.8em; color:var(--lac-ember-strong);">
     Your shop. Your machine. Your ledger. <strong>The window to act is now.</strong></p>
 </section>
 
@@ -553,6 +554,21 @@ Reveal.initialize({
     var cur = e.currentSlide;
     if (cur && cur.id === 'chaplin-stage') playedOnce = false; /* the speech restarts on re-entry */
   });
+})();
+</script>
+<div id="century-rail" aria-hidden="true"><div class="rail-fill"></div><span class="rail-year"></span></div>
+<script>
+(function(){
+  var YEARS=[[0,"1727"],[3,"1727"],[8,"1896"],[13,"1927"],[15,"1940"],[24,"2026"],[33,"TONIGHT"]];
+  function yearFor(i){ var y="1727"; for (var k=0;k<YEARS.length;k++){ if(i>=YEARS[k][0]) y=YEARS[k][1]; } return y; }
+  function upd(){
+    var i=Reveal.getIndices?Reveal.getIndices().h:0, t=Reveal.getTotalSlides?Reveal.getTotalSlides():34;
+    var pct=Math.min(100,Math.max(0,(i/(t-1))*100));
+    var f=document.querySelector('#century-rail .rail-fill'); if(f) f.style.width=pct+"%";
+    var y=document.querySelector('#century-rail .rail-year'); if(y) y.textContent=yearFor(i);
+  }
+  function boot(){ if(window.Reveal&&Reveal.on){ Reveal.on('slidechanged',upd); Reveal.on('ready',upd); upd(); } else setTimeout(boot,300); }
+  boot();
 })();
 </script>
 </body>

@@ -268,3 +268,12 @@ section > *{position:relative;z-index:1;}
 .bg-void{--slide-bg:#000000;}
 .bg-deco{--slide-bg:#0b0a08;}
 .bg-grove{--slide-bg:#0d1410;}
+
+/* ═══ CENTURY RAIL — where you are in 300 years, always visible ═══ */
+#century-rail{position:fixed;top:0;left:0;right:0;height:4px;z-index:60;background:oklch(0.3 0.018 150 / .5);pointer-events:none;}
+#century-rail .rail-fill{height:100%;width:0%;background:linear-gradient(90deg,oklch(0.45 0.06 155),oklch(0.72 0.14 40),oklch(0.78 0.12 55));transition:width .6s cubic-bezier(.22,1,.36,1);}
+#century-rail .rail-year{position:fixed;top:10px;right:18px;font-family:var(--mono);font-size:12px;letter-spacing:.25em;color:oklch(0.72 0.018 110);z-index:60;}
+/* ═══ MONOLITH — the cold open ═══ */
+.monolith{text-align:center;}
+.monolith h1{font-size:3.2em !important;line-height:1.05;letter-spacing:-.015em;}
+.monolith .mark-hero{height:150px;margin:0 auto 24px;display:block;filter:drop-shadow(0 8px 40px oklch(0.45 0.06 155 / .5));}
