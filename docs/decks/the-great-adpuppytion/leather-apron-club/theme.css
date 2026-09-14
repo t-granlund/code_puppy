@@ -366,3 +366,14 @@
 .wall figure:nth-child(2n) img{transform:rotate(1.2deg);border-color:#d2a069;}
 .wall figure:nth-child(3n) img{transform:rotate(.6deg);}
 .wall figcaption{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;color:#c9c2b2;margin-top:7px;}
+
+/* ═══ THE RESTRAINT — subtraction is the polish ═══ */
+.bank-splat{opacity:.34 !important;filter:blur(14px) !important;}
+.bank-drip{opacity:.5 !important;}
+@keyframes heartbeat{0%,100%{text-shadow:0 0 0 rgba(156,61,46,0)}50%{text-shadow:0 0 26px rgba(156,61,46,.35)}}
+.era-blackout .statement-text,.era-blackout h2{animation:none;text-shadow:0 0 22px rgba(156,61,46,.28);}
+.era-blackout .statement-text{animation:heartbeat 4.2s ease-in-out infinite;}
+.beat-line span{animation:drumbeat 2.6s ease-in-out infinite !important;opacity:.5;}
+.monolith .mark-hero{filter:drop-shadow(0 6px 22px oklch(0.45 0.06 155/.25)) !important;}
+.term-live{box-shadow:0 14px 40px rgba(0,0,0,.45) !important;}
+.la-timeline circle{r:5.5;}
