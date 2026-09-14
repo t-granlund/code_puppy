@@ -323,6 +323,20 @@
   padding:8px 13px;border-radius:2px;opacity:.85;pointer-events:none;mix-blend-mode:screen;
 }
 .stamp.cedar{color:#d2a069;outline-color:rgba(210,160,105,.4);}
+
+/* the voice flow — the journey, left to right (GRAN: machine voice + one thought) */
+.voice-flow{display:flex;gap:34px;justify-content:center;max-width:1020px;margin-left:auto;margin-right:auto;text-align:left;}
+.vf-cell{position:relative;flex:1 1 0;max-width:230px;}
+.vf-cell + .vf-cell::before{
+  content:"";position:absolute;top:15px;right:calc(100% + 4px);width:26px;height:1px;
+  background:rgba(242,237,224,.3);
+}
+.vf-icon{width:30px;height:30px;color:#ECE2C8;display:block;}
+.vf-kicker{font-family:var(--mono);font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;color:#d2a069;margin:14px 0 6px;}
+.vf-line{font-size:.72em;line-height:1.55;color:#C9CFC2;margin:0;}
+.vf-creed{margin:2.1em auto 0;max-width:58em;text-align:left;font-size:.92em;font-style:italic;color:#ECE2C8;}
+.vf-creed em{color:#d2a069;font-style:normal;}
+@media (max-width:900px){ .voice-flow{flex-wrap:wrap;gap:22px;} .vf-cell + .vf-cell::before{display:none;} }
 .bank-tape{background:#efe7d2 !important;opacity:.85;}
 .bank-line{letter-spacing:.015em !important;text-transform:none;font-weight:600 !important;
   text-shadow:2px 2px 0 rgba(0,0,0,.8);}

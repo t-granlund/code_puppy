@@ -56,3 +56,14 @@ largest US orchestras running structural deficits."
 **Scarcity card:** "(Karen X. Cheng, as quoted by Jack Conte, SXSW 2026)"
 
 **22K bigstat slide:** change to 20K or "~20K" with "within two years."
+
+## The voice-memo journey slide (replaces the audio player)
+- The four steps (drive → dictation → work → evening) describe the system's
+  actual, demonstrated behavior; "24 minutes of Arkansas road, on-device,
+  private" is carried over verbatim from the prior slide copy (owner-provided).
+- The closing creed — "I was remote for years after moving here, and for a
+  moment in time I lost myself. Now we are in the era of taking control — the
+  human way." — is Tyler's own testimony, spoken in the working session of
+  2026-09-14 and tightened for the slide. Owner may veto/adjust wording.
+- The 1:03 voice memo remains in assets (assets-voice-memo.m4a) but is no
+  longer played during the presentation, per owner decision.
