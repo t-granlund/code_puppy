@@ -393,3 +393,10 @@
 .bank-ghost-line{font-family:var(--disp);font-size:1em;color:#8b988e;opacity:.45;min-height:1.4em;max-width:30em;margin:18px auto 0;font-style:italic;}
 .bank-line{font-size:1.32em !important;margin:8px auto 0 !important;min-height:2.2em;}
 .bank-line .key{color:#e8563f !important;font-style:normal;text-shadow:0 0 18px rgba(232,86,63,.55);}
+
+/* ═══ LINEAGE FIX — legibility is the design ═══ */
+/* the puppy mark needs a light plate or it vanishes on the dark wall */
+img[src*="code_puppy_logo_noback"]{background:#f2efe6 !important;padding:14px 22px !important;border-radius:10px !important;height:86px !important;width:auto !important;box-shadow:0 10px 34px rgba(0,0,0,.5) !important;}
+img[src*="spruce_grove_north"],img[src*="spruce_grove_mark"]{height:150px !important;width:auto !important;filter:drop-shadow(0 0 34px oklch(0.78 0.12 55/.35)) drop-shadow(0 8px 24px rgba(0,0,0,.6)) !important;}
+/* the arrow between them: visible, confident */
+.la-lineage-arrow{color:#d2a069 !important;font-size:2.2em !important;font-weight:700 !important;opacity:1 !important;text-shadow:0 0 20px rgba(210,160,105,.4);}
