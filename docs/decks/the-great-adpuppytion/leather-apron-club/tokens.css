@@ -68,7 +68,7 @@
 
   /* ── 7 · SPACE & GEOMETRY ── */
   --margin-frame: 8%;
-  --radius-card: 14px;
+  --radius-card: 0;
   --radius-media: 10px;
   --radius-pill: 999px;
   --gap-grid: 0.8em;
@@ -83,4 +83,9 @@
 
   /* ── 9 · GLOW ── */
   --glow-node: 14px;
+
+  /* code puppy lineage triad (from code_puppy/logos README wordmark) */
+  --puppy-purple: oklch(0.74 0.10 295);
+  --puppy-cyan:   oklch(0.82 0.13 200);
+  --puppy-green:  oklch(0.80 0.14 155);
 }

@@ -214,3 +214,45 @@
   .reveal .termmock .caret::after { animation: none; }
   .reveal .slides section .fragment.fade-up.visible { transform: none; }
 }
+
+/* ═══ ERA CLIMATES — the deck phases through time; each era embodies its age ═══ */
+.era-print,.era-film,.era-deco,.era-blackout,.era-grove{position:relative;}
+/* 1727 · the print room — parchment blazing against the dark deck */
+.era-print{background:oklch(0.93 0.028 85) !important;color:oklch(0.24 0.03 60) !important;}
+.era-print h1,.era-print h2,.era-print .statement-text{color:oklch(0.24 0.03 60) !important;}
+.era-print .eyebrow{color:oklch(0.42 0.06 55) !important;border-color:oklch(0.32 0.06 60);}
+.era-print em,.era-print strong{color:oklch(0.36 0.09 55) !important;}
+.era-print::before{content:"";position:absolute;inset:0;pointer-events:none;border-top:3px solid oklch(0.32 0.06 60);border-bottom:3px solid oklch(0.32 0.06 60);}
+/* 1896 · the silent reel — intertitle black, vignette */
+.era-film{background:#000 !important;}
+.era-film h1,.era-film h2,.era-film .statement-text{color:#f2efe6 !important;}
+.era-film .eyebrow{color:oklch(0.7 0.01 90) !important;}
+.era-film::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 52%,rgba(0,0,0,.88) 100%);}
+/* 1927 · the jazz age — deco gold, stepped frame */
+.era-deco{background:#0b0a08 !important;}
+.era-deco::before{content:"";position:absolute;inset:24px;border:2px solid oklch(0.78 0.12 55);pointer-events:none;}
+.era-deco::after{content:"";position:absolute;inset:32px;border:1px solid oklch(0.78 0.12 55 / .45);pointer-events:none;}
+.era-deco h1,.era-deco h2,.era-deco .statement-text{color:oklch(0.86 0.1 70) !important;}
+.era-deco .eyebrow{color:oklch(0.78 0.12 55) !important;}
+/* 1942 · the blackout — the void */
+.era-blackout{background:#000 !important;}
+.era-blackout h1,.era-blackout h2,.era-blackout .statement-text{color:oklch(0.62 0.02 30) !important;}
+/* 2026 · the grove — terminal dawn */
+.era-grove{background:linear-gradient(oklch(0.18 0.012 150),oklch(0.13 0.02 158)) !important;}
+.era-grove::before{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent 0 3px,oklch(0.45 0.06 155 / .045) 3px 4px);}
+
+/* ═══ STRATA — the harness as understone architecture ═══ */
+.strata{border-top:1px solid var(--line-strong);border-bottom:1px solid var(--line-strong);}
+.stratum{display:flex;align-items:baseline;gap:22px;padding:15px 14px;border-bottom:1px solid var(--line);}
+.stratum:last-child{border-bottom:0;}
+.stratum:nth-child(1){background:oklch(0.22 0.014 155 / .9);}
+.stratum:nth-child(2){background:oklch(0.20 0.014 155 / .9);}
+.stratum:nth-child(3){background:oklch(0.18 0.014 155 / .9);}
+.stratum:nth-child(4){background:oklch(0.16 0.014 155 / .9);}
+.stratum:nth-child(5){background:oklch(0.14 0.014 155 / .9);}
+.stratum-index{font-family:var(--mono);font-size:0.55em;color:var(--ink-muted);letter-spacing:.2em;min-width:34px;}
+.stratum-name{font-family:var(--serif);font-size:0.78em;letter-spacing:.14em;min-width:240px;}
+.stratum-desc{font-family:var(--sans);font-size:0.72em;color:var(--ink-soft);}
+.stratum-red{border-left:3px solid var(--lac-ember);}
+.stratum-red .stratum-name{color:var(--lac-ember) !important;}
+.stratum-red .stratum-desc{color:oklch(0.85 0.05 40) !important;}
