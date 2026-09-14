@@ -297,7 +297,16 @@
   #0a0b0a !important;}
 .bank-frame{border:0 !important;border-radius:0 !important;transform:rotate(-.6deg) !important;
   outline:3px solid #f2efe6;outline-offset:-1px;
-  box-shadow:14px 14px 0 rgba(0,0,0,.55), 0 0 60px rgba(0,0,0,.5) !important;}
+  box-shadow:14px 14px 0 rgba(0,0,0,.55), 0 0 60px rgba(0,0,0,.5) !important;
+  position:relative;}
+.bank-caps{
+  position:absolute;left:50%;bottom:16px;transform:translateX(-50%);z-index:3;
+  max-width:88%;text-align:center;pointer-events:none;
+  font-family:var(--mono);font-size:12.5px;line-height:1.65;letter-spacing:.02em;
+  color:#ECE2C8;background:rgba(8,8,6,.74);
+  padding:7px 14px;border-radius:6px;
+  transition:opacity .22s ease;
+}
 .bank-tape{background:#efe7d2 !important;opacity:.85;}
 .bank-line{letter-spacing:.015em !important;text-transform:none;font-weight:600 !important;
   text-shadow:2px 2px 0 rgba(0,0,0,.8);}

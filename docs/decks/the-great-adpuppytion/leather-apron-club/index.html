@@ -316,6 +316,7 @@
   <div class="bank-frame">
     <div class="bank-tape"></div>
     <video id="chaplin-video" src="assets/chaplin-1940.webm" preload="auto" playsinline></video>
+    <div class="bank-caps" id="bank-caps" aria-live="polite">&nbsp;</div>
   </div>
   <p class="bank-ghost-line" id="bank-ghost">&nbsp;</p>
   <p class="bank-line" id="bank-line">&nbsp;</p>
@@ -585,25 +586,90 @@ Reveal.initialize({
 
 <script>
 (function(){
-  var BEATS = [
-    {t:0.02, line:"I'm sorry — but I don't want to be an emperor. That's not my business."},
-    {t:0.10, line:"I should like to help everyone if possible — Jew, Gentile, black man, white."},
-    {t:0.20, line:"We all want to help one another. Human beings are like that."},
-    {t:0.32, line:"Machinery that gives abundance has left us in want."},
-    {t:0.45, line:"More than machinery, we need humanity."},
-    {t:0.58, line:"You are not machines! You are not cattle! You are men!"},
-    {t:0.72, line:"The misery that is now upon us is but the passing of greed."},
-    {t:0.86, line:"Do not despair."},
-    {t:0.97, line:"In the name of democracy — let us all unite."}
+  var CAPS=[
+    {s:0.0,e:5.0,t:"I'm sorry, but I don't want to be an emperor. That's not my business."},
+    {s:5.0,e:8.0,t:"I don't want to rule or conquer anyone."},
+    {s:8.0,e:10.0,t:"I should like to help everyone if possible."},
+    {s:10.0,e:13.0,t:"Jew, Gentile, black man, white."},
+    {s:13.0,e:17.0,t:"We all want to help one another. Human beings are like that."},
+    {s:17.0,e:20.0,t:"We want to live by each other's happiness, not by each other's misery."},
+    {s:20.0,e:22.0,t:"We don't want to hate and despise one another."},
+    {s:22.0,e:25.0,t:"In this world, there's room for everyone, and the good earth is rich,"},
+    {s:25.0,e:27.0,t:"and can provide for everyone."},
+    {s:27.0,e:32.0,t:"The way of life can be free and beautiful, but we have lost the way."},
+    {s:32.0,e:37.0,t:"Greed has poisoned men's souls, has barricaded the world with hate,"},
+    {s:37.0,e:40.0,t:"has goose-stepped us into misery and bloodshed."},
+    {s:40.0,e:43.0,t:"We have developed speed, but we have shut ourselves in."},
+    {s:43.0,e:46.0,t:"Machinery that gives abundance has left us in want."},
+    {s:46.0,e:50.0,t:"Our knowledge has made us cynical, our cleverness hard and unkind."},
+    {s:50.0,e:53.0,t:"We think too much and feel too little."},
+    {s:53.0,e:57.0,t:"More than machinery, we need humanity. More than cleverness,"},
+    {s:57.0,e:59.0,t:"we need kindness and gentleness."},
+    {s:59.0,e:63.0,t:"Without these qualities, life will be violent, and all will be lost."},
+    {s:63.0,e:66.0,t:"The aeroplane and the radio have brought us closer together."},
+    {s:66.0,e:69.0,t:"The very nature of these inventions cries out for the goodness in men,"},
+    {s:69.0,e:72.0,t:"cries out for universal brotherhood for the unity of us all."},
+    {s:72.0,e:75.0,t:"Even now, my voice is reaching millions throughout the world,"},
+    {s:75.0,e:78.0,t:"millions of despairing men, women and little children,"},
+    {s:78.0,e:81.0,t:"victims of a system that makes men torture"},
+    {s:81.0,e:84.0,t:"and imprison innocent people."},
+    {s:84.0,e:87.0,t:"For those who can hear me, I say, do not despair."},
+    {s:87.0,e:90.0,t:"The misery that is now upon us is but the passing of greed,"},
+    {s:90.0,e:94.0,t:"the bitterness of men who fear the way of human progress,"},
+    {s:94.0,e:97.0,t:"the hate of men will pass and dictators die,"},
+    {s:97.0,e:100.0,t:"and the power they took from the people will return to the people,"},
+    {s:100.0,e:105.0,t:"and so long as men die, liberty will never perish."},
+    {s:105.0,e:108.0,t:"Soldiers, don't give yourselves to brutes,"},
+    {s:108.0,e:112.0,t:"men who despise you and slave you who regiment your lives,"},
+    {s:112.0,e:114.0,t:"tell you what to do, what to think and what to feel,"},
+    {s:114.0,e:117.0,t:"who drill you, diet you, treat you like cattle,"},
+    {s:117.0,e:121.0,t:"use you as cannon fodder, don't give yourselves to these unnatural men,"},
+    {s:121.0,e:124.0,t:"machine men with machine minds and machine hearts,"},
+    {s:124.0,e:128.0,t:"you are not machines, you are not cattle, you are men,"},
+    {s:128.0,e:131.0,t:"you have the love of humanity in your hearts, you don't hate,"},
+    {s:131.0,e:135.0,t:"only the unloved hate, the unloved and the unnatural."},
+    {s:135.0,e:138.0,t:"Soldiers, don't fight for slavery, fight for liberty."},
+    {s:138.0,e:140.0,t:"In the seventeenth chapter of St. Luca,"},
+    {s:140.0,e:144.0,t:"the kingdom of God is within man, not one man nor a group of men,"},
+    {s:144.0,e:147.0,t:"but in all men, in you, you the people have the power,"},
+    {s:147.0,e:150.0,t:"the power to create machines, the power to create happiness,"},
+    {s:150.0,e:154.0,t:"you the people have the power to make this life free and beautiful,"},
+    {s:154.0,e:156.0,t:"to make this life a wonderful adventure."},
+    {s:156.0,e:159.0,t:"Then in the name of democracy, let us use that power,"},
+    {s:159.0,e:163.0,t:"let us all unite, let us fight for a new world,"},
+    {s:163.0,e:166.0,t:"a decent world that will give men a chance to work,"},
+    {s:166.0,e:169.0,t:"that will give you the future and old age of security,"},
+    {s:169.0,e:172.0,t:"by the promise of these things, brutes have risen to power,"},
+    {s:172.0,e:175.0,t:"but they lie, they do not fulfill that promise, they never will,"},
+    {s:175.0,e:179.0,t:"dictators free themselves, but they enslave the people,"},
+    {s:179.0,e:182.0,t:"now let us fight to fulfill that promise,"},
+    {s:182.0,e:186.0,t:"let us fight to free the world, to do away with national barriers,"},
+    {s:186.0,e:190.0,t:"to do away with greed, with hate and intolerance,"},
+    {s:190.0,e:193.0,t:"let us fight for a world of reason, a world where science"},
+    {s:193.0,e:196.0,t:"and progress will lead to all men's happiness,"},
+    {s:196.0,e:201.0,t:"soldiers in the name of democracy, let us all unite!"}
+  ];
+  var BEATS=[
+    {s:0.0,  line:"I\u2019m sorry \u2014 but I don\u2019t want to be an emperor. That\u2019s not my business."},
+    {s:10.0, line:"I should like to help everyone if possible \u2014 Jew, Gentile, black man, white."},
+    {s:13.0, line:"We all want to help one another. Human beings are like that."},
+    {s:43.0, line:"Machinery that gives abundance has left us in want."},
+    {s:53.0, line:"More than machinery, we need humanity."},
+    {s:84.0, line:"Do not despair."},
+    {s:87.0, line:"The misery that is now upon us is but the passing of greed."},
+    {s:124.0,line:"You are not machines! You are not cattle! You are men!"},
+    {s:196.0,line:"In the name of democracy \u2014 let us all unite."}
   ];
   var playedOnce = false;
   function isOnStage(){ var s = document.getElementById('chaplin-stage'); return !!(s && s.classList.contains('present')); }
   function tick(){
     var el = document.getElementById('chaplin-video');
     if(!el) return;
+    var capsEl = document.getElementById('bank-caps');
     if(!isOnStage()){ if(playedOnce && !el.paused) el.pause(); return; }
     if(!playedOnce){
       playedOnce = true;
+      if (capsEl) { capsEl.dataset.cap = ''; capsEl.textContent = '\u00a0'; }
       try {
         el.currentTime = 0; el.muted = false;
         var pr = el.play();
@@ -614,15 +680,29 @@ Reveal.initialize({
         });
       } catch(e){}
     }
-    if(!el.duration) return;
-    var t = el.currentTime/el.duration, cur = BEATS[0]; var li=0;
-    for (var i=0;i<BEATS.length;i++){ if(t >= BEATS[i].t){ cur = BEATS[i]; li=i; } }
+    var t = el.currentTime || 0;
+    /* live transcription \u2014 the machine hears him as he talks */
+    if (capsEl){
+      var cap = '';
+      for (var c=0;c<CAPS.length;c++){ if (t >= CAPS[c].s && t < CAPS[c].e){ cap = CAPS[c].t; break; } }
+      if (capsEl.dataset.cap !== cap){
+        capsEl.style.opacity = 0;
+        setTimeout(function(){
+          capsEl.textContent = cap ? cap : '\u00a0';
+          capsEl.style.opacity = 1;
+        }, 110);
+        capsEl.dataset.cap = cap;
+      }
+    }
+    /* monumental beats \u2014 ignited when he actually says it */
+    var cur = null, li = -1;
+    for (var i=0;i<BEATS.length;i++){ if (t >= BEATS[i].s){ cur = BEATS[i]; li = i; } }
     var line = document.getElementById('bank-line');
-    if (line.dataset.line !== cur.line){
+    if (cur && line.dataset.line !== cur.line){
       line.style.opacity = 0;
       setTimeout(function(){
-        var KEYS = /(emperor|help one another|machinery|humanity|not machines|not cattle|You are men|misery|passing of greed|Do not despair|democracy|all unite)/g;
-        line.innerHTML = '\u201C' + cur.line.replace(KEYS, '<em class="key">$1</em>') + '\u201D';
+        var KEYS = /(emperor|everyone|one another|Machinery|abundance|humanity|machines|cattle|You are men|misery|passing of greed|despair|democracy|unite)/g;
+        line.innerHTML = '\u201C' + cur.line.replace(KEYS, '<em class="key">$1<\/em>') + '\u201D';
         var g = document.getElementById('bank-ghost');
         if (g) g.textContent = li>0 ? '\u201C'+BEATS[li-1].line+'\u201D' : '\u00a0';
         line.style.opacity = 1;
@@ -630,7 +710,7 @@ Reveal.initialize({
       line.dataset.line = cur.line;
     }
   }
-  setInterval(tick, 180);
+  setInterval(tick, 120);
   if (window.Reveal && Reveal.on) Reveal.on('slidechanged', function(e){
     var cur = e.currentSlide;
     if (cur && cur.id === 'chaplin-stage') playedOnce = false; /* the speech restarts on re-entry */
