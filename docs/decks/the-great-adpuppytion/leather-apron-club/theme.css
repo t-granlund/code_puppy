@@ -305,7 +305,7 @@
   box-shadow:2px 2px 0 rgba(0,0,0,.6);}
 .bank-eyebrow{color:#e8563f !important;text-shadow:1px 1px 0 rgba(0,0,0,.8);}
 .bank-callouts span{color:#c9c2b2 !important;}
-.hope-balloon{position:absolute;top:26px;right:44px;width:120px;pointer-events:none;}
+.hope-balloon{position:absolute;top:26px;right:44px;width:140px;pointer-events:none;}
 .hope-balloon text{font-family:var(--mono);font-size:7.5px;letter-spacing:.18em;fill:#c9c2b2;}
 /* reckoning slide — street stencil */
 .reckoning{background:#0b0c0b !important;}

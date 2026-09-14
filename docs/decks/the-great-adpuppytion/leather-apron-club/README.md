@@ -20,31 +20,38 @@ python3 -m http.server 8085
 Reveal.js + fonts load from CDN (same as the parent deck). Presenting offline?
 Open with the machine's browser after a warm-up load (fonts cache).
 
-## Structure (33 slides, 6 acts, ~25–30 min with the Chaplin read)
+## Structure (40 slides, Act 0 + 7 acts, ~30–35 min with the Chaplin read)
 
 | Act | Slides | What happens |
 |-----|--------|--------------|
-| 0 · Cold open | 1–2   | Tree-mark stroke-draw (motion slot 1), "What did you build this week?" |
-| I · 1727      | 3–8   | The Junto: 4 admission inquiries (verbatim), what 12 tradesmen built, the anti-disputation rule |
-| II · Machines | 9–11  | The panic rail (1896/1927/1942/1969), the 2026 moat-is-gone beat |
-| III · 1940    | 12–21 | Chaplin's Great Dictator speech — **verbatim, 8 beats**, set in Fraunces |
-| IV · Proof    | 22–25 | Why the circle wins; the Sept 3 receipts ledger (tylergranlund.com/progress) |
-| V · The club  | 26–30 | Operating code, the pipeline, the self-typing charter terminal (motion slot 2), seed experiments |
-| VI · The ask  | 31–33 | Three commitments, the creed, TOGETHER WE ARE BETTER. ALWAYS. |
+| 0 · Cold open | 1–7   | The real spruce-trio mark, the name (Granlund = spruce grove), the path strata, the why, the language, the pantheon, "What did you build this week?" |
+| 0.5 · The lineage | 8–10 | Code Puppy → Spruce Grove (both real logos), the 300-year timeline (dates verified against `FACTCHECK.md`), the grove shipping — terminal + mark |
+| I · 1727 | 11–16 | The Junto: 4 admission inquiries (verbatim), what 12 tradesmen compounded into, the pipeline, the operating code |
+| II · Machines | 17–20 | The panic rail (1896/1927/1942/1969), the 2026 moat-is-gone beat, the bridge to 1940 |
+| III · 1940 | 21–22 | Chaplin's Great Dictator — **verbatim, 8 beats** live-transcribed and ignited on ONE stage section; "why we read all of it" |
+| IV · Proof | 23–30 | Bentonville: what survives, the Sept 3 receipts, the Sept 4–13 build log, the voice loop, the understone, the desktop app |
+| V · The club | 31–36 | The rules, the harness in four layers, Franklin's pipeline, the charter as a running process, first 30–90 day experiments |
+| VI · The ask | 37–40 | Three commitments, the creed, the crazy ones, TOGETHER WE ARE BETTER. ALWAYS. |
 
 ## Design discipline (inherited, non-negotiable)
 
 1. **Four archetypes only** — STATEMENT / SPLIT / STAGE / LEDGER. Cards and
-   tables live in LEDGER. Images were dropped entirely: the deck is pure
-   typography, rails, and artifacts (the spruce grove identity needs no FPO).
+   tables live in LEDGER. Typography-first; images appear only where the image
+   IS the artifact: the spruce-trio mark (`assets/spruce_grove_logo_white.png`,
+   the real logo, 4 display spots), the pantheon portraits (17, Wikimedia),
+   and the Chaplin film frame.
 2. **One accent hue per slide** via `.act-*` scoping; act map in `tokens.css` §4.
-3. **Motion budget = 2, total**: tree-mark stroke-draw on the title;
-   terminal self-type in Act V. Wow is scarcity.
-4. **Chaplin is verbatim** (slides 13–20, I–VIII eyebrows), sourced from
-   `docs/jack-conte-sxsw.md` exactly as the parent deck's test suite locks it.
-5. **Every fact has a file** — Junto mechanics (`Junto-Leather Apron Club.md`),
-   receipts (`granlund-grove/src/routes/progress.tsx`), creed (`ETHOS.md`,
-   Ozark Bagels transcript), Fireship beat (Code Report, Jul 29 2026).
+3. **Motion budget = 2, total**: terminal self-type in Act V; Chaplin
+   live-transcription key-statement ignition (emperor / humanity / you are men /
+   unite burn ember). The title mark is a static image — wow is scarcity.
+4. **Chaplin is verbatim** (beat section I–VIII inside the stage slide),
+   sourced from `docs/jack-conte-sxsw.md` exactly as the parent deck's test
+   suite locks it. His words, not ours.
+5. **Every fact has a file** — Junto mechanics
+   (`dev/1.MASTER-ORCHESTRATION/Junto-Leather Apron Club.md`), panic-rail
+   verdicts (`FACTCHECK.md`, inherited from the parent deck), receipts
+   (`tylergranlund.com/progress`, `sprucegrove.io`), creed (`ETHOS.md`, Ozark
+   Bagels transcript), Fireship beat (Code Report, Jul 29 2026).
 
 ## Tokens
 
