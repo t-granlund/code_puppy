@@ -343,3 +343,17 @@
 /* ═══ ACT ZERO ═══ */
 .act0{text-align:center;}
 .act0 h1 em,.act0 h2 em{color:var(--lac-grove) !important;font-style:italic;}
+
+/* ═══ THE LANGUAGE — the drummer's ethos ═══ */
+.the-language{background:#0b0f0c !important;text-align:center;}
+.band-wall{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin:1.4em auto 0;max-width:900px;}
+.band{font-family:var(--mono);font-weight:700;letter-spacing:.14em;padding:8px 18px;border:2px solid #f2efe6;color:#f2efe6;text-transform:uppercase;transform:rotate(-1deg);box-shadow:4px 4px 0 rgba(0,0,0,.7);font-size:.72em;}
+.band.b1{transform:rotate(-2deg);border-color:#e8c56a;color:#e8c56a;}
+.band.b3{transform:rotate(1.2deg);}
+.band.b4{transform:rotate(-.6deg);border-color:#98b79e;color:#98b79e;}
+@keyframes drumbeat{0%,100%{transform:scale(1);opacity:.35}12%{transform:scale(1.25);opacity:1}30%{transform:scale(1);opacity:.35}}
+.beat-line{display:flex;justify-content:center;gap:12px;margin-top:1.6em;}
+.beat-line span{width:10px;height:10px;border-radius:50%;background:#e8c56a;animation:drumbeat 1.15s ease-in-out infinite;}
+.beat-line span:nth-child(2){animation-delay:.14s}
+.beat-line span:nth-child(3){animation-delay:.29s}
+.beat-line span:nth-child(4){animation-delay:.43s}
