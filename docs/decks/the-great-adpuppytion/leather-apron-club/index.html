@@ -321,6 +321,7 @@
     <div class="bank-tape"></div>
     <video id="chaplin-video" src="assets/chaplin-1940.webm" preload="auto" playsinline></video>
   </div>
+  <p class="bank-ghost-line" id="bank-ghost">&nbsp;</p>
   <p class="bank-line" id="bank-line">&nbsp;</p>
   <div class="bank-callouts">
     <span>his first spoken words on film</span>
@@ -618,12 +619,18 @@ Reveal.initialize({
       } catch(e){}
     }
     if(!el.duration) return;
-    var t = el.currentTime/el.duration, cur = BEATS[0];
-    for (var i=0;i<BEATS.length;i++){ if(t >= BEATS[i].t) cur = BEATS[i]; }
+    var t = el.currentTime/el.duration, cur = BEATS[0]; var li=0;
+    for (var i=0;i<BEATS.length;i++){ if(t >= BEATS[i].t){ cur = BEATS[i]; li=i; } }
     var line = document.getElementById('bank-line');
     if (line.dataset.line !== cur.line){
       line.style.opacity = 0;
-      setTimeout(function(){ line.textContent = '\u201C' + cur.line + '\u201D'; line.style.opacity = 1; }, 160);
+      setTimeout(function(){
+        var KEYS = /(emperor|help one another|machinery|humanity|not machines|not cattle|You are men|misery|passing of greed|Do not despair|democracy|all unite)/g;
+        line.innerHTML = '\u201C' + cur.line.replace(KEYS, '<em class="key">$1</em>') + '\u201D';
+        var g = document.getElementById('bank-ghost');
+        if (g) g.textContent = li>0 ? '\u201C'+BEATS[li-1].line+'\u201D' : '\u00a0';
+        line.style.opacity = 1;
+      }, 160);
       line.dataset.line = cur.line;
     }
   }
