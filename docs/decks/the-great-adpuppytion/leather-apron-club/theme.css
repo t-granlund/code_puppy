@@ -316,3 +316,11 @@
 .reckoning p{color:#d8d2c2 !important;max-width:30em;font-size:.95em;}
 .reckoning .crazy{font-family:var(--serif);font-style:italic;color:#f2efe6 !important;font-size:1.25em;margin-top:1em;}
 .reckoning .crazy::before{content:"— ";}
+
+/* ═══ CERAMIC COAT — AA hardening ═══ */
+.muted{color:oklch(0.78 0.012 110) !important;}
+.era-print p,.era-print h1,.era-print h2,.era-print em,.era-print strong{color:oklch(0.19 0.03 60) !important;}
+.era-print .eyebrow{color:oklch(0.34 0.06 55) !important;}
+.reckoning p{font-size:.82em !important;margin:.5em auto !important;}
+.reckoning h2{font-size:2em !important;}
+.reckoning .crazy{font-size:1.05em !important;}
