@@ -276,3 +276,16 @@
 .monolith{text-align:center;}
 .monolith h1{font-size:3.2em !important;line-height:1.05;letter-spacing:-.015em;}
 .monolith .mark-hero{height:150px;margin:0 auto 24px;display:block;filter:drop-shadow(0 8px 40px oklch(0.45 0.06 155 / .5));}
+
+/* ═══ BADASS LAYER ═══ */
+/* 1 · traveling pulse on the timeline */
+@keyframes la-pulse{0%{offset-distance:0%;opacity:0}8%{opacity:1}92%{opacity:1}100%{offset-distance:100%;opacity:0}}
+.la-pulse-dot{offset-path:path("M48 95 L1214 95");animation:la-pulse 5.5s linear infinite;}
+/* 2 · count-up stats */
+.stat-num{font-variant-numeric:tabular-nums;}
+/* 3 · ambient network on the monolith */
+#net-canvas{position:absolute;inset:0;pointer-events:none;opacity:.5;}
+.monolith{overflow:hidden;}
+/* 4 · understone heartbeat */
+@keyframes heartbeat{0%,100%{transform:scale(1);text-shadow:0 0 0 rgba(156,61,46,0)}14%{transform:scale(1.012);text-shadow:0 0 34px rgba(156,61,46,.45)}28%{transform:scale(1)}42%{transform:scale(1.012);text-shadow:0 0 34px rgba(156,61,46,.45)}56%{transform:scale(1)}}
+.era-blackout .statement-text,.era-blackout h2{animation:heartbeat 2.4s ease-in-out infinite;}
