@@ -400,3 +400,11 @@ img[src*="code_puppy_logo_noback"]{background:#f2efe6 !important;padding:14px 22
 img[src*="spruce_grove_north"],img[src*="spruce_grove_mark"]{height:150px !important;width:auto !important;filter:drop-shadow(0 0 34px oklch(0.78 0.12 55/.35)) drop-shadow(0 8px 24px rgba(0,0,0,.6)) !important;}
 /* the arrow between them: visible, confident */
 .la-lineage-arrow{color:#d2a069 !important;font-size:2.2em !important;font-weight:700 !important;opacity:1 !important;text-shadow:0 0 20px rgba(210,160,105,.4);}
+
+/* ═══ COLD OPEN REBUILD — one statement, monumental ═══ */
+.monolith{background:radial-gradient(ellipse 70% 60% at 50% 30%, oklch(0.16 0.03 158), oklch(0.1 0.015 158)) !important;}
+.monolith .mark-hero{height:200px !important;margin-bottom:34px !important;}
+.monolith h1.megaword{font-size:4.6em !important;line-height:.98 !important;letter-spacing:.01em !important;color:var(--ink-primary) !important;}
+.monolith h1.megaword + * , .monolith .statement-sub{color:var(--ink-soft) !important;}
+.monolith .eyebrow{color:var(--lac-cedar) !important;letter-spacing:.34em !important;}
+.monolith::after{content:"";position:absolute;left:50%;bottom:9%;width:120px;height:2px;transform:translateX(-50%);background:linear-gradient(90deg,transparent,oklch(0.78 0.12 55),transparent);}
