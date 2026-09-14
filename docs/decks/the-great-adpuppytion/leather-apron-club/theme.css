@@ -262,7 +262,6 @@
 .era-print .era-ghost{color:oklch(0.24 0.03 60 / 0.07);}
 .era-film .era-ghost{color:oklch(0.94 0.012 90 / 0.07);}
 .era-blackout .era-ghost{color:oklch(0.55 0.18 25 / 0.10);}
-section > *{position:relative;z-index:1;}
 /* ═══ ERA PAINT — through Reveal's background stack (guaranteed visible) ═══ */
 .bg-parchment{--slide-bg:#ece2c8;}
 .bg-void{--slide-bg:#000000;}
