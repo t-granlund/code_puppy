@@ -322,6 +322,22 @@
   color:#c8402e;border:2px solid currentColor;outline:1px solid rgba(200,64,46,.4);outline-offset:3px;
   padding:8px 13px;border-radius:2px;opacity:.85;pointer-events:none;mix-blend-mode:screen;
 }
+/* ═══ the grove, drawn — the line that animated around the tree, kept alive ═══ */
+.grove-anim{height:200px;display:block;margin:0 auto;}
+.grove-anim .gp{
+  stroke-dasharray:1;stroke-dashoffset:1;fill-opacity:0;
+}
+.grove-anim .gb{fill:#101812;stroke-opacity:.6;}
+.grove-anim .gf{fill:#1D2A21;}
+.present .grove-anim .gp{animation:grove-draw 1.5s ease forwards;}
+.present .grove-anim .gp:nth-child(1){animation-delay:.15s;}
+.present .grove-anim .gp:nth-child(2){animation-delay:.55s;}
+.present .grove-anim .gp:nth-child(3){animation-delay:.95s;}
+@keyframes grove-draw{to{stroke-dashoffset:0;fill-opacity:1;}}
+@media (prefers-reduced-motion: reduce){
+  .grove-anim .gp{stroke-dashoffset:0 !important;fill-opacity:1 !important;animation:none !important;}
+}
+
 .stamp.cedar{color:#d2a069;outline-color:rgba(210,160,105,.4);}
 
 /* the voice flow — the journey, left to right (GRAN: machine voice + one thought) */

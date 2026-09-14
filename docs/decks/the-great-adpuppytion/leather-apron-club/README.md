@@ -37,7 +37,7 @@ Open with the machine's browser after a warm-up load (fonts cache).
 
 1. **Four archetypes only** — STATEMENT / SPLIT / STAGE / LEDGER. Cards and
    tables live in LEDGER. Typography-first; images appear only where the image
-   IS the artifact: the spruce-trio mark (`assets/spruce_grove_logo_white.png`,
+   IS the artifact: the grove mark (`assets/spruce_grove_official.svg`,
    the real logo, 4 display spots), the pantheon portraits (17, Wikimedia),
    and the Chaplin film frame.
 2. **One accent hue per slide** via `.act-*` scoping; act map in `tokens.css` §4.
