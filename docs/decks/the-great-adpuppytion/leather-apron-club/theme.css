@@ -289,3 +289,30 @@
 /* 4 · understone heartbeat */
 @keyframes heartbeat{0%,100%{transform:scale(1);text-shadow:0 0 0 rgba(156,61,46,0)}14%{transform:scale(1.012);text-shadow:0 0 34px rgba(156,61,46,.45)}28%{transform:scale(1)}42%{transform:scale(1.012);text-shadow:0 0 34px rgba(156,61,46,.45)}56%{transform:scale(1)}}
 .era-blackout .statement-text,.era-blackout h2{animation:heartbeat 2.4s ease-in-out infinite;}
+
+/* ═══ STREET LAYER — banksy pour-in: concrete, stencil, hope ═══ */
+.bank-stage{background:
+  radial-gradient(ellipse 90% 70% at 70% 10%, oklch(0.22 0.01 90 / .5), transparent 60%),
+  radial-gradient(ellipse 60% 50% at 15% 85%, oklch(0.16 0.008 90 / .6), transparent 70%),
+  #0a0b0a !important;}
+.bank-frame{border:0 !important;border-radius:0 !important;transform:rotate(-.6deg) !important;
+  outline:3px solid #f2efe6;outline-offset:-1px;
+  box-shadow:14px 14px 0 rgba(0,0,0,.55), 0 0 60px rgba(0,0,0,.5) !important;}
+.bank-tape{background:#efe7d2 !important;opacity:.85;}
+.bank-line{letter-spacing:.015em !important;text-transform:none;font-weight:600 !important;
+  text-shadow:2px 2px 0 rgba(0,0,0,.8);}
+.bank-line::after{content:"";display:block;width:64px;height:4px;background:#c8402e;margin-top:14px;
+  box-shadow:2px 2px 0 rgba(0,0,0,.6);}
+.bank-eyebrow{color:#e8563f !important;text-shadow:1px 1px 0 rgba(0,0,0,.8);}
+.bank-callouts span{color:#c9c2b2 !important;}
+.hope-balloon{position:absolute;top:26px;right:44px;width:120px;pointer-events:none;}
+.hope-balloon text{font-family:var(--mono);font-size:7.5px;letter-spacing:.18em;fill:#c9c2b2;}
+/* reckoning slide — street stencil */
+.reckoning{background:#0b0c0b !important;}
+.reckoning .stencil-kicker{font-family:var(--mono);color:#e8563f;letter-spacing:.3em;font-size:12px;text-transform:uppercase;}
+.reckoning h2{font-size:2.4em !important;color:#f2efe6 !important;line-height:1.08;text-shadow:3px 3px 0 rgba(0,0,0,.7);}
+.reckoning .red-slap{display:inline-block;background:#c8402e;color:#0a0b0a;font-family:var(--mono);font-weight:700;
+  padding:2px 10px;transform:rotate(-2deg);letter-spacing:.12em;font-size:.7em;}
+.reckoning p{color:#d8d2c2 !important;max-width:30em;font-size:.95em;}
+.reckoning .crazy{font-family:var(--serif);font-style:italic;color:#f2efe6 !important;font-size:1.25em;margin-top:1em;}
+.reckoning .crazy::before{content:"— ";}
