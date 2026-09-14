@@ -1,7 +1,7 @@
 # The Leather Apron Club — Bentonville 2026
 
 The founding presentation for the first meeting of the Leather Apron Club:
-**Friday, September 11, 2026 · Bentonville Barber Company.**
+**Friday, September 18, 2026 · Bentonville Barber Company.**
 
 A full visual reimagining of `the-great-adpuppytion` ("Cornerstone+") deck,
 re-skinned onto the **Spruce Grove design system** (granlund-grove Nordic
