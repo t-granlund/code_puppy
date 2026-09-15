@@ -84,3 +84,14 @@ largest US orchestras running structural deficits."
 | American Philosophical Society, 1743 — grew from the Junto's scientific inquiries | VERIFIED | APS institutional record; Franklin's *Autobiography* |
 | "The Junto didn't petition. It built." | EDITORIAL | synthesis of the three verified facts above — no invented claims |
 | "We are not at war with corporations / compete on care / three removals" | EDITORIAL | club thesis per T. Granlund, 2026-09-14; no companies named by design |
+
+## ACT IV.95 — The Cog and the Spark (added 2026-09-15)
+
+| Claim | Status | Source |
+|---|---|---|
+| Transformers One (2024) — Orion Pax and D-16 are miner bots born without transformation cogs, mining Energon beneath Cybertron | VERIFIED | the film (Paramount Animation / Hasbro), plot record |
+| Sentinel Prime — celebrated leader; secretly stole the miners' cogs and paid Energon tribute to the Quintessons | VERIFIED | the film |
+| Orion Pax receives the legacy of the fallen Primes and becomes Optimus Prime; the miners' spark, not the cog, is the point | VERIFIED (film's thesis) | the film |
+| Note: the character is SENTINEL PRIME (not "Sentinel One"); the power taken back is the cogs and the Matrix of Leadership | CORRECTION | film record |
+| "Machine men with machine minds" | VERIFIED quote | Charlie Chaplin, The Great Dictator (1940) — already in ACT II |
+| Juxtaposition to present-day power structures | EDITORIAL | club thesis; no institutions named |
