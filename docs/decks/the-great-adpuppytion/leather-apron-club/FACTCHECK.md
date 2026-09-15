@@ -74,3 +74,13 @@ largest US orchestras running structural deficits."
   the owner's first-hand account, shared with participants' knowledge.
   No employer is named. Owner may adjust or withdraw any of it.
 - Long-form companion: leather-apron-club/the-method.html.
+
+## ACT IV.9 — The Cooperative Turn (added this build)
+
+| Claim | Status | Source |
+|---|---|---|
+| Library Company of Philadelphia, 1731 — out of a Junto discussion; the first subscription library in America | VERIFIED | Franklin, *Autobiography* (Part I); Library Company's own institutional record |
+| Union Fire Company, 1736 — citizen-organized mutual aid against fire | VERIFIED | Franklin, *Autobiography*; Philadelphia fire-company history |
+| American Philosophical Society, 1743 — grew from the Junto's scientific inquiries | VERIFIED | APS institutional record; Franklin's *Autobiography* |
+| "The Junto didn't petition. It built." | EDITORIAL | synthesis of the three verified facts above — no invented claims |
+| "We are not at war with corporations / compete on care / three removals" | EDITORIAL | club thesis per T. Granlund, 2026-09-14; no companies named by design |

@@ -20,7 +20,7 @@ python3 -m http.server 8085
 Reveal.js + fonts load from CDN (same as the parent deck). Presenting offline?
 Open with the machine's browser after a warm-up load (fonts cache).
 
-## Structure (44 slides, Act 0 + 8 acts, ~30–35 min with the Chaplin read)
+## Structure (47 slides, Act 0 + 9 acts, ~30–35 min with the Chaplin read)
 
 | Act | Slides | What happens |
 |-----|--------|--------------|
