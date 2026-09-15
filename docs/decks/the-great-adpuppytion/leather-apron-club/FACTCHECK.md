@@ -67,3 +67,10 @@ largest US orchestras running structural deficits."
   2026-09-14 and tightened for the slide. Owner may veto/adjust wording.
 - The 1:03 voice memo remains in assets (assets-voice-memo.m4a) but is no
   longer played during the presentation, per owner decision.
+
+## The Method act (slides 31-34, added 2026-09-14)
+- The 10-15 -> 75,000+ arc, John Choi (UI/UX, trainer), and Ashley's title
+  (Director of Agentic Work, all of Marketplace; no college degree; 35) are
+  the owner's first-hand account, shared with participants' knowledge.
+  No employer is named. Owner may adjust or withdraw any of it.
+- Long-form companion: leather-apron-club/the-method.html.
